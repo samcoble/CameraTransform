@@ -12,7 +12,7 @@ function drawRect(c, x0, y0, x1, y1)
 
 function drawText(c, txt, x0, y0)
 {
-	c.font = "48px Comic Sans MS";
+	c.font = "28px Comic Sans MS";
 	c.fillText(txt, x0, y0);
 }
 
@@ -49,19 +49,42 @@ function reDraw(c, ww, wh)
 var pi = 3.1415926538;
 
 var player_look_dir = [0.0, 0.0, 0.0];
+var mouseData = [0.0, 0.0];
+var mouseDataS = [0.0, 0.0];
+var mouseDataI = [0.0, 0.0]; // Actual final?
+var mouseDataD = [0.0, 0.0];
+
+var player_pos = [0.001,0.001,0.001];
+var LookToggle = 0;
 
 onmousemove = function(e)
 {
+	mouseData[0] = e.clientX; mouseData[1] = e.clientY;
+
+	//var dY = mouseData[1]-mouseDataS[1];
+	//var dX = mouseData[0]-mouseDataS[0];
+
+
+	// player_look_dir = [-2*pi*(mouseDataS[0]+dX)/inner_window_height, -2*pi*(mouseDataS[1]+dY)/inner_window_height, 0];
+	//if (LookToggle)
+	//{
+
+	//player_look_dir = [-2*pi*(mouseDataS[0]+dX)/inner_window_height, -2*pi*(dY)/inner_window_height, 0];
+	//}
+
 	//console.log("mouse location:", e.clientX, e.clientY)
-	player_look_dir = [-2*pi*e.clientY/inner_window_height, 2*pi*e.clientX/inner_window_height, 0.0];
-	console.log(player_look_dir);
+	//player_look_dir = [-2*pi*e.clientY/inner_window_height, 2*pi*e.clientX/inner_window_height, 0.0];
+	//console.log(player_look_dir                    );
 }
 
-var player_pos = [0.001,0.001,0.001]
+
+
+
 
 var el = document.getElementById("html");
 
-el.onkeydown = function(evt) {
+el.onkeydown = function(evt)
+{
     evt = evt || window.event;
     //alert("keydown: " + evt.keyCode);
     if (evt.keyCode == 87)
@@ -88,6 +111,35 @@ el.onkeydown = function(evt) {
     	player_pos[0] += Math.sin(player_look_dir[1]+pi/2)*(-0.1);
     	player_pos[2] += Math.cos(player_look_dir[1]+pi/2)*(0.1);
     }
+
+    if (evt.keyCode == 32)
+    {
+    		if (!LookToggle) {mouseDataS[0] = mouseData[0]; mouseDataS[1] = mouseData[1];} // REFACTOR?
+    		LookToggle = 1;
+    		// mouseData[0] mouseData[1] mouseDataS[0] mouseDataS[1]
+
+    		var fX = mouseDataS[0]-mouseData[0]; var fY = mouseDataS[1]-mouseData[1];
+    		mouseDataD[0] = fX; mouseDataD[1] = fY;
+
+			//mouseData[0] = 2*mouseData[0]-mouseDataS[0]; mouseData[1] = 2*mouseData[1]-mouseDataS[1];
+
+			player_look_dir = [-2*pi*(mouseDataI[0]-fX)/inner_window_width, -2*pi*(mouseData[1])/inner_window_height, 0];
+
+    }
+};
+
+
+el.onkeyup = function(evt)
+{
+	evt = evt || window.event;
+
+    if (evt.keyCode == 32)
+    {
+    		LookToggle = 0;
+    		mouseDataI[0] = mouseDataI[0]-mouseDataD[0]; mouseDataI[1]-mouseDataD[1];
+    		//mouseData[0] = mouseDataS[0]; mouseData[1] = mouseDataS[1];
+    		//mouseData[0] = 2*mouseData[0]-mouseDataS[0]; mouseData[1] = 2*mouseData[1]-mouseDataS[1];
+    }
 };
 
 
@@ -107,6 +159,7 @@ el.onkeydown = function(evt) {
 
 var inc = 0;
 var m1 = turbojs.alloc(200);
+var m2 = turbojs.alloc(200);
 
 	//var m0 = turbojs.alloc(200);
 
@@ -140,11 +193,12 @@ var m1 = turbojs.alloc(200);
 
 	*/
 
+
+
+
 function setData(dx,dy,dz)
 {
-
 	//var dz = -2.01;
-
 	m1.data[0] = -1.0+dx; m1.data[1] = -1.0+dy; m1.data[2] = -1.0+dz; m1.data[3] = 1;
 	m1.data[4] = -1.0+dx; m1.data[5] = -1.0+dy; m1.data[6] = 1.0+dz; m1.data[7] = 1;
 
@@ -156,19 +210,29 @@ function setData(dx,dy,dz)
 
 	m1.data[24] = -1.0+dx; m1.data[25] = 1.0+dy; m1.data[26] = -1.0+dz; m1.data[27] = 1;
 	m1.data[28] = -1.0+dx; m1.data[29] = 1.0+dy; m1.data[30] = 1.0+dz; m1.data[31] = 1;
-
-
-
 }
 
+function setData2(dx,dy,dz)
+{
+	//var dz = -2.01;
+	m2.data[0] = -1.0+dx; m2.data[1] = -1.0+dy; m2.data[2] = -1.0+dz; m2.data[3] = 1;
+	m2.data[4] = -1.0+dx; m2.data[5] = -1.0+dy; m2.data[6] = 1.0+dz; m2.data[7] = 1;
+
+	m2.data[8] = 1.0+dx; m2.data[9] = -1.0+dy; m2.data[10] = -1.0+dz; m2.data[11] = 1;
+	m2.data[12] = 1.0+dx; m2.data[13] = -1.0+dy; m2.data[14] = 1.0+dz; m2.data[15] = 1;
+
+	m2.data[16] = 1.0+dx; m2.data[17] = 1.0+dy; m2.data[18] = -1.0+dz; m2.data[19] = 1;
+	m2.data[20] = 1.0+dx; m2.data[21] = 1.0+dy; m2.data[22] = 1.0+dz; m2.data[23] = 1;
+
+	m2.data[24] = -1.0+dx; m2.data[25] = 1.0+dy; m2.data[26] = -1.0+dz; m2.data[27] = 1;
+	m2.data[28] = -1.0+dx; m2.data[29] = 1.0+dy; m2.data[30] = 1.0+dz; m2.data[31] = 1;
+}
+
+
+
+
 setData();
-
-	//m0 = m1;
-
-	//console.log(" Should give cube verticies "); /* CONSOLE OUTPUT */
-	//console.log(m1.data); /* CONSOLE OUTPUT */
-	//m0 = m1;
-
+setData2();
 
 
 
@@ -203,16 +267,22 @@ $(document).ready(function()
 
 
 
-
-
-	//if (turbojs) // Problem here calling a fn in this without it?
 	//{
 
 	function drawIt(init_dat)
 	{
-		reDraw(ctx, inner_window_width, inner_window_height);
+		reDraw(ctx, inner_window_width, inner_window_height); // FIRST
+
+		drawText(ctx, mouseData[0], 300, 300);
+		drawText(ctx, "S: " + mouseDataS[0], 300, 350);
+		drawText(ctx, player_look_dir[0] + " : " + player_look_dir[1], 300, 400);
+
+		drawText(ctx, mouseDataD[0] + " : " + mouseDataD[1], 300, 500);
+		drawText(ctx, mouseDataI[0] + " : " + mouseDataI[1], 300, 550);
+
 		//for (var i=0; i<(400/4); i++)
-		for (var i=0; i<(8*4); i++)
+		//for (var i=0; i<(8*4); i++)
+		for (var i=0; i<(40); i++)
 		{
 			// Here predefined;
 			// x = .[4*i]   // y = .[4*i+1]
@@ -221,7 +291,7 @@ $(document).ready(function()
 			var s = 30;
 			//console.log(m1.data); /* CONSOLE OUTPUT */
 			drawDot(ctx, "#FFF", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
-			drawText(ctx, "Cum", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
+			//drawText(ctx, "A", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
 			drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
 
 
@@ -231,6 +301,20 @@ $(document).ready(function()
 			//drawDot(ctx, 500, 500);
 		}
 	}
+
+
+	// Attempt at quaternion rotation
+
+	function QuatMult(q1, q2)
+	{
+		var q = [0,0,0,0];
+			q =[q1[0]*q2[0]-q1[1]*q2[1]-q1[2]*q2[2]-q1[3]*q2[3],
+		 		q1[1]*q2[0]+q1[0]*q2[1]-q1[3]*q2[2]+q1[2]*q2[3],
+		 		q1[2]*q2[0]+q1[3]*q2[1]+q1[0]*q2[2]-q1[1]*q2[3],
+		 		q1[3]*q2[0]-q1[2]*q2[1]+q1[1]*q2[2]+q1[0]*q2[3]];
+		return q;
+	}
+
 
 	function Compute(init_dat, t_inc)
 	{
@@ -244,6 +328,7 @@ $(document).ready(function()
 
 		//setData(0,t_inc,-2.01);
 		setData(0, 0, 0);
+		setData2(0, 0, 0);
 
 //		float theta = ${t_inc};
 
@@ -254,17 +339,18 @@ $(document).ready(function()
 
 		// Apply rotation here
 
-		// Rot around y
+		// Rot around y // 1.2 = t_inc
 		turbojs.run(init_dat, `void main(void) {
 
 		commit(vec4(
-			cos(${t_inc})*read().x+sin(${t_inc})*read().z+${-player_pos[0]},
+			cos(${1.2})*read().x+sin(${1.2})*read().z+${-player_pos[0]}, 
 			read().y+${player_pos[1]},
-			cos(${t_inc})*read().z-sin(${t_inc})*read().x+${-player_pos[2] - 3.41},
+			cos(${1.2})*read().z-sin(${1.2})*read().x+${-player_pos[2] - 3.41},
 			read().w
 		));
 		}`);
 
+		/*
 		// Rot around x ${player_look_dir[0]}
 		turbojs.run(init_dat, `void main(void) {
 
@@ -275,18 +361,46 @@ $(document).ready(function()
 			read().w
 		));
 		}`);
+		*/
 
 		// Rot around y
+
+
 		turbojs.run(init_dat, `void main(void) {
 
 		commit(vec4(
-			cos(${player_look_dir[1]})*read().x+sin(${player_look_dir[1]})*read().z,
+			cos(${player_look_dir[0]})*read().x+sin(${player_look_dir[0]})*read().z,
 			read().y,
-			cos(${player_look_dir[1]})*read().z-sin(${player_look_dir[1]})*read().x,
-			read().w
+			cos(${player_look_dir[0]})*read().z-sin(${player_look_dir[0]})*read().x,
+			read().w 
 		));
 		}`);
 
+
+		
+
+		//var T = t_inc;
+		T = 1.0;
+		var n = [0.0,1.0,0.0];
+		var q1 = [Math.cos(T/2), Math.sin(T/2)*n[0], Math.sin(T/2)*n[1], Math.sin(T/2)*n[2]];
+		//var q2 = [Math.cos(T/2), -Math.sin(T/2)*n[0], -Math.sin(T/2)*n[1], -Math.sin(T/2)*n[2] ];
+		var q1_len = (Math.cos(T/2))^2 + (Math.sin(T/2)*n[0])^2 + (Math.sin(T/2)*n[1])^2 + (Math.sin(T/2)*n[2])^2;
+		var q2 = [Math.cos(T/2)/q1_len, -Math.sin(T/2)*n[0]/q1_len, -Math.sin(T/2)*n[1]/q1_len, -Math.sin(T/2)*n[2]/q1_len];
+		var v = [0,m1.data[0],m1.data[1],m1.data[2]];
+
+		var q3 = QuatMult(q1,v);
+		var qf = QuatMult(q3,q2);
+		m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3]; 
+
+		// * * * Maybe this must be done by using quaternion matrix compatible with 4D camera space??? ???????????????
+		// Fix floating point clown show
+
+
+		
+
+
+		console.log(m1.data);
+		//console.log(m1.data[0]);
 
 
 		turbojs.run(init_dat, `void main(void) {
@@ -360,44 +474,4 @@ $(document).ready(function()
 
 
 
-		/* JS GRAVEYARD
-
-		 //var init_model = new Float32Array(4096);
-
-		// const m1 = {
-		//   data:  ,
-		//   length: 400,
-		// };
-
-	  	//vec4 ipt = read();
-	  	//vec4 s = vec4(9.,2.,2.,1.);
-	  	//vec4 p = vec4(2., 7., 4., 1.);
-	  	//commit(s * p);
-
-	  	//commit(vec4( (read().x*cos(a)-read().y*sin(a)), (read().x*sin(a)+read().y*cos(a)), read().z, read().w) );
-
-	  	// x' = x*cos(a) - y*sin(a)
-	  	// y' = x*sin(a) + y*cos(a)
-
-		//for(int i = 0; i < 100; i++) {
-		//	if (x * x + y * y >= 2. * 2.) break;
-		//
-		//	xt = x * x - y * y + x0;
-		//	y = 2. * x * y + y0;
-		//	x = xt;
-		//	c++;
-		//}
-
-		//float a = PI/2. * ${delta};
-
-		  turbojs.run(m1, `void main(void) {
-
-		  	commit(vec4(
-			  	(read().x+50.01),
-			  	(read().y+50.01),
-			  	(read().z),
-			  	0
-		  	));
-		  }`);	
-
-		*/
+		
