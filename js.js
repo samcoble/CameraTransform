@@ -57,59 +57,80 @@ onmousemove = function(e)
 	mouseData[0] = e.clientX; mouseData[1] = e.clientY;
 }
 
+// e.keyCode
+// d - 68  |  a - 65
+// w - 87  |  s - 83
 
-// d - 68
-// w - 87
-// a - 65
-// s - 83
+// e.button
+// lmb - 0  |  mmb - 1  |  rmb - 2
 
-
-var keyInfo = [0,0,0,0,0];  //w,s,a,d,spc
+var keyInfo = [0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb
 
 var el = document.getElementById("html");
 
 // REFACTOR
 
-el.onkeydown = function(evt)
+el.onkeydown = function(e)
 {
-    evt = evt || window.event;
+    e = e || window.event;
+    if (e.keyCode == 87) {keyInfo[0]=1;}
+    if (e.keyCode == 83) {keyInfo[1]=1;}
+    if (e.keyCode == 65) {keyInfo[2]=1;}
+    if (e.keyCode == 68) {keyInfo[3]=1;}
+    if (e.keyCode == 32) {keyInfo[4]=1;}
+};
 
-    if (evt.keyCode == 87) {keyInfo[0]=1;}
-    if (evt.keyCode == 83) {keyInfo[1]=1;}
-    if (evt.keyCode == 65) {keyInfo[2]=1;}
-    if (evt.keyCode == 68) {keyInfo[3]=1;}
-    if (evt.keyCode == 32) {keyInfo[4]=1;}
+el.onkeyup = function(e)
+{
+	e = e || window.event;
+    if (e.keyCode == 87) {keyInfo[0]=0;}
+    if (e.keyCode == 83) {keyInfo[1]=0;}
+    if (e.keyCode == 65) {keyInfo[2]=0;}
+    if (e.keyCode == 68) {keyInfo[3]=0;}
+    if (e.keyCode == 32) {keyInfo[4]=0;}
     
 };
 
-el.onkeyup = function(evt)
+el.addEventListener('mousedown', function(e)
 {
-	evt = evt || window.event;
+	if (e.button == 0) {keyInfo[5]=1;}
+	if (e.button == 1) {keyInfo[6]=1;}
+	if (e.button == 2) {keyInfo[7]=1;}
+});
 
-    if (evt.keyCode == 87) {keyInfo[0]=0;}
-    if (evt.keyCode == 83) {keyInfo[1]=0;}
-    if (evt.keyCode == 65) {keyInfo[2]=0;}
-    if (evt.keyCode == 68) {keyInfo[3]=0;}
-    if (evt.keyCode == 32) {keyInfo[4]=0;}
-};
+el.addEventListener('mouseup', function(e)
+{
+	if (e.button == 0) {keyInfo[5]=0;}
+	if (e.button == 1) {keyInfo[6]=0;}
+	if (e.button == 2) {keyInfo[7]=0;}
+});
 
 var inc = 0;
 
 
 const temp_str = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 
-// var temp_flr = turbojs.alloc(400);
+var temp_flr = turbojs.alloc(400);
 
-// for (var i = 0; i<10; i++)
-// {
-// 	for (var j = 0; j<10; j++)
-// 	{
-// 		temp_flr.data[i*10+j] = i;
-// 		temp_flr.data[i*10+j+1] = -1;
-// 		temp_flr.data[i*10+j+2] = j;
-// 		temp_flr.data[i*10+j+3] = 1;
-// 	}
-// }
+// FINALLY LOL
+
+function setFlr()
+{
+	for (var i = 0; i<temp_flr.length/4/10; i++)
+	{
+		for (var j = 0; j<temp_flr.length/4/10; j++)
+		{
+			temp_flr.data[(i*10+j)*4]   = 2;
+			temp_flr.data[(i*10+j)*4+1] = -1.0;
+			temp_flr.data[(i*10+j)*4+2] = 3;
+			temp_flr.data[(i*10+j)*4+3] = 4;
+		}
+	}
+}
+
+setFlr();
+
+console.log(temp_flr);
 
 
 var m1 = turbojs.alloc(200);
@@ -220,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] += Math.cos(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1;
 		}
 
-		if (keyInfo[4])
+		if (keyInfo[6])
 		{
 				if (!LookToggle)
 				{
@@ -299,46 +320,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 		));
 		}`);
 
-		// Attempt at quaternion rotation
 
-		/*
-
-		function QuatMult(q1, q2)
-		{
-			var q = [0,0,0,0];
-				q =[q1[0]*q2[0]-q1[1]*q2[1]-q1[2]*q2[2]-q1[3]*q2[3],
-			 		q1[1]*q2[0]+q1[0]*q2[1]-q1[3]*q2[2]+q1[2]*q2[3],
-			 		q1[2]*q2[0]+q1[3]*q2[1]+q1[0]*q2[2]-q1[1]*q2[3],
-			 		q1[3]*q2[0]-q1[2]*q2[1]+q1[1]*q2[2]+q1[0]*q2[3]];
-			return q;
-		}
 
 		
-
-		//var T = t_inc;
-		T = 1.0;
-		var n = [0.0,1.0,0.0];
-		var q1 = [Math.cos(T/2), Math.sin(T/2)*n[0], Math.sin(T/2)*n[1], Math.sin(T/2)*n[2]];
-		//var q2 = [Math.cos(T/2), -Math.sin(T/2)*n[0], -Math.sin(T/2)*n[1], -Math.sin(T/2)*n[2] ];
-		var q1_len = (Math.cos(T/2))^2 + (Math.sin(T/2)*n[0])^2 + (Math.sin(T/2)*n[1])^2 + (Math.sin(T/2)*n[2])^2;
-		var q2 = [Math.cos(T/2)/q1_len, -Math.sin(T/2)*n[0]/q1_len, -Math.sin(T/2)*n[1]/q1_len, -Math.sin(T/2)*n[2]/q1_len];
-		var v = [0,m1.data[0],m1.data[1],m1.data[2]];
-
-		var q3 = QuatMult(q1,v);
-		var qf = QuatMult(q3,q2);
-		m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3]; 
-
-		*/
-
-		// : (
-
-		// Quaternion no work. Fix to rot points around two axis.
-		// CLIPPING
+		// CLIPPING & OPTIMIZATION & PROPER WEBGL ;-;
 		// Fix floating point clown show
 		// Refactor keyboard (real time) array keyInfo. No if stack. 
 		// Convert keyVec to unit vector
 		// Import verticies w/ json & allocate
-		
+		// Quaternion no work. Fix to rot points around two axis.
 
 
 		//console.log(_str); /* CONSOLE OUTPUT */
@@ -396,12 +386,44 @@ document.addEventListener("DOMContentLoaded", function(event)
 	
 	//} End of if turbojs
 
-	setInterval(runTime, 10);
+	setInterval(runTime, 120);
+
+});
 
 
-	
 
 
+
+// Attempt at quaternion rotation
+
+/*
+
+function QuatMult(q1, q2)
+{
+	var q = [0,0,0,0];
+		q =[q1[0]*q2[0]-q1[1]*q2[1]-q1[2]*q2[2]-q1[3]*q2[3],
+	 		q1[1]*q2[0]+q1[0]*q2[1]-q1[3]*q2[2]+q1[2]*q2[3],
+	 		q1[2]*q2[0]+q1[3]*q2[1]+q1[0]*q2[2]-q1[1]*q2[3],
+	 		q1[3]*q2[0]-q1[2]*q2[1]+q1[1]*q2[2]+q1[0]*q2[3]];
+	return q;
+}
+
+
+
+//var T = t_inc;
+T = 1.0;
+var n = [0.0,1.0,0.0];
+var q1 = [Math.cos(T/2), Math.sin(T/2)*n[0], Math.sin(T/2)*n[1], Math.sin(T/2)*n[2]];
+//var q2 = [Math.cos(T/2), -Math.sin(T/2)*n[0], -Math.sin(T/2)*n[1], -Math.sin(T/2)*n[2] ];
+var q1_len = (Math.cos(T/2))^2 + (Math.sin(T/2)*n[0])^2 + (Math.sin(T/2)*n[1])^2 + (Math.sin(T/2)*n[2])^2;
+var q2 = [Math.cos(T/2)/q1_len, -Math.sin(T/2)*n[0]/q1_len, -Math.sin(T/2)*n[1]/q1_len, -Math.sin(T/2)*n[2]/q1_len];
+var v = [0,m1.data[0],m1.data[1],m1.data[2]];
+
+var q3 = QuatMult(q1,v);
+var qf = QuatMult(q3,q2);
+m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3]; 
+
+*/
 
 
 	// m1.data.forEach((element) =>
@@ -409,10 +431,3 @@ document.addEventListener("DOMContentLoaded", function(event)
 	// 	drawDot(ctx, element[0]*10, element[1]*10);
 	// 	console.log(element);
 	// });
-
-
-});
-
-
-
-		
