@@ -234,7 +234,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 				player_look_dir = [ player_look_dir_i[0]+(dX/inner_window_width * pi * 2) , player_look_dir_i[1]+(dY/inner_window_width * pi * 2) , 0 ]; // ! width 4 both !
 
-		} else {LookToggle = 0; mouseDataI[0] = mouseDataI[0]-mouseDataD[0]; mouseDataI[1]-mouseDataD[1];}
+		} else 
+		{
+			if (LookToggle!=0)
+			{
+				mouseDataI[0] = mouseDataI[0]-mouseDataD[0];
+				mouseDataI[1] = mouseDataI[1]-mouseDataD[1];
+				LookToggle = 0;	
+			}
+		}
 
 
 
