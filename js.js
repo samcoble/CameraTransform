@@ -16,7 +16,6 @@ function drawText(c, txt, x0, y0)
 	c.fillText(txt, x0, y0);
 }
 
-
 function drawDot(c, h, x, y)
 {
 	c.beginPath();
@@ -65,8 +64,7 @@ onmousemove = function(e)
 // s - 83
 
 
-			 //w,s,a,d,spc
-var keyInfo = [0,0,0,0,0];
+var keyInfo = [0,0,0,0,0];  //w,s,a,d,spc
 
 var el = document.getElementById("html");
 
@@ -95,44 +93,47 @@ el.onkeyup = function(evt)
     if (evt.keyCode == 32) {keyInfo[4]=0;}
 };
 
-
 var inc = 0;
-var m1 = turbojs.alloc(200);
-var m2 = turbojs.alloc(200);
-
-//var m0 = turbojs.alloc(200);
 
 
-// Make some koo wave shit
+const temp_str = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 
-// for (var i = 0; i < 100; i++)
+// var temp_flr = turbojs.alloc(400);
+
+// for (var i = 0; i<10; i++)
 // {
-// 	m1.data[i*4] = 0.0;   m0.data[i*4] = 0.0;
-// 	m1.data[i*4+1] = 0.0; m0.data[i*4+1] = 0.0;
-// 	m1.data[i*4+2] = 0.0; m0.data[i*4+2] = 0.0;
-// 	m1.data[i*4+3] = 1.0; m0.data[i*4+3] = 1.0;
-// } 
+// 	for (var j = 0; j<10; j++)
+// 	{
+// 		temp_flr.data[i*10+j] = i;
+// 		temp_flr.data[i*10+j+1] = -1;
+// 		temp_flr.data[i*10+j+2] = j;
+// 		temp_flr.data[i*10+j+3] = 1;
+// 	}
+// }
 
 
-function setData(dx,dy,dz)
+var m1 = turbojs.alloc(200);
+
+
+function setData()
 {
-	//var dz = -2.01;
-	m1.data[0] = -1.0+dx; m1.data[1] = -1.0+dy; m1.data[2] = -1.0+dz; m1.data[3] = 1;
-	m1.data[4] = -1.0+dx; m1.data[5] = -1.0+dy; m1.data[6] = 1.0+dz; m1.data[7] = 1;
+	for (var i = 0; i<temp_str.length/4; i++)
+	{
+		m1.data[i*4+0] = temp_str[i*4+0];
+		m1.data[i*4+1] = temp_str[i*4+1];
+		m1.data[i*4+2] = temp_str[i*4+2];
+		m1.data[i*4+3] = temp_str[i*4+3];
+	}
 
-	m1.data[8] = 1.0+dx; m1.data[9] = -1.0+dy; m1.data[10] = -1.0+dz; m1.data[11] = 1;
-	m1.data[12] = 1.0+dx; m1.data[13] = -1.0+dy; m1.data[14] = 1.0+dz; m1.data[15] = 1;
+	// for (var i = 0; i<temp_flr.length; i++)
+	// {
+	// 	m1.data[i+temp_str.length] = temp_flr[i];
+	// }
 
-	m1.data[16] = 1.0+dx; m1.data[17] = 1.0+dy; m1.data[18] = -1.0+dz; m1.data[19] = 1;
-	m1.data[20] = 1.0+dx; m1.data[21] = 1.0+dy; m1.data[22] = 1.0+dz; m1.data[23] = 1;
-
-	m1.data[24] = -1.0+dx; m1.data[25] = 1.0+dy; m1.data[26] = -1.0+dz; m1.data[27] = 1;
-	m1.data[28] = -1.0+dx; m1.data[29] = 1.0+dy; m1.data[30] = 1.0+dz; m1.data[31] = 1;
 }
 
 
 setData();
-
 
 
 document.addEventListener("DOMContentLoaded", function(event)
@@ -182,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, mouseDataD[0] + " : " + mouseDataD[1], 100, inner_window_height-350);
 		drawText(ctx, mouseDataI[0] + " : " + mouseDataI[1], 100, inner_window_height-400);
 
-		for (var i=0; i<(40); i++)
+		for (var i=0; i<(50); i++)
 		{
 
 			// Offset to center of screen (temp)
@@ -228,8 +229,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 				}
 				LookToggle = 1;
 
-				var dX = mouseDataS[0]-mouseData[0]; var dY = mouseDataS[1]-mouseData[1];
-				                     mouseDataD[0] = dX; mouseDataD[1] = dY;
+				var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
+				mouseDataD[0] = dX; mouseDataD[1] = dY;
  
 
 				player_look_dir = [ player_look_dir_i[0]+(dX/inner_window_width * pi * 2) , player_look_dir_i[1]+(dY/inner_window_width * pi * 2) , 0 ]; // ! width 4 both !
@@ -247,7 +248,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		//setData(0,t_inc,-2.01);
-		setData(0, 0, 0);
+		setData(); // This fixed it for some rason by adding zerossssssssssssssssssssss
 
 
 //		float theta = ${t_inc};
@@ -300,6 +301,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		// Attempt at quaternion rotation
 
+		/*
+
 		function QuatMult(q1, q2)
 		{
 			var q = [0,0,0,0];
@@ -325,6 +328,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		var qf = QuatMult(q3,q2);
 		m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3]; 
 
+		*/
+
 		// : (
 
 		// Quaternion no work. Fix to rot points around two axis.
@@ -336,7 +341,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		
 
 
-		console.log(m1.data); /* CONSOLE OUTPUT */
+		//console.log(_str); /* CONSOLE OUTPUT */
 
 
 			/*-- Camera Transfrom --\
