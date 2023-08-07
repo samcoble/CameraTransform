@@ -44,7 +44,7 @@ var mouseDataI = [0.0, 0.0]; // Actual final?
 var mouseDataD = [0.0, 0.0];
 
 var player_pos = [0.001,0.001,0.001];
-var player_pos = [0.001,0.001,0.001];
+
 var LookToggle = 0;
 var inc = 0;
 
@@ -65,7 +65,7 @@ onmousemove = function(e)
 // e.button
 // lmb - 0  |  mmb - 1  |  rmb - 2
 
-var keyInfo = [0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb
+var keyInfo = [0,0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb,shift
 
 var el = document.getElementById("html");
 
@@ -79,6 +79,9 @@ el.onkeydown = function(e)
     if (e.keyCode == 65) {keyInfo[2]=1;}
     if (e.keyCode == 68) {keyInfo[3]=1;}
     if (e.keyCode == 32) {keyInfo[4]=1;}
+    if (e.keyCode == 16) {keyInfo[8]=1;}
+    console.log(e.keyCode);
+
 };
 
 el.onkeyup = function(e)
@@ -89,6 +92,7 @@ el.onkeyup = function(e)
     if (e.keyCode == 65) {keyInfo[2]=0;}
     if (e.keyCode == 68) {keyInfo[3]=0;}
     if (e.keyCode == 32) {keyInfo[4]=0;}
+    if (e.keyCode == 16) {keyInfo[8]=0;}
     
 };
 
@@ -203,21 +207,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 						\-----------------*/
 
 
-		//drawText(ctx, mouseData[0], 100, inner_window_height-100);
-		//drawText(ctx, "Si: " + mouseDataS[0], 100, inner_window_height-150);
 		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 100, inner_window_height-200);
 		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 100, inner_window_height-180);
 
 		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
 
-		//drawText(ctx, player_look_dir_i[0] + " : " + player_look_dir_i[1], 100, inner_window_height-300);
-
-		//drawText(ctx, mouseDataD[0] + " : " + mouseDataD[1], 100, inner_window_height-350);
-		//drawText(ctx, mouseDataI[0] + " : " + mouseDataI[1], 100, inner_window_height-400);
 
 		for (var i=0; i<(432/4); i++)
 		{
-
 			// Offset to center of screen (temp)
 			var s = 30;
 
@@ -249,6 +246,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] += Math.cos(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1;
 		}
 
+		if (keyInfo[4])
+		{
+			player_pos[1] += 0.1;
+		}
+
+		if (keyInfo[8])
+		{
+			player_pos[1] += -0.1;
+		}
+
 		if (keyInfo[6])
 		{
 				if (!LookToggle)
@@ -278,36 +285,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 		setData();
 
 
-
-		// Apply rotation here
-
-		// Rot around y // 1.2 = t_inc
 		turbojs.run(init_dat, `void main(void) {
 
 		commit(vec4(
-			cos(${1.2})*read().x+sin(${1.2})*read().z+${-player_pos[0]}, 
+			read().x+read().z+${-player_pos[0]}, 
 			read().y+${player_pos[1]},
-			cos(${1.2})*read().z-sin(${1.2})*read().x+${-player_pos[2] - 3.41},
+			read().z-read().x+${-player_pos[2]},
 			read().w
 		));
 		}`);
-
-		/*
-		// Rot around x ${player_look_dir[0]}
-		turbojs.run(init_dat, `void main(void) {
-
-		commit(vec4(
-			read().x,
-			cos(${player_look_dir[0]})*read().y+sin(${player_look_dir[0]})*read().z,
-			cos(${player_look_dir[0]})*read().z-sin(${player_look_dir[0]})*read().y,
-			read().w
-		));
-		}`);
-		*/
-
-
-			/*-- Rotation in World Space --\
-			\-----------------------------*/
 
 
 		turbojs.run(init_dat, `void main(void) {
@@ -321,6 +307,20 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}`);
 
 
+		turbojs.run(init_dat, `void main(void) {
+
+		commit(vec4(
+			read().x,
+			cos(${player_look_dir[1]+0.001})*read().y-sin(${player_look_dir[1]+0.001})*read().z,
+			sin(${player_look_dir[1]+0.001})*read().y+cos(${player_look_dir[1]+0.001})*read().z,
+			read().w 
+		));
+		}`);
+
+		
+
+
+
 
 		// Import verticies w/ json & allocate
 		// CLIPPING & OPTIMIZATION & PROPER WEBGL ;-;
@@ -330,9 +330,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		// Convert keyVec to unit vector
 		
 		// Quaternion no work. Fix to rot points around two axis.
-
-
-		//console.log(_str); /* CONSOLE OUTPUT */
 
 
 
