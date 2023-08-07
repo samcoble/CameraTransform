@@ -1,27 +1,21 @@
 // !
 
-function drawRect(c, x0, y0, x1, y1)
-{
-	c.beginPath();
-	c.lineWidth = "1";
-	c.strokeStyle = "green";
-	c.rect(x0, y0, x1, y1);
-	c.stroke();
-}
-
 
 function drawText(c, txt, x0, y0)
 {
-	c.font = "28px Comic Sans MS";
+	c.fillStyle = "rgba(170, 98, 28, 215)"; 
+	c.font = "14px Lucida Console";
+	c.rgb
+	//c.font = "28px Comic Sans MS";
 	c.fillText(txt, x0, y0);
 }
 
 function drawDot(c, h, x, y)
 {
 	c.beginPath();
-	c.lineWidth = "1";
+	c.lineWidth = "1px";
 	c.strokeStyle = h;
-	c.rect(x, y, 6, 6);
+	c.rect(x-1, y-1, 2, 2);
 	c.stroke();
 }
 
@@ -50,7 +44,14 @@ var mouseDataI = [0.0, 0.0]; // Actual final?
 var mouseDataD = [0.0, 0.0];
 
 var player_pos = [0.001,0.001,0.001];
+var player_pos = [0.001,0.001,0.001];
 var LookToggle = 0;
+var inc = 0;
+
+
+						/*-- Key & Mouse event capture --\
+						\-------------------------------*/
+
 
 onmousemove = function(e)
 {
@@ -105,76 +106,83 @@ el.addEventListener('mouseup', function(e)
 	if (e.button == 2) {keyInfo[7]=0;}
 });
 
-var inc = 0;
+
+						/*-- Placeholder 4d data generation --\
+						\------------------------------------*/
 
 
-const temp_str = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 
-var temp_flr = turbojs.alloc(400);
+const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 
+//var m_flr = turbojs.alloc(400);
+var _flr = 10;
+var m_flr = new Float32Array(4*_flr*_flr);
 // FINALLY LOL
 
 function setFlr()
 {
-	for (var i = 0; i<temp_flr.length/4/10; i++)
+	for (var i = 0; i<m_flr.length/4/_flr; i++)
 	{
-		for (var j = 0; j<temp_flr.length/4/10; j++)
-		{
-			temp_flr.data[(i*10+j)*4]   = 2;
-			temp_flr.data[(i*10+j)*4+1] = -1.0;
-			temp_flr.data[(i*10+j)*4+2] = 3;
-			temp_flr.data[(i*10+j)*4+3] = 4;
+		for (var j = 0; j<m_flr.length/4/_flr; j++)
+		{	//	i <=> (i*10+j)
+			m_flr[(i*10+j)*4]   = i - _flr/2;
+			m_flr[(i*10+j)*4+1] = 1.0;
+			m_flr[(i*10+j)*4+2] = j - _flr/2;
+			m_flr[(i*10+j)*4+3] = 1;
 		}
 	}
 }
 
 setFlr();
 
-console.log(temp_flr);
+console.log(m_flr);
 
 
-var m1 = turbojs.alloc(200);
+var m1 = turbojs.alloc(2000);
 
 
 function setData()
 {
-	for (var i = 0; i<temp_str.length/4; i++)
+
+
+	// Manually addend m_flr (Floor dots)
+	for (var i = 0; i<m_flr.length/4; i++)
 	{
-		m1.data[i*4+0] = temp_str[i*4+0];
-		m1.data[i*4+1] = temp_str[i*4+1];
-		m1.data[i*4+2] = temp_str[i*4+2];
-		m1.data[i*4+3] = temp_str[i*4+3];
+		m1.data[i*4+0] = m_flr[i*4+0];
+		m1.data[i*4+1] = m_flr[i*4+1];
+		m1.data[i*4+2] = m_flr[i*4+2];
+		m1.data[i*4+3] = m_flr[i*4+3];
 	}
 
-	// for (var i = 0; i<temp_flr.length; i++)
-	// {
-	// 	m1.data[i+temp_str.length] = temp_flr[i];
-	// }
 
+	//Manually write m_cube data (The cube)
+	for (var i = 0; i<m_cube.length/4; i++)
+	{
+		m1.data[(m_flr.length)+i*4+0] = m_cube[i*4+0];
+		m1.data[(m_flr.length)+i*4+1] = m_cube[i*4+1];
+		m1.data[(m_flr.length)+i*4+2] = m_cube[i*4+2];
+		m1.data[(m_flr.length)+i*4+3] = m_cube[i*4+3];
+	}
 }
 
 
 setData();
 
+console.log(m1);
+
 
 document.addEventListener("DOMContentLoaded", function(event)
 { 
 
-
-	//var thepast = new Date().getTime() / 1000;
-	//var delta = 0;
-
-
 						/*-- GET SCREEN DIMENSIONS --\
 						\---------------------------*/
+
 
 	var screen_width = window.screen.width * window.devicePixelRatio;
 	var screen_height = window.screen.height * window.devicePixelRatio;
 
 	var canvas = document.getElementById("cv");
 	var ctx = canvas.getContext("2d");
-
-
 
 	document.getElementById("cv").width = inner_window_width;
 	document.getElementById("cv").height = inner_window_height;
@@ -186,25 +194,28 @@ document.addEventListener("DOMContentLoaded", function(event)
 						\-------------*/
 
 
-
-	//{
-
 	function drawIt(init_dat)
 	{
 		reDraw(ctx, inner_window_width, inner_window_height); // FIRST
 
 
-		// DEBUG PANEL
+						/*-- DEBUG PANEL --\
+						\-----------------*/
 
-		drawText(ctx, mouseData[0], 100, inner_window_height-100);
-		drawText(ctx, "S: " + mouseDataS[0], 100, inner_window_height-150);
-		drawText(ctx, player_look_dir[0] + " : " + player_look_dir[1], 100, inner_window_height-250);
-		drawText(ctx, player_look_dir_i[0] + " : " + player_look_dir_i[1], 100, inner_window_height-300);
 
-		drawText(ctx, mouseDataD[0] + " : " + mouseDataD[1], 100, inner_window_height-350);
-		drawText(ctx, mouseDataI[0] + " : " + mouseDataI[1], 100, inner_window_height-400);
+		//drawText(ctx, mouseData[0], 100, inner_window_height-100);
+		//drawText(ctx, "Si: " + mouseDataS[0], 100, inner_window_height-150);
+		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 100, inner_window_height-200);
+		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 100, inner_window_height-180);
 
-		for (var i=0; i<(50); i++)
+		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
+
+		//drawText(ctx, player_look_dir_i[0] + " : " + player_look_dir_i[1], 100, inner_window_height-300);
+
+		//drawText(ctx, mouseDataD[0] + " : " + mouseDataD[1], 100, inner_window_height-350);
+		//drawText(ctx, mouseDataI[0] + " : " + mouseDataI[1], 100, inner_window_height-400);
+
+		for (var i=0; i<(432/4); i++)
 		{
 
 			// Offset to center of screen (temp)
@@ -212,13 +223,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			drawDot(ctx, "#FFF", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
 			//drawText(ctx, "A", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
-			drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
-
-
-			//drawDot(ctx, m1.data[4*i]/m1.data[4*i+3]*100+500, m1.data[4*i+1]/m1.data[4*i+3]*100+500);
-			//m1.data[4*i+2]=m1.data[4*i+2]/m1.data[4*i+3]
-
-			//drawDot(ctx, 500, 500);
+			if (i>=400/4)
+			{
+				drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
+			}
 		}
 	}
 
@@ -267,17 +275,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
-
-		//setData(0,t_inc,-2.01);
-		setData(); // This fixed it for some rason by adding zerossssssssssssssssssssss
+		setData();
 
 
-//		float theta = ${t_inc};
-
-		//	read().x*cos(2.)+read.z*sin(2.),
-		//	read().y,
-		//	-read().x*sin(2.)+read.z*cos(2.),
-		//	read().z
 
 		// Apply rotation here
 
@@ -322,16 +322,50 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		
+		// Import verticies w/ json & allocate
 		// CLIPPING & OPTIMIZATION & PROPER WEBGL ;-;
-		// Fix floating point clown show
+
+		// Fix floating point clown show & Handle zeros
 		// Refactor keyboard (real time) array keyInfo. No if stack. 
 		// Convert keyVec to unit vector
-		// Import verticies w/ json & allocate
+		
 		// Quaternion no work. Fix to rot points around two axis.
 
 
 		//console.log(_str); /* CONSOLE OUTPUT */
+
+
+
+
+
+		// Clipping attempt (Placeholder) (Very very bad)
+
+		// Idea. Pass in multiple Float32 Arrays?
+		// Player data should be drawn from a preallocated section from sku 0.
+		//	float _n = dot(_p, _i)/abs(dot(_p, _i))               ;
+		// x + abs(x) / 2    (USING AS GATE)
+
+//			player_pos[0] += Math.cos(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
+//			player_pos[2] += Math.sin(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
+
+
+		// turbojs.run(init_dat, `void main(void) {
+
+		// 	#define PI 3.1415926538
+
+
+		// 	vec3 _i = vec3(read().x, read().y, read().z);
+		// 	vec3 _p = vec3(${player_pos[0]}, ${player_pos[1]}, ${player_pos[2]});
+		// 	vec3 _pd = vec3(-1.0*cos(${player_look_dir[0]+0.001}*2.*PI), 0.01, -1.0*sin(${player_look_dir[1]+0.001}*2.*PI));
+
+		// 	float _t = dot(_pd, (_p-_i));
+		// 	float _n = (_t + abs(_t))/2.;
+
+			
+		// 	commit(vec4(read().x*_n, read().y*_n, read().z*_n, read().w));
+		// }`);	
+
+
 
 
 			/*-- Camera Transfrom --\
@@ -373,7 +407,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 	} // End of Compute()
 
 
-
 	function runTime()
 	{
 		//m1 = m0;
@@ -386,7 +419,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	
 	//} End of if turbojs
 
-	setInterval(runTime, 120);
+	setInterval(runTime, 30);
 
 });
 
@@ -408,7 +441,7 @@ function QuatMult(q1, q2)
 	return q;
 }
 
-
+// This should work; use gpu 
 
 //var T = t_inc;
 T = 1.0;
@@ -431,3 +464,7 @@ m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3];
 	// 	drawDot(ctx, element[0]*10, element[1]*10);
 	// 	console.log(element);
 	// });
+
+
+	//var thepast = new Date().getTime() / 1000;
+	//var delta = 0;
