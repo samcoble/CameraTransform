@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		// CLIPPING & OPTIMIZATION & PROPER WEBGL
-		// Fix floating point clown clown fiesta
+		// Fix floating point clown fiesta
 		// Refactor keyboard keyInfo array.
 		// Convert keyVec into unit sphere.
 		
