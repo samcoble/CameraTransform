@@ -20,6 +20,7 @@ function drawDot(c, h, x, y)
 
 function drawLine(c, x0, y0, x1, y1)
 {
+	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
 	c.beginPath();
 	c.moveTo(x0, y0);
 	c.lineTo(x1, y1);
@@ -127,6 +128,95 @@ var m_objs = [];
 var l_objs = [];
 var d_objs = [];
 const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
+// const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
+const m_tri = new Float32Array([0,60,0,30,-30,0,-30,30,30,0,-30,30,30,0,30,30,-30,0,30,30]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
+
+
+function getMids(_t)
+{
+	var p0 = [
+			(_t[0]-_t[4])/2,
+			(_t[1]-_t[5])/2,
+			(_t[2]-_t[6])/2,
+			1
+		];
+
+	var p1 = [
+			(_t[0]-_t[4*2])/2,
+			(_t[1]-_t[4*2+1])/2,
+			(_t[2]-_t[4*2+2])/2,
+			1
+		];
+
+	var p2 = [
+			(_t[0]-_t[4*3])/2,
+			(_t[1]-_t[4*3+1])/2,
+			(_t[2]-_t[4*3+2])/2,
+			1
+		];
+
+	var p3 = [
+			(_t[0]-_t[4*4])/2,
+			(_t[1]-_t[4*4+1])/2,
+			(_t[2]-_t[4*4+2])/2,
+			1
+		];
+
+	var p4 = [ // Tip of tri
+		(-_t[4*2]-_t[4*4])/2,
+		(_t[4*2+1]-_t[4*4+1])/2,
+		(-_t[4*2+2]-_t[4*4+2])/2,
+		1
+	];
+
+
+
+	return new Float32Array(p4.concat(p0,p1,p2,p3));
+}
+
+
+
+function getMidsO(_t)
+{
+	var p0 = [
+			(_t[4]-_t[0])/2,
+			(_t[5]-_t[1])/2,
+			(_t[6]-_t[2])/2,
+			1
+		];
+
+	var p1 = [
+			(_t[4*2]-_t[0])/2,
+			(_t[4*2+1]-_t[1])/2,
+			(_t[4*2+2]-_t[2])/2,
+			1
+		];
+
+	var p2 = [
+			(_t[4*3]-_t[0])/2,
+			(_t[4*3+1]-_t[1])/2,
+			(_t[4*3+2]-_t[2])/2,
+			1
+		];
+
+	var p3 = [
+			(_t[4*4]-_t[0])/2,
+			(_t[4*4+1]-_t[1])/2,
+			(_t[4*4+2]-_t[2])/2,
+			1
+		];
+
+	var p4 = [ // Tip of tri
+		(Math.abs(_t[4*3])-(Math.abs(_t[4*1])))/2,
+		(_t[5]-_t[1]),
+		(Math.abs(_t[4*3+2])-(Math.abs(_t[4*1+2])))/2,
+		1
+	];
+
+	
+
+	return new Float32Array(p4.concat(p0,p1,p2,p3));
+}
 
 //var m_flr = turbojs.alloc(400);
 var _flr = 10;
@@ -160,16 +250,29 @@ function addMData(ar)
 }
 
 
-addMData(m_flr);
-addMData(m_cube);
+//addMData(m_flr);
+//addMData(m_cube);
+addMData(m_tri);
+
+var test = getMids(m_tri);
+var test1 = getMidsO(test);
+var test2 = getMids(test1);
+var test3 = getMidsO(test2);
+//var test4 = getMidsO(test3);
+
+addMData(test1);
+addMData(test2);
+addMData(test3);
+//addMData(test4);
 
 function setTable(l_)
 {
-	d_objs.push([l_[0], l_[0]]);
-
-	for (var i = 1; i<l_.length; i++)
+	//d_objs.push([l_[0], l_[0]]);
+	var _ts = 0;
+	for (var i = 0; i<l_.length; i++)
 	{
-		d_objs.push(  [l_[i-1]+l_[i], l_[i]]  );
+		d_objs.push(  [_ts, l_[i]]  );
+		_ts += l_[i];
 	}
 }
 
@@ -182,10 +285,10 @@ function setData()
 	{
 		for (var i = 0; i<m_objs[j].length/4; i++)
 		{
-			m1.data[i*4+d_objs[j][0]-d_objs[j][1]]   = m_objs[j][i*4+0];
-			m1.data[i*4+1+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+1];
-			m1.data[i*4+2+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+2];
-			m1.data[i*4+3+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+3];
+			m1.data[i*4+d_objs[j][0]]   = m_objs[j][i*4+0];
+			m1.data[i*4+1+d_objs[j][0]] = m_objs[j][i*4+1];
+			m1.data[i*4+2+d_objs[j][0]] = m_objs[j][i*4+2];
+			m1.data[i*4+3+d_objs[j][0]] = m_objs[j][i*4+3];
 		}
 	}
 
@@ -242,24 +345,37 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "W, A, S ,D, Shift, Space, Ctrl(unlock mouse)", 100, inner_window_height-100);
 		//
 
-		for (var i=0; i<(432/4); i++) // FIX ME
+
+		var s = 30; // Arbitrary scaler??
+		for (var i = 0; i<m_objs.length; i++)
 		{
+			for (var j = 0; j<d_objs[i][1]; j++)
+			{
+				if (j==4) {j++};
+				drawLine(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+300, init_dat.data[4*(j+1)+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+d_objs[i][0]+1]*s+300);
+			}
 
-			var s = 30; // Arbitrary scaler??
 
-			drawDot(ctx, "#FFF", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
-			//drawText(ctx, "A", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
+		// 	if ((i+1)==_s)
+		// 	{
+		}
+
+		// var _s = d_objs[d_objs.length-1][0];
+		// for (var i=0; i<_s; i++) // FIX ME
+		// {
 
 			// if (i==100)
 			// {
 			// 	drawText(ctx, " [[   AYYYYYYYYYYYYYYYYYY   ]] ", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
 			// }
 
-			if (i>=400/4)
-			{
-				drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
-			}
-		}
+		// 		drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
+
+		// 	if ((i+1)==_s)
+		// 	{
+		// 		drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
+		// 	}
+		// }
 	}
 
 
