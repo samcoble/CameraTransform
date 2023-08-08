@@ -5,7 +5,6 @@ function drawText(c, txt, x0, y0)
 {
 	c.fillStyle = "rgba(170, 98, 28, 215)"; 
 	c.font = "14px Lucida Console";
-	c.rgb
 	//c.font = "28px Comic Sans MS";
 	c.fillText(txt, x0, y0);
 }
@@ -42,6 +41,7 @@ var mouseData = [0.0, 0.0];
 var mouseDataS = [0.0, 0.0];
 var mouseDataI = [0.0, 0.0]; // Actual final?
 var mouseDataD = [0.0, 0.0];
+var mouseLock = 0; 
 
 var player_pos = [0.001,0.001,0.001];
 
@@ -55,17 +55,22 @@ var inc = 0;
 
 onmousemove = function(e)
 {
-	mouseData[0] = e.clientX; mouseData[1] = e.clientY;
+	if (mouseLock)
+		{
+			//mouseDataD[0] = e.movementX; mouseDataD[1] = e.movementY;
+			player_look_dir = [ player_look_dir[0]+(e.movementX/inner_window_width * pi * 2) , player_look_dir[1]-(e.movementY/inner_window_width * pi * 2) , 0 ];
+
+		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 }
 
 // e.keyCode
-// d - 68  |  a - 65
-// w - 87  |  s - 83
+// d - 68  |  a - 65  | shft - 16
+// w - 87  |  s - 83  | ctrl - 17
 
 // e.button
 // lmb - 0  |  mmb - 1  |  rmb - 2
 
-var keyInfo = [0,0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb,shift
+var keyInfo = [0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb,shift
 
 var el = document.getElementById("html");
 
@@ -80,8 +85,7 @@ el.onkeydown = function(e)
     if (e.keyCode == 68) {keyInfo[3]=1;}
     if (e.keyCode == 32) {keyInfo[4]=1;}
     if (e.keyCode == 16) {keyInfo[8]=1;}
-    console.log(e.keyCode);
-
+    if (e.keyCode == 17) {keyInfo[9]=1;}
 };
 
 el.onkeyup = function(e)
@@ -93,6 +97,7 @@ el.onkeyup = function(e)
     if (e.keyCode == 68) {keyInfo[3]=0;}
     if (e.keyCode == 32) {keyInfo[4]=0;}
     if (e.keyCode == 16) {keyInfo[8]=0;}
+    if (e.keyCode == 17) {keyInfo[9]=0;}
     
 };
 
@@ -111,11 +116,16 @@ el.addEventListener('mouseup', function(e)
 });
 
 
+
+
 						/*-- Placeholder 4d data generation --\
 						\------------------------------------*/
 
+// 2 many arrays pls fix
 
-
+var m_objs = [];
+var l_objs = [];
+var d_objs = [];
 const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 
 //var m_flr = turbojs.alloc(400);
@@ -139,54 +149,71 @@ function setFlr()
 
 setFlr();
 
-console.log(m_flr);
 
 
 var m1 = turbojs.alloc(2000);
 
+function addMData(ar)
+{
+	m_objs[m_objs.length] = ar;
+	l_objs[l_objs.length] = ar.length;
+}
+
+
+addMData(m_flr);
+addMData(m_cube);
+
+function setTable(l_)
+{
+	d_objs.push([l_[0], l_[0]]);
+
+	for (var i = 1; i<l_.length; i++)
+	{
+		d_objs.push(  [l_[i-1]+l_[i], l_[i]]  );
+	}
+}
+
+setTable(l_objs);
 
 function setData()
 {
 
-
-	// Manually addend m_flr (Floor dots)
-	for (var i = 0; i<m_flr.length/4; i++)
+	for (var j = 0; j<m_objs.length; j++)
 	{
-		m1.data[i*4+0] = m_flr[i*4+0];
-		m1.data[i*4+1] = m_flr[i*4+1];
-		m1.data[i*4+2] = m_flr[i*4+2];
-		m1.data[i*4+3] = m_flr[i*4+3];
+		for (var i = 0; i<m_objs[j].length/4; i++)
+		{
+			m1.data[i*4+d_objs[j][0]-d_objs[j][1]]   = m_objs[j][i*4+0];
+			m1.data[i*4+1+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+1];
+			m1.data[i*4+2+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+2];
+			m1.data[i*4+3+d_objs[j][0]-d_objs[j][1]] = m_objs[j][i*4+3];
+		}
 	}
 
-
-	//Manually write m_cube data (The cube)
-	for (var i = 0; i<m_cube.length/4; i++)
-	{
-		m1.data[(m_flr.length)+i*4+0] = m_cube[i*4+0];
-		m1.data[(m_flr.length)+i*4+1] = m_cube[i*4+1];
-		m1.data[(m_flr.length)+i*4+2] = m_cube[i*4+2];
-		m1.data[(m_flr.length)+i*4+3] = m_cube[i*4+3];
-	}
 }
 
 
 setData();
 
-console.log(m1);
+var canvas = document.getElementById("cv");
+var ctx = canvas.getContext("2d");
+
+
+canvas.addEventListener("click", async () =>{
+	await canvas.requestPointerLock();
+	mouseLock = 1;
+});
+
 
 
 document.addEventListener("DOMContentLoaded", function(event)
 { 
 
-						/*-- GET SCREEN DIMENSIONS --\
-						\---------------------------*/
+						/*-- GET&SET SCREEN DIMENSIONS --\
+						\-------------------------------*/
 
 
 	var screen_width = window.screen.width * window.devicePixelRatio;
 	var screen_height = window.screen.height * window.devicePixelRatio;
-
-	var canvas = document.getElementById("cv");
-	var ctx = canvas.getContext("2d");
 
 	document.getElementById("cv").width = inner_window_width;
 	document.getElementById("cv").height = inner_window_height;
@@ -209,17 +236,25 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 100, inner_window_height-200);
 		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 100, inner_window_height-180);
-
+		//
 		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
+		//
+		drawText(ctx, "W, A, S ,D, Shift, Space, Ctrl(unlock mouse)", 100, inner_window_height-100);
+		//
 
-
-		for (var i=0; i<(432/4); i++)
+		for (var i=0; i<(432/4); i++) // FIX ME
 		{
-			// Offset to center of screen (temp)
-			var s = 30;
+
+			var s = 30; // Arbitrary scaler??
 
 			drawDot(ctx, "#FFF", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
 			//drawText(ctx, "A", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
+
+			// if (i==100)
+			// {
+			// 	drawText(ctx, " [[   AYYYYYYYYYYYYYYYYYY   ]] ", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
+			// }
+
 			if (i>=400/4)
 			{
 				drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
@@ -234,29 +269,29 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
+		if (keyVec[1] != 0)
+		{
+			player_pos[0] += Math.sin(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1; // -1 temp ig
+			player_pos[2] += Math.cos(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1;
+			player_pos[1] += Math.sin(player_look_dir[1]+0.001)*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+		}
+
 		if (keyVec[0] != 0)
 		{
 			player_pos[0] += Math.cos(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
 			player_pos[2] += Math.sin(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
 		}
 
-		if (keyVec[1] != 0)
+		if (keyInfo[4]) {player_pos[1] += 0.3;}
+		if (keyInfo[8]) {player_pos[1] += -0.3;}
+
+		if (keyInfo[9])
 		{
-			player_pos[0] += Math.sin(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1; // -1 temp ig
-			player_pos[2] += Math.cos(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1;
+			mouseLock = 0;
+			document.exitPointerLock();
 		}
 
-		if (keyInfo[4])
-		{
-			player_pos[1] += 0.1;
-		}
-
-		if (keyInfo[8])
-		{
-			player_pos[1] += -0.1;
-		}
-
-		if (keyInfo[6])
+		if (keyInfo[6] && !mouseLock)
 		{
 				if (!LookToggle)
 				{
@@ -267,7 +302,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 				var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
 				mouseDataD[0] = dX; mouseDataD[1] = dY;
- 
 
 				player_look_dir = [ player_look_dir_i[0]+(dX/inner_window_width * pi * 2) , player_look_dir_i[1]+(dY/inner_window_width * pi * 2) , 0 ]; // ! width 4 both !
 
@@ -282,11 +316,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
+
 		setData();
 
-
+		// Translation
 		turbojs.run(init_dat, `void main(void) {
-
 		commit(vec4(
 			read().x+read().z+${-player_pos[0]}, 
 			read().y+${player_pos[1]},
@@ -295,9 +329,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		));
 		}`);
 
-
+		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
-
 		commit(vec4(
 			cos(${player_look_dir[0]+0.001})*read().x+sin(${player_look_dir[0]+0.001})*read().z,
 			read().y,
@@ -306,9 +339,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		));
 		}`);
 
-
+		// Rotate around x-axis (i can't believe dis)
 		turbojs.run(init_dat, `void main(void) {
-
 		commit(vec4(
 			read().x,
 			cos(${player_look_dir[1]+0.001})*read().y-sin(${player_look_dir[1]+0.001})*read().z,
@@ -323,22 +355,24 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		// Import verticies w/ json & allocate
-		// CLIPPING & OPTIMIZATION & PROPER WEBGL ;-;
 
-		// Fix floating point clown show & Handle zeros
-		// Refactor keyboard (real time) array keyInfo. No if stack. 
-		// Convert keyVec to unit vector
+		// Do now: make float3dArray objects accessible from m_objs
+
+
+		// CLIPPING & OPTIMIZATION & PROPER WEBGL
+		// Fix floating point clown clown fiesta
+		// Refactor keyboard keyInfo array.
+		// Convert keyVec into unit sphere.
 		
-		// Quaternion no work. Fix to rot points around two axis.
-
+		// Quaternion no work. Replace all rotation functions. WEBGL fn for quat?
+		// Pass in multiple Float32 Arrays?
 
 
 
 
 		// Clipping attempt (Placeholder) (Very very bad)
 
-		// Idea. Pass in multiple Float32 Arrays?
-		// Player data should be drawn from a preallocated section from sku 0.
+
 		//	float _n = dot(_p, _i)/abs(dot(_p, _i))               ;
 		// x + abs(x) / 2    (USING AS GATE)
 
@@ -416,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	
 	//} End of if turbojs
 
-	setInterval(runTime, 30);
+	setInterval(runTime, 1);
 
 });
 
