@@ -9,11 +9,11 @@ function drawText(c, txt, x0, y0)
 	c.fillText(txt, x0, y0);
 }
 
-function drawDot(c, h, x, y)
+function drawDot(c, x, y)
 {
 	c.beginPath();
 	c.lineWidth = "1px";
-	c.strokeStyle = h;
+	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
 	c.rect(x-1, y-1, 2, 2);
 	c.stroke();
 }
@@ -129,7 +129,7 @@ var l_objs = [];
 var d_objs = [];
 const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
-const m_tri = new Float32Array([0,60,0,30,-30,0,-30,30,30,0,-30,30,30,0,30,30,-30,0,30,30]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
+const m_tri = new Float32Array([0,20,0,10,-10,0,-10,10,10,0,-10,10,10,0,10,10,-10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
 
 
 function getMids(_t)
@@ -162,6 +162,79 @@ function getMids(_t)
 			1
 		];
 
+	// get midpoints bettwen verts (0 1, 1 2, 2 3, 3 0)
+
+	var n0 = [
+		(_t[0]-_t[4*1])/2,
+		(_t[1]-_t[4*1+1])/2,
+		(_t[2]-_t[4*1+2])/2,
+		1
+		];
+
+	var n0_n = [
+		_t[0],
+		_t[1],
+		_t[2],
+		1
+		];
+
+	var n1 = [
+		(_t[4*1]-_t[4*2])/2,
+		(_t[4*1+1]-_t[4*2+1])/2,
+		(_t[4*1+2]-_t[4*2+2])/2,
+		1
+		];
+
+	var n1_n = [
+		_t[4*1],
+		_t[4*1+1],
+		_t[4*1+2],
+		1
+		];
+
+
+	var n2 = [
+		(_t[4*2]-_t[4*3])/2,
+		(_t[4*2+1]-_t[4*3+1])/2,
+		(_t[4*2+2]-_t[4*3+2])/2,
+		1
+		];
+
+	var n2_n = [
+		_t[4*2],
+		_t[4*2+1],
+		_t[4*2+2],
+		1
+		];
+
+	var n3 = [
+		(_t[4*3]-_t[4*4])/2,
+		(_t[4*3+1]-_t[4*4+1])/2,
+		(_t[4*3+2]-_t[4*4+2])/2,
+		1
+		];
+
+	var n4 = [
+		(_t[4*4]-_t[4*1])/2,
+		(_t[4*4+1]-_t[4*1+1])/2,
+		(_t[4*4+2]-_t[4*1+2])/2,
+		1
+	];
+
+	var n3_n = [
+		_t[4*3],
+		_t[4*3+1],
+		_t[4*3+2],
+		1
+		];
+
+	var n4_n = [
+		_t[4*4],
+		_t[4*4+1],
+		_t[4*4+2],
+		1
+		];
+
 	var p4 = [ // Tip of tri
 		(-_t[4*2]-_t[4*4])/2,
 		(_t[4*2+1]-_t[4*4+1])/2,
@@ -170,53 +243,23 @@ function getMids(_t)
 	];
 
 
+	//var t1 = new Float32Array(p4.concat(p0,p1,p2,p3));
 
-	return new Float32Array(p4.concat(p0,p1,p2,p3));
+	// Fix by taking absolute and fixing direction. Should work 100 
+	// var t1 = new Float32Array(p2.concat(p4,n1,n1_n,n2)); //n3
+	// var t2 = new Float32Array(p3.concat(p4,n2,n2_n,n3)); //n3
+	// var t3 = new Float32Array(p0.concat(p4,n4,n3_n,n3)); //n3
+	// var t4 = new Float32Array(p1.concat(n1,p4,n4,n4_n)); //n3
+	// var t5 = new Float32Array(p0.concat(p1,p2,p3,n0_n)); //n3
+	var t6 = new Float32Array(p2.concat(p4,n1,n1_n,n2,p3,p4,n2,n2_n,n3,p0,p4,n4,n3_n,n3,p1,n1,p4,n4,n4_n,p0,p1,p2,p3,n0_n));
+
+	return t6;
+
+	// return 5 * 5 point triangles and das it
+
 }
 
 
-
-function getMidsO(_t)
-{
-	var p0 = [
-			(_t[4]-_t[0])/2,
-			(_t[5]-_t[1])/2,
-			(_t[6]-_t[2])/2,
-			1
-		];
-
-	var p1 = [
-			(_t[4*2]-_t[0])/2,
-			(_t[4*2+1]-_t[1])/2,
-			(_t[4*2+2]-_t[2])/2,
-			1
-		];
-
-	var p2 = [
-			(_t[4*3]-_t[0])/2,
-			(_t[4*3+1]-_t[1])/2,
-			(_t[4*3+2]-_t[2])/2,
-			1
-		];
-
-	var p3 = [
-			(_t[4*4]-_t[0])/2,
-			(_t[4*4+1]-_t[1])/2,
-			(_t[4*4+2]-_t[2])/2,
-			1
-		];
-
-	var p4 = [ // Tip of tri
-		(Math.abs(_t[4*3])-(Math.abs(_t[4*1])))/2,
-		(_t[5]-_t[1]),
-		(Math.abs(_t[4*3+2])-(Math.abs(_t[4*1+2])))/2,
-		1
-	];
-
-	
-
-	return new Float32Array(p4.concat(p0,p1,p2,p3));
-}
 
 //var m_flr = turbojs.alloc(400);
 var _flr = 10;
@@ -255,14 +298,14 @@ function addMData(ar)
 addMData(m_tri);
 
 var test = getMids(m_tri);
-var test1 = getMidsO(test);
-var test2 = getMids(test1);
-var test3 = getMidsO(test2);
-//var test4 = getMidsO(test3);
+console.log(test);
+//var test1 = getMids(test);
+//var test2 = getMids(test1);
+//var test3 = getMids(test2);
 
-addMData(test1);
-addMData(test2);
-addMData(test3);
+
+addMData(test);
+//addMData(test3);
 //addMData(test4);
 
 function setTable(l_)
@@ -309,7 +352,7 @@ canvas.addEventListener("click", async () =>{
 
 
 document.addEventListener("DOMContentLoaded", function(event)
-{ 
+{
 
 						/*-- GET&SET SCREEN DIMENSIONS --\
 						\-------------------------------*/
@@ -346,18 +389,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//
 
 
-		var s = 30; // Arbitrary scaler??
+		var s = 30; // Arbitrary visual scaler
 		for (var i = 0; i<m_objs.length; i++)
 		{
-			for (var j = 0; j<d_objs[i][1]; j++)
+			for (var j = 0; j<d_objs[i][1]/4; j++) // fix me?
 			{
-				if (j==4) {j++};
-				drawLine(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+300, init_dat.data[4*(j+1)+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+d_objs[i][0]+1]*s+300);
+				drawDot(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2);
+				if (j == d_objs[i][1]/4-1)
+				{
+					drawText(ctx, "END " + j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);
+				} else {
+				drawLine(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+d_objs[i][0]+1]*s+inner_window_height/2);
+				drawText(ctx, j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);
+				}
+
 			}
-
-
-		// 	if ((i+1)==_s)
-		// 	{
 		}
 
 		// var _s = d_objs[d_objs.length-1][0];
@@ -557,7 +603,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function runTime()
 	{
 		//m1 = m0;
-		inc+=0.02;
+		//inc+=0.02;
 		//console.log(inc);
 		Compute(m1, inc);
 		//console.log(m0);
