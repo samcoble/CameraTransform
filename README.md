@@ -4,12 +4,8 @@ Experimentation with the Camera Transform
 Inspired by Ken Joy's lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
 Soon objects will be differentiable allowing objects to be spawned and manipulated.
-I have kept the renderer simple for now but clipping will be done soon.
-![lol5](https://github.com/samcoble/CameraTransform/assets/32228102/4f7a973c-5e50-471a-a95c-68713d4bb2dc)
-
-Almost Sierpinski's triangle. Wrong midpoints. (fv-iv)/2 != midpoint???????
-![firefox_yqgBm1cISu](https://github.com/samcoble/CameraTransform/assets/32228102/f4c1f9b9-b4d6-469c-a797-d036ec66ae1f)
-
+I have kept the renderer simple for now but propper clipping will be done soon.
+![lol6](https://github.com/samcoble/CameraTransform/assets/32228102/4c5c3669-2e65-4567-8cb0-d33566565feb)
 
 New wallpaper ayyo
 ![yemane](https://github.com/samcoble/CameraTransform/assets/32228102/9776e7f2-9d8e-444a-8106-3f9477ebd680)
