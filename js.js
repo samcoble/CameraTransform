@@ -43,6 +43,7 @@ var mouseDataS = [0.0, 0.0];
 var mouseDataI = [0.0, 0.0]; // Actual final?
 var mouseDataD = [0.0, 0.0];
 var mouseLock = 0; 
+var fov_slide = 30.0;
 
 var player_pos = [0.001,0.001,0.001];
 
@@ -114,6 +115,11 @@ el.addEventListener('mouseup', function(e)
 	if (e.button == 0) {keyInfo[5]=0;}
 	if (e.button == 1) {keyInfo[6]=0;}
 	if (e.button == 2) {keyInfo[7]=0;}
+});
+
+window.addEventListener("wheel", function(e)
+{
+    if ((fov_slide-e.deltaY/80) > 0) {fov_slide += -e.deltaY/80};
 });
 
 
@@ -262,20 +268,20 @@ function getMids(_t)
 
 
 //var m_flr = turbojs.alloc(400);
-var _flr = 10;
+var _flr = 25;
 var m_flr = new Float32Array(4*_flr*_flr);
 // FINALLY LOL
 
 function setFlr()
 {
-	for (var i = 0; i<m_flr.length/4/_flr; i++)
+	for (var i = 0; i<_flr; i++)
 	{
-		for (var j = 0; j<m_flr.length/4/_flr; j++)
+		for (var j = 0; j<_flr; j++)
 		{	//	i <=> (i*10+j)
-			m_flr[(i*10+j)*4]   = i - _flr/2;
-			m_flr[(i*10+j)*4+1] = 1.0;
-			m_flr[(i*10+j)*4+2] = j - _flr/2;
-			m_flr[(i*10+j)*4+3] = 1;
+			m_flr[(i*_flr+j)*4]   = i - _flr/2;
+			m_flr[(i*_flr+j)*4+1] = 1.0;
+			m_flr[(i*_flr+j)*4+2] = j - _flr/2;
+			m_flr[(i*_flr+j)*4+3] = 1;
 		}
 	}
 }
@@ -284,13 +290,18 @@ setFlr();
 
 
 
-var m1 = turbojs.alloc(2000);
+var m1 = turbojs.alloc(20000);
 
 function addMData(ar)
 {
 	m_objs[m_objs.length] = ar;
 	l_objs[l_objs.length] = ar.length;
 }
+
+
+
+						/*-- PLACE DATA --\
+						\----------------*/
 
 
 addMData(m_flr);
@@ -301,14 +312,10 @@ addMData(m_cube);
 //console.log(test);
 
 
-//var test1 = getMids(test);
-//var test2 = getMids(test1);
-//var test3 = getMids(test2);
-
-
 //addMData(test);
-//addMData(test3);
-//addMData(test4);
+
+
+
 
 function setTable(l_)
 {
@@ -387,44 +394,29 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//
 		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
 		//
-		drawText(ctx, "W, A, S ,D, Shift(down), Space(up)", 100, inner_window_height-100);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera)", 100, inner_window_height-80);
+		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 100, inner_window_height-100);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 100, inner_window_height-80);
 		//
 
 
-		var s = 30; // Arbitrary visual scaler
+		var s = fov_slide; // Arbitrary visual scaler
 		for (var i = 0; i<m_objs.length; i++)
 		{
 			for (var j = 0; j<d_objs[i][1]/4; j++) // fix me?
 			{
-				drawDot(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2);
-				if (j == d_objs[i][1]/4-1)
+				if (init_dat.data[4*j+d_objs[i][0]+3] > 0)
 				{
-					drawText(ctx, "END " + j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);
-				} else {
-				drawLine(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+d_objs[i][0]+1]*s+inner_window_height/2);
-				drawText(ctx, j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);
+					drawDot(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2);
+					if (j == d_objs[i][1]/4-1)
+					{
+						drawText(ctx, "END " + j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);
+					} else {
+					if (i != 0) {drawLine(ctx, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+d_objs[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+d_objs[i][0]+1]*s+inner_window_height/2);}
+					if (keyInfo[6]) {drawText(ctx, j, init_dat.data[4*j+d_objs[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+d_objs[i][0]+1]*s+inner_window_height/2-18);}
+					}
 				}
-
 			}
 		}
-
-		// var _s = d_objs[d_objs.length-1][0];
-		// for (var i=0; i<_s; i++) // FIX ME
-		// {
-
-			// if (i==100)
-			// {
-			// 	drawText(ctx, " [[   AYYYYYYYYYYYYYYYYYY   ]] ", init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
-			// }
-
-		// 		drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*(i+1)]*s+inner_window_width/2, init_dat.data[4*(i+1)+1]*s+300);
-
-		// 	if ((i+1)==_s)
-		// 	{
-		// 		drawLine(ctx, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300, init_dat.data[4*i]*s+inner_window_width/2, init_dat.data[4*i+1]*s+300);
-		// 	}
-		// }
 	}
 
 
@@ -591,7 +583,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			(read().x/read().w),
 			(read().y/read().w),
 			(read().z/read().w),
-			0
+			read().w
 			));
 		}`);	
 
@@ -615,7 +607,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	
 	//} End of if turbojs
 
-	setInterval(runTime, 1);
+	setInterval(runTime, 10);
 
 });
 
