@@ -255,7 +255,7 @@ function getMids(_t)
 
 	return t6;
 
-	// return 5 * 5 point triangles and das it
+	// returna 5 * 5 point triangles and das it
 
 }
 
@@ -293,18 +293,20 @@ function addMData(ar)
 }
 
 
-//addMData(m_flr);
-//addMData(m_cube);
-addMData(m_tri);
+addMData(m_flr);
+addMData(m_cube);
+//addMData(m_tri);
 
-var test = getMids(m_tri);
-console.log(test);
+//var test = getMids(m_tri);
+//console.log(test);
+
+
 //var test1 = getMids(test);
 //var test2 = getMids(test1);
 //var test3 = getMids(test2);
 
 
-addMData(test);
+//addMData(test);
 //addMData(test3);
 //addMData(test4);
 
@@ -385,7 +387,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//
 		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
 		//
-		drawText(ctx, "W, A, S ,D, Shift, Space, Ctrl(unlock mouse)", 100, inner_window_height-100);
+		drawText(ctx, "W, A, S ,D, Shift(down), Space(up)", 100, inner_window_height-100);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera)", 100, inner_window_height-80);
 		//
 
 
