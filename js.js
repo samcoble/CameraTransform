@@ -1,34 +1,38 @@
-// !
+// ! Memspc
+
+						/*-- 2D Canvas Draw Functions --\
+						\------------------------------*/
 
 
 function drawText(c, txt, x0, y0)
 {
 	c.fillStyle = "rgba(170, 98, 28, 215)"; 
 	c.font = "14px Lucida Console";
-	//c.font = "28px Comic Sans MS";
 	c.fillText(txt, x0, y0);
 }
 
 function drawDot(c, x, y)
 {
-	c.beginPath();
-	c.lineWidth = "1px";
+	c.beginPath(); c.lineWidth = "1px";
 	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
-	c.rect(x-1, y-1, 2, 2);
-	c.stroke();
+	c.rect(x-1, y-1, 2, 2); c.stroke();
 }
 
 function drawLine(c, x0, y0, x1, y1)
 {
 	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
-	c.beginPath();
-	c.moveTo(x0, y0);
-	c.lineTo(x1, y1);
-	c.stroke(); 
+	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); 
 }
 
 function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 
+
+						/*-- Var Decs --\
+						\--------------*/
+
+// !
+var runTime_int = 10; // Time delay between frames as they render 
+// !
 
 
 var inner_window_width = document.getElementsByTagName("html")[0].clientWidth;
@@ -59,24 +63,20 @@ onmousemove = function(e)
 {
 	if (mouseLock)
 		{
-			//mouseDataD[0] = e.movementX; mouseDataD[1] = e.movementY;
 			player_look_dir = [ player_look_dir[0]+(e.movementX/inner_window_width * pi * 2) , player_look_dir[1]-(e.movementY/inner_window_width * pi * 2) , 0 ];
-
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 }
 
-// e.keyCode
-// d - 68  |  a - 65  | shft - 16
-// w - 87  |  s - 83  | ctrl - 17
-
-// e.button
-// lmb - 0  |  mmb - 1  |  rmb - 2
+//--------------------------------//
+// e.keyCode					  //
+// d - 68  |  a - 65  | shft - 16 //
+// w - 87  |  s - 83  | ctrl - 17 //
+// e.button					 	  //
+// lmb - 0 |  mmb - 1  |  rmb - 2 //
+//--------------------------------//
 
 var keyInfo = [0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb,shift
-
 var el = document.getElementById("html");
-
-// REFACTOR
 
 el.onkeydown = function(e)
 {
@@ -128,8 +128,8 @@ window.addEventListener("wheel", function(e)
 						/*-- Placeholder 4d data generation --\
 						\------------------------------------*/
 
-// 2 many arrays pls fix
 
+// 2 many arrays pls fix
 var m_objs = [];
 var l_objs = [];
 var d_objs = [];
@@ -138,7 +138,7 @@ const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -
 const m_tri = new Float32Array([0,20,0,10,-10,0,-10,10,10,0,-10,10,10,0,10,10,-10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
 
 
-function getMids(_t)
+function getMids(_t) // Fix: I forgot to translate each calculation
 {
 	var p0 = [
 			(_t[0]-_t[4])/2,
@@ -268,11 +268,11 @@ function getMids(_t)
 
 
 //var m_flr = turbojs.alloc(400);
-var _flr = 25;
+var _flr = 25; // Side length of square
 var m_flr = new Float32Array(4*_flr*_flr);
-// FINALLY LOL
 
-function setFlr()
+
+function setFlr() // fn: Create floor vertices
 {
 	for (var i = 0; i<_flr; i++)
 	{
@@ -292,7 +292,7 @@ setFlr();
 
 var m1 = turbojs.alloc(20000);
 
-function addMData(ar)
+function addMData(ar) // Replace current log system. Create mem_log data and calculate each start point here.
 {
 	m_objs[m_objs.length] = ar;
 	l_objs[l_objs.length] = ar.length;
@@ -317,7 +317,7 @@ addMData(m_cube);
 
 
 
-function setTable(l_)
+function setTable(l_) // Replace
 {
 	//d_objs.push([l_[0], l_[0]]);
 	var _ts = 0;
@@ -353,7 +353,7 @@ var canvas = document.getElementById("cv");
 var ctx = canvas.getContext("2d");
 
 
-canvas.addEventListener("click", async () =>{
+canvas.addEventListener("click", async () => {
 	await canvas.requestPointerLock();
 	mouseLock = 1;
 });
@@ -398,6 +398,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 100, inner_window_height-80);
 		//
 
+						/*-- Draw 2D data --\
+						\------------------*/
 
 		var s = fov_slide; // Arbitrary visual scaler
 		for (var i = 0; i<m_objs.length; i++)
@@ -420,6 +422,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 	}
 
 
+
+						/*-- Compute is runtime main --\
+						\-----------------------------*/
 
 
 	function Compute(init_dat, t_inc)
@@ -474,7 +479,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		setData();
+		setData(); // Load all vertices
 
 		// Translation
 		turbojs.run(init_dat, `void main(void) {
@@ -527,34 +532,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		// Clipping attempt (Placeholder) (Very very bad)
-
-
-		//	float _n = dot(_p, _i)/abs(dot(_p, _i))               ;
-		// x + abs(x) / 2    (USING AS GATE)
-
-//			player_pos[0] += Math.cos(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
-//			player_pos[2] += Math.sin(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
-
-
-		// turbojs.run(init_dat, `void main(void) {
-
-		// 	#define PI 3.1415926538
-
-
-		// 	vec3 _i = vec3(read().x, read().y, read().z);
-		// 	vec3 _p = vec3(${player_pos[0]}, ${player_pos[1]}, ${player_pos[2]});
-		// 	vec3 _pd = vec3(-1.0*cos(${player_look_dir[0]+0.001}*2.*PI), 0.01, -1.0*sin(${player_look_dir[1]+0.001}*2.*PI));
-
-		// 	float _t = dot(_pd, (_p-_i));
-		// 	float _n = (_t + abs(_t))/2.;
-
-			
-		// 	commit(vec4(read().x*_n, read().y*_n, read().z*_n, read().w));
-		// }`);	
-
-
-
 
 			/*-- Camera Transfrom --\
 			\----------------------*/
@@ -604,11 +581,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//console.log(m0);
 	}
 	
-	
-	//} End of if turbojs
 
-	setInterval(runTime, 10);
-
+	setInterval(runTime, runTime_int); 
 });
 
 
@@ -629,7 +603,7 @@ function QuatMult(q1, q2)
 	return q;
 }
 
-// This should work; use gpu 
+// This should work; use gpu ?
 
 //var T = t_inc;
 T = 1.0;
@@ -646,13 +620,3 @@ m1.data[0] = qf[0]; m1.data[1] = qf[1]; m1.data[2] = qf[2]; m1.data[3] = qf[3];
 
 */
 
-
-	// m1.data.forEach((element) =>
-	// {
-	// 	drawDot(ctx, element[0]*10, element[1]*10);
-	// 	console.log(element);
-	// });
-
-
-	//var thepast = new Date().getTime() / 1000;
-	//var delta = 0;
