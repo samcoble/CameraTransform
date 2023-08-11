@@ -4,7 +4,7 @@ Experimentation with the Camera Transform
 Inspired by Ken Joy's lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
 Soon objects will be differentiable allowing objects to be spawned and manipulated.
-I have kept the renderer simple for now but propper clipping will be done soon.
+I have kept the renderer simple for now but proper clipping will be done soon.
 ![lol6](https://github.com/samcoble/CameraTransform/assets/32228102/84e7c787-7f3a-4d33-82a1-c9c3b57837a4)
 
 New wallpaper ayyo
