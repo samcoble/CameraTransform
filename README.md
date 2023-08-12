@@ -10,6 +10,9 @@ I have kept the renderer simple for now but proper clipping will be done soon.
 New wallpaper ayyo
 ![yemane](https://github.com/samcoble/CameraTransform/assets/32228102/9776e7f2-9d8e-444a-8106-3f9477ebd680)
 
+:P
+![why](https://github.com/samcoble/CameraTransform/assets/32228102/2246db0e-ab24-4df5-8db0-ca2aac341198)
+
 500% Browser Zoom o_0
 ![z](https://github.com/samcoble/CameraTransform/assets/32228102/f72532c8-51c6-4779-816e-90a506dcb637)
 
