@@ -12,3 +12,10 @@ New wallpaper ayyo
 
 500% Browser Zoom o_0
 ![z](https://github.com/samcoble/CameraTransform/assets/32228102/f72532c8-51c6-4779-816e-90a506dcb637)
+
+
+
+I do not use AI to generate any of my code.
+This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
+It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
+
