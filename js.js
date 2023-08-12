@@ -36,7 +36,7 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 var runTime_int = 10; // Time delay between frames as they render 
 // !
 
-var title_int = 200;
+var title_int = 350;
 
 
 var inner_window_width = document.getElementsByTagName("html")[0].clientWidth;
@@ -131,7 +131,8 @@ window.addEventListener("wheel", function(e)
 
 
 
-let title = "-.__.-'-.__.-mem_space-.__.-'-.__.-'";
+let title = ".-'-._.-._mem_space_.-'-._.-._";
+
 
 function makeTitle(_s)
 {
@@ -143,16 +144,28 @@ function makeTitle(_s)
 }
 
 
+function dot(a,b)
+{
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
 
+var N = [0,1,0];
+
+// var _pf = [
+// 	player_pos[0] + f_dist*player_look_dir
+// 	];
+
+var aim_floor = new Float32Array(4); // Store final point. Set in compute
+
+// t = -N . player_pos / N . player_look_dir
+
+// aim_floor = player_pos + t*player_look_dir
 
 function setTitle()
 {
 	title = makeTitle(title);
 	document.title = title;
 }
-
-
-
 
 
 
@@ -163,6 +176,7 @@ function setTitle()
 // 2 many arrays pls fix
 var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
+var mem_sum = 0;
 
 const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
@@ -190,82 +204,15 @@ setFlr();
 
 // 
 
-function getMid(_t,i,f)
-{
-	var p = [
-			(_t[4*f]-_t[4*i])/2+_t[4*i],
-			(_t[4*f+1]-_t[4*i+1])/2+_t[4*i+1],
-			(_t[4*f+2]-_t[4*i+2])/2+_t[4*i+2],
-			1
-		];
-	return p;
-}
-
-function getPt(_t,i)
-{
-	var p = [
-			(_t[i*4]),
-			(_t[i*4+1]),
-			(_t[i*4+2]),
-			1
-		];
-	return p;
-}
-
-function getInnerTris(_t) // Wrong wrong wrong
-{
-	var p0 = getMid(_t,0,1); var p1 = getMid(_t,0,2); var p2 = getMid(_t,0,3); var p3 = getMid(_t,0,4);
-	var m0 = getMid(_t,1,2); var m1 = getMid(_t,2,3); var m2 = getMid(_t,3,4); var m3 = getMid(_t,4,1);
-	var c = getMid(_t, 1,3);
-	var l0 = getPt(_t,1); var l1 = getPt(_t,2); var l2 = getPt(_t,3); var l3 = getPt(_t,4); 
-	var b = getPt(_t,0);
-
-	// var _o1 = new Float32Array(p0.concat(m0,c,m3,l3)); 
-	// var _o2 = new Float32Array(p1.concat(m1,c,m0,l1)); 
-	// var _o3 = new Float32Array(p2.concat(m2,c,m1,l2)); 
-	// var _o4 = new Float32Array(p3.concat(m3,c,m2,l3)); 
-	// var _o5 = new Float32Array(p0.concat(p1,p2,p3,b));
-	// return (_o1,_o2,_o3,_o4,_o5);
-
-	var _o = new Float32Array(p0.concat(m0,c,m3,l3,p1,m1,c,m0,l1,p2,m2,c,m1,l2,p3,m3,c,m2,l3,p0,p1,p2,p3,b));
-	return _o;
-}
-
-function getTri(_t,j) // Pass 5 x 5pts
-{
-	var _n = new Float32Array(5*4);
-	for (var i = 0; i<_t.length/4; i++)
-	{
-		_n[i*4*j] = _t[i*4*j]
-		_n[i*4*j+1] = _t[i*4*j+1]
-		_n[i*4*j+2] = _t[i*4*j+2]
-		_n[i*4*j+3] = _t[i*4*j+3]
-	}
-	return _n;
-}
-
-
-// function getMids(_t)
-// {
-// 	var p0 = [
-// 			(_t[0]-_t[4])/2,
-// 			(_t[1]-_t[5])/2,
-// 			(_t[2]-_t[6])/2,
-// 			1
-// 		];
-// 	return t6;
-// }
-
 var m1 = turbojs.alloc(20000);
 
 
 
 function addMData(ar)
 {
-	m_objs[m_objs.length] = ar;
-	var _i = ar.length;
-	var _s = mem_log.length >= 1 ? (_i + mem_log[mem_log.length-1][1]) : 0;
-	mem_log.push([_s, _i]);
+	m_objs[m_objs.length] = ar; // Append ar to m_objs
+	mem_log.push([mem_sum, ar.length]);
+	mem_sum += ar.length;
 }
 
 
@@ -275,10 +222,13 @@ function addMData(ar)
 
 
 addMData(m_flr);
-
+//
 addMData(m_cube);
+//addMData(m_cube);
 
-//addMData(m_tri);
+//addMData(aim_floor);
+
+addMData(m_tri);
 
 //console.log(test);
 
@@ -303,7 +253,6 @@ addMData(m_cube);
 
 function setData()
 {
-
 	for (var j = 0; j<m_objs.length; j++)
 	{
 		for (var i = 0; i<m_objs[j].length/4; i++)
@@ -314,7 +263,6 @@ function setData()
 			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3];
 		}
 	}
-
 }
 
 
@@ -377,15 +325,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 		{
 			for (var j = 0; j<mem_log[i][1]/4; j++) // fix me?
 			{
-				if (init_dat.data[4*j+mem_log[i][0]+3] > 0)
+				if (init_dat.data[4*j+mem_log[i][0]+3] > 0) // Clipping
 				{
 					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2);
+					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[1][0]+1]*s+inner_window_height/2);
 					if (j == mem_log[i][1]/4-1)
 					{
 						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);
 					} else {
 					if (i != 0) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+inner_window_height/2);}
-					if (keyInfo[6]) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);}
+					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);}
 					}
 				}
 			}
@@ -400,6 +349,34 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	function Compute(init_dat, t_inc)
 	{
+
+		// Redo this in GLSL
+
+		var aim_dir = [
+				-Math.cos(player_look_dir[1])*Math.cos(player_look_dir[0]),
+				Math.sin(player_look_dir[1])*Math.cos(player_look_dir[0]),
+				-Math.sin(player_look_dir[1])
+			];
+
+		//console.log(aim_dir);
+
+		var f_dist = dot(N,player_pos)/dot(N,aim_dir);
+
+		var aim_floor = [
+				player_pos[0]+f_dist*aim_dir[0],
+				player_pos[1]+f_dist*aim_dir[1],
+				player_pos[2]+f_dist*aim_dir[2],
+				1
+			];
+
+		// console.log(aim_floor[2]);
+		// console.log(init_dat[mem_log[2][0]+2]);
+		// console.log("...");
+
+		// init_dat[mem_log[2][0]+0] = aim_floor[0];
+		// init_dat[mem_log[2][0]+1] = aim_floor[1];
+		// init_dat[mem_log[2][0]+2] = aim_floor[2];
+		// init_dat[mem_log[2][0]+3] = aim_floor[3];
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
