@@ -72,10 +72,10 @@ onmousemove = function(e)
 }
 
 //--------------------------------//
-// e.keyCode					  //
+// e.keyCode                      //
 // d - 68  |  a - 65  | shft - 16 //
 // w - 87  |  s - 83  | ctrl - 17 //
-// e.button					 	  //
+// e.button                       //
 // lmb - 0 |  mmb - 1  |  rmb - 2 //
 //--------------------------------//
 
