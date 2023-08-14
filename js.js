@@ -43,9 +43,13 @@ var inner_window_width = document.getElementsByTagName("html")[0].clientWidth;
 var inner_window_height = document.getElementsByTagName("html")[0].clientHeight;
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
+var pi4 = 0.7071067811;
+//var aim_floor = new Float32Array(4);
+var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
 
 var player_look_dir = [0.0, 0.0, 0.0];
 var player_look_dir_i = [0.0, 0.0, 0.0];
+var aim_dir = [0.0, 0.0, 0.0];
 var mouseData = [0.0, 0.0];  // rt data
 var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
@@ -53,7 +57,8 @@ var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
 var fov_slide = 30.0;
 
-var player_pos = [0.001,0.001,0.001];
+var player_pos = [0.00001,0.00001,0.00001];
+var w_player_pos = [0.00001,0.00001,0.00001];
 
 var LookToggle = 0;
 var inc = 0;
@@ -79,7 +84,7 @@ onmousemove = function(e)
 // lmb - 0 |  mmb - 1  |  rmb - 2 //
 //--------------------------------//
 
-var keyInfo = [0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,mmb,rmb,shift
+var keyInfo = [0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift
 var el = document.getElementById("html");
 
 el.onkeydown = function(e)
@@ -110,14 +115,14 @@ el.onkeyup = function(e)
 el.addEventListener('mousedown', function(e)
 {
 	if (e.button == 0) {keyInfo[5]=1;}
-	if (e.button == 1) {keyInfo[6]=1;}
+	if (e.button == 1) {e.preventDefault(); keyInfo[6]=1;}
 	if (e.button == 2) {keyInfo[7]=1;}
 });
 
 el.addEventListener('mouseup', function(e)
 {
 	if (e.button == 0) {keyInfo[5]=0;}
-	if (e.button == 1) {keyInfo[6]=0;}
+	if (e.button == 1) {e.preventDefault(); keyInfo[6]=0;}
 	if (e.button == 2) {keyInfo[7]=0;}
 });
 
@@ -155,7 +160,6 @@ var N = [0,1,0];
 // 	player_pos[0] + f_dist*player_look_dir
 // 	];
 
-var aim_floor = new Float32Array(4); // Store final point. Set in compute
 
 // t = -N . player_pos / N . player_look_dir
 
@@ -178,9 +182,9 @@ var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
 var mem_sum = 0;
 
-const m_cube = new Float32Array([-1.0, -1.0, -1.0, 1, -1.0, -1.0, 1.0, 1, 1.0, -1.0, -1.0, 1, 1.0, -1.0, 1.0, 1, 1.0, 1.0, -1.0, 1, 1.0, 1.0, 1.0, 1, -1.0, 1.0, -1.0, 1, -1.0, 1.0, 1.0, 1]);
+const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
-const m_tri = new Float32Array([0,20,0,10,-10,0,-10,10,10,0,-10,10,10,0,10,10,-10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
+const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
 
 var _flr = 25; // Side length of square
 var m_flr = new Float32Array(4*_flr*_flr);
@@ -193,7 +197,7 @@ function setFlr() // fn: Create floor vertices
 		for (var j = 0; j<_flr; j++)
 		{	//	i <=> (i*10+j)
 			m_flr[(i*_flr+j)*4]   = i - _flr/2;
-			m_flr[(i*_flr+j)*4+1] = 1.0;
+			m_flr[(i*_flr+j)*4+1] = 0;
 			m_flr[(i*_flr+j)*4+2] = j - _flr/2;
 			m_flr[(i*_flr+j)*4+3] = 1;
 		}
@@ -222,31 +226,12 @@ function addMData(ar)
 
 
 addMData(m_flr);
-//
-addMData(m_cube);
-//addMData(m_cube);
+addMData(aim_floor);
+// addMData(m_cube);
 
-//addMData(aim_floor);
+
 
 addMData(m_tri);
-
-//console.log(test);
-
-
-// var trii = getInnerTris(m_tri);
-
-// var tri1 = getInnerTris(getTri(trii,1));
-// var tri2 = getInnerTris(getTri(trii,2));
-// var tri3 = getInnerTris(getTri(trii,3));
-// var tri4 = getInnerTris(getTri(trii,4));
-
-
-
-//addMData(trii);
-//addMData(tri1);
-//addMData(tri2);
-//addMData(tri3);
-//addMData(tri4);
 
 
 
@@ -277,6 +262,33 @@ canvas.addEventListener("click", async () => {
 	mouseLock = 1;
 });
 
+// x y T
+
+function rot_y_pln(_p,_r)
+{
+	var _p2 = [
+		Math.cos(_r)*_p[0]+Math.sin(_r)*_p[2],
+		_p[1],
+		Math.cos(_r)*_p[2]-Math.sin(_r)*_p[0],
+		1
+	];
+
+	return _p2;
+}
+// var w_player_pos = [
+// 		Math.cos(player_look_dir[1])*x-Math.sin(player_look_dir[1])*z
+// 		y,
+// 		Math.cos(player_look_dir[1])*z-Math.sin(player_look_dir[1])*x
+// 		1
+// 	];
+
+
+// var w_player_pos = [
+// 		x,
+// 		Math.cos(yaw)*y-Math.sin(yaw)*z
+// 		Math.sin(yaw)*y+Math.cos(yaw)*z
+// 		1
+// 	];
 
 
 document.addEventListener("DOMContentLoaded", function(event)
@@ -305,17 +317,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 		reDraw(ctx, inner_window_width, inner_window_height); // FIRST
 
 
-						/*-- DEBUG PANEL --\
-						\-----------------*/
+						/*-- DRAW + DEBUG PANEL --\
+						\------------------------*/
 
 
-		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 100, inner_window_height-200);
-		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 100, inner_window_height-180);
+		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, inner_window_height-200);
+		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, inner_window_height-180);
 		//
-		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[2].toFixed(3), 100, inner_window_height-140);
+		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, inner_window_height-140);
+		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, inner_window_height-120);
+		drawText(ctx, "m1_objs[1]: " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+2].toFixed(3), 50, inner_window_height-120);
 		//
-		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 100, inner_window_height-100);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 100, inner_window_height-80);
+		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 50, inner_window_height-80);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, inner_window_height-60);
 		//
 
 
@@ -350,51 +364,81 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat, t_inc)
 	{
 
-		// Redo this in GLSL
+		// Redo this in GLSL ? or later when I have a player_dat struct in m_objs
 
-		var aim_dir = [
-				-Math.cos(player_look_dir[1])*Math.cos(player_look_dir[0]),
-				Math.sin(player_look_dir[1])*Math.cos(player_look_dir[0]),
-				-Math.sin(player_look_dir[1])
-			];
+		// X = cos(Y) * cos(P)
+		// Y = sin(Y) * cos(P)
+		// Z = sin(P)
 
-		//console.log(aim_dir);
+		aim_dir = [
+			Math.cos(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
+			-Math.sin(player_look_dir[1]),
+			Math.sin(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
+			//-Math.sin(player_look_dir[0])*Math.cos(player_look_dir[0])
+		];
 
-		var f_dist = dot(N,player_pos)/dot(N,aim_dir);
+		
 
-		var aim_floor = [
-				player_pos[0]+f_dist*aim_dir[0],
-				player_pos[1]+f_dist*aim_dir[1],
-				player_pos[2]+f_dist*aim_dir[2],
-				1
-			];
+		//var f_dist = dot(N,player_pos)/dot(N,aim_dir);
+		var f_dist = 3.0;
+
+
+
+		// aim_floor = [
+		// 	-player_pos[2],
+		// 	-player_pos[1],
+		// 	-player_pos[0],
+		// 	1
+		// ];
+
+		//console.log(aim_floor);
+
+		w_player_pos = rot_y_pln(player_pos, -pi/4);
+
+		m_objs[1][0] = w_player_pos[0]*0.707;
+		m_objs[1][1] = player_pos[1]*0.99;
+		m_objs[1][2] = w_player_pos[2]*0.707;
+		m_objs[1][3] = 1;
+
+
+
+		m_objs[1][4] = m_objs[1][0]+f_dist*aim_dir[0];
+		m_objs[1][5] = m_objs[1][1]+f_dist*aim_dir[1];
+		m_objs[1][6] = m_objs[1][2];+f_dist*aim_dir[2]
+		m_objs[1][7] = 1;
+
+
+		// aim_floor = [
+		// 	m_objs[1][0]+f_dist*aim_dir[0],
+		// 	player_pos[1]+f_dist*aim_dir[1],
+		// 	-player_pos[2]+f_dist*aim_dir[2],
+		// 	1
+		// ];
+		//console.log(m_objs[1]);
 
 		// console.log(aim_floor[2]);
 		// console.log(init_dat[mem_log[2][0]+2]);
 		// console.log("...");
 
-		// init_dat[mem_log[2][0]+0] = aim_floor[0];
-		// init_dat[mem_log[2][0]+1] = aim_floor[1];
-		// init_dat[mem_log[2][0]+2] = aim_floor[2];
-		// init_dat[mem_log[2][0]+3] = aim_floor[3];
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
+
 		if (keyVec[1] != 0)
 		{
-			player_pos[0] += Math.sin(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1; // -1 temp ig
-			player_pos[2] += Math.cos(2*pi-player_look_dir[0]+0.001)*keyVec[1]*0.3 * -1;
-			player_pos[1] += Math.sin(player_look_dir[1]+0.001)*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+			player_pos[0] += Math.sin(-player_look_dir[0]+pi/4+0.001)*keyVec[1]*0.3 * -1; // -1 temp ig
+			player_pos[2] += Math.cos(-player_look_dir[0]+pi/4+0.001)*keyVec[1]*0.3 * -1;
+			player_pos[1] -= Math.sin(player_look_dir[1]+pi/4+0.001)*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 		}
 
 		if (keyVec[0] != 0)
 		{
-			player_pos[0] += Math.cos(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
-			player_pos[2] += Math.sin(2*pi+player_look_dir[0]+0.001)*keyVec[0]*0.3;
+			player_pos[0] += Math.cos(player_look_dir[0]-pi/4+0.001)*keyVec[0]*0.3;
+			player_pos[2] += Math.sin(player_look_dir[0]-pi/4+0.001)*keyVec[0]*0.3;
 		}
 
-		if (keyInfo[4]) {player_pos[1] += 0.3;}
-		if (keyInfo[8]) {player_pos[1] += -0.3;}
+		if (keyInfo[4]) {player_pos[1] += -0.3;}
+		if (keyInfo[8]) {player_pos[1] += 0.3;}
 
 		if (keyInfo[9])
 		{
@@ -410,10 +454,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 					player_look_dir_i = player_look_dir;
 				}
 				LookToggle = 1;
-
 				var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
 				mouseDataD[0] = dX; mouseDataD[1] = dY;
-
 				player_look_dir = [ player_look_dir_i[0]+(dX/inner_window_width * pi * 2) , player_look_dir_i[1]+(dY/inner_window_width * pi * 2) , 0 ]; // ! width 4 both !
 
 		} else 
@@ -427,14 +469,30 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
+		// init_dat.data[mem_log[1][0]+0] = player_pos[0];
+		// console.log(init_dat.data[mem_log[1][0]+0]);
+		// init_dat.data[mem_log[1][0]+1] = player_pos[1]+5;
+		// init_dat.data[mem_log[1][0]+2] = player_pos[2];
+		// init_dat.data[mem_log[1][0]+3] = player_pos[3];
+
 
 		setData(); // Load all vertices
+
+		//w_player_pos = get_w_pos(player_pos, player_look_dir);
+
+		// m_objs[1][0] = w_player_pos[0];
+		// m_objs[1][1] = w_player_pos[1];
+		// m_objs[1][2] = w_player_pos[2];
+		// m_objs[1][3] = 1.0;
+
+
+		if (player_look_dir[0] == 0) {player_look_dir[0] = 0.000001;} if (player_look_dir[1] == 0) {player_look_dir[1] = 0.000001;} // SUPER HOT FIX. Ig as long as 1px of arc > finite. Never really sticks ykwim
 
 		// Translation
 		turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
 			read().x+read().z+${-player_pos[0]}, 
-			read().y+${player_pos[1]},
+			read().y+${-player_pos[1]},
 			read().z-read().x+${-player_pos[2]},
 			read().w
 		));
@@ -442,10 +500,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
+		#define PI 3.1415926538
 		commit(vec4(
-			cos(${player_look_dir[0]+0.001})*read().x+sin(${player_look_dir[0]+0.001})*read().z,
+			cos(${player_look_dir[0]}-PI/4.)*read().x+sin(${player_look_dir[0]}-PI/4.)*read().z,
 			read().y,
-			cos(${player_look_dir[0]+0.001})*read().z-sin(${player_look_dir[0]+0.001})*read().x,
+			cos(${player_look_dir[0]}-PI/4.)*read().z-sin(${player_look_dir[0]}-PI/4.)*read().x,
 			read().w 
 		));
 		}`);
@@ -454,13 +513,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 		turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
 			read().x,
-			cos(${player_look_dir[1]+0.001})*read().y-sin(${player_look_dir[1]+0.001})*read().z,
-			sin(${player_look_dir[1]+0.001})*read().y+cos(${player_look_dir[1]+0.001})*read().z,
+			cos(${player_look_dir[1]})*read().y-sin(${player_look_dir[1]})*read().z,
+			sin(${player_look_dir[1]})*read().y+cos(${player_look_dir[1]})*read().z,
 			read().w 
 		));
 		}`);
 
 		
+
+		//console.log(init_dat.data[mem_log[1][0]].toFixed(3) + " " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " " + init_dat.data[mem_log[1][0]+2].toFixed(3));
 
 
 		// To do:
@@ -519,6 +580,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	function runTime()
 	{
+				//console.log(m1.data[i*4+mem_log[j][0]]);// try return of compute ????
 		//m1 = m0;
 		//inc+=0.02;
 		//console.log(inc);
