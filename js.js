@@ -6,16 +6,31 @@
 
 function drawText(c, txt, x0, y0)
 {
-	c.fillStyle = "rgba(170, 98, 28, 215)"; 
-	c.font = "14px Lucida Console";
+	c.fillStyle = "rgba(170, 98, 28, 255)"; 
+	c.font = "12px Lucida Console";
 	c.fillText(txt, x0, y0);
 }
 
-function drawDot(c, x, y)
+function drawRect(c, x, y, w, h)
 {
-	c.beginPath(); c.lineWidth = "1px";
+	c.rect(x, y, w, h);
+	ctx.fillStyle = "rgba(10,12,14,0.7)";
+	ctx.fill();
+}
+
+function drawRectFrame(c, x, y, w, h)
+{
+	c.beginPath(); c.lineWidth = "0.1px";
+	c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
+	c.rect(x, y, w, h); c.stroke();
+}
+
+function drawDot(c, x, y, s)
+{
+	c.beginPath(); c.lineWidth = "2px";
 	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
-	c.rect(x-1, y-1, 2, 2); c.stroke();
+	c.rect(x-s/2, y-s/2, s, s); c.stroke();
+
 }
 
 function drawLine(c, x0, y0, x1, y1)
@@ -47,15 +62,16 @@ var pi4 = 0.7071067811;
 //var aim_floor = new Float32Array(4);
 var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
 
-var player_look_dir = [0.0, 0.0, 0.0];
-var player_look_dir_i = [0.0, 0.0, 0.0];
+var player_look_dir = [pi/4, 0.1, 0];
+var player_look_dir_i = [pi/4, 0.1, 0];
 var aim_dir = [0.0, 0.0, 0.0];
+var aim_dir_n = [0.0, 0.0, 0.0];
 var mouseData = [0.0, 0.0];  // rt data
 var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
-var fov_slide = 30.0;
+var fov_slide = 20.0;
 
 var player_pos = [0.00001,0.00001,0.00001];
 var w_player_pos = [0.00001,0.00001,0.00001];
@@ -156,6 +172,12 @@ function dot(a,b)
 
 var N = [0,1,0];
 
+
+function norm(_p)
+{
+	_l = dot(_p,_p);
+	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, 1]);
+}
 // var _pf = [
 // 	player_pos[0] + f_dist*player_look_dir
 // 	];
@@ -227,7 +249,7 @@ function addMData(ar)
 
 addMData(m_flr);
 addMData(aim_floor);
-// addMData(m_cube);
+addMData(m_cube);
 
 
 
@@ -266,15 +288,41 @@ canvas.addEventListener("click", async () => {
 
 function rot_y_pln(_p,_r)
 {
-	var _p2 = [
+	var _p1 = [
 		Math.cos(_r)*_p[0]+Math.sin(_r)*_p[2],
 		_p[1],
 		Math.cos(_r)*_p[2]-Math.sin(_r)*_p[0],
 		1
 	];
 
+	return _p1;
+}
+
+function rot_x_pln(_p,_r)
+{
+	var _p2 = [
+		_p[0],
+		Math.cos(_r)*_p[1]-Math.sin(_r)*_p[2],
+		Math.sin(_r)*_p[1]+Math.cos(_r)*_p[2],
+		1
+	];
+
 	return _p2;
 }
+
+
+function mov_obj(_i, _p)
+{
+	for (var i = 0; i<mem_log[_i][1] /4; i++)
+	{
+		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]+_p[0];
+		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]+_p[1];
+		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]+_p[2];
+		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
+	}
+}
+
+
 // var w_player_pos = [
 // 		Math.cos(player_look_dir[1])*x-Math.sin(player_look_dir[1])*z
 // 		y,
@@ -320,16 +368,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 						/*-- DRAW + DEBUG PANEL --\
 						\------------------------*/
 
+		drawRectFrame(ctx, 30 ,30,385,158);
+		drawRect(ctx, 30 ,30,385,158);
 
-		drawText(ctx, "player_look_dir: " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, inner_window_height-200);
-		drawText(ctx, "mouseDataD: " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, inner_window_height-180);
+
+		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
+		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
 		//
-		drawText(ctx, "player_pos: " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, inner_window_height-140);
+		drawText(ctx, "player_pos:     | " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, 105);
 		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, inner_window_height-120);
-		drawText(ctx, "m1_objs[1]: " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+2].toFixed(3), 50, inner_window_height-120);
+		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+2].toFixed(3), 50, 120);
 		//
-		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 50, inner_window_height-80);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, inner_window_height-60);
+		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 50, 150);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
+
+
 		//
 
 
@@ -340,8 +393,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 			for (var j = 0; j<mem_log[i][1]/4; j++) // fix me?
 			{
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0) // Clipping
+				// if (1) // Clipping off
 				{
-					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2);
+					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.12));
 					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[1][0]+1]*s+inner_window_height/2);
 					if (j == mem_log[i][1]/4-1)
 					{
@@ -364,48 +418,30 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat, t_inc)
 	{
 
+
+
+
 		// Redo this in GLSL ? or later when I have a player_dat struct in m_objs
 
 		// X = cos(Y) * cos(P)
 		// Y = sin(Y) * cos(P)
 		// Z = sin(P)
 
-		aim_dir = [
-			Math.cos(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
-			-Math.sin(player_look_dir[1]),
-			Math.sin(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
-			//-Math.sin(player_look_dir[0])*Math.cos(player_look_dir[0])
-		];
-
-		
-
-		//var f_dist = dot(N,player_pos)/dot(N,aim_dir);
-		var f_dist = 3.0;
-
-
-
-		// aim_floor = [
-		// 	-player_pos[2],
-		// 	-player_pos[1],
-		// 	-player_pos[0],
-		// 	1
+		// aim_dir = [
+		// 	Math.cos(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
+		// 	-Math.sin(player_look_dir[1]*2),
+		// 	Math.sin(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4)
+		// 	//-Math.sin(player_look_dir[0])*Math.cos(player_look_dir[0])
 		// ];
 
-		//console.log(aim_floor);
-
-		w_player_pos = rot_y_pln(player_pos, -pi/4);
-
-		m_objs[1][0] = w_player_pos[0]*0.707;
-		m_objs[1][1] = player_pos[1]*0.99;
-		m_objs[1][2] = w_player_pos[2]*0.707;
-		m_objs[1][3] = 1;
+		// aim_dir_n = [
+		// 	aim_dir[0]/Math.sqrt(dot(aim_dir,aim_dir)),
+		// 	aim_dir[1]/Math.sqrt(dot(aim_dir,aim_dir)),
+		// 	aim_dir[2]/Math.sqrt(dot(aim_dir,aim_dir)),
+		// 	1
+		// 	]
 
 
-
-		m_objs[1][4] = m_objs[1][0]+f_dist*aim_dir[0];
-		m_objs[1][5] = m_objs[1][1]+f_dist*aim_dir[1];
-		m_objs[1][6] = m_objs[1][2];+f_dist*aim_dir[2]
-		m_objs[1][7] = 1;
 
 
 		// aim_floor = [
@@ -426,15 +462,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (keyVec[1] != 0)
 		{
-			player_pos[0] += Math.sin(-player_look_dir[0]+pi/4+0.001)*keyVec[1]*0.3 * -1; // -1 temp ig
-			player_pos[2] += Math.cos(-player_look_dir[0]+pi/4+0.001)*keyVec[1]*0.3 * -1;
-			player_pos[1] -= Math.sin(player_look_dir[1]+pi/4+0.001)*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.3 * -1; // -1 temp ig
+			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.3 * -1;
+			player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 		}
 
 		if (keyVec[0] != 0)
 		{
-			player_pos[0] += Math.cos(player_look_dir[0]-pi/4+0.001)*keyVec[0]*0.3;
-			player_pos[2] += Math.sin(player_look_dir[0]-pi/4+0.001)*keyVec[0]*0.3;
+			player_pos[0] += Math.cos(player_look_dir[0])*keyVec[0]*0.3;
+			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.3;
 		}
 
 		if (keyInfo[4]) {player_pos[1] += -0.3;}
@@ -442,11 +478,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (keyInfo[9])
 		{
+			//mov_obj(2,[m_objs[1][0],m_objs[1][1],m_objs[1][2]]);
+			//test = new Float32Array([5.0,5.0,5.0]);
+			//mov_obj(2, test);
 			mouseLock = 0;
 			document.exitPointerLock();
 		}
 
-		if (keyInfo[6] && !mouseLock)
+		if ((keyInfo[6] && !mouseLock) || document.ready)
 		{
 				if (!LookToggle)
 				{
@@ -475,6 +514,69 @@ document.addEventListener("DOMContentLoaded", function(event)
 		// init_dat.data[mem_log[1][0]+2] = player_pos[2];
 		// init_dat.data[mem_log[1][0]+3] = player_pos[3];
 
+		
+		 //w_player_pos = rot_x_pln(rot_y_pln(player_pos, -pi/4), pi-player_look_dir[1]);
+		// w_player_pos = rot(rot_y_pln(player_pos, -pi/4), 90-player_look_dir[1]);
+		// var plr_dir = [];
+		//var f_dist = -dot(N,w_player_pos)/dot(N,norm(aim_dir));
+		// console.log(f_dist);
+
+
+		//w_player_pos = rot_x_pln(rot_y_pln(player_pos, -pi/4), pi-player_look_dir[1]);
+		//w_player_pos = rot_y_pln(player_pos, -pi/4);
+		//var f_dist = -5.0;
+		//var f_dist = m_objs[1][1];
+
+
+
+		// aim_floor = [
+		// 	-player_pos[2],
+		// 	-player_pos[1],
+		// 	-player_pos[0],
+		// 	1
+		// ];
+
+		//var z_f_0 = [0,0,1,1];
+
+		//w_player_pos = rot_x_pln[z_f_0, pi/2-player_look_dir[1]];
+
+		//var z_f_2 = rot_y_pln[rot_x_pln[z_f_0, pi/2-player_look_dir[1]], player_look_dir[0]];
+
+		//console.log(z_f_2);
+
+		//w_player_pos = rot_y_pln[rot_x_pln[z_f_0, pi/2-player_look_dir[1]], player_look_dir[0]];
+
+		//console.log(aim_floor);
+
+		// m_objs[1][0] = w_player_pos[0];
+		// m_objs[1][1] = w_player_pos[1];
+		// m_objs[1][2] = w_player_pos[2];
+		// m_objs[1][3] = 1;
+
+		// m_objs[1][0] = w_player_pos[0]*0.707106;
+		// m_objs[1][1] = w_player_pos[1]*1; //0.866025
+		// m_objs[1][2] = w_player_pos[2]*0.707106;
+		// m_objs[1][3] = 1;
+
+
+		// m_objs[1][0] = w_player_pos[0]*1;
+		// m_objs[1][1] = w_player_pos[1]; //0.866025
+		// m_objs[1][2] = w_player_pos[2]*1;
+		// m_objs[1][3] = 1;
+
+		// m_objs[1][0] = player_pos[0];
+		// m_objs[1][1] = player_pos[1]; //0.866025
+		// m_objs[1][2] = player_pos[2];
+		// m_objs[1][3] = 1;
+
+			// player_pos[0] += Math.sin(-player_look_dir[0]+pi/4)*keyVec[1]*0.3 * -1; // -1 temp ig
+			// player_pos[2] += Math.cos(-player_look_dir[0]+pi/4)*keyVec[1]*0.3 * -1;
+			// player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+
+		// m_objs[1][4] = -m_objs[1][0]-f_dist*Math.sin(player_look_dir[0]);
+		// m_objs[1][5] = m_objs[1][1]+f_dist*(Math.sin(player_look_dir[1]));
+		// m_objs[1][6] = -m_objs[1][2]+f_dist*Math.cos(player_look_dir[0]);
+		// m_objs[1][7] = 1;
 
 		setData(); // Load all vertices
 
@@ -485,10 +587,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 		// m_objs[1][2] = w_player_pos[2];
 		// m_objs[1][3] = 1.0;
 
+		//if (player_look_dir[0] == 0) {player_look_dir[0] = 0.000001;} if (player_look_dir[1] == 0) {player_look_dir[1] = 0.000001;} // SUPER HOT FIX. Ig as long as 1px of arc > finite. Never really sticks ykwim
 
-		if (player_look_dir[0] == 0) {player_look_dir[0] = 0.000001;} if (player_look_dir[1] == 0) {player_look_dir[1] = 0.000001;} // SUPER HOT FIX. Ig as long as 1px of arc > finite. Never really sticks ykwim
 
-		// Translation
+		// Translation - Last?
 		turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
 			read().x+read().z+${-player_pos[0]}, 
@@ -498,13 +600,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 		));
 		}`);
 
+
+
 		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
 		#define PI 3.1415926538
 		commit(vec4(
-			cos(${player_look_dir[0]}-PI/4.)*read().x+sin(${player_look_dir[0]}-PI/4.)*read().z,
+			cos(${player_look_dir[0]})*read().x+sin(${player_look_dir[0]})*read().z,
 			read().y,
-			cos(${player_look_dir[0]}-PI/4.)*read().z-sin(${player_look_dir[0]}-PI/4.)*read().x,
+			cos(${player_look_dir[0]})*read().z-sin(${player_look_dir[0]})*read().x,
 			read().w 
 		));
 		}`);
@@ -541,6 +645,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			/*-- Camera Transfrom --\
 			\----------------------*/
+
+		/*
+
+		Finally solved problem. Create the inverse player_dat struct with begging x-y-z. All transforms except perspective
+
+		*/
 
 
 		turbojs.run(init_dat, `void main(void) {
@@ -586,6 +696,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//console.log(inc);
 		Compute(m1, inc);
 		//console.log(m0);
+		console.log(m1.data[mem_log[1][0]] + " " + m1.data[mem_log[1][0]+1] + " " + m1.data[mem_log[1][0]]+2);
 	}
 	
 
