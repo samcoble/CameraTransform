@@ -14,13 +14,14 @@ This project is meant to be an endless exercise of mathematics as I add features
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
 
-![lol6](https://github.com/samcoble/CameraTransform/assets/32228102/84e7c787-7f3a-4d33-82a1-c9c3b57837a4)
+
+![a](https://github.com/samcoble/CameraTransform/assets/32228102/0bd358c6-f419-4f57-896f-94bf2c84d3ec)
 
 New wallpaper ayyo
 
 ![yemane](https://github.com/samcoble/CameraTransform/assets/32228102/9776e7f2-9d8e-444a-8106-3f9477ebd680)
 
-
+![lol6](https://github.com/samcoble/CameraTransform/assets/32228102/84e7c787-7f3a-4d33-82a1-c9c3b57837a4)
 
 500% Browser zoom created an interesting aesthetic.
 
