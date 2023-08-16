@@ -6,13 +6,13 @@ Experimentation with the Camera Transform.
 
 Inspired by Ken Joy's lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
-Soon objects will be differentiable allowing objects to be spawned and manipulated.
 I have kept the renderer simple for now but proper clipping will be done soon.
 
 I do not use AI to generate any of my code.
 This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
+Example of a new object being created at the aim location. Center screen currently does not align with the floor plane intersection :D
 ![g](https://github.com/samcoble/CameraTransform/assets/32228102/0bbd117e-f5ca-4d56-8144-c33f8c18b458)
 
 
