@@ -53,12 +53,15 @@ var runTime_int = 10; // Time delay between frames as they render
 
 var title_int = 350;
 
+var date_now = 0;
+
 
 var inner_window_width = document.getElementsByTagName("html")[0].clientWidth;
 var inner_window_height = document.getElementsByTagName("html")[0].clientHeight;
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi4 = 0.7071067811;
+
 //var aim_floor = new Float32Array(4);
 var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
 
@@ -75,9 +78,12 @@ var fov_slide = 20.0;
 
 var player_pos = [0.00001,0.00001,0.00001];
 var w_player_pos = [0.00001,0.00001,0.00001];
+var wf_player_pos = [0.00001,0.00001,0.00001];
 
 var LookToggle = 0;
 var inc = 0;
+
+var lock_vert_mov = false;
 
 
 						/*-- Key & Mouse event capture --\
@@ -92,20 +98,25 @@ onmousemove = function(e)
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 }
 
+
 //--------------------------------//
 // e.keyCode                      //
 // d - 68  |  a - 65  | shft - 16 //
 // w - 87  |  s - 83  | ctrl - 17 //
+// f - 70  |  l - 76  | t - 84    //
 // e.button                       //
 // lmb - 0 |  mmb - 1  |  rmb - 2 //
 //--------------------------------//
 
-var keyInfo = [0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift
+var keyInfo = [0,0,0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift,f,l,t
 var el = document.getElementById("html");
+
+// Seriously get rid of the if stacks on the cpu
 
 el.onkeydown = function(e)
 {
     e = e || window.event;
+    // alert(e.keyCode);
     if (e.keyCode == 87) {keyInfo[0]=1;}
     if (e.keyCode == 83) {keyInfo[1]=1;}
     if (e.keyCode == 65) {keyInfo[2]=1;}
@@ -113,6 +124,9 @@ el.onkeydown = function(e)
     if (e.keyCode == 32) {keyInfo[4]=1;}
     if (e.keyCode == 16) {keyInfo[8]=1;}
     if (e.keyCode == 17) {keyInfo[9]=1;}
+    if (e.keyCode == 70) {keyInfo[10]=1;}
+    if (e.keyCode == 76) {keyInfo[11]=1;}
+    if (e.keyCode == 84) {keyInfo[12]=1;}
 };
 
 el.onkeyup = function(e)
@@ -125,6 +139,9 @@ el.onkeyup = function(e)
     if (e.keyCode == 32) {keyInfo[4]=0;}
     if (e.keyCode == 16) {keyInfo[8]=0;}
     if (e.keyCode == 17) {keyInfo[9]=0;}
+    if (e.keyCode == 70) {keyInfo[10]=0;}
+    if (e.keyCode == 76) {keyInfo[11]=0;}
+    if (e.keyCode == 84) {keyInfo[12]=0;}
     
 };
 
@@ -194,6 +211,14 @@ function setTitle()
 }
 
 
+function runEvery(_ms)
+{
+	var d_t = Date.now() - date_now; var _r = 0;
+	if (d_t > _ms) {_r = 1; date_now = Date.now();} else {_r = 0;}
+	return (_r);
+}
+
+
 
 						/*-- Placeholder 4d data generation --\
 						\------------------------------------*/
@@ -208,7 +233,7 @@ const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
 
-var _flr = 25; // Side length of square
+var _flr = 50; // Side length of square
 var m_flr = new Float32Array(4*_flr*_flr);
 
 
@@ -232,7 +257,17 @@ setFlr();
 
 var m1 = turbojs.alloc(20000);
 
-
+	/*
+	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
+	 ___/\\\\\\\\\\\\\__\/\\\////////\\\__\/\\\////////\\\____________\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\__       
+	  __/\\\/////////\\\_\/\\\______\//\\\_\/\\\______\//\\\___________\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\_      
+	   _\/\\\_______\/\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_     
+	    _\/\\\\\\\\\\\\\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\_    
+	     _\/\\\/////////\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\_   
+	      _\/\\\_______\/\\\_\/\\\_______/\\\__\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
+	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
+	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
+	*/
 
 function addMData(ar)
 {
@@ -253,7 +288,7 @@ addMData(m_cube);
 
 
 
-addMData(m_tri);
+//addMData(m_tri);
 
 
 
@@ -271,6 +306,19 @@ function setData()
 		}
 	}
 }
+
+
+function mov_obj(_i, _p)
+{
+	for (var i = 0; i<mem_log[_i][1] /4; i++)
+	{
+		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]-_p[0];
+		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]-_p[1];
+		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]-_p[2];
+		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
+	}
+}
+
 
 
 setData();
@@ -292,7 +340,7 @@ function rot_y_pln(_p,_r)
 		Math.cos(_r)*_p[0]+Math.sin(_r)*_p[2],
 		_p[1],
 		Math.cos(_r)*_p[2]-Math.sin(_r)*_p[0],
-		1
+		_p[3]
 	];
 
 	return _p1;
@@ -304,23 +352,12 @@ function rot_x_pln(_p,_r)
 		_p[0],
 		Math.cos(_r)*_p[1]-Math.sin(_r)*_p[2],
 		Math.sin(_r)*_p[1]+Math.cos(_r)*_p[2],
-		1
+		_p[3]
 	];
 
 	return _p2;
 }
 
-
-function mov_obj(_i, _p)
-{
-	for (var i = 0; i<mem_log[_i][1] /4; i++)
-	{
-		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]+_p[0];
-		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]+_p[1];
-		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]+_p[2];
-		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
-	}
-}
 
 
 // var w_player_pos = [
@@ -368,19 +405,34 @@ document.addEventListener("DOMContentLoaded", function(event)
 						/*-- DRAW + DEBUG PANEL --\
 						\------------------------*/
 
-		drawRectFrame(ctx, 30 ,30,385,158);
-		drawRect(ctx, 30 ,30,385,158);
+		/*
+		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
+		 _\/\\\////////\\\___/\\\///////\\\_____/\\\\\\\\\\\\\__\/\\\_____________\/\\\_       
+		  _\/\\\______\//\\\_\/\\\_____\/\\\____/\\\/////////\\\_\/\\\_____________\/\\\_      
+		   _\/\\\_______\/\\\_\/\\\\\\\\\\\/____\/\\\_______\/\\\_\//\\\____/\\\____/\\\__     
+		    _\/\\\_______\/\\\_\/\\\//////\\\____\/\\\\\\\\\\\\\\\__\//\\\__/\\\\\__/\\\___    
+		     _\/\\\_______\/\\\_\/\\\____\//\\\___\/\\\/////////\\\___\//\\\/\\\/\\\/\\\____   
+		      _\/\\\_______/\\\__\/\\\_____\//\\\__\/\\\_______\/\\\____\//\\\\\\//\\\\\_____  
+		       _\/\\\\\\\\\\\\/___\/\\\______\//\\\_\/\\\_______\/\\\_____\//\\\__\//\\\______ 
+		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
+        */
 
+		drawRectFrame(ctx, 25 ,30,410,168);
+		drawRect(ctx, 25 ,30,410,168);
+
+		drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
+		drawLine(ctx,inner_window_width/2,inner_window_height/2-3, inner_window_width/2, inner_window_height/2+3);
 
 		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
 		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
 		//
 		drawText(ctx, "player_pos:     | " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, 105);
 		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, inner_window_height-120);
-		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+2].toFixed(3), 50, 120);
+		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 50, 120);
 		//
-		drawText(ctx, "W, A, S ,D, Shift(down), Space(up), Scroll(fov)", 50, 150);
+		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov)", 50, 150);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
+		drawText(ctx, "F(place point), L(lock mov)", 50, 180); //, T(teleport)
 
 
 		//
@@ -418,44 +470,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat, t_inc)
 	{
 
+		/*
+		________/\\\\\\\\\_______/\\\\\_______/\\\\____________/\\\\__/\\\\\\\\\\\\\____/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\\\_        
+		 _____/\\\////////______/\\\///\\\____\/\\\\\\________/\\\\\\_\/\\\/////////\\\_\/\\\_______\/\\\_\///////\\\/////__\/\\\///////////__       
+		  ___/\\\/_____________/\\\/__\///\\\__\/\\\//\\\____/\\\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_____________      
+		   __/\\\______________/\\\______\//\\\_\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_______\/\\\_______\/\\\\\\\\\\\_____     
+		    _\/\\\_____________\/\\\_______\/\\\_\/\\\__\///\\\/___\/\\\_\/\\\/////////____\/\\\_______\/\\\_______\/\\\_______\/\\\///////______    
+		     _\//\\\____________\//\\\______/\\\__\/\\\____\///_____\/\\\_\/\\\_____________\/\\\_______\/\\\_______\/\\\_______\/\\\_____________   
+		      __\///\\\___________\///\\\__/\\\____\/\\\_____________\/\\\_\/\\\_____________\//\\\______/\\\________\/\\\_______\/\\\_____________  
+		       ____\////\\\\\\\\\____\///\\\\\/_____\/\\\_____________\/\\\_\/\\\______________\///\\\\\\\\\/_________\/\\\_______\/\\\\\\\\\\\\\\\_ 
+		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
+		*/
 
 
 
-		// Redo this in GLSL ? or later when I have a player_dat struct in m_objs
-
-		// X = cos(Y) * cos(P)
-		// Y = sin(Y) * cos(P)
-		// Z = sin(P)
-
-		// aim_dir = [
-		// 	Math.cos(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4),
-		// 	-Math.sin(player_look_dir[1]*2),
-		// 	Math.sin(player_look_dir[0]-pi/4)*Math.cos(player_look_dir[1]-pi/4)
-		// 	//-Math.sin(player_look_dir[0])*Math.cos(player_look_dir[0])
-		// ];
-
-		// aim_dir_n = [
-		// 	aim_dir[0]/Math.sqrt(dot(aim_dir,aim_dir)),
-		// 	aim_dir[1]/Math.sqrt(dot(aim_dir,aim_dir)),
-		// 	aim_dir[2]/Math.sqrt(dot(aim_dir,aim_dir)),
-		// 	1
-		// 	]
-
-
-
-
-		// aim_floor = [
-		// 	m_objs[1][0]+f_dist*aim_dir[0],
-		// 	player_pos[1]+f_dist*aim_dir[1],
-		// 	-player_pos[2]+f_dist*aim_dir[2],
-		// 	1
-		// ];
-		//console.log(m_objs[1]);
-
-		// console.log(aim_floor[2]);
-		// console.log(init_dat[mem_log[2][0]+2]);
-		// console.log("...");
-
+		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
+		if (lock_vert_mov) {player_pos[1] = -1.000001;}
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
@@ -464,7 +494,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		{
 			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.3 * -1; // -1 temp ig
 			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.3 * -1;
-			player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+			if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3;} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 		}
 
 		if (keyVec[0] != 0)
@@ -478,9 +508,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (keyInfo[9])
 		{
-			//mov_obj(2,[m_objs[1][0],m_objs[1][1],m_objs[1][2]]);
-			//test = new Float32Array([5.0,5.0,5.0]);
-			//mov_obj(2, test);
 			mouseLock = 0;
 			document.exitPointerLock();
 		}
@@ -508,86 +535,84 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
-		// init_dat.data[mem_log[1][0]+0] = player_pos[0];
-		// console.log(init_dat.data[mem_log[1][0]+0]);
-		// init_dat.data[mem_log[1][0]+1] = player_pos[1]+5;
-		// init_dat.data[mem_log[1][0]+2] = player_pos[2];
-		// init_dat.data[mem_log[1][0]+3] = player_pos[3];
+		/*
 
-		
-		 //w_player_pos = rot_x_pln(rot_y_pln(player_pos, -pi/4), pi-player_look_dir[1]);
-		// w_player_pos = rot(rot_y_pln(player_pos, -pi/4), 90-player_look_dir[1]);
-		// var plr_dir = [];
-		//var f_dist = -dot(N,w_player_pos)/dot(N,norm(aim_dir));
-		// console.log(f_dist);
+		__/\\\\\\\\\\\\\\\__/\\\________/\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\_______/\\\\\\\\\_______/\\\\\\\\\______/\\\\\\\\\\\\\\\_        
+		 _\/\\\///////////__\/\\\_______\/\\\_\/\\\\\\___\/\\\___________\/\\\/////////\\\___/\\\\\\\\\\\\\___/\\\///////\\\___\///////\\\/////__       
+		  _\/\\\_____________\/\\\_______\/\\\_\/\\\/\\\__\/\\\___________\/\\\_______\/\\\__/\\\/////////\\\_\/\\\_____\/\\\_________\/\\\_______      
+		   _\/\\\\\\\\\\\_____\/\\\_______\/\\\_\/\\\//\\\_\/\\\___________\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_\/\\\\\\\\\\\/__________\/\\\_______     
+		    _\/\\\///////______\/\\\_______\/\\\_\/\\\\//\\\\/\\\___________\/\\\/////////____\/\\\\\\\\\\\\\\\_\/\\\//////\\\__________\/\\\_______    
+		     _\/\\\_____________\/\\\_______\/\\\_\/\\\_\//\\\/\\\___________\/\\\_____________\/\\\/////////\\\_\/\\\____\//\\\_________\/\\\_______   
+		      _\/\\\_____________\//\\\______/\\\__\/\\\__\//\\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\_____\//\\\________\/\\\_______  
+		       _\/\\\______________\///\\\\\\\\\/___\/\\\___\//\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\______\//\\\_______\/\\\_______ 
+		        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
+		*/
 
+		var _l_l = -Math.pow(dot(player_pos,player_pos), 0.5);
+		var _oh = dot(player_pos,[0,1,0,1]);
 
-		//w_player_pos = rot_x_pln(rot_y_pln(player_pos, -pi/4), pi-player_look_dir[1]);
-		//w_player_pos = rot_y_pln(player_pos, -pi/4);
-		//var f_dist = -5.0;
-		//var f_dist = m_objs[1][1];
+		w_player_pos = rot_y_pln(player_pos, -pi/4);
 
+		var _ang = Math.asin(_oh/_l_l);
+		//console.log(_ang + " " + _oh + " " + _l_l + " " + Math.abs(_oh/_l_l).toFixed(3));
 
-
-		// aim_floor = [
-		// 	-player_pos[2],
-		// 	-player_pos[1],
-		// 	-player_pos[0],
-		// 	1
-		// ];
-
-		//var z_f_0 = [0,0,1,1];
-
-		//w_player_pos = rot_x_pln[z_f_0, pi/2-player_look_dir[1]];
-
-		//var z_f_2 = rot_y_pln[rot_x_pln[z_f_0, pi/2-player_look_dir[1]], player_look_dir[0]];
-
-		//console.log(z_f_2);
-
-		//w_player_pos = rot_y_pln[rot_x_pln[z_f_0, pi/2-player_look_dir[1]], player_look_dir[0]];
-
-		//console.log(aim_floor);
-
-		// m_objs[1][0] = w_player_pos[0];
-		// m_objs[1][1] = w_player_pos[1];
-		// m_objs[1][2] = w_player_pos[2];
-		// m_objs[1][3] = 1;
-
-		// m_objs[1][0] = w_player_pos[0]*0.707106;
-		// m_objs[1][1] = w_player_pos[1]*1; //0.866025
-		// m_objs[1][2] = w_player_pos[2]*0.707106;
-		// m_objs[1][3] = 1;
+		wf_player_pos = rot_x_pln([0,0,_l_l,1], -_ang);
+		//wf_player_pos = rot_x_pln(w_player_pos, -_ang);
 
 
-		// m_objs[1][0] = w_player_pos[0]*1;
-		// m_objs[1][1] = w_player_pos[1]; //0.866025
-		// m_objs[1][2] = w_player_pos[2]*1;
-		// m_objs[1][3] = 1;
 
-		// m_objs[1][0] = player_pos[0];
-		// m_objs[1][1] = player_pos[1]; //0.866025
-		// m_objs[1][2] = player_pos[2];
-		// m_objs[1][3] = 1;
+		m_objs[1][0] = w_player_pos[0]*pi4;
+		m_objs[1][1] = wf_player_pos[1]; //0.866025
+		m_objs[1][2] = w_player_pos[2]*pi4;
+		m_objs[1][3] = 1;
 
-			// player_pos[0] += Math.sin(-player_look_dir[0]+pi/4)*keyVec[1]*0.3 * -1; // -1 temp ig
-			// player_pos[2] += Math.cos(-player_look_dir[0]+pi/4)*keyVec[1]*0.3 * -1;
-			// player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3; // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 
-		// m_objs[1][4] = -m_objs[1][0]-f_dist*Math.sin(player_look_dir[0]);
-		// m_objs[1][5] = m_objs[1][1]+f_dist*(Math.sin(player_look_dir[1]));
-		// m_objs[1][6] = -m_objs[1][2]+f_dist*Math.cos(player_look_dir[0]);
-		// m_objs[1][7] = 1;
+		//var f_dist = -0.15;
+
+		var f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]-pi/4);
+		var f_dist = -_oh/dot(N,norm(f_look));
+		//console.log(f_look);
+
+
+		m_objs[1][4] = m_objs[1][0]+f_dist*f_look[0];
+		m_objs[1][5] = m_objs[1][1]+f_dist*f_look[1];
+		m_objs[1][6] = m_objs[1][2]+f_dist*f_look[2];
+		m_objs[1][7] = 1;
+
+		//console.log
+		//console.log (m_objs[1][4]);
+
+
+		if (keyInfo[10])
+			{
+				//mov_obj(2, [m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				var np = new Float32Array(
+					[
+						m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
+						m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+						m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
+						m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+						m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
+					]);
+				
+				if (runEvery(1000)) {addMData(np);}
+
+
+
+				
+				//console.log(m_objs[2]);
+			}
+
+
+
+		// if (keyInfo[12] && runEvery(2000))
+		// {
+		// 	player_pos[0] = m_objs[1][4];
+		// 	player_pos[1] = m_objs[1][5];
+		// 	player_pos[2] = m_objs[1][6];
+		// }
 
 		setData(); // Load all vertices
-
-		//w_player_pos = get_w_pos(player_pos, player_look_dir);
-
-		// m_objs[1][0] = w_player_pos[0];
-		// m_objs[1][1] = w_player_pos[1];
-		// m_objs[1][2] = w_player_pos[2];
-		// m_objs[1][3] = 1.0;
-
-		//if (player_look_dir[0] == 0) {player_look_dir[0] = 0.000001;} if (player_look_dir[1] == 0) {player_look_dir[1] = 0.000001;} // SUPER HOT FIX. Ig as long as 1px of arc > finite. Never really sticks ykwim
 
 
 		// Translation - Last?
@@ -643,8 +668,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-			/*-- Camera Transfrom --\
-			\----------------------*/
+			/*-- Perspective Transfrom --\
+			\---------------------------*/
 
 		/*
 
@@ -696,7 +721,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//console.log(inc);
 		Compute(m1, inc);
 		//console.log(m0);
-		console.log(m1.data[mem_log[1][0]] + " " + m1.data[mem_log[1][0]+1] + " " + m1.data[mem_log[1][0]]+2);
+		//console.log(m1.data[mem_log[1][0]] + " " + m1.data[mem_log[1][0]+1] + " " + m1.data[mem_log[1][0]]+2);
 	}
 	
 
