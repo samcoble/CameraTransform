@@ -13,9 +13,7 @@ I do not use AI to generate any of my code.
 This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
-
-
-![a](https://github.com/samcoble/CameraTransform/assets/32228102/0bd358c6-f419-4f57-896f-94bf2c84d3ec)
+![g](https://github.com/samcoble/CameraTransform/assets/32228102/0bbd117e-f5ca-4d56-8144-c33f8c18b458)
 
 New wallpaper ayyo
 
