@@ -44,6 +44,23 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 
 
 
+// Mem_sum += on call   =>   problem
+
+// remove old data and replace w/ new at location breaks mem_log
+// call recreation of mem_log
+// best do this in a brand new m2 and run separate transforms. Then send it as obj into m1. aka model edit.
+
+// fix obj translation fn
+
+
+
+
+
+
+
+
+
+
 						/*-- Var Decs --\
 						\--------------*/
 
@@ -63,7 +80,7 @@ var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi4 = 0.7071067811;
 
 //var aim_floor = new Float32Array(4);
-var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
+
 
 var player_look_dir = [pi/4, 0.1, 0];
 var player_look_dir_i = [pi/4, 0.1, 0];
@@ -74,7 +91,7 @@ var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
-var fov_slide = 20.0;
+var fov_slide = 40.0;
 
 var player_pos = [0.00001,0.00001,0.00001];
 var w_player_pos = [0.00001,0.00001,0.00001];
@@ -195,14 +212,7 @@ function norm(_p)
 	_l = dot(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, 1]);
 }
-// var _pf = [
-// 	player_pos[0] + f_dist*player_look_dir
-// 	];
 
-
-// t = -N . player_pos / N . player_look_dir
-
-// aim_floor = player_pos + t*player_look_dir
 
 function setTitle()
 {
@@ -211,7 +221,7 @@ function setTitle()
 }
 
 
-function runEvery(_ms)
+function runEvery(_ms) // works 100 honest #1 fav js fn rn
 {
 	var d_t = Date.now() - date_now; var _r = 0;
 	if (d_t > _ms) {_r = 1; date_now = Date.now();} else {_r = 0;}
@@ -228,7 +238,7 @@ function runEvery(_ms)
 var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
 var mem_sum = 0;
-
+var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
 const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
@@ -243,13 +253,40 @@ function setFlr() // fn: Create floor vertices
 	{
 		for (var j = 0; j<_flr; j++)
 		{	//	i <=> (i*10+j)
-			m_flr[(i*_flr+j)*4]   = i - _flr/2;
+			m_flr[(i*_flr+j)*4]   = 5*i - _flr/2*5;
 			m_flr[(i*_flr+j)*4+1] = 0;
-			m_flr[(i*_flr+j)*4+2] = j - _flr/2;
+			m_flr[(i*_flr+j)*4+2] = 5*j - _flr/2*5;
 			m_flr[(i*_flr+j)*4+3] = 1;
 		}
 	}
 }
+
+var _ws = 5*_flr/2;
+const m_map = new Float32Array([
+
+		_ws,0,_ws,1,
+		_ws,-_ws,_ws,1,
+		-_ws,-_ws,_ws,1,
+		-_ws,0,_ws,1,
+		-_ws,0,-_ws,1,
+		-_ws,-_ws,-_ws,1,
+		_ws,-_ws,-_ws,1,
+		_ws,0,-_ws,1,
+		_ws,0,_ws,1,
+		-_ws,0,_ws,1,
+		-_ws,-_ws,_ws,1,
+		-_ws,-_ws,-_ws,1,
+		-_ws,0,-_ws,1,
+		-_ws,-_ws,-_ws,1,
+		-_ws,0,-_ws,1,
+		_ws,0,-_ws,1,
+		_ws,-_ws,-_ws,1,
+		_ws,-_ws,_ws,1,
+
+
+
+	]);
+
 
 setFlr();
 
@@ -284,6 +321,7 @@ function addMData(ar)
 
 addMData(m_flr);
 addMData(aim_floor);
+addMData(m_map);
 addMData(m_cube);
 
 
@@ -332,7 +370,6 @@ canvas.addEventListener("click", async () => {
 	mouseLock = 1;
 });
 
-// x y T
 
 function rot_y_pln(_p,_r)
 {
@@ -357,23 +394,6 @@ function rot_x_pln(_p,_r)
 
 	return _p2;
 }
-
-
-
-// var w_player_pos = [
-// 		Math.cos(player_look_dir[1])*x-Math.sin(player_look_dir[1])*z
-// 		y,
-// 		Math.cos(player_look_dir[1])*z-Math.sin(player_look_dir[1])*x
-// 		1
-// 	];
-
-
-// var w_player_pos = [
-// 		x,
-// 		Math.cos(yaw)*y-Math.sin(yaw)*z
-// 		Math.sin(yaw)*y+Math.cos(yaw)*z
-// 		1
-// 	];
 
 
 document.addEventListener("DOMContentLoaded", function(event)
@@ -420,8 +440,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawRectFrame(ctx, 25 ,30,410,168);
 		drawRect(ctx, 25 ,30,410,168);
 
-		drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
-		drawLine(ctx,inner_window_width/2,inner_window_height/2-3, inner_window_width/2, inner_window_height/2+3);
+		//drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
+		//drawLine(ctx,inner_window_width/2,inner_window_height/2-3, inner_window_width/2, inner_window_height/2+3);
 
 		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
 		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
@@ -430,37 +450,33 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, inner_window_height-120);
 		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 50, 120);
 		//
-		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov)", 50, 150);
+		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov'ish)", 50, 150);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
-		drawText(ctx, "F(place point), L(lock mov)", 50, 180); //, T(teleport)
+		drawText(ctx, "F(place point), L(lock mov), T(bad teleport)", 50, 180); //, 
 
-
-		//
-
-
+		// bad 4 cpu fix
 
 		var s = fov_slide; // Arbitrary visual scaler
 		for (var i = 0; i<m_objs.length; i++)
 		{
 			for (var j = 0; j<mem_log[i][1]/4; j++) // fix me?
 			{
-				if (init_dat.data[4*j+mem_log[i][0]+3] > 0) // Clipping
+				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.12));
+					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
 					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[1][0]+1]*s+inner_window_height/2);
 					if (j == mem_log[i][1]/4-1)
 					{
 						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);
 					} else {
-					if (i != 0) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+inner_window_height/2);}
+					if (i != 0 && i != 1) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+inner_window_height/2);}
 					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);}
 					}
 				}
 			}
 		}
 	}
-
 
 
 						/*-- Compute is runtime main --\
@@ -605,12 +621,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		// if (keyInfo[12] && runEvery(2000))
-		// {
-		// 	player_pos[0] = m_objs[1][4];
-		// 	player_pos[1] = m_objs[1][5];
-		// 	player_pos[2] = m_objs[1][6];
-		// }
+		if (keyInfo[12] && runEvery(1000))
+		{
+			player_pos[0] = m_objs[1][4];
+			player_pos[1] = m_objs[1][5];
+			player_pos[2] = m_objs[1][6];
+		}
 
 		setData(); // Load all vertices
 
@@ -676,16 +692,17 @@ document.addEventListener("DOMContentLoaded", function(event)
 		Finally solved problem. Create the inverse player_dat struct with begging x-y-z. All transforms except perspective
 
 		*/
-
+		//${player_look_dir[1]}
 
 		turbojs.run(init_dat, `void main(void) {
 
 		#define PI 3.1415926538
 
 		// float a = PI/6.;
-		float a = PI/24.;
+		float a = PI/14.;
+
 		float n = 0.015;
-		float f = 500.01;
+		float f = 500.01; // 
 
 		commit(vec4(
 			(read().x/tan(a/2.)),
@@ -716,8 +733,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function runTime()
 	{
 				//console.log(m1.data[i*4+mem_log[j][0]]);// try return of compute ????
-		//m1 = m0;
-		//inc+=0.02;
+		//m1 = m0;as
+		inc+=0.0002;
 		//console.log(inc);
 		Compute(m1, inc);
 		//console.log(m0);
