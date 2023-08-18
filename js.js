@@ -2,7 +2,7 @@
 
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
-
+// Generic draw fns
 
 function drawText(c, txt, x0, y0)
 {
@@ -41,7 +41,15 @@ function drawLine(c, x0, y0, x1, y1)
 
 function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 
-
+function drawPanel(c, x0, y0, x, y)
+{
+		c.rect(x0, y0, x-x0, y-y0);
+		ctx.fillStyle = "rgba(10,12,14,0.7)";
+		ctx.fill();
+		c.beginPath(); c.lineWidth = "0.1px";
+		c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
+		c.rect(x0, y0, x-x0, y-y0); c.stroke();
+}
 
 
 // Mem_sum += on call   =>   problem
@@ -52,7 +60,12 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 
 // fix obj translation fn
 
+//=============
 
+// FIX later
+
+// Use substr to get new obj from  data?
+/// HERE   console.log(foo.data.subarray(0, 5));
 
 
 
@@ -65,7 +78,7 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 						\--------------*/
 
 // !
-var runTime_int = 10; // Time delay between frames as they render 
+var runTime_int = 1; // Time delay between frames as they render 
 // !
 
 var title_int = 350;
@@ -96,9 +109,9 @@ var fov_slide = 40.0;
 var player_pos = [0.00001,0.00001,0.00001];
 var w_player_pos = [0.00001,0.00001,0.00001];
 var wf_player_pos = [0.00001,0.00001,0.00001];
+var wt_player_pos = [0.00001,0.00001,0.00001];
 
 var LookToggle = 0;
-var inc = 0;
 
 var lock_vert_mov = false;
 
@@ -238,14 +251,20 @@ function runEvery(_ms) // works 100 honest #1 fav js fn rn
 var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
 var mem_sum = 0;
-var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
+
+var m2_objs = []; // [[n,...,],[n,...,],...]
+var mem_log2 = []; // [start, size]
+var mem_sum2 = 0;
+
+
+var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
 const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]); //30,0,30,30,-30,0,-30,30,30,0,-30,30
 
 var _flr = 50; // Side length of square
 var m_flr = new Float32Array(4*_flr*_flr);
-
+var edit_sum = 0;
 
 function setFlr() // fn: Create floor vertices
 {
@@ -292,7 +311,10 @@ setFlr();
 
 // 
 
-var m1 = turbojs.alloc(20000);
+var m1 = turbojs.alloc(20000); // Everything
+
+//var m_edit = turbojs.alloc(4000); // Obj being modified
+var m_t_objs = [];
 
 	/*
 	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
@@ -313,6 +335,19 @@ function addMData(ar)
 	mem_sum += ar.length;
 }
 
+// New plan. Same struct. Second float 32 array. Set dat adds secondary itself at end of first mem_log. Should work. 
+
+// function addVert(ar, _off) // Accepts Float32Array // _off = mem_log[2][0]
+// {
+// 	//m_objs[m_objs.length] = ar; // Append ar to m_objs
+// 	//mem_log.push([mem_sum, ar.length]);
+// 	m_edit.data[edit_sum*4+_off] = ar[0];
+// 	m_edit.data[edit_sum*4+_off+1] = ar[1];
+// 	m_edit.data[edit_sum*4+_off+2] = ar[2];
+// 	m_edit.data[edit_sum*4+_off+3] = ar[3];
+// 	edit_sum += 1;
+// }
+
 
 
 						/*-- PLACE DATA --\
@@ -321,13 +356,12 @@ function addMData(ar)
 
 addMData(m_flr);
 addMData(aim_floor);
+//addMdata(m_edit);
 addMData(m_map);
 addMData(m_cube);
 
 
-
 //addMData(m_tri);
-
 
 
 
@@ -346,16 +380,19 @@ function setData()
 }
 
 
-function mov_obj(_i, _p)
-{
-	for (var i = 0; i<mem_log[_i][1] /4; i++)
-	{
-		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]-_p[0];
-		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]-_p[1];
-		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]-_p[2];
-		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
-	}
-}
+
+
+
+// function mov_obj(_i, _p)
+// {
+// 	for (var i = 0; i<mem_log[_i][1] /4; i++)
+// 	{
+// 		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]-_p[0];
+// 		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]-_p[1];
+// 		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]-_p[2];
+// 		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
+// 	}
+// }
 
 
 
@@ -395,7 +432,6 @@ function rot_x_pln(_p,_r)
 	return _p2;
 }
 
-
 document.addEventListener("DOMContentLoaded", function(event)
 {
 
@@ -414,16 +450,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-						/*-- Draw 2D data --\
-						\------------------*/
+
 
 	function drawIt(init_dat)
 	{
 		reDraw(ctx, inner_window_width, inner_window_height); // FIRST
 
-
-						/*-- DRAW + DEBUG PANEL --\
-						\------------------------*/
 
 		/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -437,8 +469,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
         */
 
-		drawRectFrame(ctx, 25 ,30,410,168);
-		drawRect(ctx, 25 ,30,410,168);
+		drawPanel(ctx, 25, 30, 435, 198);
+		//
+		var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
+		
+		drawPanel(ctx, inner_window_width*tool_pnl_sw, inner_window_height*(1-tool_pnl_sh), inner_window_width*(1-tool_pnl_sw), inner_window_height*(1-tool_pnl_sh*0.12));
 
 		//drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
 		//drawLine(ctx,inner_window_width/2,inner_window_height/2-3, inner_window_width/2, inner_window_height/2+3);
@@ -452,7 +487,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//
 		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov'ish)", 50, 150);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
-		drawText(ctx, "F(place point), L(lock mov), T(bad teleport)", 50, 180); //, 
+		drawText(ctx, "F(place point), L(lock mov), T(teleport)", 50, 180); //, 
 
 		// bad 4 cpu fix
 
@@ -464,7 +499,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
+					if ( i != 1 ) {drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));}
+					else if ( j == 1 ) {
+
+						//drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
+						drawLine(ctx,inner_window_width/2,inner_window_height/2+3 + init_dat.data[4*j+mem_log[i][0]+1]*s, inner_window_width/2, inner_window_height/2-3 + init_dat.data[4*j+mem_log[i][0]+1]*s);
+						drawLine(ctx,inner_window_width/2+3,inner_window_height/2+init_dat.data[4*j+mem_log[i][0]+1]*s, inner_window_width/2-3, inner_window_height/2+init_dat.data[4*j+mem_log[i][0]+1]*s);
+					}
 					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[1][0]+1]*s+inner_window_height/2);
 					if (j == mem_log[i][1]/4-1)
 					{
@@ -479,11 +520,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 	}
 
 
-						/*-- Compute is runtime main --\
-						\-----------------------------*/
 
-
-	function Compute(init_dat, t_inc)
+	function Compute(init_dat)
 	{
 
 		/*
@@ -497,8 +535,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		       ____\////\\\\\\\\\____\///\\\\\/_____\/\\\_____________\/\\\_\/\\\______________\///\\\\\\\\\/_________\/\\\_______\/\\\\\\\\\\\\\\\_ 
 		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
 		*/
-
-
 
 		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -1.000001;}
@@ -576,18 +612,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//wf_player_pos = rot_x_pln(w_player_pos, -_ang);
 
 
-
 		m_objs[1][0] = w_player_pos[0]*pi4;
 		m_objs[1][1] = wf_player_pos[1]; //0.866025
 		m_objs[1][2] = w_player_pos[2]*pi4;
 		m_objs[1][3] = 1;
 
 
-		//var f_dist = -0.15;
-
 		var f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]-pi/4);
 		var f_dist = -_oh/dot(N,norm(f_look));
-		//console.log(f_look);
 
 
 		m_objs[1][4] = m_objs[1][0]+f_dist*f_look[0];
@@ -595,23 +627,30 @@ document.addEventListener("DOMContentLoaded", function(event)
 		m_objs[1][6] = m_objs[1][2]+f_dist*f_look[2];
 		m_objs[1][7] = 1;
 
-		//console.log
-		//console.log (m_objs[1][4]);
+
+		wt_player_pos = rot_y_pln([m_objs[1][4],m_objs[1][5],m_objs[1][6],1], pi/4);
+
+		m_objs[1][8] = wt_player_pos[0];
+		m_objs[1][9] = wt_player_pos[1];
+		m_objs[1][10] = wt_player_pos[2];
+		m_objs[1][11] = 1;
 
 
 		if (keyInfo[10])
 			{
 				//mov_obj(2, [m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
-				var np = new Float32Array(
-					[
-						m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
-						m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-						m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
-						m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-						m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
-					]);
+
+				var np = new Float32Array([m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				// var np = new Float32Array(
+				// 	[
+				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
+				// 		m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
+				// 		m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+				// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
+				// 	]);
 				
-				if (runEvery(1000)) {addMData(np);}
+				if (runEvery(100)) {addMData(np);}
 
 
 
@@ -623,12 +662,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (keyInfo[12] && runEvery(1000))
 		{
-			player_pos[0] = m_objs[1][4];
-			player_pos[1] = m_objs[1][5];
-			player_pos[2] = m_objs[1][6];
+			player_pos[0] = m_objs[1][8];
+			player_pos[1] = m_objs[1][9]-1;
+			player_pos[2] = m_objs[1][10];
 		}
 
 		setData(); // Load all vertices
+
 
 
 		// Translation - Last?
@@ -640,8 +680,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 			read().w
 		));
 		}`);
-
-
 
 		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
@@ -678,20 +716,61 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//	Convert keyVec into unit sphere.
 		//	Quaternion no work. Replace all rotation functions. WEBGL fn for quat?
 		//	Pass in multiple Float32 Arrays? => a+b store a size..
-		//  It would be fun to inject a .dll into into the task bar and intercept the load&cache data transfer of the .
+		//  It would be fun to inject a .dll into into the task bar and intercept the load&cache data transfer of the .ico 
+
+		/*
+
+		Define plane w/ [ n . (Q-P) = 0 ]
+
+		After given theta: [ n . (Q-P) = ||N|| ||Q-P|| cos(theta) ]
+		theta: ang between n & Q
+		cos(theta) output pos & neg.
+		Can obtain sign of cos(theta) w/o trig fn call only dot product *** !!!
+ 
+ 		Now to obtain intersection w/ plane.
+
+ 		Say: I = Q1 + t(Q2-Q1)
+
+ 		d1 = n . (Q1-P)
+ 		d2 = n . (Q2-P)
+
+ 		I = Q1 + t(Q2-Q1)
+ 		I-P = (Q1-P) + t( (Q2-P)-(Q1-P) )
+ 		n . (I-P) = n . (Q1-P) + t * ( n . (Q2-P) - n . (Q1-P) )    apply subs
+		n . (I-P) = 0 ; on plane
+		0 = d1 + t*(d2 - d1)
+		t = d1 / (d2 - d1)  forget about trig fns bb
+
+		So aprox using a 0.00001
+
+		P is on plane at center of pin hole.
+
+		n . (Q-P) = 0 takes P and four n planes 
+
+		Because it's image space prior to horizontal/vertical expansions proportional to depth,
+		[1 0 0] [-1 0 0] [0 1 0] [0 -1 0] are the clipping planes by normal vec
+		Can also clip near and far.
 
 
+		if n . (Q-P) > 0 then Q is "in" <=> z > 0
+		if n . (Q-P) < 0 then Q is "out" <=> z < 0
+		if n . (Q-P) = 0 then Q is "on" <=> z = 0
+
+
+
+
+
+
+
+
+		*/
 
 
 
 			/*-- Perspective Transfrom --\
 			\---------------------------*/
 
-		/*
 
-		Finally solved problem. Create the inverse player_dat struct with begging x-y-z. All transforms except perspective
-
-		*/
 		//${player_look_dir[1]}
 
 		turbojs.run(init_dat, `void main(void) {
@@ -732,13 +811,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	function runTime()
 	{
-				//console.log(m1.data[i*4+mem_log[j][0]]);// try return of compute ????
-		//m1 = m0;as
-		inc+=0.0002;
-		//console.log(inc);
-		Compute(m1, inc);
-		//console.log(m0);
-		//console.log(m1.data[mem_log[1][0]] + " " + m1.data[mem_log[1][0]+1] + " " + m1.data[mem_log[1][0]]+2);
+
+
+		Compute(m1);
+
 	}
 	
 
@@ -767,7 +843,6 @@ function QuatMult(q1, q2)
 
 // This should work; use gpu ?
 
-//var T = t_inc;
 T = 1.0;
 var n = [0.0,1.0,0.0];
 var q1 = [Math.cos(T/2), Math.sin(T/2)*n[0], Math.sin(T/2)*n[1], Math.sin(T/2)*n[2]];
