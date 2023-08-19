@@ -13,6 +13,7 @@ This project is meant to be an endless exercise of mathematics as I add features
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
 
+Example of vertices 'painted' onto the floor plane. The beginning of object modification. At some point curvature will be a wide syntax.
 ![ye](https://github.com/samcoble/CameraTransform/assets/32228102/f0179d0f-3c6d-4fe8-be1c-3a7a191da6cc)
 
 
