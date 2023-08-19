@@ -86,8 +86,8 @@ var title_int = 350;
 var date_now = 0;
 
 
-var inner_window_width = document.getElementsByTagName("html")[0].clientWidth;
-var inner_window_height = document.getElementsByTagName("html")[0].clientHeight;
+var in_win_w = document.getElementsByTagName("html")[0].clientWidth;
+var in_win_h = document.getElementsByTagName("html")[0].clientHeight;
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi4 = 0.7071067811;
@@ -124,7 +124,7 @@ onmousemove = function(e)
 {
 	if (mouseLock)
 		{
-			player_look_dir = [ player_look_dir[0]+(e.movementX/inner_window_width * pi * 2) , player_look_dir[1]-(e.movementY/inner_window_width * pi * 2) , 0 ];
+			player_look_dir = [ player_look_dir[0]+(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-(e.movementY/in_win_w * pi * 2) , 0 ];
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 }
 
@@ -252,9 +252,9 @@ var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
 var mem_sum = 0;
 
-var m2_objs = []; // [[n,...,],[n,...,],...]
-var mem_log2 = []; // [start, size]
-var mem_sum2 = 0;
+var m_t_objs = []; // [[n,...,],[n,...,],...]
+var mem_t_log = []; // [start, size]
+var mem_t_sum = 0;
 
 
 var aim_floor = new Float32Array([0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1, 0.00001,0.00001,0.00001,1]);
@@ -314,7 +314,7 @@ setFlr();
 var m1 = turbojs.alloc(20000); // Everything
 
 //var m_edit = turbojs.alloc(4000); // Obj being modified
-var m_t_objs = [];
+
 
 	/*
 	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
@@ -333,6 +333,13 @@ function addMData(ar)
 	m_objs[m_objs.length] = ar; // Append ar to m_objs
 	mem_log.push([mem_sum, ar.length]);
 	mem_sum += ar.length;
+}
+
+function addTData(ar)
+{
+	m_t_objs[m_t_objs.length] = ar;
+	mem_t_log.push([mem_t_sum, ar.length]);
+	mem_t_sum += ar.length;
 }
 
 // New plan. Same struct. Second float 32 array. Set dat adds secondary itself at end of first mem_log. Should work. 
@@ -367,7 +374,7 @@ addMData(m_cube);
 
 function setData()
 {
-	for (var j = 0; j<m_objs.length; j++)
+	for (var j = 0; j<(m_objs.length); j++)
 	{
 		for (var i = 0; i<m_objs[j].length/4; i++)
 		{
@@ -375,6 +382,16 @@ function setData()
 			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1];
 			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2];
 			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3];
+		}
+	}
+	for (var j = 0; j<(m_t_objs.length); j++)
+	{
+		for (var i = 0; i<m_t_objs[j].length/4; i++)
+		{
+			m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
+			m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
+			m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
+			m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
 		}
 	}
 }
@@ -442,10 +459,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 	var screen_width = window.screen.width * window.devicePixelRatio;
 	var screen_height = window.screen.height * window.devicePixelRatio;
 
-	document.getElementById("cv").width = inner_window_width;
-	document.getElementById("cv").height = inner_window_height;
-	document.getElementsByTagName("body")[0].width = inner_window_width;
-	document.getElementsByTagName("body")[0].height = inner_window_height;
+	document.getElementById("cv").width = in_win_w;
+	document.getElementById("cv").height = in_win_h;
+	document.getElementsByTagName("body")[0].width = in_win_w;
+	document.getElementsByTagName("body")[0].height = in_win_h;
 
 
 
@@ -454,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	function drawIt(init_dat)
 	{
-		reDraw(ctx, inner_window_width, inner_window_height); // FIRST
+		reDraw(ctx, in_win_w, in_win_h); // FIRST
 
 
 		/*
@@ -473,16 +490,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//
 		var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
 		
-		drawPanel(ctx, inner_window_width*tool_pnl_sw, inner_window_height*(1-tool_pnl_sh), inner_window_width*(1-tool_pnl_sw), inner_window_height*(1-tool_pnl_sh*0.12));
+		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
-		//drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
-		//drawLine(ctx,inner_window_width/2,inner_window_height/2-3, inner_window_width/2, inner_window_height/2+3);
+		//drawLine(ctx,in_win_w/2-3,in_win_h/2, in_win_w/2+3, in_win_h/2);
+		//drawLine(ctx,in_win_w/2,in_win_h/2-3, in_win_w/2, in_win_h/2+3);
 
 		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
 		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
 		//
 		drawText(ctx, "player_pos:     | " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, 105);
-		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, inner_window_height-120);
+		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, in_win_h-120);
 		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 50, 120);
 		//
 		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov'ish)", 50, 150);
@@ -499,20 +516,38 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					if ( i != 1 ) {drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));}
+					if ( i != 1 ) {drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+in_win_w/2, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_h/2, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));}
 					else if ( j == 1 ) {
 
-						//drawLine(ctx,inner_window_width/2-3,inner_window_height/2, inner_window_width/2+3, inner_window_height/2);
-						drawLine(ctx,inner_window_width/2,inner_window_height/2+3 + init_dat.data[4*j+mem_log[i][0]+1]*s, inner_window_width/2, inner_window_height/2-3 + init_dat.data[4*j+mem_log[i][0]+1]*s);
-						drawLine(ctx,inner_window_width/2+3,inner_window_height/2+init_dat.data[4*j+mem_log[i][0]+1]*s, inner_window_width/2-3, inner_window_height/2+init_dat.data[4*j+mem_log[i][0]+1]*s);
+						//drawLine(ctx,in_win_w/2-3,in_win_h/2, in_win_w/2+3, in_win_h/2);
+						drawLine(ctx,in_win_w/2,in_win_h/2+3 + init_dat.data[4*j+mem_log[i][0]+1]*s, in_win_w/2, in_win_h/2-3 + init_dat.data[4*j+mem_log[i][0]+1]*s);
+						drawLine(ctx,in_win_w/2+3,in_win_h/2+init_dat.data[4*j+mem_log[i][0]+1]*s, in_win_w/2-3, in_win_h/2+init_dat.data[4*j+mem_log[i][0]+1]*s);
 					}
-					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[1][0]+1]*s+inner_window_height/2);
+					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+in_win_w/2, init_dat.data[4*j+mem_log[1][0]+1]*s+in_win_h/2);
 					if (j == mem_log[i][1]/4-1)
 					{
-						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);
+						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_w/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_h/2-18);
 					} else {
-					if (i != 0 && i != 1) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2, init_dat.data[4*(j+1)+mem_log[i][0]]*s+inner_window_width/2, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+inner_window_height/2);}
-					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+inner_window_width/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+inner_window_height/2-18);}
+					if (i != 0 && i != 1) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+in_win_w/2, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_h/2, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_w/2, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_h/2);}
+					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_w/2-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_h/2-18);}
+					}
+				}
+			}
+		}
+
+		for (var i = 0; i<m_t_objs.length; i++)
+		{
+			for (var j = 0; j<mem_t_log[i][1]/4; j++) // fix me?
+			{
+				if (init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && init_dat.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
+				// if (1) // Clipping off
+				{
+					drawDot(ctx, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_w/2, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_h/2, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
+					if (i == m_t_objs.length-1)
+					{
+						drawText(ctx, "END " + j, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_w/2-32, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_h/2-18);
+					} else {
+						drawLine(ctx, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_w/2, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_h/2, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_w/2, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_h/2);
 					}
 				}
 			}
@@ -544,19 +579,20 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (keyVec[1] != 0)
 		{
-			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.3 * -1; // -1 temp ig
-			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.3 * -1;
-			if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.3;} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+keyInfo[8]*3); // -1 temp ig
+			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+keyInfo[8]*3);
+			if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.6*(1+keyInfo[8]*3);} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 		}
 
 		if (keyVec[0] != 0)
 		{
-			player_pos[0] += Math.cos(player_look_dir[0])*keyVec[0]*0.3;
-			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.3;
+			player_pos[0] += Math.cos(player_look_dir[0])*keyVec[0]*0.6*(1+keyInfo[8]*3);
+			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.6*(1+keyInfo[8]*3);
 		}
 
-		if (keyInfo[4]) {player_pos[1] += -0.3;}
-		if (keyInfo[8]) {player_pos[1] += 0.3;}
+		if (keyInfo[4]) {player_pos[1] += -0.3*(1+keyInfo[8]*5);}
+		//if (keyInfo[8]) {player_pos[1] += 0.3;}
+
 
 		if (keyInfo[9])
 		{
@@ -574,7 +610,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				LookToggle = 1;
 				var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
 				mouseDataD[0] = dX; mouseDataD[1] = dY;
-				player_look_dir = [ player_look_dir_i[0]+(dX/inner_window_width * pi * 2) , player_look_dir_i[1]+(dY/inner_window_width * pi * 2) , 0 ]; // ! width 4 both !
+				player_look_dir = [ player_look_dir_i[0]+(dX/in_win_w * pi * 2) , player_look_dir_i[1]+(dY/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
 
 		} else 
 		{
@@ -650,7 +686,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
 				// 	]);
 				
-				if (runEvery(100)) {addMData(np);}
+				if (runEvery(100)) {addTData(np);}
 
 
 
