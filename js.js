@@ -51,11 +51,6 @@ function drawPanel(c, x0, y0, x, y)
 		c.rect(x0, y0, x-x0, y-y0); c.stroke();
 }
 
-
-//=============
-
-
-
 /*
 	json load/save
 
@@ -78,7 +73,25 @@ function drawPanel(c, x0, y0, x, y)
 
 	obj_select(_r); where _r is radius from center screen to screen space points. Same dot sequence to sort?
 
-/*
+
+
+// Old Inverse Kinematic fn from way back
+ 
+function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
+    local Xc = (F:x() - I:x())*sin(90-Yaw) + (F:y() - I:y())*cos(90-Yaw) # Abs value this?
+    local Yc = F:z() - I:z() # Abs value this?
+    local HD = min(sqrt(Xc^2 + Yc^2), Arm1 + Arm2)
+    local D = (Arm1^2 + Arm2^2 - HD^2)/(2*Arm1*Arm2)
+    local Fye = atan(sqrt(1-D^2), D)
+    local Banan = 180 - Fye
+    local Beta = atan(Yc, Xc)
+    local Alpha = atan(Arm2*sin(Banan), Arm1+Arm2*cos(Banan))
+    local Theta1 = (Beta - Alpha)
+    local A = vec(Arm1*cos(Theta1)*sin(90-Yaw), Arm1*cos(Theta1)*cos(90-Yaw), Arm1*sin(Theta1))+I
+    local B = A + vec(Arm2*cos(Theta1+Banan)*sin(90-Yaw), Arm2*cos(Theta1+Banan)*cos(90-Yaw), Arm2*sin(Theta1+Banan))
+    
+    return array(Theta1, Banan, A, B)
+}
 
 
 	// working json fn 
@@ -135,6 +148,10 @@ var LookToggle = 0;
 
 var lock_vert_mov = false;
 var pln_cyc = 1;
+
+//var g_over_x = new Float32Array(4*10*10);
+//var g_over_z = new Float32Array(4*10*10);
+
 
 						/*-- Key & Mouse event capture --\
 						\-------------------------------*/
@@ -243,6 +260,13 @@ function dot(a,b)
 	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 }
 
+function sub(a,b)
+{
+	return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];
+}
+
+function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
+
 var N = [0,1,0];
 
 
@@ -251,6 +275,18 @@ function norm(_p)
 	_l = dot(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, 1]);
 }
+
+function lpi(p1,p2,pp,n)
+{
+	var d1 = dot(n,sub(p1,pp));
+	var d2 = dot(n,sub(p2,pp));
+	// t = d1 / (d2 - d1)
+	var t = d1/(d2-d1);
+	// I = p1 + t(p2-p1) // Where I is the intersection
+	var _f = sub(p1,scale(sub(sub(p2,pp),sub(p1,pp)),t));
+	return _f;
+}
+
 
 
 function setTitle()
@@ -284,6 +320,7 @@ var mem_t_sum = 0;
 
 
 var aim_floor = new Float32Array([0.0,0.0,0.0,1, 0.0,0.0,0.0,1, 0.0,0.0,0.0,1, 0.0,0.0,0.0,1]);
+var aim_test = new Float32Array([0.0,0.0,0.0,1, 0.0,0.0,0.0,1]);
 const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
@@ -291,22 +328,50 @@ const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10
 
 
 var _flr = 50; // Side length of square
-var m_flr = new Float32Array(4*_flr*_flr);
+//var m_flr = new Float32Array(4*_flr*_flr);
 var edit_sum = 0;
 
-function setFlr() // fn: Create floor vertices
+
+function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
-	for (var i = 0; i<_flr; i++)
+	var _ob = new Float32Array(4*_l*_l);
+	for (var i = 0; i<_l; i++)
 	{
-		for (var j = 0; j<_flr; j++)
+		for (var j = 0; j<_l; j++)
 		{	//	i <=> (i*10+j)
-			m_flr[(i*_flr+j)*4]   = 5*i - _flr/2*5;
-			m_flr[(i*_flr+j)*4+1] = 0;
-			m_flr[(i*_flr+j)*4+2] = 5*j - _flr/2*5;
-			m_flr[(i*_flr+j)*4+3] = 1;
+			switch (_p)
+			{
+				case 1:
+						
+						_ob[(i*_l+j)*4] = _o[1];
+						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s + _o[1];
+						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s + _o[2];
+						_ob[(i*_l+j)*4+3] = 1;
+						break;
+				case 2:
+						_ob[(i*_l+j)*4]   = _s*i - _l/2*_s + _o[0];
+						_ob[(i*_l+j)*4+1] = _o[1];
+						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s + _o[2];
+						_ob[(i*_l+j)*4+3] = 1;
+						break;
+				case 3:
+						_ob[(i*_l+j)*4] = _s*j - _l/2*_s + _o[1];
+						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s + _o[2];
+						_ob[(i*_l+j)*4+2] = _o[2];
+						_ob[(i*_l+j)*4+3] = 1;
+						break;
+
+			}
+
 		}
 	}
+	return _ob;
 }
+
+var m_flr = setGrid(_flr, 5, 2, [0, 0, 0]);
+var g_over_x = setGrid(10, 1, 1, [25, 0, 50]);
+
+
 
 var _ws = 5*_flr/2;
 const m_map = new Float32Array([
@@ -335,7 +400,25 @@ const m_map = new Float32Array([
 	]);
 
 
-setFlr();
+
+// function gen_g_over(_o)
+// {
+// 	for (i = 0; i<5 ; i++)
+// 	{
+// 		for (j = 0; j<5 ; j++)
+// 		{
+// 			m_flr[(i*_flr+j)*4]   = 5*i - _flr/2*5;
+// 			m_flr[(i*_flr+j)*4+1] = 0;
+// 			m_flr[(i*_flr+j)*4+2] = 5*j - _flr/2*5;
+// 			m_flr[(i*_flr+j)*4+3] = 1;
+	
+// 		}
+// 	}
+// }
+
+// g_over = gen_g_over();
+
+
 
 // 
 
@@ -378,9 +461,10 @@ function addTData(ar)
 
 addMData(m_flr);
 addMData(aim_floor);
+addMData(aim_test);
 addMData(m_map);
 addMData(m_cube);
-
+addMData(g_over_x);
 
 //addMData(m_tri);
 
@@ -414,16 +498,17 @@ function setData()
 
 
 
-// function mov_obj(_i, _p)
-// {
-// 	for (var i = 0; i<mem_log[_i][1] /4; i++)
-// 	{
-// 		m_objs[i*4+mem_log[_i][0]]   = m_objs[i*4+mem_log[_i][0]]-_p[0];
-// 		m_objs[i*4+1+mem_log[_i][0]] = m_objs[i*4+1+mem_log[_i][0]]-_p[1];
-// 		m_objs[i*4+2+mem_log[_i][0]] = m_objs[i*4+2+mem_log[_i][0]]-_p[2];
-// 		m_objs[i*4+3+mem_log[_i][0]] = m_objs[i*4+3+mem_log[_i][0]];
-// 	}
-// }
+function mov_obj(_i, _p)
+{
+	for (var i = 0; i<mem_log[_i][1] /4; i++)
+	{
+		//console.log(m_objs[_i][i*4]);
+		m_objs[_i][i*4]   = m_objs[_i][i*4] - _p[0];
+		m_objs[_i][i*4+1] = m_objs[_i][i*4+1] - _p[1];
+		m_objs[_i][i*4+2] = m_objs[_i][i*4+2] - _p[2];
+		m_objs[_i][i*4+3] = m_objs[_i][i*4+3];
+	}
+}
 
 
 
@@ -511,14 +596,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
 		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
-		//
+		drawText(ctx, "pln_cyc:        | " + pln_cyc, 50, 90);
 		drawText(ctx, "player_pos:     | " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, 105);
 		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, in_win_h-120);
 		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 50, 120);
 		//
 		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov'ish)", 50, 150);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
-		drawText(ctx, "F(place point), L(lock mov), T(teleport)", 50, 180); //, 
+		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 50, 180); //, 
 
 		// bad 4 cpu fix
 
@@ -588,7 +673,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -1.000001;}
 
-		if (keyInfo[13] && runEvery(400)) {if (pln_cyc==3){pln_cyc=1} else {pln_cyc++;}}
+		if (keyInfo[13] && runEvery(400)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
@@ -685,14 +770,47 @@ document.addEventListener("DOMContentLoaded", function(event)
 		m_objs[1][8] = wt_player_pos[0];
 		m_objs[1][9] = wt_player_pos[1];
 		m_objs[1][10] = wt_player_pos[2];
-		m_objs[1][11] = 1;
+
+
+
+
+		var _pp = [-125,0,-125]; // Point on plane will be static so pass temp point
+		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
+		var testp1 = [m_objs[1][0], m_objs[1][1], m_objs[1][2]]; // player pos world
+		var testp2 = [m_objs[1][4], m_objs[1][5], m_objs[1][6]]; // aim dir vec * 100 + p0
+		var _inter = lpi(testp2,testp1,_pp,_nplns);
+
+		console.log(_inter);
+
+		m_objs[2][0] = _inter[0];
+		m_objs[2][1] = _inter[1];
+		m_objs[2][2] = _inter[2];
+		m_objs[2][3] = 1;
 
 
 		if (keyInfo[10])
 			{
-				//mov_obj(2, [m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				var np = new Float32Array([_inter[0], _inter[1], _inter[2], 1])
+				if (runEvery(10)) {addTData(np);}
 
-				var np = new Float32Array([m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				//mov_obj(4, scale(_inter,-pi4));
+			}
+
+
+
+		if (keyInfo[12] && runEvery(35))
+		{
+			player_pos[0] = m_objs[1][8];
+			player_pos[1] = m_objs[1][9]-3;
+			player_pos[2] = m_objs[1][10];
+		}
+		m_objs[1][11] = 1;
+
+
+
+				//mov_obj(2, [m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				// var np = new Float32Array([m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
+				//var np = new Float32Array([wt_player_pos[0], wt_player_pos[1], wt_player_pos[2]]);
 				// var np = new Float32Array(
 				// 	[
 				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
@@ -702,22 +820,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 				// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
 				// 	]);
 				
-				if (runEvery(100)) {addTData(np);}
 
 
-
-				
-				//console.log(m_objs[2]);
-			}
-
-
-
-		if (keyInfo[12] && runEvery(100))
-		{
-			player_pos[0] = m_objs[1][8];
-			player_pos[1] = m_objs[1][9]-3;
-			player_pos[2] = m_objs[1][10];
-		}
 
 		setData(); // Load all vertices
 
@@ -757,9 +861,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		
 
-
 		//console.log(init_dat.data[mem_log[1][0]].toFixed(3) + " " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " " + init_dat.data[mem_log[1][0]+2].toFixed(3));
-
 
 		// To do:
 
@@ -771,7 +873,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
 		//  First try making quaternion functions that calc ops with matrices. Useful later.
 		//	Pass in multiple Float32 Arrays? => a+b store a size..
-
+		//  Add dancing stick figures to every vertex immediately 
 
 		/*
 
@@ -797,9 +899,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		t = d1 / (d2 - d1)  forget about trig fns bb
 
 		So aprox using a 0.00001
-
 		P is on plane at center of pin hole.
-
 		n . (Q-P) = 0 takes P and four n planes 
 
 		Because it's image space prior to horizontal/vertical expansions proportional to depth,
@@ -810,15 +910,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if n . (Q-P) > 0 then Q is "in" <=> z > 0
 		if n . (Q-P) < 0 then Q is "out" <=> z < 0
 		if n . (Q-P) = 0 then Q is "on" <=> z = 0
-
-
-
-
-
-
-
-
 		*/
+
+
+
+		// point on plane, normal n
+		// p1 p2
+
+
+
+
+
+
+
+
+
+
 
 
 
