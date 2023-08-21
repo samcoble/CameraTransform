@@ -28,14 +28,14 @@ function drawRectFrame(c, x, y, w, h)
 function drawDot(c, rgba, x, y, s)
 {
 	c.beginPath(); c.lineWidth = "2px";
-	c.strokeStyle = "rgba("+rgba[0]+","+rgba[1]+","+rgba[2]+","+rgba[3]+")";
+	c.strokeStyle = rgba;
 	c.rect(x-s/2, y-s/2, s, s); c.stroke();
 
 }
 
 function drawLine(c, rgba, x0, y0, x1, y1)
 {
-	c.strokeStyle = "rgba("+rgba[0]+","+rgba[1]+","+rgba[2]+","+rgba[3]+")";
+	c.strokeStyle = rgba;
 	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); 
 }
 
@@ -52,6 +52,8 @@ function drawPanel(c, x0, y0, x, y)
 }
 
 /*
+	rgba should be built ahead of time instead of passing through over and over
+
 	json load/save
 
 	make mov_obj_fn so that
@@ -137,7 +139,7 @@ var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
-var fov_slide = 40.0;
+var fov_slide = 8.0;
 var crosshair_l = 4;
 
 var player_pos = [0.0,-3.0,0]; // Having this many _player_pos need entire refactor, should use gpu
@@ -153,12 +155,12 @@ var pln_cyc = 1;
 
 
 
-var rgba_r = [200, 50, 50, 215];
-var rgba_g = [50, 200, 50, 215];
-var rgba_b = [50, 50, 200, 215];
-var rgba_w = [222, 222, 222, 215];
+var rgba_r ="rgba(200, 50, 50, 215)";
+var rgba_g ="rgba(50, 200, 50, 215)";
+var rgba_b ="rgba(50, 50, 200, 215)";
+var rgba_w = "rgba(222, 222, 222, 215)";
 // var rgba_o = [170, 98, 28, 255];
-var rgba_o = [238, 207, 63, 1];
+var rgba_o = "rgba(238, 207, 63, 1)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
 
@@ -174,7 +176,7 @@ onmousemove = function(e)
 {
 	if (mouseLock)
 		{
-			player_look_dir = [ player_look_dir[0]+(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-(e.movementY/in_win_w * pi * 2) , 0 ];
+			player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 
 	if (player_look_dir[0] > 2*pi) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
@@ -247,7 +249,7 @@ el.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
-    if ((fov_slide-e.deltaY/80) > 0) {fov_slide += -e.deltaY/80};
+    if ((fov_slide-e.deltaY/300) > 0) {fov_slide += -e.deltaY/300};
 });
 
 						/*-- Title meme fn --\
@@ -331,7 +333,8 @@ var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
-
+var _lp = new Float32Array(3);
+var _pp = [-125,0,-125]; // Point on plane will be static
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 
 //const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
@@ -388,9 +391,9 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
  // grid: side length, scale, plane, offset
 var m_flr = setGrid(_flr, 5, 1, [0, 0, 0]);
 
-var g_over_x = setGrid(5, 5, 0, [0, 0, 0]);
-var g_over_y = setGrid(5, 5, 1, [0, 0, 0]);
-var g_over_z = setGrid(5, 5, 2, [0, 0, 0]);
+var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
+var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
+var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
 
 var _ws = 5*_flr/2;
@@ -593,7 +596,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		// bad 4 cpu fix
 
-		var s = fov_slide; // Arbitrary visual scaler
+		var s = Math.pow(fov_slide, 2); // Arbitrary visual scaler
 
 		for (var i = 1; i<m_objs.length; i++) // i find object
 		{
@@ -737,10 +740,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		var _pp = [-125,0,-125]; // Point on plane will be static so pass temp point
+
 		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 
-		//var testp1 = [m_objs[1][0], m_objs[1][1], m_objs[1][2]]; // player pos world
 		var testp1 = [player_pos[0],player_pos[1],player_pos[2]]; // player pos world
 		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos world
 
@@ -756,24 +758,38 @@ document.addEventListener("DOMContentLoaded", function(event)
 		m_objs[0][2] = _inter[2];
 		m_objs[0][3] = 1;
 
+		var _inter_rnd = [_inter[0].toFixed(0), _inter[1].toFixed(0), _inter[2].toFixed(0)];
+
+
 		// Place point F
 		if (keyInfo[10] && runEvery(50))
 			{
-				var np = new Float32Array([_inter[0], _inter[1], _inter[2], 1])
+				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1])
 				addTData(np);
+				_lp[0] = _inter_rnd[0];
+				_lp[1] = _inter_rnd[1];
+				_lp[2] = _inter_rnd[2];
 				
 			}
 
+		_pp = [_lp[0], _lp[1], _lp[2]];
 		switch(pln_cyc)
 		{
 			case 0:
-				m_obj_offs[4] = [_inter[0], _inter[1], _inter[2]];
+				m_obj_offs[4] = [_lp[0], _lp[1], _lp[2]];
+				m_obj_offs[5] = [0.0, 500.0, 0.0];
+				m_obj_offs[6] = [0.0, 500.0, 0.0];
 				break;
 			case 1:
-				m_obj_offs[5] = [_inter[0], _inter[1], _inter[2]];
+				m_obj_offs[4] = [0.0, 500.0, 0.0];
+				m_obj_offs[5] = [_lp[0], _lp[1], _lp[2]];
+				m_obj_offs[6] = [0.0, 500.0, 0.0];
 				break;
 			case 2:
-				m_obj_offs[6] = [_inter[0], _inter[1], _inter[2]];
+				m_obj_offs[4] = [0.0, 500.0, 0.0];
+				m_obj_offs[5] = [0.0, 500.0, 0.0];
+				m_obj_offs[6] = [_lp[0], _lp[1], _lp[2]];
+
 				break;
 		}
 
@@ -789,32 +805,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] = _inter[2];
 		}
 
-				// var np = new Float32Array(
-				// 	[
-				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
-				// 		m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
-				// 		m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-				// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
-				// 	]);
+		// var np = new Float32Array(
+		// 	[
+		// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
+		// 		m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+		// 		m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
+		// 		m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
+		// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
+		// 	]);
 				
 
 
 
 		setData(); // Load all vertices
-
-		//rotate playerpos ?????????????? to fix???????
-
-		// Translation - Last?
-		// // wtf is wrong with my tran function????????? ?OMGGGGGGGGGGGGGGGG fixed every problem
-		// turbojs.run(init_dat, `void main(void) {
-		// commit(vec4(
-		// 	read().x+read().z+float(${-player_pos[0]}), 
-		// 	read().y+float(${-player_pos[1]}),
-		// 	read().z-read().x+float(${-player_pos[2]}),
-		// 	read().w
-		// ));
-		// }`);
 
 
 		turbojs.run(init_dat, `void main(void) {
@@ -828,7 +831,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
-		#define off 0.785398163
 		float _yaw = float(${player_look_dir[0]});
 		commit(vec4(
 			cos(_yaw)*read().x+sin(_yaw)*read().z,
@@ -921,12 +923,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 		
 		#define _S1 1.0000600006
 		#define _S2 7.55682619647
-		#define a 0.22439947525
+		#define d 0.112672939
 
 
 		commit(vec4(
-			(read().x/tan(a/2.)),
-			(read().y/tan(a/2.)),
+			(read().x/d),
+			(read().y/d),
 			(read().z * _S1+_S2),
 			(-read().z)
 		));
