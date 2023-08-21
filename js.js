@@ -25,17 +25,17 @@ function drawRectFrame(c, x, y, w, h)
 	c.rect(x, y, w, h); c.stroke();
 }
 
-function drawDot(c, x, y, s)
+function drawDot(c, rgba, x, y, s)
 {
 	c.beginPath(); c.lineWidth = "2px";
-	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
+	c.strokeStyle = "rgba("+rgba[0]+","+rgba[1]+","+rgba[2]+","+rgba[3]+")";
 	c.rect(x-s/2, y-s/2, s, s); c.stroke();
 
 }
 
-function drawLine(c, x0, y0, x1, y1)
+function drawLine(c, rgba, x0, y0, x1, y1)
 {
-	c.strokeStyle = "rgba(222, 222, 222, 215)"; 
+	c.strokeStyle = "rgba("+rgba[0]+","+rgba[1]+","+rgba[2]+","+rgba[3]+")";
 	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); 
 }
 
@@ -73,6 +73,7 @@ function drawPanel(c, x0, y0, x, y)
 
 	obj_select(_r); where _r is radius from center screen to screen space points. Same dot sequence to sort?
 
+	m_obj_offs = []; // [[dx,dy,dz], [dx,dy,dz], ...]
 
 
 // Old Inverse Kinematic fn from way back
@@ -125,11 +126,10 @@ var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi4 = 0.7071067811;
 
-//var aim_floor = new Float32Array(4);
 
 
-var player_look_dir = [pi/4, -pi/12, 0];
-var player_look_dir_i = [pi/4, 0.1, 0];
+var player_look_dir = [0, 0, 0]; //-pi/12
+var player_look_dir_i = [0, 0, 0];
 var aim_dir = [0.0, 0.0, 0.0];
 var aim_dir_n = [0.0, 0.0, 0.0];
 var mouseData = [0.0, 0.0];  // rt data
@@ -138,8 +138,9 @@ var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
 var fov_slide = 40.0;
+var crosshair_l = 4;
 
-var player_pos = [0.0,-3.0,3.0]; // Having this many _player_pos need entire refactor, should use gpu
+var player_pos = [0.0,-3.0,0]; // Having this many _player_pos need entire refactor, should use gpu
 var w_player_pos = [0.0,0.0,0.0];
 var wf_player_pos = [0.0,0.0,0.0];
 var wt_player_pos = [0.0,0.0,0.0];
@@ -148,6 +149,18 @@ var LookToggle = 0;
 
 var lock_vert_mov = false;
 var pln_cyc = 1;
+
+
+
+
+var rgba_r = [200, 50, 50, 215];
+var rgba_g = [50, 200, 50, 215];
+var rgba_b = [50, 50, 200, 215];
+var rgba_w = [222, 222, 222, 215];
+// var rgba_o = [170, 98, 28, 255];
+var rgba_o = [238, 207, 63, 1];
+
+var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
 
 //var g_over_x = new Float32Array(4*10*10);
 //var g_over_z = new Float32Array(4*10*10);
@@ -319,10 +332,14 @@ var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
 
-var aim_floor = new Float32Array([0.0,0.0,0.0,1, 0.0,0.0,0.0,1, 0.0,0.0,0.0,1, 0.0,0.0,0.0,1]);
-var aim_test = new Float32Array([0.0,0.0,0.0,1, 0.0,0.0,0.0,1]);
-const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
+var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
+
+//const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
+const m_cube = new Float32Array([0.0,0.0,0.0,1, -1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
+const m_x = new Float32Array([0,0,0,1, 10,0,0,1]);
+const m_y = new Float32Array([0,0,0,1, 0,10,0,1]);
+const m_z = new Float32Array([0,0,0,1, 0,0,10,1]);
 // const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 
 
@@ -335,28 +352,28 @@ var edit_sum = 0;
 function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
 	var _ob = new Float32Array(4*_l*_l);
-	for (var i = 0; i<_l; i++)
+	for (var i = 0; i<=_l; i++)
 	{
-		for (var j = 0; j<_l; j++)
+		for (var j = 0; j<=_l; j++)
 		{	//	i <=> (i*10+j)
 			switch (_p)
 			{
-				case 1:
+				case 0:
 						
 						_ob[(i*_l+j)*4] = _o[1];
-						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s + _o[1];
-						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s + _o[2];
+						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s +_s/2 + _o[1];
+						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
+						_ob[(i*_l+j)*4+3] = 1;
+						break;
+				case 1:
+						_ob[(i*_l+j)*4]   = _s*i - _l/2*_s +_s/2 + _o[0];
+						_ob[(i*_l+j)*4+1] = _o[1];
+						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
 						_ob[(i*_l+j)*4+3] = 1;
 						break;
 				case 2:
-						_ob[(i*_l+j)*4]   = _s*i - _l/2*_s + _o[0];
-						_ob[(i*_l+j)*4+1] = _o[1];
-						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s + _o[2];
-						_ob[(i*_l+j)*4+3] = 1;
-						break;
-				case 3:
-						_ob[(i*_l+j)*4] = _s*j - _l/2*_s + _o[1];
-						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s + _o[2];
+						_ob[(i*_l+j)*4] = _s*j - _l/2*_s +_s/2 + _o[1];
+						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s +_s/2 + _o[2];
 						_ob[(i*_l+j)*4+2] = _o[2];
 						_ob[(i*_l+j)*4+3] = 1;
 						break;
@@ -368,9 +385,12 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 	return _ob;
 }
 
-var m_flr = setGrid(_flr, 5, 2, [0, 0, 0]);
-var g_over_x = setGrid(10, 1, 1, [25, 0, 50]);
+ // grid: side length, scale, plane, offset
+var m_flr = setGrid(_flr, 5, 1, [0, 0, 0]);
 
+var g_over_x = setGrid(5, 5, 0, [0, 0, 0]);
+var g_over_y = setGrid(5, 5, 1, [0, 0, 0]);
+var g_over_z = setGrid(5, 5, 2, [0, 0, 0]);
 
 
 var _ws = 5*_flr/2;
@@ -400,30 +420,8 @@ const m_map = new Float32Array([
 	]);
 
 
-
-// function gen_g_over(_o)
-// {
-// 	for (i = 0; i<5 ; i++)
-// 	{
-// 		for (j = 0; j<5 ; j++)
-// 		{
-// 			m_flr[(i*_flr+j)*4]   = 5*i - _flr/2*5;
-// 			m_flr[(i*_flr+j)*4+1] = 0;
-// 			m_flr[(i*_flr+j)*4+2] = 5*j - _flr/2*5;
-// 			m_flr[(i*_flr+j)*4+3] = 1;
-	
-// 		}
-// 	}
-// }
-
-// g_over = gen_g_over();
-
-
-
-// 
-
 var m1 = turbojs.alloc(20000); // Everything
-
+var m1_noper = turbojs.alloc(20000); // Everything
 //var m_edit = turbojs.alloc(4000); // Obj being modified
 
 
@@ -438,12 +436,15 @@ var m1 = turbojs.alloc(20000); // Everything
 	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
 	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
 	*/
+var m_obj_offs = [];
+
 
 function addMData(ar)
 {
 	m_objs[m_objs.length] = ar; // Append ar to m_objs
 	mem_log.push([mem_sum, ar.length]);
 	mem_sum += ar.length;
+	m_obj_offs.push([0.0, 0.0, 0.0]);
 }
 
 function addTData(ar)
@@ -458,27 +459,31 @@ function addTData(ar)
 						/*-- PLACE DATA --\
 						\----------------*/
 
+addMData(plr_aim);    // 0
+addMData(m_flr);      // 1
+addMData(m_map);      // 2
+addMData(m_cube);     // 3
+addMData(g_over_x);   // 4
+addMData(g_over_y);   // 5
+addMData(g_over_z);   // 6
+addMData(m_x);        // 7
+addMData(m_y);        // 8
+addMData(m_z);        // 9
 
-addMData(m_flr);
-addMData(aim_floor);
-addMData(aim_test);
-addMData(m_map);
-addMData(m_cube);
-addMData(g_over_x);
 
 //addMData(m_tri);
 
 
 
-function setData()
+function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification
 {
 	for (var j = 0; j<(m_objs.length); j++)
 	{
 		for (var i = 0; i<m_objs[j].length/4; i++)
 		{
-			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0];
-			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1];
-			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2];
+			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0] + m_obj_offs[j][0];
+			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1] + m_obj_offs[j][1];
+			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2] + m_obj_offs[j][2];
 			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3];
 		}
 	}
@@ -491,22 +496,6 @@ function setData()
 			m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
 			m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
 		}
-	}
-}
-
-
-
-
-
-function mov_obj(_i, _p)
-{
-	for (var i = 0; i<mem_log[_i][1] /4; i++)
-	{
-		//console.log(m_objs[_i][i*4]);
-		m_objs[_i][i*4]   = m_objs[_i][i*4] - _p[0];
-		m_objs[_i][i*4+1] = m_objs[_i][i*4+1] - _p[1];
-		m_objs[_i][i*4+2] = m_objs[_i][i*4+2] - _p[2];
-		m_objs[_i][i*4+3] = m_objs[_i][i*4+3];
 	}
 }
 
@@ -585,52 +574,48 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
         */
 
-		drawPanel(ctx, 25, 30, 435, 198);
+		drawPanel(ctx, 11, 10, 410, 170);
 		//
 		var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
 		
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
-		//drawLine(ctx,in_win_wc-3,in_win_hc, in_win_wc+3, in_win_hc);
-		//drawLine(ctx,in_win_wc,in_win_hc-3, in_win_wc, in_win_hc+3);
 
-		drawText(ctx, "player_look_dir | " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 50, 60);
-		drawText(ctx, "mouseDataD:     | " + mouseDataD[0].toFixed(3) + " : " + mouseDataD[1].toFixed(3), 50, 75);
-		drawText(ctx, "pln_cyc:        | " + pln_cyc, 50, 90);
-		drawText(ctx, "player_pos:     | " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 50, 105);
-		//drawText(ctx, "m_objs[1]: " + m_objs[1][0].toFixed(3) + " : " + m_objs[1][1].toFixed(3) + " : " + m_objs[1][2].toFixed(3), 50, in_win_h-120);
-		drawText(ctx, "m1_objs[1]:     | " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 50, 120);
-		//
-		drawText(ctx, "W,A,S,D, Shift(down), Space(up), Scroll(fov'ish)", 50, 150);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 50, 165);
-		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 50, 180); //, 
+
+		drawText(ctx, "player_pos:      |  " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 30, 40);
+		drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 30, 55);
+		drawText(ctx, "plr_aim:         |  " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 30, 70);
+		drawText(ctx, "pln_cyc:         |  " + ["X-Plane(left","Y-Plane","Z-Plane"][pln_cyc], 30, 85);
+
+		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(fov'ish)", 30, 115);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 30, 130);
+		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 145); //, 
 
 		// bad 4 cpu fix
 
 		var s = fov_slide; // Arbitrary visual scaler
-		for (var i = 0; i<m_objs.length; i++)
+
+		for (var i = 1; i<m_objs.length; i++) // i find object
 		{
-			for (var j = 0; j<mem_log[i][1]/4; j++) // fix me?
+			for (var j = 0; j<mem_log[i][1]/4; j++) // j finds vertex
 			{
-				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Clipping
+				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Temp clipping
 				// if (1) // Clipping off
 				{
-					if ( i != 1 ) {drawDot(ctx, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));}
-					else if ( j == 1 ) {
 
-						//drawLine(ctx,in_win_wc-3,in_win_hc, in_win_wc+3, in_win_hc);
-						drawLine(ctx,in_win_wc,in_win_hc+3 + init_dat.data[4*j+mem_log[i][0]+1]*s, in_win_wc, in_win_hc-3 + init_dat.data[4*j+mem_log[i][0]+1]*s);
-						drawLine(ctx,in_win_wc+3,in_win_hc+init_dat.data[4*j+mem_log[i][0]+1]*s, in_win_wc-3, in_win_hc+init_dat.data[4*j+mem_log[i][0]+1]*s);
-					}
-					//drawDot(ctx, init_dat.data[4*j+mem_log[1][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[1][0]+1]*s+in_win_hc);
-					if (j == mem_log[i][1]/4-1)
+					if (i>2) {drawDot(ctx, rgba_o, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
+					if (i<=2) {drawDot(ctx, rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
+					
+					if (j == mem_log[i][1]/4-1) // Find last vertex
 					{
 						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
 					} else {
-					if (i != 0 && i != 1) {drawLine(ctx, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);}
+					if (i == 2) {drawLine(ctx,rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc - in_win_hc/80*1/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17));}
 					}
-				}
+
+
+				} // END OF CLIP
 			}
 		}
 
@@ -641,16 +626,23 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && init_dat.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					drawDot(ctx, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
+					drawDot(ctx, rgba_w, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
 					if (i == m_t_objs.length-1)
 					{
-						drawText(ctx, "END " + j, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-32, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
+						drawText(ctx, "END " + j, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-15);
+						//drawText(ctx, "[" + init_dat.data[4*j+mem_t_log[i][0]+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+2+mem_sum], init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-32, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
 					} else {
-						drawLine(ctx, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
+						drawLine(ctx,rgba_b, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
 					}
 				}
 			}
 		}
+
+
+
+		drawLine(ctx,rgba_g,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
+		drawLine(ctx,rgba_g,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
+
 	}
 
 
@@ -673,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -1.000001;}
 
-		if (keyInfo[13] && runEvery(400)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
+		if (keyInfo[13] && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
@@ -737,80 +729,66 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
 		*/
 
-		var _l_l = -Math.pow(dot(player_pos,player_pos), 0.5);
+
+
 		var _oh = dot(player_pos,[0,1,0,1]);
-
-		w_player_pos = rot_y_pln(player_pos, -pi/4);
-
-		var _ang = Math.asin(_oh/_l_l);
-		//console.log(_ang + " " + _oh + " " + _l_l + " " + Math.abs(_oh/_l_l).toFixed(3));
-
-		wf_player_pos = rot_x_pln([0,0,_l_l,1], -_ang);
-		//wf_player_pos = rot_x_pln(w_player_pos, -_ang);
-
-
-		m_objs[1][0] = w_player_pos[0]*pi4;
-		m_objs[1][1] = wf_player_pos[1]; //0.866025
-		m_objs[1][2] = w_player_pos[2]*pi4;
-		m_objs[1][3] = 1;
-
-
-		var f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]-pi/4);
+		var f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
 		var f_dist = -_oh/dot(N,norm(f_look));
-
-
-		m_objs[1][4] = m_objs[1][0]+f_dist*f_look[0];
-		m_objs[1][5] = m_objs[1][1]+f_dist*f_look[1];
-		m_objs[1][6] = m_objs[1][2]+f_dist*f_look[2];
-		m_objs[1][7] = 1;
-
-
-		wt_player_pos = rot_y_pln([m_objs[1][4],m_objs[1][5],m_objs[1][6],1], pi/4);
-
-		m_objs[1][8] = wt_player_pos[0];
-		m_objs[1][9] = wt_player_pos[1];
-		m_objs[1][10] = wt_player_pos[2];
-
 
 
 
 		var _pp = [-125,0,-125]; // Point on plane will be static so pass temp point
 		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
-		var testp1 = [m_objs[1][0], m_objs[1][1], m_objs[1][2]]; // player pos world
-		var testp2 = [m_objs[1][4], m_objs[1][5], m_objs[1][6]]; // aim dir vec * 100 + p0
+
+		//var testp1 = [m_objs[1][0], m_objs[1][1], m_objs[1][2]]; // player pos world
+		var testp1 = [player_pos[0],player_pos[1],player_pos[2]]; // player pos world
+		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos world
+
+		//+f_dist*f_look[0];
+		//var testp2 = [m_objs[1][4], m_objs[1][5], m_objs[1][6]]; // aim dir vec * 100 + p0
+
 		var _inter = lpi(testp2,testp1,_pp,_nplns);
 
-		console.log(_inter);
+		//console.log(_inter);
 
-		m_objs[2][0] = _inter[0];
-		m_objs[2][1] = _inter[1];
-		m_objs[2][2] = _inter[2];
-		m_objs[2][3] = 1;
+		m_objs[0][0] = _inter[0];
+		m_objs[0][1] = _inter[1];
+		m_objs[0][2] = _inter[2];
+		m_objs[0][3] = 1;
 
-
-		if (keyInfo[10])
+		// Place point F
+		if (keyInfo[10] && runEvery(50))
 			{
 				var np = new Float32Array([_inter[0], _inter[1], _inter[2], 1])
-				if (runEvery(10)) {addTData(np);}
-
-				//mov_obj(4, scale(_inter,-pi4));
+				addTData(np);
+				
 			}
 
-
-
-		if (keyInfo[12] && runEvery(35))
+		switch(pln_cyc)
 		{
-			player_pos[0] = m_objs[1][8];
-			player_pos[1] = m_objs[1][9]-3;
-			player_pos[2] = m_objs[1][10];
+			case 0:
+				m_obj_offs[4] = [_inter[0], _inter[1], _inter[2]];
+				break;
+			case 1:
+				m_obj_offs[5] = [_inter[0], _inter[1], _inter[2]];
+				break;
+			case 2:
+				m_obj_offs[6] = [_inter[0], _inter[1], _inter[2]];
+				break;
 		}
-		m_objs[1][11] = 1;
+
+		// Move object
+		//m_obj_offs[3] = [player_pos[0],player_pos[1],player_pos[2]];
 
 
+		// Teleport T
+		if (keyInfo[12] && runEvery(350) && !isNaN( _inter[0]))
+		{
+			player_pos[0] = _inter[0];
+			player_pos[1] = _inter[1];
+			player_pos[2] = _inter[2];
+		}
 
-				//mov_obj(2, [m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
-				// var np = new Float32Array([m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7]]);
-				//var np = new Float32Array([wt_player_pos[0], wt_player_pos[1], wt_player_pos[2]]);
 				// var np = new Float32Array(
 				// 	[
 				// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
@@ -825,20 +803,32 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		setData(); // Load all vertices
 
-
+		//rotate playerpos ?????????????? to fix???????
 
 		// Translation - Last?
+		// // wtf is wrong with my tran function????????? ?OMGGGGGGGGGGGGGGGG fixed every problem
+		// turbojs.run(init_dat, `void main(void) {
+		// commit(vec4(
+		// 	read().x+read().z+float(${-player_pos[0]}), 
+		// 	read().y+float(${-player_pos[1]}),
+		// 	read().z-read().x+float(${-player_pos[2]}),
+		// 	read().w
+		// ));
+		// }`);
+
+
 		turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
-			read().x+read().z+float(${-player_pos[0]}), 
+			read().x+float(${-player_pos[0]}), 
 			read().y+float(${-player_pos[1]}),
-			read().z-read().x+float(${-player_pos[2]}),
+			read().z+float(${-player_pos[2]}),
 			read().w
 		));
 		}`);
 
 		// Rotate around y-axis
 		turbojs.run(init_dat, `void main(void) {
+		#define off 0.785398163
 		float _yaw = float(${player_look_dir[0]});
 		commit(vec4(
 			cos(_yaw)*read().x+sin(_yaw)*read().z,
@@ -859,9 +849,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		));
 		}`);
 
-		
-
-		//console.log(init_dat.data[mem_log[1][0]].toFixed(3) + " " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " " + init_dat.data[mem_log[1][0]+2].toFixed(3));
 
 		// To do:
 
@@ -911,21 +898,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if n . (Q-P) < 0 then Q is "out" <=> z < 0
 		if n . (Q-P) = 0 then Q is "on" <=> z = 0
 		*/
-
-
-
-		// point on plane, normal n
-		// p1 p2
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -992,12 +964,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function runTime()
 	{
 
-
 		Compute(m1);
-
 	}
 	
-
 	setInterval(runTime, runTime_int); 
 	setInterval(setTitle, title_int); 
 
