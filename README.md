@@ -14,6 +14,8 @@ It will be very interesting to experiment with a 3D 'notepad' per se. One that c
 
 
 
+Finally I can make simple 3d models =)
+![great](https://github.com/samcoble/CameraTransform/assets/32228102/6fae7623-2369-4245-98fd-bbb6a218ba52)
 Painting vertices with a line plane intersection. The beginning of object creation. At some point curvature will be a wide syntax.
 ![mobetter](https://github.com/samcoble/CameraTransform/assets/32228102/dca1fa37-da05-4b5e-8b8d-ebd529c90355)
 ![yep](https://github.com/samcoble/CameraTransform/assets/32228102/13836ffb-ebfa-42e4-93b4-93bf3e7660fa)
