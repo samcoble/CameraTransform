@@ -13,7 +13,9 @@ This project is meant to be an endless exercise of mathematics as I add features
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
 
-Example of vertices 'painted' onto the floor plane. The beginning of object modification. At some point curvature will be a wide syntax.
+
+Painting vertices with a line plane intersection. The beginning of object creation. At some point curvature will be a wide syntax.
+![yep](https://github.com/samcoble/CameraTransform/assets/32228102/13836ffb-ebfa-42e4-93b4-93bf3e7660fa)
 ![ye](https://github.com/samcoble/CameraTransform/assets/32228102/f0179d0f-3c6d-4fe8-be1c-3a7a191da6cc)
 
 
@@ -24,12 +26,5 @@ Example of a new object being created at the aim location. Center screen current
 New wallpaper ayyo
 
 ![yemane](https://github.com/samcoble/CameraTransform/assets/32228102/9776e7f2-9d8e-444a-8106-3f9477ebd680)
-
-![lol6](https://github.com/samcoble/CameraTransform/assets/32228102/84e7c787-7f3a-4d33-82a1-c9c3b57837a4)
-
-500% Browser zoom created an interesting aesthetic.
-
-![z](https://github.com/samcoble/CameraTransform/assets/32228102/f72532c8-51c6-4779-816e-90a506dcb637)
-
 
 
