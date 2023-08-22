@@ -8,7 +8,6 @@ Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.
 
 I have kept the renderer simple for now but proper clipping will be done soon.
 
-I do not use AI to generate any of my code.
 This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
