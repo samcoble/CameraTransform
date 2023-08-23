@@ -6,14 +6,13 @@ Experimentation with the Camera Transform.
 
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
-I have kept the renderer simple for now but proper clipping will be done soon.
+I have kept the renderer simple for now but proper clipping will be done soon. WebGL shader functions have access to the GPU and it's ability to process in parallel. Ideally the back end webgl will be very small as it's only job will be to provide allocation and mathematical manipulation of float32Arrays to javascript. I would prefer to write this in C++ but html&javascript provide tremendous accessibility. 
 
-I do not use AI to generate any of my code.
+
 This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 
-
-
+![fileload](https://github.com/samcoble/CameraTransform/assets/32228102/b84daf1d-51e0-4ee2-b153-21d5fddbe8b6)
 Finally I can make simple 3d models =)
 ![great](https://github.com/samcoble/CameraTransform/assets/32228102/6fae7623-2369-4245-98fd-bbb6a218ba52)
 Painting vertices with a line plane intersection. The beginning of object creation. At some point curvature will be a wide syntax.
