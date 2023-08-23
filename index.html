@@ -6,13 +6,15 @@
 <!-- <script src="https://turbo.github.io/js/turbo.js"></script> -->
 <script src="turbo.js"></script>
 
+  <input type="file" id="fileInput" autocomplete="off">
+  <!-- <pre id="fileContent"></pre> -->
 
 <style>
 
 	/* Layout normalization */
 	* {
 		font-family: "Lucida Console", Courier, monospace;
-				background-color: #091115;
+		background-color: #091115;
 	}
 
 	html, body
@@ -21,6 +23,14 @@
 		height: 100%;
 		margin: 0; padding: 0;
 		overflow-: hidden;
+	}
+
+	#fileInput
+	{
+		position: absolute;
+		z-index: 1;
+		left: 30px;
+		top: 150px;
 	}
 
 	/* Canvas Style */
@@ -35,6 +45,8 @@
 		height: 100%;*/
 
 	}
+
+
 
 </style>
 

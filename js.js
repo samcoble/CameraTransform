@@ -52,30 +52,23 @@ function drawPanel(c, x0, y0, x, y)
 }
 
 /*
-	rgba should be built ahead of time instead of passing through over and over
 
 	json load/save
 
-	make mov_obj_fn so that
+	m_obj_offs = []; // [[dx,dy,dz], [dx,dy,dz], ...]
 		place new grid overlay obj
-
-	align cycle planes w/
-		overlay
-		aim pos override w/ line plane intersection + offset
+		align cycle planes w/
 
 	use mouse 2d dir vec to dot w/ list of screen buttons [x,y] to only check for intersection if any part is 'in'
 		reducing menu cpu cost. also can skip entire obj in that case. very faster.
-
-	g_over[3 x Float32Arrays] is return from make_g_over(_dV); where -dV is a 4D vec for translation.
-
-	line_plane(); needs to be an ez2use because i'm only doing one ray trace.
 
 	add clipping sides & what happens if 3 points where 1 is out ?
 		total points goes from 3 to 4. This can happen n times per poly. How deal w/ data??????
 
 	obj_select(_r); where _r is radius from center screen to screen space points. Same dot sequence to sort?
+		how about auto group points to 3d sectors and a single ray trace reveals some any quantity of data within the block.
+		inconclusive. Math implies computation. blocks can't fail. 
 
-	m_obj_offs = []; // [[dx,dy,dz], [dx,dy,dz], ...]
 
 
 // Old Inverse Kinematic fn from way back
@@ -163,9 +156,42 @@ var rgba_w = "rgba(222, 222, 222, 215)";
 var rgba_o = "rgba(238, 207, 63, 1)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
+var _inter_rnd = [0.0, 0.0, 0.0];
 
-//var g_over_x = new Float32Array(4*10*10);
-//var g_over_z = new Float32Array(4*10*10);
+
+const fileInput = document.getElementById('fileInput');
+
+
+
+function downloadSaveFile()
+{
+	var _tar = new Float32Array(mem_t_sum); 
+
+	for (i=0; i<m_t_objs.length; i++)
+	{
+		_tar[i*4+0] = m_t_objs[i][0]
+		_tar[i*4+1] = m_t_objs[i][1]
+		_tar[i*4+2] = m_t_objs[i][2]
+		_tar[i*4+3] = m_t_objs[i][3]
+	}
+
+	const blob = new Blob([_tar], { type: 'application/octet-stream' });
+	const _url = URL.createObjectURL(floatBlob);
+
+	// Create a temporary anchor element
+	const anchor = document.createElement('a');
+	anchor.href = _url;
+	anchor.download = "data"+mem_t_sum+".bin";
+
+	// Click event to trigger the download
+	anchor.click();
+	URL.revokeObjectURL(blobURL);
+}
+
+
+
+
+
 
 
 						/*-- Key & Mouse event capture --\
@@ -194,7 +220,7 @@ onmousemove = function(e)
 // lmb - 0 |  mmb - 1  |  rmb - 2 //
 //--------------------------------//
 
-var keyInfo = [0,0,0,0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift,f,l,t,r
+var keyInfo = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift,f,l,t,r,z,p
 var el = document.getElementById("html");
 
 // Seriously get rid of the if stacks on the cpu
@@ -214,6 +240,9 @@ el.onkeydown = function(e)
     if (e.keyCode == 76) {keyInfo[11]=1;}
     if (e.keyCode == 84) {keyInfo[12]=1;}
     if (e.keyCode == 82) {keyInfo[13]=1;}
+    if (e.keyCode == 90) {keyInfo[14]=1;}
+    if (e.keyCode == 80) {keyInfo[15]=1;}
+    if (e.keyCode == 81) {keyInfo[16]=1;}
 };
 
 el.onkeyup = function(e)
@@ -230,6 +259,9 @@ el.onkeyup = function(e)
     if (e.keyCode == 76) {keyInfo[11]=0;}
     if (e.keyCode == 84) {keyInfo[12]=0;}
     if (e.keyCode == 82) {keyInfo[13]=0;}
+    if (e.keyCode == 90) {keyInfo[14]=0;}
+    if (e.keyCode == 80) {keyInfo[15]=0;}
+    if (e.keyCode == 81) {keyInfo[16]=0;}
     
 };
 
@@ -388,11 +420,26 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 	return _ob;
 }
 
+
+function splitObj(ar)
+{
+    const r = [];
+    const _s = Math.ceil(ar.length / 4);
+    for (let i = 0; i < _s; i++)
+    {
+        const end = Math.min(i*4 + 4, ar.length);
+        const chunk = ar.subarray(i*4, end);
+        r.push(new Float32Array(chunk));
+    }
+    return r;
+}
+
+
  // grid: side length, scale, plane, offset
-var m_flr = setGrid(_flr, 5, 1, [0, 0, 0]);
+var m_flr = setGrid(_flr, 5, 1, [2.5, 0, 2.5]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
-var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
+var g_over_y = setGrid(19, 1, 1, [0, 0, 0]);
 var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
 
@@ -424,9 +471,6 @@ const m_map = new Float32Array([
 
 
 var m1 = turbojs.alloc(20000); // Everything
-var m1_noper = turbojs.alloc(20000); // Everything
-//var m_edit = turbojs.alloc(4000); // Obj being modified
-
 
 	/*
 	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
@@ -455,6 +499,17 @@ function addTData(ar)
 	m_t_objs[m_t_objs.length] = ar;
 	mem_t_log.push([mem_t_sum, ar.length]);
 	mem_t_sum += ar.length;
+}
+
+function addATData(ar)
+{
+	for (i=0; i<ar.length; i++)
+	{
+		m_t_objs[m_t_objs.length] = ar[i];
+		mem_t_log.push([mem_t_sum, ar[i].length]);
+		mem_t_sum += ar[i].length;
+		console.log(ar[i]);
+	}
 }
 
 
@@ -513,8 +568,24 @@ var ctx = canvas.getContext("2d");
 canvas.addEventListener("click", async () => {
 	await canvas.requestPointerLock();
 	mouseLock = 1;
+	//_lp[0] = _inter_rnd[0];
+	//_lp[1] = _inter_rnd[1];
+	//_lp[2] = _inter_rnd[2];
 });
 
+fileInput.addEventListener('change', event => {
+	const _f = event.target.files[0];
+	if (_f)
+	{
+		const _r = new FileReader();
+		_r.onload = event => {
+			const _ab = event.target.result;
+			const _fa = new Float32Array(_ab);
+			addATData(splitObj(_fa));
+		};
+		_r.readAsArrayBuffer(_f);
+	}
+});
 
 function rot_y_pln(_p,_r)
 {
@@ -577,7 +648,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
         */
 
-		drawPanel(ctx, 11, 10, 410, 170);
+		drawPanel(ctx, 11, 10, 410, 185);
 		//
 		var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
 		
@@ -588,11 +659,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "player_pos:      |  " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 30, 40);
 		drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 30, 55);
 		drawText(ctx, "plr_aim:         |  " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 30, 70);
-		drawText(ctx, "pln_cyc:         |  " + ["X-Plane(left","Y-Plane","Z-Plane"][pln_cyc], 30, 85);
+		drawText(ctx, "pln_cyc:         |  " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 85);
 
-		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(fov'ish)", 30, 115);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(drag camera & sku)", 30, 130);
-		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 145); //, 
+		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 105);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), Z(down)", 30, 120);
+		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 135); //, 
+		drawText(ctx, "P(save)", 334, 150); //, 
 
 		// bad 4 cpu fix
 
@@ -604,9 +676,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 			{
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Temp clipping
 				// if (1) // Clipping off
-				{
-
-					if (i>2) {drawDot(ctx, rgba_o, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
+				{	
+					if (i>3)
+					{
+						drawDot(ctx, rgba_o, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
+					}
+					if (i>9)
+					{
+						
+						drawLine(ctx,rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+					}
 					if (i<=2) {drawDot(ctx, rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
 					
 					if (j == mem_log[i][1]/4-1) // Find last vertex
@@ -666,9 +745,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 		*/
 
 		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
-		if (lock_vert_mov) {player_pos[1] = -1.000001;}
+		if (lock_vert_mov) {player_pos[1] = -11.5;}
 
 		if (keyInfo[13] && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
+		if (keyInfo[16] && runEvery(200)) {if (pln_cyc==0){pln_cyc=2} else {pln_cyc-=1;}}
 
 		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
 
@@ -687,7 +767,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 		if (keyInfo[4]) {player_pos[1] += -0.3*(1+keyInfo[8]*5);}
-		//if (keyInfo[8]) {player_pos[1] += 0.3;}
+		if (keyInfo[14]) {player_pos[1] += 0.3*(1+keyInfo[8]*5);} // z
 
 
 		if (keyInfo[9])
@@ -758,13 +838,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 		m_objs[0][2] = _inter[2];
 		m_objs[0][3] = 1;
 
-		var _inter_rnd = [_inter[0].toFixed(0), _inter[1].toFixed(0), _inter[2].toFixed(0)];
+		_inter_rnd = [_inter[0].toFixed(0), _inter[1].toFixed(0), _inter[2].toFixed(0)];
 
 
 		// Place point F
-		if (keyInfo[10] && runEvery(50))
+		if (keyInfo[10] && runEvery(400))
 			{
-				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1])
+				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0])
 				addTData(np);
 				_lp[0] = _inter_rnd[0];
 				_lp[1] = _inter_rnd[1];
@@ -772,7 +852,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				
 			}
 
-		_pp = [_lp[0], _lp[1], _lp[2]];
+		_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
 		switch(pln_cyc)
 		{
 			case 0:
@@ -804,6 +884,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[1] = _inter[1];
 			player_pos[2] = _inter[2];
 		}
+
+		if (keyInfo[15]) {downloadSaveFile();}
 
 		// var np = new Float32Array(
 		// 	[
