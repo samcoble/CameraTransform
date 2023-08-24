@@ -643,14 +643,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		drawText(ctx, "player_pos:      |  " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 30, 40);
-		drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 30, 55);
-		drawText(ctx, "plr_aim:         |  " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 30, 70);
-		drawText(ctx, "pln_cyc:         |  " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 85);
+		//drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 30, 55);
+		drawText(ctx, "plr_aim:         |  " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 30, 55);
+		drawText(ctx, "pln_cyc:         |  " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 70);
 
-		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 105);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 120);
-		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 135); //, 
-		drawText(ctx, "P(save)", 334, 150); //, 
+		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 90);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 105);
+		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 120); //, 
+		drawText(ctx, "P(save), Z(undo)", 30, 135); //, 
 
 		// bad 4 cpu fix
 
@@ -789,7 +789,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			}
 		}
 
-		if (key_map.z && runEvery(200)) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1);}
+		if (key_map.z && runEvery(140-key_map.shift*100) && m_t_objs.length!=0) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1);}
 
 
 		/*
