@@ -108,6 +108,8 @@ function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
 
 var title_int = 350;
 
+var hover_h = 11.5;
+
 var date_now = 0;
 
 
@@ -207,13 +209,15 @@ var key_map =
 	t: false,
 	f: false,
 	l: false,
+	g: false,
 	" ": false,
 	control: false,
 	shift: false,
 	tab: false,
 	lmb: false,
 	mmb: false,
-	rmb: false
+	rmb: false,
+	tab: false
 };
 
 
@@ -244,6 +248,7 @@ function downloadSaveFile()
 }
 
 window.addEventListener('keydown', (event) => {
+	event.preventDefault();
 	const key = event.key.toLowerCase();
 	if (key_map.hasOwnProperty(key)) {
 		key_map[key] = true;
@@ -251,30 +256,34 @@ window.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('keyup', (event) => {
+	event.preventDefault();
 	const key = event.key.toLowerCase();
 		if (key_map.hasOwnProperty(key)) {
 	key_map[key] = false;
 	}
 });
 
-window.addEventListener('mousedown', function(e)
+document.addEventListener('mousedown', function(e)
 {
-	if (e.button == 1) {key_map.lmb = true};
-	if (e.button == 2) {key_map.mmb = true};
-	if (e.button == 3) {key_map.rmb = true};
+	if (e.button == 0) {key_map.lmb = true};
+	if (e.button == 1) {key_map.mmb = true};
+	if (e.button == 2) {key_map.rmb = true};
 });
 
 window.addEventListener('mouseup', function(e)
 {
-	if (e.button == 1) {key_map.lmb = false};
-	if (e.button == 2) {key_map.mmb = false};
-	if (e.button == 3) {key_map.rmb = false};
+	if (e.button == 0) {key_map.lmb = false};
+	if (e.button == 1) {key_map.mmb = false};
+	if (e.button == 2) {key_map.rmb = false};
 });
 
 window.addEventListener("wheel", function(e)
 {
-    if ((fov_slide-e.deltaY/300) > 0) {fov_slide += -e.deltaY/300};
+    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
+    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
 });
+
+
 
 						/*-- Title meme fn --\
 						\-------------------*/
@@ -495,7 +504,7 @@ function addATData(ar)
 		m_t_objs[m_t_objs.length] = ar[i];
 		mem_t_log.push([mem_t_sum, ar[i].length]);
 		mem_t_sum += ar[i].length;
-		console.log(ar[i]);
+		//console.log(ar[i]);
 	}
 }
 
@@ -551,14 +560,11 @@ setData();
 var canvas = document.getElementById("cv");
 var ctx = canvas.getContext("2d");
 
-
 canvas.addEventListener("click", async () => {
 	await canvas.requestPointerLock();
 	mouseLock = 1;
-	//_lp[0] = _inter_rnd[0];
-	//_lp[1] = _inter_rnd[1];
-	//_lp[2] = _inter_rnd[2];
 });
+
 
 fileInput.addEventListener('change', event => {
 	const _f = event.target.files[0];
@@ -650,7 +656,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 90);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 105);
 		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 120); //, 
-		drawText(ctx, "P(save), Z(undo)", 30, 135); //, 
+		drawText(ctx, "P(save), Z(undo), Scroll w/ L(vert mov)", 30, 135); //, 
 
 		// bad 4 cpu fix
 
@@ -735,7 +741,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
-		if (lock_vert_mov) {player_pos[1] = -11.5;}
+		if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
 		if (key_map.r && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
 		if (key_map.q && runEvery(200)) {if (pln_cyc==0){pln_cyc=2} else {pln_cyc-=1;}}
@@ -833,17 +839,41 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		_inter_rnd = [_inter[0].toFixed(0), _inter[1].toFixed(0), _inter[2].toFixed(0)];
 
+		if (!isNaN( _inter[0]))
+		{
+			if (key_map.lmb)
+			{
+				_lp[0] = _inter_rnd[0];
+				_lp[1] = _inter_rnd[1];
+				_lp[2] = _inter_rnd[2];
+			}
 
-		// Place point F
-		if (key_map.f && runEvery(150))
+			// Place point F
+			if (key_map.f && runEvery(150))
 			{
 				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0])
 				addTData(np);
 				_lp[0] = _inter_rnd[0];
 				_lp[1] = _inter_rnd[1];
 				_lp[2] = _inter_rnd[2];
-				
 			}
+
+			// Return to floor y
+			if (key_map.g && runEvery(350))
+			{
+				_lp[0] = _inter_rnd[0];
+				_lp[1] = 0;
+				_lp[2] = _inter_rnd[2];
+			}
+
+			// Teleport T
+			if (key_map.t && runEvery(350))
+			{
+				player_pos[0] = _inter[0];
+				player_pos[1] = _inter[1]-4.5;
+				player_pos[2] = _inter[2];
+			}
+		}
 
 		_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
 		switch(pln_cyc)
@@ -870,13 +900,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//m_obj_offs[3] = [player_pos[0],player_pos[1],player_pos[2]];
 
 
-		// Teleport T
-		if (key_map.t && runEvery(350) && !isNaN( _inter[0]))
-		{
-			player_pos[0] = _inter[0];
-			player_pos[1] = _inter[1];
-			player_pos[2] = _inter[2];
-		}
+
 
 
 
