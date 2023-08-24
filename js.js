@@ -159,30 +159,7 @@ const fileInput = document.getElementById('fileInput');
 
 
 
-function downloadSaveFile()
-{
-	var _tar = new Float32Array(mem_t_sum); 
 
-	for (i=0; i<m_t_objs.length; i++)
-	{
-		_tar[i*4+0] = m_t_objs[i][0]
-		_tar[i*4+1] = m_t_objs[i][1]
-		_tar[i*4+2] = m_t_objs[i][2]
-		_tar[i*4+3] = m_t_objs[i][3]
-	}
-
-	const blob = new Blob([_tar], { type: 'application/octet-stream' });
-	const _url = URL.createObjectURL(blob);
-
-	// Create a temporary anchor element
-	const anchor = document.createElement('a');
-	anchor.href = _url;
-	anchor.download = "data"+mem_t_sum+".bin";
-
-	// Click event to trigger the download
-	anchor.click();
-	URL.revokeObjectURL(_url);
-}
 
 
 
@@ -239,6 +216,32 @@ var key_map =
 	rmb: false
 };
 
+
+function downloadSaveFile()
+{
+	var _tar = new Float32Array(mem_t_sum); 
+
+	for (i=0; i<m_t_objs.length; i++)
+	{
+		_tar[i*4+0] = m_t_objs[i][0]
+		_tar[i*4+1] = m_t_objs[i][1]
+		_tar[i*4+2] = m_t_objs[i][2]
+		_tar[i*4+3] = m_t_objs[i][3]
+	}
+
+	const blob = new Blob([_tar], { type: 'application/octet-stream' });
+	const _url = URL.createObjectURL(blob);
+
+	// Create a temporary anchor element
+	const anchor = document.createElement('a');
+	anchor.href = _url;
+	anchor.download = "data"+mem_t_sum+".bin";
+
+	// Click event to trigger the download
+	anchor.click();
+	URL.revokeObjectURL(_url);
+	key_map.p = false;
+}
 
 window.addEventListener('keydown', (event) => {
 	const key = event.key.toLowerCase();
@@ -645,7 +648,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "pln_cyc:         |  " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 85);
 
 		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 105);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), Z(down)", 30, 120);
+		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 120);
 		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 135); //, 
 		drawText(ctx, "P(save)", 334, 150); //, 
 
@@ -729,6 +732,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
  //w,s,a,d,spc,lmb,mmb,rmb,shift,ctrl,f,l,t,r,z,p
+		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -11.5;}
@@ -874,7 +878,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] = _inter[2];
 		}
 
-		if (key_map.p) {downloadSaveFile();}
+
 
 		// var np = new Float32Array(
 		// 	[
