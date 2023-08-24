@@ -861,9 +861,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 			// Return to floor y
 			if (key_map.g && runEvery(350))
 			{
-				_lp[0] = _inter_rnd[0];
 				_lp[1] = 0;
-				_lp[2] = _inter_rnd[2];
+				pln_cyc=1;
 			}
 
 			// Teleport T
