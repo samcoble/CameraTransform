@@ -55,6 +55,8 @@ function drawPanel(c, x0, y0, x, y)
 
 	json load/save
 
+	setup requestAnimationFrame
+
 	m_obj_offs = []; // [[dx,dy,dz], [dx,dy,dz], ...]
 		place new grid overlay obj
 		align cycle planes w/
@@ -90,16 +92,10 @@ function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
 }
 
 
-	// working json fn 
-
-
-	const jsonString = JSON.stringify(m_tri, null, 2);
-	console.log(jsonString);
 
 
 */
 
-/// HERE   console.log(foo.data.subarray(0, 5));
 
 
 
@@ -107,7 +103,7 @@ function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
 						\--------------*/
 
 // !
-var runTime_int = 3; // Time delay between frames as they render 
+//var runTime_int = 3; // Time delay between frames as they render // Replaced with requestanimationframe
 // !
 
 var title_int = 350;
@@ -176,7 +172,7 @@ function downloadSaveFile()
 	}
 
 	const blob = new Blob([_tar], { type: 'application/octet-stream' });
-	const _url = URL.createObjectURL(floatBlob);
+	const _url = URL.createObjectURL(blob);
 
 	// Create a temporary anchor element
 	const anchor = document.createElement('a');
@@ -185,7 +181,7 @@ function downloadSaveFile()
 
 	// Click event to trigger the download
 	anchor.click();
-	URL.revokeObjectURL(blobURL);
+	URL.revokeObjectURL(_url);
 }
 
 
@@ -220,63 +216,56 @@ onmousemove = function(e)
 // lmb - 0 |  mmb - 1  |  rmb - 2 //
 //--------------------------------//
 
-var keyInfo = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];  //w,s,a,d,spc,lmb,mmb,rmb,shift,f,l,t,r,z,p
-var el = document.getElementById("html");
-
-// Seriously get rid of the if stacks on the cpu
-
-el.onkeydown = function(e)
+var key_map =
 {
-    e = e || window.event;
-    // alert(e.keyCode);
-    if (e.keyCode == 87) {keyInfo[0]=1;}
-    if (e.keyCode == 83) {keyInfo[1]=1;}
-    if (e.keyCode == 65) {keyInfo[2]=1;}
-    if (e.keyCode == 68) {keyInfo[3]=1;}
-    if (e.keyCode == 32) {keyInfo[4]=1;}
-    if (e.keyCode == 16) {keyInfo[8]=1;}
-    if (e.keyCode == 17) {keyInfo[9]=1;}
-    if (e.keyCode == 70) {keyInfo[10]=1;}
-    if (e.keyCode == 76) {keyInfo[11]=1;}
-    if (e.keyCode == 84) {keyInfo[12]=1;}
-    if (e.keyCode == 82) {keyInfo[13]=1;}
-    if (e.keyCode == 90) {keyInfo[14]=1;}
-    if (e.keyCode == 80) {keyInfo[15]=1;}
-    if (e.keyCode == 81) {keyInfo[16]=1;}
+	w: false,
+	s: false,
+	a: false,
+	d: false,
+	q: false,
+	r: false,
+	z: false,
+	x: false,
+	p: false,
+	t: false,
+	f: false,
+	l: false,
+	" ": false,
+	control: false,
+	shift: false,
+	tab: false,
+	lmb: false,
+	mmb: false,
+	rmb: false
 };
 
-el.onkeyup = function(e)
-{
-	e = e || window.event;
-    if (e.keyCode == 87) {keyInfo[0]=0;}
-    if (e.keyCode == 83) {keyInfo[1]=0;}
-    if (e.keyCode == 65) {keyInfo[2]=0;}
-    if (e.keyCode == 68) {keyInfo[3]=0;}
-    if (e.keyCode == 32) {keyInfo[4]=0;}
-    if (e.keyCode == 16) {keyInfo[8]=0;}
-    if (e.keyCode == 17) {keyInfo[9]=0;}
-    if (e.keyCode == 70) {keyInfo[10]=0;}
-    if (e.keyCode == 76) {keyInfo[11]=0;}
-    if (e.keyCode == 84) {keyInfo[12]=0;}
-    if (e.keyCode == 82) {keyInfo[13]=0;}
-    if (e.keyCode == 90) {keyInfo[14]=0;}
-    if (e.keyCode == 80) {keyInfo[15]=0;}
-    if (e.keyCode == 81) {keyInfo[16]=0;}
-    
-};
 
-el.addEventListener('mousedown', function(e)
-{
-	if (e.button == 0) {keyInfo[5]=1;}
-	if (e.button == 1) {e.preventDefault(); keyInfo[6]=1;}
-	if (e.button == 2) {keyInfo[7]=1;}
+window.addEventListener('keydown', (event) => {
+	const key = event.key.toLowerCase();
+	if (key_map.hasOwnProperty(key)) {
+		key_map[key] = true;
+	}
 });
 
-el.addEventListener('mouseup', function(e)
+window.addEventListener('keyup', (event) => {
+	const key = event.key.toLowerCase();
+		if (key_map.hasOwnProperty(key)) {
+	key_map[key] = false;
+	}
+});
+
+window.addEventListener('mousedown', function(e)
 {
-	if (e.button == 0) {keyInfo[5]=0;}
-	if (e.button == 1) {e.preventDefault(); keyInfo[6]=0;}
-	if (e.button == 2) {keyInfo[7]=0;}
+	if (e.button == 1) {key_map.lmb = true};
+	if (e.button == 2) {key_map.mmb = true};
+	if (e.button == 3) {key_map.rmb = true};
+});
+
+window.addEventListener('mouseup', function(e)
+{
+	if (e.button == 1) {key_map.lmb = false};
+	if (e.button == 2) {key_map.mmb = false};
+	if (e.button == 3) {key_map.rmb = false};
 });
 
 window.addEventListener("wheel", function(e)
@@ -334,14 +323,11 @@ function lpi(p1,p2,pp,n)
 	return _f;
 }
 
-
-
 function setTitle()
 {
 	title = makeTitle(title);
 	document.title = title;
 }
-
 
 function runEvery(_ms) // works 100 honest #1 fav js fn rn
 {
@@ -383,7 +369,6 @@ var _flr = 50; // Side length of square
 //var m_flr = new Float32Array(4*_flr*_flr);
 var edit_sum = 0;
 
-
 function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
 	var _ob = new Float32Array(4*_l*_l);
@@ -394,7 +379,6 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 			switch (_p)
 			{
 				case 0:
-						
 						_ob[(i*_l+j)*4] = _o[1];
 						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s +_s/2 + _o[1];
 						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
@@ -412,7 +396,6 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 						_ob[(i*_l+j)*4+2] = _o[2];
 						_ob[(i*_l+j)*4+3] = 1;
 						break;
-
 			}
 
 		}
@@ -470,7 +453,7 @@ const m_map = new Float32Array([
 	]);
 
 
-var m1 = turbojs.alloc(20000); // Everything
+
 
 	/*
 	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
@@ -483,6 +466,7 @@ var m1 = turbojs.alloc(20000); // Everything
 	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
 	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
 	*/
+var m1 = turbojs.alloc(20000); // Everything
 var m_obj_offs = [];
 
 
@@ -617,7 +601,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 						/*-- GET&SET SCREEN DIMENSIONS --\
 						\-------------------------------*/
 
-
 	var screen_width = window.screen.width * window.devicePixelRatio;
 	var screen_height = window.screen.height * window.devicePixelRatio;
 
@@ -627,7 +610,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
 
-
+	var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
 
 
 
@@ -650,7 +633,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		drawPanel(ctx, 11, 10, 410, 185);
 		//
-		var tool_pnl_sw = 0.64; var tool_pnl_sh = 0.07;
+
 		
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
@@ -693,7 +676,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
 					} else {
 					if (i == 2) {drawLine(ctx,rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					if (keyInfo[6] && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc - in_win_hc/80*1/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17));}
+					if (key_map.mmb && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc - in_win_hc/80*1/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17));}
 					}
 
 
@@ -744,39 +727,43 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
 		*/
 
-		if (keyInfo[11] && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
+
+ //w,s,a,d,spc,lmb,mmb,rmb,shift,ctrl,f,l,t,r,z,p
+
+		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -11.5;}
 
-		if (keyInfo[13] && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
-		if (keyInfo[16] && runEvery(200)) {if (pln_cyc==0){pln_cyc=2} else {pln_cyc-=1;}}
+		if (key_map.r && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
+		if (key_map.q && runEvery(200)) {if (pln_cyc==0){pln_cyc=2} else {pln_cyc-=1;}}
 
-		var keyVec = [keyInfo[3]-keyInfo[2], keyInfo[0]-keyInfo[1]];
+		var keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 
 
 		if (keyVec[1] != 0)
 		{
-			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+keyInfo[8]*3); // -1 temp ig
-			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+keyInfo[8]*3);
-			if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.6*(1+keyInfo[8]*3);} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+			player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+key_map.shift*3); // -1 temp ig
+			player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*0.6 * -1*(1+key_map.shift*3);
+			if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*0.6*(1+key_map.shift*3);} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 		}
 
 		if (keyVec[0] != 0)
 		{
-			player_pos[0] += Math.cos(player_look_dir[0])*keyVec[0]*0.6*(1+keyInfo[8]*3);
-			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.6*(1+keyInfo[8]*3);
+			player_pos[0] += Math.cos(player_look_dir[0])*keyVec[0]*0.6*(1+key_map.shift*3);
+			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.6*(1+key_map.shift*3);
 		}
 
-		if (keyInfo[4]) {player_pos[1] += -0.3*(1+keyInfo[8]*5);}
-		if (keyInfo[14]) {player_pos[1] += 0.3*(1+keyInfo[8]*5);} // z
+		if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);}
+		if (key_map.x) {player_pos[1] += 0.3*(1+key_map.shift*5);}
+		
 
 
-		if (keyInfo[9])
+		if (key_map.control)
 		{
 			mouseLock = 0;
 			document.exitPointerLock();
 		}
 
-		if ((keyInfo[6] && !mouseLock) || document.ready)
+		if ((key_map.mmb && !mouseLock) || document.ready) // ? wha
 		{
 				if (!LookToggle)
 				{
@@ -797,6 +784,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 				LookToggle = 0;	
 			}
 		}
+
+		if (key_map.z && runEvery(200)) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1);}
 
 
 		/*
@@ -842,7 +831,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		// Place point F
-		if (keyInfo[10] && runEvery(400))
+		if (key_map.f && runEvery(150))
 			{
 				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0])
 				addTData(np);
@@ -878,14 +867,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		// Teleport T
-		if (keyInfo[12] && runEvery(350) && !isNaN( _inter[0]))
+		if (key_map.t && runEvery(350) && !isNaN( _inter[0]))
 		{
 			player_pos[0] = _inter[0];
 			player_pos[1] = _inter[1];
 			player_pos[2] = _inter[2];
 		}
 
-		if (keyInfo[15]) {downloadSaveFile();}
+		if (key_map.p) {downloadSaveFile();}
 
 		// var np = new Float32Array(
 		// 	[
@@ -1049,9 +1038,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 
 		Compute(m1);
+		requestAnimationFrame(runTime);
 	}
+
+	runTime();
 	
-	setInterval(runTime, runTime_int); 
+	//setInterval(runTime, runTime_int); 
 	setInterval(setTitle, title_int); 
 
 });
