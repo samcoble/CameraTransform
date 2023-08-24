@@ -656,7 +656,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 90);
 		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 105);
 		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 120); //, 
-		drawText(ctx, "P(save), Z(undo), Scroll w/ L(vert mov)", 30, 135); //, 
+		drawText(ctx, "P(save), Z(undo), Scroll w/ L(vert mov), G(ground)", 30, 135); //, 
 
 		// bad 4 cpu fix
 
