@@ -20,23 +20,27 @@ function drawRect(c, x, y, w, h)
 
 function drawRectFrame(c, x, y, w, h)
 {
-	c.beginPath(); c.lineWidth = "0.1px";
+	c.beginPath();
 	c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
-	c.rect(x, y, w, h); c.stroke();
+	c.rect(x, y, w, h);
+	c.lineWidth = 1; c.stroke();
 }
 
-function drawDot(c, rgba, x, y, s)
+function drawDot(c, rgba, lw, x, y, s)
 {
-	c.beginPath(); c.lineWidth = "2px";
+	c.beginPath(); 
 	c.strokeStyle = rgba;
-	c.rect(x-s/2, y-s/2, s, s); c.stroke();
+	c.rect(x-s/2, y-s/2, s, s);
+	c.lineWidth = lw; c.stroke();
 
 }
 
-function drawLine(c, rgba, x0, y0, x1, y1)
+function drawLine(c, rgba, lw, x0, y0, x1, y1)
 {
+	
 	c.strokeStyle = rgba;
-	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); 
+	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1);
+	c.lineWidth = lw; c.stroke(); 
 }
 
 function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
@@ -46,12 +50,16 @@ function drawPanel(c, x0, y0, x, y)
 		c.rect(x0, y0, x-x0, y-y0);
 		ctx.fillStyle = "rgba(10,12,14,0.7)";
 		ctx.fill();
-		c.beginPath(); c.lineWidth = "0.1px";
+		c.beginPath();
 		c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
-		c.rect(x0, y0, x-x0, y-y0); c.stroke();
+		c.rect(x0, y0, x-x0, y-y0);
+		c.lineWidth = 1; c.stroke();
 }
 
 /*
+	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
+	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
+
 
 	json load/save
 
@@ -70,6 +78,13 @@ function drawPanel(c, x0, y0, x, y)
 	obj_select(_r); where _r is radius from center screen to screen space points. Same dot sequence to sort?
 		how about auto group points to 3d sectors and a single ray trace reveals some any quantity of data within the block.
 		inconclusive. Math implies computation. blocks can't fail. 
+
+	Holy shit there's an algorithm for this lmao. This always happens to me.
+	https://en.wikipedia.org/wiki/Octree
+
+	Use bounding boxes on objs
+
+	I need vertex select & modification to seamlessly implement hud/hologram to world functions
 
 
 
@@ -92,18 +107,13 @@ function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
 }
 
 
-
-
 */
-
-
-
 
 						/*-- Var Decs --\
 						\--------------*/
 
 // !
-//var runTime_int = 3; // Time delay between frames as they render // Replaced with requestanimationframe
+var runTime_int = 1; // Time delay between frames as they render // Replaced with requestanimationframe
 // !
 
 var title_int = 350;
@@ -142,7 +152,7 @@ var LookToggle = 0;
 
 var lock_vert_mov = false;
 var pln_cyc = 1;
-
+var grid_scale = 2;
 
 
 
@@ -158,9 +168,6 @@ var _inter_rnd = [0.0, 0.0, 0.0];
 
 
 const fileInput = document.getElementById('fileInput');
-
-
-
 
 
 
@@ -279,8 +286,15 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
-    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
-    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
+	if (!key_map.shift)
+	{
+	    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
+	    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
+	} else {
+		//if (runEvery(50)) {
+		if (grid_scale>=1/4) {grid_scale += -e.deltaY/Math.abs(e.deltaY)/4;}
+		if (grid_scale==0) {grid_scale += 1/4;}
+	}
 });
 
 
@@ -333,6 +347,11 @@ function lpi(p1,p2,pp,n)
 	// I = p1 + t(p2-p1) // Where I is the intersection
 	var _f = sub(p1,scale(sub(sub(p2,pp),sub(p1,pp)),t));
 	return _f;
+}
+
+function roundTo(value, n)
+{
+    return Math.round(value / n) * n;
 }
 
 function setTitle()
@@ -431,10 +450,10 @@ function splitObj(ar)
 
 
  // grid: side length, scale, plane, offset
-var m_flr = setGrid(_flr, 5, 1, [2.5, 0, 2.5]);
+var m_flr = setGrid(12*4, 4, 1, [2, 0, -2]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
-var g_over_y = setGrid(19, 1, 1, [0, 0, 0]);
+var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
 var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
 
@@ -479,6 +498,10 @@ const m_map = new Float32Array([
 	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
 	*/
 var m1 = turbojs.alloc(20000); // Everything
+for (i=0; i<m1.data.length; i++)
+{
+	m1.data[i] = 0.0;
+}
 var m_obj_offs = [];
 
 
@@ -487,7 +510,7 @@ function addMData(ar)
 	m_objs[m_objs.length] = ar; // Append ar to m_objs
 	mem_log.push([mem_sum, ar.length]);
 	mem_sum += ar.length;
-	m_obj_offs.push([0.0, 0.0, 0.0]);
+	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 }
 
 function addTData(ar)
@@ -516,13 +539,12 @@ function addATData(ar)
 addMData(plr_aim);    // 0
 addMData(m_flr);      // 1
 addMData(m_map);      // 2
-addMData(m_cube);     // 3
-addMData(g_over_x);   // 4
-addMData(g_over_y);   // 5
-addMData(g_over_z);   // 6
-addMData(m_x);        // 7
-addMData(m_y);        // 8
-addMData(m_z);        // 9
+addMData(g_over_x);   // 3
+addMData(g_over_y);   // 4
+addMData(g_over_z);   // 5
+addMData(m_x);        // 6
+addMData(m_y);        // 7
+addMData(m_z);        // 8
 
 
 //addMData(m_tri);
@@ -535,10 +557,10 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 	{
 		for (var i = 0; i<m_objs[j].length/4; i++)
 		{
-			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0] + m_obj_offs[j][0];
-			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1] + m_obj_offs[j][1];
-			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2] + m_obj_offs[j][2];
-			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3];
+			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
+			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
+			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
+			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3]*m_obj_offs[j][3];
 		}
 	}
 	for (var j = 0; j<(m_t_objs.length); j++)
@@ -640,23 +662,24 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
         */
 
-		drawPanel(ctx, 11, 10, 410, 185);
-		//
 
-		
+		drawPanel(ctx, 11, 10, 420, 185);
+
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
 
 
-		drawText(ctx, "player_pos:      |  " + player_pos[0].toFixed(3) + " : " + player_pos[1].toFixed(3) + " : " + player_pos[2].toFixed(3), 30, 40);
-		//drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(3) + " : " + player_look_dir[1].toFixed(3), 30, 55);
-		drawText(ctx, "plr_aim:         |  " + init_dat.data[mem_log[1][0]].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+1].toFixed(3) + " : " + init_dat.data[mem_log[1][0]+3].toFixed(3), 30, 55);
-		drawText(ctx, "pln_cyc:         |  " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 70);
+		drawText(ctx, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 30, 40);
+		//drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(1) + " : " + player_look_dir[1].toFixed(1), 30, 55);
+		drawText(ctx, "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 220, 40);
+		drawText(ctx, "pln_cyc: " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 55);
+		drawText(ctx, "grid_scale: " + grid_scale, 220, 55);
 
-		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), Scroll(expand)", 30, 90);
-		drawText(ctx, "Ctrl(unlock), Middle Mouse(camera & sku), X(down)", 30, 105);
-		drawText(ctx, "F(place point), L(lock mov), T(teleport), R(plane)", 30, 120); //, 
-		drawText(ctx, "P(save), Z(undo), Scroll w/ L(vert mov), G(ground)", 30, 135); //, 
+		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 30, 75);
+		drawText(ctx, "L(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
+		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 30, 105); //, 
+		drawText(ctx, "Scroll+LOCK(vert mov), Z(undo), G(ground)", 30, 120); //, 
+		drawText(ctx, "Scroll+Shift(grid size), ", 30, 135); //, 
 
 		// bad 4 cpu fix
 
@@ -666,30 +689,37 @@ document.addEventListener("DOMContentLoaded", function(event)
 		{
 			for (var j = 0; j<mem_log[i][1]/4; j++) // j finds vertex
 			{
-				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Temp clipping
+				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				// if (1) // Clipping off
 				{	
-					if (i>3)
-					{
-						drawDot(ctx, rgba_o, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
-					}
+					var _ts = in_win_hc/80/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17); // Remove or fix doesn't matter
 					if (i>9)
 					{
-						
-						drawLine(ctx,rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+						drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
 					}
-					if (i<=2) {drawDot(ctx, rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
+
+					if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+					if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+					if (i==1) {drawDot(ctx, rgba_w, 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
 					
-					if (j == mem_log[i][1]/4-1) // Find last vertex
+				} // END OF LINE CLIP
+
+				if (init_dat.data[4*j+mem_log[i][0]+3] > 0)
+				{
+					if (i > 2)
 					{
-						drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
-					} else {
-					if (i == 2) {drawLine(ctx,rgba_w, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					if (key_map.mmb && (mem_log[i][1]/4 < 100)) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc - in_win_hc/80*1/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17));}
+						if (key_map.mmb && i > 5) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc);}
+						if (j == mem_log[i][1]/4-1) // Find last vertex
+						{
+							drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
+						}
 					}
+					if (i>2)
+					{
+						drawDot(ctx, rgbas[pln_cyc], 1.2, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
+					}
+				}
 
-
-				} // END OF CLIP
 			}
 		}
 
@@ -700,22 +730,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && init_dat.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					drawDot(ctx, rgba_w, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
+					drawDot(ctx, rgba_w, 2, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
 					if (i == m_t_objs.length-1)
 					{
-						drawText(ctx, "END " + j, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-15);
+						drawText(ctx, "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
+						
 						//drawText(ctx, "[" + init_dat.data[4*j+mem_t_log[i][0]+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+2+mem_sum], init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-32, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
 					} else {
-						drawLine(ctx,rgba_b, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
+						drawLine(ctx,rgba_b, 1.3, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
+						if (key_map.mmb) {drawText(ctx, i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
 					}
 				}
 			}
 		}
 
-
-
-		drawLine(ctx,rgba_g,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
-		drawLine(ctx,rgba_g,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
+		drawLine(ctx,rgba_g,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
+		drawLine(ctx,rgba_g,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
 	}
 
@@ -737,7 +767,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		*/
 
 
- //w,s,a,d,spc,lmb,mmb,rmb,shift,ctrl,f,l,t,r,z,p
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
@@ -818,44 +847,40 @@ document.addEventListener("DOMContentLoaded", function(event)
 		var f_dist = -_oh/dot(N,norm(f_look));
 
 
-
-
 		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 
 		var testp1 = [player_pos[0],player_pos[1],player_pos[2]]; // player pos world
 		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos world
 
-		//+f_dist*f_look[0];
-		//var testp2 = [m_objs[1][4], m_objs[1][5], m_objs[1][6]]; // aim dir vec * 100 + p0
-
 		var _inter = lpi(testp2,testp1,_pp,_nplns);
 
-		//console.log(_inter);
 
 		m_objs[0][0] = _inter[0];
 		m_objs[0][1] = _inter[1];
 		m_objs[0][2] = _inter[2];
 		m_objs[0][3] = 1;
 
-		_inter_rnd = [_inter[0].toFixed(0), _inter[1].toFixed(0), _inter[2].toFixed(0)];
+		if (isNaN(m_objs[0][0])) {m_objs[0][0] = 0.0; m_objs[0][1] = 0.0; m_objs[0][2] = 0.0; m_objs[0][3] = 1.0;}
+
+
 
 		if (!isNaN( _inter[0]))
 		{
-			if (key_map.lmb)
+			if (key_map.lmb || key_map.f)
 			{
-				_lp[0] = _inter_rnd[0];
-				_lp[1] = _inter_rnd[1];
-				_lp[2] = _inter_rnd[2];
+				_lp[0] = _inter[0];
+				_lp[1] = _inter[1];
+				_lp[2] = _inter[2];
 			}
+
+			_inter_rnd = [roundTo(_lp[0], grid_scale), roundTo(_lp[1], grid_scale), roundTo(_lp[2], grid_scale)];
+
 
 			// Place point F
 			if (key_map.f && runEvery(150))
 			{
-				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0])
+				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0]);
 				addTData(np);
-				_lp[0] = _inter_rnd[0];
-				_lp[1] = _inter_rnd[1];
-				_lp[2] = _inter_rnd[2];
 			}
 
 			// Return to floor y
@@ -878,40 +903,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 		switch(pln_cyc)
 		{
 			case 0:
-				m_obj_offs[4] = [_lp[0], _lp[1], _lp[2]];
-				m_obj_offs[5] = [0.0, 500.0, 0.0];
-				m_obj_offs[6] = [0.0, 500.0, 0.0];
+				m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
+				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale];
 				break;
 			case 1:
-				m_obj_offs[4] = [0.0, 500.0, 0.0];
-				m_obj_offs[5] = [_lp[0], _lp[1], _lp[2]];
-				m_obj_offs[6] = [0.0, 500.0, 0.0];
+				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
+				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale];
 				break;
 			case 2:
-				m_obj_offs[4] = [0.0, 500.0, 0.0];
-				m_obj_offs[5] = [0.0, 500.0, 0.0];
-				m_obj_offs[6] = [_lp[0], _lp[1], _lp[2]];
+				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
 
 				break;
 		}
-
-		// Move object
-		//m_obj_offs[3] = [player_pos[0],player_pos[1],player_pos[2]];
-
-
-
-
-
-
-		// var np = new Float32Array(
-		// 	[
-		// 		m_objs[1][4],m_objs[1][5],m_objs[1][6],m_objs[1][7],
-		// 		m_objs[1][4]+0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-		// 		m_objs[1][4],m_objs[1][5],m_objs[1][6]-0.5,m_objs[1][7],
-		// 		m_objs[1][4]-0.5,m_objs[1][5],m_objs[1][6]+0.5,m_objs[1][7],
-		// 		m_objs[1][4],m_objs[1][5]-1,m_objs[1][6],m_objs[1][7]
-		// 	]);
-				
 
 
 
@@ -919,11 +926,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		turbojs.run(init_dat, `void main(void) {
+
+		// if (read().w == 0.0) {
+        //     discard;  // Discard the fragment
+        // }
+
 		commit(vec4(
 			read().x+float(${-player_pos[0]}), 
 			read().y+float(${-player_pos[1]}),
 			read().z+float(${-player_pos[2]}),
-			read().w
+			1.0
 		));
 		}`);
 
@@ -954,12 +966,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		//	Import verticies w/ json
 		// 	CLIPPING & OPTIMIZATION
-
-		//	Refactor keyboard keyInfo array.
-		//	Convert keyVec into unit sphere.
 		//	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
 		//  First try making quaternion functions that calc ops with matrices. Useful later.
-		//	Pass in multiple Float32 Arrays? => a+b store a size..
 		//  Add dancing stick figures to every vertex immediately 
 
 		/*
@@ -1018,6 +1026,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		turbojs.run(init_dat, `void main(void) {
 
+		// if (read().z > 0.0) {
+        //     discard;  // Discard the fragment
+        // }
 		
 		#define _S1 1.0000600006
 		#define _S2 7.55682619647
@@ -1033,6 +1044,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}`);	
 
 		turbojs.run(init_dat, `void main(void) {
+
+		// if (read().x > 0.0) {
+        //     discard;  // Discard the fragment
+        // } 
+
 
 		if (read().w != 0.)
 		{
@@ -1065,12 +1081,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 
 		Compute(m1);
-		requestAnimationFrame(runTime);
+		//requestAnimationFrame(runTime);
 	}
 
 	runTime();
 	
-	//setInterval(runTime, runTime_int); 
+	setInterval(runTime, runTime_int); 
 	setInterval(setTitle, title_int); 
 
 });
