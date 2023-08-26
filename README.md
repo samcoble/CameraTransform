@@ -6,10 +6,10 @@ Experimentation with the Camera Transform.
 
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
-I have kept the renderer simple for now but proper clipping will be done soon. WebGL shader functions have access to the GPU and it's ability to process in parallel. Ideally the back end webgl will be very small as it's only job will be to provide allocation and mathematical manipulation of float32Arrays to javascript. I would prefer to write this in C++ but html&javascript provide tremendous accessibility. 
+This project will need to be refactored before I continue adding features. WebGL shader functions have access to the GPU and it's ability to process in parallel. Ideally the back end webgl will be very small as it's only job will be to provide allocation and mathematical manipulation of float32Arrays to javascript. I would prefer to write this in C++ but html&javascript provide tremendous accessibility.
 
 
-This project is meant to be an endless exercise of mathematics as I add features. The camera transform is far less abstract than a fourier transform.
+This project is meant to be an endless exercise of mathematics with the goal of developing intuition for the camera transform and the corresponding pipeline. 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?   
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
 ![fileload](https://github.com/samcoble/CameraTransform/assets/32228102/b84daf1d-51e0-4ee2-b153-21d5fddbe8b6)
