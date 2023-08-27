@@ -874,7 +874,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (!isNaN( _inter[0]))
 		{
-			if (key_map.f)
+			if (key_map.lmb || key_map.f)
 			{
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
@@ -883,12 +883,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
 
-			if (key_map.lmb)
-			{
-				_lgp[0] = roundTo(_inter[0], grid_scale_f);
-				_lgp[1] = roundTo(_inter[1], grid_scale_f);
-				_lgp[2] = roundTo(_inter[2], grid_scale_f);
-			}
 
 			// Place point F
 			if (key_map.f && runEvery(150))
@@ -917,19 +911,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 		switch(pln_cyc)
 		{
 			case 0:
-				m_obj_offs[3] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
+				m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
 				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
 				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
 				break;
 			case 1:
 				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
-				m_obj_offs[4] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
+				m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
 				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
 				break;
 			case 2:
 				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
 				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
-				m_obj_offs[5] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
+				m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
 
 				break;
 		}
