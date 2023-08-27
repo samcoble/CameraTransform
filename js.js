@@ -152,7 +152,8 @@ var LookToggle = 0;
 
 var lock_vert_mov = false;
 var pln_cyc = 1;
-var grid_scale = 2;
+var grid_scale = 0;
+var grid_scale_f = 1;
 
 
 
@@ -292,8 +293,14 @@ window.addEventListener("wheel", function(e)
 	    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
 	} else {
 		//if (runEvery(50)) {
-		if (grid_scale>=1/4) {grid_scale += -e.deltaY/Math.abs(e.deltaY)/4;}
-		if (grid_scale==0) {grid_scale += 1/4;}
+
+
+		grid_scale += -e.deltaY/Math.abs(e.deltaY);
+		grid_scale_f = Math.pow(2, grid_scale);
+
+
+		// if (grid_scale>=1/4) {grid_scale += -e.deltaY/Math.abs(e.deltaY)/4;}
+		// if (grid_scale==0) {grid_scale += 1/4;}
 	}
 });
 
@@ -383,6 +390,7 @@ var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
 var _lp = new Float32Array(3);
+var _lgp = new Float32Array([0.0, 0.0, 0.0]);
 var _pp = [-125,0,-125]; // Point on plane will be static
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 
@@ -673,7 +681,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(1) + " : " + player_look_dir[1].toFixed(1), 30, 55);
 		drawText(ctx, "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 220, 40);
 		drawText(ctx, "pln_cyc: " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 55);
-		drawText(ctx, "grid_scale: " + grid_scale, 220, 55);
+		drawText(ctx, "grid_scale: " + grid_scale_f, 220, 55);
 
 		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 30, 75);
 		drawText(ctx, "L(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
@@ -866,15 +874,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (!isNaN( _inter[0]))
 		{
-			if (key_map.lmb || key_map.f)
+			if (key_map.f)
 			{
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
 				_lp[2] = _inter[2];
 			}
 
-			_inter_rnd = [roundTo(_lp[0], grid_scale), roundTo(_lp[1], grid_scale), roundTo(_lp[2], grid_scale)];
+			_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
 
+			if (key_map.lmb)
+			{
+				_lgp[0] = roundTo(_inter[0], grid_scale_f);
+				_lgp[1] = roundTo(_inter[1], grid_scale_f);
+				_lgp[2] = roundTo(_inter[2], grid_scale_f);
+			}
 
 			// Place point F
 			if (key_map.f && runEvery(150))
@@ -903,19 +917,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 		switch(pln_cyc)
 		{
 			case 0:
-				m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
-				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale];
-				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[3] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
+				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
+				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
 				break;
 			case 1:
-				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale];
-				m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
-				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale];
+				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
+				m_obj_offs[4] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
+				m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
 				break;
 			case 2:
-				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale];
-				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale];
-				m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale];
+				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
+				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
+				m_obj_offs[5] = [_lgp[0], _lgp[1], _lgp[2], grid_scale_f];
 
 				break;
 		}
