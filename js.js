@@ -37,7 +37,6 @@ function drawDot(c, rgba, lw, x, y, s)
 
 function drawLine(c, rgba, lw, x0, y0, x1, y1)
 {
-	
 	c.strokeStyle = rgba;
 	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1);
 	c.lineWidth = lw; c.stroke(); 
@@ -59,6 +58,8 @@ function drawPanel(c, x0, y0, x, y)
 /*
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
+
+	use objs for passing fn dat
 
 
 	json load/save
@@ -228,6 +229,18 @@ var key_map =
 	tab: false
 };
 
+var key_map_prevent = 
+{
+	shift: false,
+	tab: false,
+	lmb: false,
+	mmb: false,
+	rmb: false,
+	tab: false
+};
+
+
+// Generic js
 
 function downloadSaveFile()
 {
@@ -240,34 +253,44 @@ function downloadSaveFile()
 		_tar[i*4+2] = m_t_objs[i][2]
 		_tar[i*4+3] = m_t_objs[i][3]
 	}
-
+	// blob binary large object
 	const blob = new Blob([_tar], { type: 'application/octet-stream' });
 	const _url = URL.createObjectURL(blob);
 
-	// Create a temporary anchor element
+	// temp anchor
 	const anchor = document.createElement('a');
 	anchor.href = _url;
 	anchor.download = "data"+mem_t_sum+".bin";
 
-	// Click event to trigger the download
+	// use .click() to trigger the download
 	anchor.click();
 	URL.revokeObjectURL(_url);
 	key_map.p = false;
 }
 
 window.addEventListener('keydown', (event) => {
-	event.preventDefault();
+	
 	const key = event.key.toLowerCase();
-	if (key_map.hasOwnProperty(key)) {
+	if (key_map.hasOwnProperty(key))
+	{
 		key_map[key] = true;
+		if (key_map_prevent.hasOwnProperty(key))
+		{
+			event.preventDefault();
+		}
 	}
 });
 
 window.addEventListener('keyup', (event) => {
 	event.preventDefault();
 	const key = event.key.toLowerCase();
-		if (key_map.hasOwnProperty(key)) {
-	key_map[key] = false;
+		if (key_map.hasOwnProperty(key))
+		{
+			key_map[key] = false;
+			if (key_map_prevent.hasOwnProperty(key))
+			{
+				event.preventDefault();
+			}
 	}
 });
 
@@ -292,15 +315,9 @@ window.addEventListener("wheel", function(e)
 	    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
 	    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
 	} else {
-		//if (runEvery(50)) {
-
 
 		grid_scale += -e.deltaY/Math.abs(e.deltaY);
 		grid_scale_f = Math.pow(2, grid_scale);
-
-
-		// if (grid_scale>=1/4) {grid_scale += -e.deltaY/Math.abs(e.deltaY)/4;}
-		// if (grid_scale==0) {grid_scale += 1/4;}
 	}
 });
 
@@ -700,7 +717,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				// if (1) // Clipping off
 				{	
-					var _ts = in_win_hc/80/Math.pow( init_dat.data[4*j+mem_log[i][0]+3+mem_sum]*(0.03),0.17); // Remove or fix doesn't matter
 					if (i>9)
 					{
 						drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
@@ -755,7 +771,36 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawLine(ctx,rgba_g,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
 		drawLine(ctx,rgba_g,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
-	}
+
+		turbojs.run(init_dat, `void main(void) {
+
+		// if (read().x > 0.0) {
+        //     discard;  // Discard the fragment
+        // } 
+
+			commit(vec4(
+				read().x,
+				read().y,
+				read().z,
+				read().w
+				));
+
+
+		}`);	
+
+
+		// for (var i = 0; i<m_t_objs.length; i++)
+		// {
+		// 	for (var j = 0; j<mem_t_log[i][1]/4; j++) // fix me?
+		// 	{
+							
+		// 	}
+		// }
+
+
+
+
+	} // END OF drawIt()
 
 
 
@@ -799,7 +844,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.6*(1+key_map.shift*3);
 		}
 
-		if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);}
+		if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);} // r u 4? srs mane key_map[" "]
 		if (key_map.x) {player_pos[1] += 0.3*(1+key_map.shift*5);}
 		
 
@@ -857,8 +902,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 
-		var testp1 = [player_pos[0],player_pos[1],player_pos[2]]; // player pos world
-		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos world
+		var testp1 = [player_pos[0],player_pos[1],player_pos[2]];
+		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]];
 
 		var _inter = lpi(testp2,testp1,_pp,_nplns);
 
@@ -891,7 +936,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				addTData(np);
 			}
 
-			// Return to floor y
+			// Return to ground g
 			if (key_map.g && runEvery(350))
 			{
 				_lp[1] = 0;
@@ -924,7 +969,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 				m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
 				m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
 				m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
-
 				break;
 		}
 
