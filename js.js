@@ -771,22 +771,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawLine(ctx,rgba_g,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
 		drawLine(ctx,rgba_g,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
-
-		turbojs.run(init_dat, `void main(void) {
-
 		// if (read().x > 0.0) {
         //     discard;  // Discard the fragment
         // } 
 
-			commit(vec4(
-				read().x,
-				read().y,
-				read().z,
-				read().w
-				));
+		// turbojs.run(init_dat, `void main(void) {
 
 
-		}`);	
+		// 	commit(vec4(
+		// 		read().x,
+		// 		read().y,
+		// 		read().z,
+		// 		read().w
+		// 		));
+
+
+		// }`);	
 
 
 		// for (var i = 0; i<m_t_objs.length; i++)
