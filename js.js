@@ -61,8 +61,13 @@ function drawPanel(c, x0, y0, x, y)
 
 	use objs for passing fn dat
 
+	// To do:
 
-	json load/save
+	-	CLIPPING & OPTIMIZATION
+	-	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
+	-	First try making quaternion functions that calc ops with matrices. Useful later.
+	-	Add dancing stick figures to every vertex immediately 
+
 
 	setup requestAnimationFrame
 
@@ -83,29 +88,16 @@ function drawPanel(c, x0, y0, x, y)
 	Holy shit there's an algorithm for this lmao. This always happens to me.
 	https://en.wikipedia.org/wiki/Octree
 
-	Use bounding boxes on objs
+	Use bounding boxes on objs 4 physics
 
 	I need vertex select & modification to seamlessly implement hud/hologram to world functions
+	-	make a mem obj for a tool. m_vert_slct
+
+	mean_ctr may work.
 
 
 
-// Old Inverse Kinematic fn from way back
- 
-function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
-    local Xc = (F:x() - I:x())*sin(90-Yaw) + (F:y() - I:y())*cos(90-Yaw) # Abs value this?
-    local Yc = F:z() - I:z() # Abs value this?
-    local HD = min(sqrt(Xc^2 + Yc^2), Arm1 + Arm2)
-    local D = (Arm1^2 + Arm2^2 - HD^2)/(2*Arm1*Arm2)
-    local Fye = atan(sqrt(1-D^2), D)
-    local Banan = 180 - Fye
-    local Beta = atan(Yc, Xc)
-    local Alpha = atan(Arm2*sin(Banan), Arm1+Arm2*cos(Banan))
-    local Theta1 = (Beta - Alpha)
-    local A = vec(Arm1*cos(Theta1)*sin(90-Yaw), Arm1*cos(Theta1)*cos(90-Yaw), Arm1*sin(Theta1))+I
-    local B = A + vec(Arm2*cos(Theta1+Banan)*sin(90-Yaw), Arm2*cos(Theta1+Banan)*cos(90-Yaw), Arm2*sin(Theta1+Banan))
-    
-    return array(Theta1, Banan, A, B)
-}
+
 
 
 */
@@ -153,6 +145,7 @@ var LookToggle = 0;
 
 var lock_vert_mov = false;
 var pln_cyc = 1;
+var obj_cyc = 0;
 var grid_scale = 0;
 var grid_scale_f = 1;
 
@@ -219,6 +212,8 @@ var key_map =
 	f: false,
 	l: false,
 	g: false,
+	e: false,
+	k: false,
 	" ": false,
 	control: false,
 	shift: false,
@@ -226,7 +221,13 @@ var key_map =
 	lmb: false,
 	mmb: false,
 	rmb: false,
-	tab: false
+	tab: false,
+	alt: false,
+	meta: false,
+	arrowup: false,
+	arrowdown: false,
+	arrowleft: false,
+	arrowright: false
 };
 
 var key_map_prevent = 
@@ -241,6 +242,8 @@ var key_map_prevent =
 
 
 // Generic js
+
+
 
 function downloadSaveFile()
 {
@@ -417,7 +420,7 @@ const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10
 const m_x = new Float32Array([0,0,0,1, 10,0,0,1]);
 const m_y = new Float32Array([0,0,0,1, 0,10,0,1]);
 const m_z = new Float32Array([0,0,0,1, 0,0,10,1]);
-// const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
+//const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 
 
 
@@ -474,7 +477,7 @@ function splitObj(ar)
 }
 
 
- // grid: side length, scale, plane, offset
+// grid: side length, scale, plane, offset
 var m_flr = setGrid(12*4, 4, 1, [2, 0, -2]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
@@ -556,6 +559,21 @@ function addATData(ar)
 	}
 }
 
+function mem_t_mov()
+{
+	var _tar = new Float32Array(mem_t_sum); 
+
+	for (i=0; i<m_t_objs.length; i++)
+	{
+		_tar[i*4+0] = m_t_objs[i][0]
+		_tar[i*4+1] = m_t_objs[i][1]
+		_tar[i*4+2] = m_t_objs[i][2]
+		_tar[i*4+3] = m_t_objs[i][3]
+	}
+	
+	addMData(_tar);
+}
+
 
 
 						/*-- PLACE DATA --\
@@ -570,6 +588,7 @@ addMData(g_over_z);   // 5
 addMData(m_x);        // 6
 addMData(m_y);        // 7
 addMData(m_z);        // 8
+
 
 
 //addMData(m_tri);
@@ -688,6 +707,17 @@ document.addEventListener("DOMContentLoaded", function(event)
         */
 
 
+        //if (!mouseLock)
+        //{
+        	// drawPanel(ctx, 11, 190, 420, 190+m_objs.length*20);
+
+        	// for (var i = 0; i < m_objs.length; i++)
+        	// {
+        	// 	drawText(ctx, "objAddr[" + mem_log[i][0] + "]   objSize[" + mem_log[i][1] + "]", 30, 200+i*15);
+        	// }
+        //}
+
+
 		drawPanel(ctx, 11, 10, 420, 185);
 
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
@@ -704,7 +734,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 		drawText(ctx, "L(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
 		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 30, 105); //, 
 		drawText(ctx, "Scroll+LOCK(vert mov), Z(undo), G(ground)", 30, 120); //, 
-		drawText(ctx, "Scroll+Shift(grid size), ", 30, 135); //, 
+		drawText(ctx, "Scroll+Shift(grid size), " + obj_cyc, 30, 135); //, 
+		
+
+
+		drawPanel(ctx, 11, 190, 295, 215+m_objs.length*15);
+
+        	for (var i = 0; i < m_objs.length; i++)
+        	{
+
+				drawText(ctx, "objSize[" + mem_log[i][1] + "]", 50, 215+i*15); //, 
+				drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 170, 215+i*15); //, 
+
+				if (i==obj_cyc) {drawText(ctx, "->", 30, 215+i*15);}
+
+			}
 
 		// bad 4 cpu fix
 
@@ -712,12 +756,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		for (var i = 1; i<m_objs.length; i++) // i find object
 		{
+
+
+
+
 			for (var j = 0; j<mem_log[i][1]/4; j++) // j finds vertex
 			{
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				// if (1) // Clipping off
 				{	
-					if (i>9)
+					if (i>8 && j != mem_log[i][1]/4-1)
 					{
 						drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
 					}
@@ -745,6 +793,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 				}
 
 			}
+
+
+
+
+
 		}
 
 		for (var i = 0; i<m_t_objs.length; i++)
@@ -819,7 +872,30 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
 		*/
 
+		if (key_map.k && runEvery(350) && obj_cyc > 8)
+		{
+			if (obj_cyc == m_objs.length-1)
+			{
+				m_objs.splice(-1);	mem_log.splice(-1); obj_cyc = obj_cyc-1;
+			} else {
+				let _ts = mem_log[obj_cyc][1];
 
+				for (var i = obj_cyc+1; i<mem_log.length; i++)
+				{
+					mem_log[i][0] = mem_log[i][0]-_ts;
+
+					//if (i == mem_log.length-1) {m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1);}
+				}
+				//console.log(mem_log);
+				m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1);
+			}
+		}
+
+		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1){obj_cyc=0} else {obj_cyc++;}}
+		if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0){obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
+
+		if (key_map.e && runEvery(350)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0;
+		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
@@ -849,10 +925,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		
 
 
-		if (key_map.control)
+		if (key_map.control || key_map.alt || key_map.meta)
 		{
 			mouseLock = 0;
 			document.exitPointerLock();
+			key_map.meta = false; key_map.alt = false;
 		}
 
 		if ((key_map.mmb && !mouseLock) || document.ready) // ? wha
@@ -1014,13 +1091,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}`);
 
 
-		// To do:
-
-		//	Import verticies w/ json
-		// 	CLIPPING & OPTIMIZATION
-		//	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
-		//  First try making quaternion functions that calc ops with matrices. Useful later.
-		//  Add dancing stick figures to every vertex immediately 
 
 		/*
 
@@ -1146,3 +1216,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
+/*
+// Old Inverse Kinematic fn from way back
+ 
+function array getIK(I:vector, F:vector, Arm1, Arm2, Yaw) {
+    local Xc = (F:x() - I:x())*sin(90-Yaw) + (F:y() - I:y())*cos(90-Yaw) # Abs value this?
+    local Yc = F:z() - I:z() # Abs value this?
+    local HD = min(sqrt(Xc^2 + Yc^2), Arm1 + Arm2)
+    local D = (Arm1^2 + Arm2^2 - HD^2)/(2*Arm1*Arm2)
+    local Fye = atan(sqrt(1-D^2), D)
+    local Banan = 180 - Fye
+    local Beta = atan(Yc, Xc)
+    local Alpha = atan(Arm2*sin(Banan), Arm1+Arm2*cos(Banan))
+    local Theta1 = (Beta - Alpha)
+    local A = vec(Arm1*cos(Theta1)*sin(90-Yaw), Arm1*cos(Theta1)*cos(90-Yaw), Arm1*sin(Theta1))+I
+    local B = A + vec(Arm2*cos(Theta1+Banan)*sin(90-Yaw), Arm2*cos(Theta1+Banan)*cos(90-Yaw), Arm2*sin(Theta1+Banan))
+    
+    return array(Theta1, Banan, A, B)
+}
+*/
