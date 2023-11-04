@@ -11,6 +11,7 @@ This project will need to be refactored before I continue adding features. WebGL
 
 This project is meant to be an endless exercise of mathematics with the goal of developing intuition for the camera transform and the corresponding pipeline. 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
+
 ![objfeats](https://github.com/samcoble/CameraTransform/assets/32228102/e0c35a2e-1a03-4192-98ad-741ee34a4f78)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
 ![fileload](https://github.com/samcoble/CameraTransform/assets/32228102/b84daf1d-51e0-4ee2-b153-21d5fddbe8b6)
