@@ -103,6 +103,8 @@ function drawPanel(c, x0, y0, x, y)
 
 	mean_ctr may work.
 
+	store surface planes as their dir vec & any point on the plane
+
 
 
 
@@ -321,15 +323,17 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
+
 	if (!key_map.shift)
 	{
 	    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
 	    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
-	} else {
+	} else if(runEvery(200)) {
 
 		grid_scale += -e.deltaY/Math.abs(e.deltaY);
 		grid_scale_f = Math.pow(2, grid_scale);
 	}
+
 });
 
 
@@ -914,15 +918,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 			// if (!isNaN( _inter[0]))
 			// {
 
-			if (m_objs[obj_cyc].length==4)
+			// if (m_objs[obj_cyc].length==4)
+			// 		_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
+			// 		_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
+			// 		_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
+				//else {
 					_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
 					_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
 					_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
-				else {
-					_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
-					_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
-					_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
-				}
+				//}
 
 
 
