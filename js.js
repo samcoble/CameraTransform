@@ -30,7 +30,6 @@ function fillDot(c, rgba, x, y, s)
 {
 	c.fillStyle = rgba;
 	c.fillRect(x-s/2, y-s/2, s, s);
-
 }
 
 function drawDot(c, rgba, lw, x, y, s)
@@ -39,14 +38,13 @@ function drawDot(c, rgba, lw, x, y, s)
 	c.strokeStyle = rgba;
 	c.rect(x-s/2, y-s/2, s, s);
 	c.lineWidth = lw; c.stroke();
-
 }
 
 function drawLine(c, rgba, lw, x0, y0, x1, y1)
 {
 	c.strokeStyle = rgba;
 	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1);
-	c.lineWidth = lw; c.stroke(); 
+	c.lineWidth = lw; c.stroke();
 }
 
 function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
@@ -57,7 +55,7 @@ function drawPanel(c, x0, y0, x, y)
 		c.fillStyle = "rgba(10,12,14,0.7)";
 		c.fill();
 		c.beginPath();
-		c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
+		c.strokeStyle = "rgba(222, 222, 222, 0.3)"; 
 		c.rect(x0, y0, x-x0, y-y0);
 		c.lineWidth = 1; c.stroke();
 }
@@ -163,10 +161,11 @@ var grid_scale_f = 2;
 var rgba_r ="rgba(200, 50, 50, 0.6)";
 var rgba_g ="rgba(50, 200, 50, 0.6)";
 var rgba_b ="rgba(50, 50, 200, 0.9)";
-var rgba_w = "rgba(222, 222, 222, 1.0)";
-var rgba_w_flr = "rgba(222, 222, 222, 0.21)";
+var rgba_w = "rgba(255, 255, 255, 1.0)";
+var rgba_w_flr = "rgba(222, 222, 222, 0.4)";
 var rgba_y = "rgba(240, 240, 50, 1.0)";
 var rgba_o = "rgba(238, 207, 63, 1.0)";
+var rgba_ch ="rgba(50, 200, 50, 0.9)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
 var _inter_rnd = [0.0, 0.0, 0.0];
@@ -220,10 +219,11 @@ var key_map =
 	p: false,
 	t: false,
 	f: false,
-	l: false,
+	n: false,
 	g: false,
 	e: false,
-	k: false,
+	b: false,
+	v: false,
 	" ": false,
 	control: false,
 	shift: false,
@@ -323,15 +323,22 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
-
+			
 	if (!key_map.shift)
 	{
-	    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
-	    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
-	} else if(runEvery(200)) {
+		if (mouseLock)
+		{
+		    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
+		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
+		} else if(runEvery(50)) {
+			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
+		}
 
-		grid_scale += -e.deltaY/Math.abs(e.deltaY);
-		grid_scale_f = Math.pow(2, grid_scale);
+	} else if (runEvery(200)) {
+
+			grid_scale += -e.deltaY/Math.abs(e.deltaY);
+			grid_scale_f = Math.pow(2, grid_scale);
+		
 	}
 
 });
@@ -490,7 +497,7 @@ function splitObj(ar)
 
 
 // grid: side length, scale, plane, offset
-var m_flr = setGrid(12*4, 4, 1, [2, 0, -2]);
+var m_flr = setGrid(8*4, 8, 1, [4, 0, -4]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
 var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
@@ -537,6 +544,8 @@ const m_map = new Float32Array([
 	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
 	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
 	*/
+
+
 var m1 = turbojs.alloc(20000); // Everything
 for (i=0; i<m1.data.length; i++)
 {
@@ -603,9 +612,6 @@ addMData(m_x);        // 6
 addMData(m_y);        // 7
 addMData(m_z);        // 8
 
-
-
-//addMData(m_tri);
 
 
 
@@ -783,8 +789,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 					if (i>8 && j != mem_log[i][1]/4-1)
 					{
 						if (i==obj_cyc) {
-							drawLine(ctx,rgba_y, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
-						} else {drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+							drawLine(ctx,rgba_y, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+						} else {drawLine(ctx,rgba_w, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					}
 
 					if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
@@ -797,14 +803,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0)
 				{
-					if (i > 2)
-					{
-						if (key_map.mmb && i > 5) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc);}
-						if (j == mem_log[i][1]/4-1) // Find last vertex
-						{
-							drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
-						}
-					}
+					//if (i > 2)
+					//{
+						// if (key_map.mmb && i > 5) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc);}
+						// if (j == mem_log[i][1]/4-1) // Find last vertex
+						// {
+						// 	//drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
+						// }
+					//}
 					if (i>2)
 					{
 						drawDot(ctx, rgbas[pln_cyc], 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
@@ -840,8 +846,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 			}
 		}
 
-		drawLine(ctx,rgba_g,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
-		drawLine(ctx,rgba_g,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
+		drawLine(ctx,rgba_ch,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
+		drawLine(ctx,rgba_ch,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
 		// if (read().x > 0.0) {
         //     discard;  // Discard the fragment
@@ -893,7 +899,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
 		*/
 
-		if (key_map.k && runEvery(350) && obj_cyc > 8)
+		if (key_map.b && runEvery(350) && obj_cyc > 8)
 		{
 			if (obj_cyc == m_objs.length-1)
 			{
@@ -913,7 +919,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 		// ref: m_objs[m_objs.length-1][(mem_log[m_objs.length-1][1]-4)]
-		if (key_map.arrowleft && runEvery(350))
+		if (key_map.v && runEvery(350))
 		{
 			// if (!isNaN( _inter[0]))
 			// {
@@ -923,10 +929,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 			// 		_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
 			// 		_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
 				//else {
+			if (!isNaN(m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)]))
+			{
 					_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
 					_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
 					_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
-				//}
+			}
 
 
 
@@ -944,7 +952,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
-		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
+		if (key_map.n && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
 		if (key_map.r && runEvery(200)) {if (pln_cyc==2) {pln_cyc=0} else {pln_cyc++;}}
@@ -1042,7 +1050,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (!isNaN( _inter[0]))
 		{
-			if (key_map.lmb || key_map.f)
+			if (key_map.lmb && mouseLock || key_map.f)
 			{
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
