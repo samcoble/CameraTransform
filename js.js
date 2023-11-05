@@ -26,6 +26,13 @@ function drawRectFrame(c, x, y, w, h)
 	c.lineWidth = 1; c.stroke();
 }
 
+function fillDot(c, rgba, x, y, s)
+{
+	c.fillStyle = rgba;
+	c.fillRect(x-s/2, y-s/2, s, s);
+
+}
+
 function drawDot(c, rgba, lw, x, y, s)
 {
 	c.beginPath(); 
@@ -47,8 +54,8 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 function drawPanel(c, x0, y0, x, y)
 {
 		c.rect(x0, y0, x-x0, y-y0);
-		ctx.fillStyle = "rgba(10,12,14,0.7)";
-		ctx.fill();
+		c.fillStyle = "rgba(10,12,14,0.7)";
+		c.fill();
 		c.beginPath();
 		c.strokeStyle = "rgba(222, 222, 222, 0.2)"; 
 		c.rect(x0, y0, x-x0, y-y0);
@@ -68,6 +75,7 @@ function drawPanel(c, x0, y0, x, y)
 	-	First try making quaternion functions that calc ops with matrices. Useful later.
 	-	Add dancing stick figures to every vertex immediately 
 
+	//myArray.splice(0, myArray.length);
 
 	setup requestAnimationFrame
 
@@ -146,17 +154,17 @@ var LookToggle = 0;
 var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0;
-var grid_scale = 0;
-var grid_scale_f = 1;
+var grid_scale = 2;
+var grid_scale_f = 2;
 
 
-
-var rgba_r ="rgba(200, 50, 50, 215)";
-var rgba_g ="rgba(50, 200, 50, 215)";
-var rgba_b ="rgba(50, 50, 200, 215)";
-var rgba_w = "rgba(222, 222, 222, 215)";
-// var rgba_o = [170, 98, 28, 255];
-var rgba_o = "rgba(238, 207, 63, 1)";
+var rgba_r ="rgba(200, 50, 50, 0.6)";
+var rgba_g ="rgba(50, 200, 50, 0.6)";
+var rgba_b ="rgba(50, 50, 200, 0.9)";
+var rgba_w = "rgba(222, 222, 222, 1.0)";
+var rgba_w_flr = "rgba(222, 222, 222, 0.21)";
+var rgba_y = "rgba(240, 240, 50, 1.0)";
+var rgba_o = "rgba(238, 207, 63, 1.0)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
 var _inter_rnd = [0.0, 0.0, 0.0];
@@ -570,6 +578,8 @@ function mem_t_mov()
 		_tar[i*4+2] = m_t_objs[i][2]
 		_tar[i*4+3] = m_t_objs[i][3]
 	}
+
+	m_t_objs.length = 0; mem_t_log.length = 0; mem_t_sum = 0;
 	
 	addMData(_tar);
 }
@@ -718,6 +728,7 @@ document.addEventListener("DOMContentLoaded", function(event)
         //}
 
 
+
 		drawPanel(ctx, 11, 10, 420, 185);
 
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
@@ -767,12 +778,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 				{	
 					if (i>8 && j != mem_log[i][1]/4-1)
 					{
-						drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+						if (i==obj_cyc) {
+							drawLine(ctx,rgba_y, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+						} else {drawLine(ctx,rgba_w, 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					}
 
 					if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					if (i==1) {drawDot(ctx, rgba_w, 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13))};
+					// 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3)
+					if (i==1) {
+					fillDot(ctx, rgba_w_flr, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
 					
 				} // END OF LINE CLIP
 
@@ -788,7 +803,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 					}
 					if (i>2)
 					{
-						drawDot(ctx, rgbas[pln_cyc], 1.2, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3),1.13));
+						drawDot(ctx, rgbas[pln_cyc], 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
 					}
 				}
 
@@ -807,7 +822,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && init_dat.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
 				// if (1) // Clipping off
 				{
-					drawDot(ctx, rgba_w, 2, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),1.13));
+					drawDot(ctx, rgba_w, 2, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
 					if (i == m_t_objs.length-1)
 					{
 						drawText(ctx, "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
@@ -857,6 +872,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
+
+
 	function Compute(init_dat)
 	{
 
@@ -891,18 +908,43 @@ document.addEventListener("DOMContentLoaded", function(event)
 			}
 		}
 
+		// ref: m_objs[m_objs.length-1][(mem_log[m_objs.length-1][1]-4)]
+		if (key_map.arrowleft && runEvery(350))
+		{
+			// if (!isNaN( _inter[0]))
+			// {
+
+			if (m_objs[obj_cyc].length==4)
+					_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
+					_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
+					_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
+				else {
+					_lp[0] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-4)];
+					_lp[1] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-3)];
+					_lp[2] = m_objs[obj_cyc][(mem_log[m_objs.length-1][1]-2)];
+				}
+
+
+
+			// }
+		}
+
+
+		
+
+
 		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1){obj_cyc=0} else {obj_cyc++;}}
 		if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0){obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
-		if (key_map.e && runEvery(350)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0;
+		if (key_map.e && runEvery(350)) {mem_t_mov(); key_map.e = false; obj_cyc = mem_log.length-1;} // m_t_objs.length = 0; mem_t_log.length = 0;
 		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 		if (key_map.l && runEvery(500)) {lock_vert_mov = !lock_vert_mov;}
 		if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
-		if (key_map.r && runEvery(200)) {if (pln_cyc==2){pln_cyc=0} else {pln_cyc++;}}
-		if (key_map.q && runEvery(200)) {if (pln_cyc==0){pln_cyc=2} else {pln_cyc-=1;}}
+		if (key_map.r && runEvery(200)) {if (pln_cyc==2) {pln_cyc=0} else {pln_cyc++;}}
+		if (key_map.q && runEvery(200)) {if (pln_cyc==0) {pln_cyc=2} else {pln_cyc-=1;}}
 
 		var keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 
