@@ -68,12 +68,12 @@ function drawPanel(c, x0, y0, x, y)
 
 	// To do:
 
+	-	Fix save & load
 	-	CLIPPING & OPTIMIZATION
 	-	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
 	-	First try making quaternion functions that calc ops with matrices. Useful later.
 	-	Add dancing stick figures to every vertex immediately 
 
-	//myArray.splice(0, myArray.length);
 
 	setup requestAnimationFrame
 
@@ -164,7 +164,7 @@ var rgba_b ="rgba(50, 50, 200, 0.9)";
 var rgba_w = "rgba(255, 255, 255, 1.0)";
 var rgba_w_flr = "rgba(222, 222, 222, 0.4)";
 var rgba_y = "rgba(240, 240, 50, 1.0)";
-var rgba_o = "rgba(238, 207, 63, 1.0)";
+var rgba_o = "rgba(245, 213, 63, 1.0)";
 var rgba_ch ="rgba(50, 200, 50, 0.9)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
@@ -174,6 +174,10 @@ var _inter_rnd = [0.0, 0.0, 0.0];
 const fileInput = document.getElementById('fileInput');
 
 
+var _oh, f_look, f_dist, _inter;
+var _nplns = [];
+var _plr_world_pos = [];
+var _plr_dtp = [];
 
 
 
@@ -323,7 +327,6 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
-			
 	if (!key_map.shift)
 	{
 		if (mouseLock)
@@ -332,15 +335,14 @@ window.addEventListener("wheel", function(e)
 		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14};
 		} else if(runEvery(50)) {
 			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
+			if (obj_cyc>m_objs.length-1) {obj_cyc=0};
+			if (obj_cyc<0) {obj_cyc=m_objs.length-1};
 		}
 
 	} else if (runEvery(200)) {
-
 			grid_scale += -e.deltaY/Math.abs(e.deltaY);
 			grid_scale_f = Math.pow(2, grid_scale);
-		
 	}
-
 });
 
 
@@ -366,6 +368,11 @@ function makeTitle(_s)
 function dot(a,b)
 {
 	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+function dot2(a,b)
+{
+	return a[0]*b[0] + a[1]*b[1];
 }
 
 function sub(a,b)
@@ -739,35 +746,35 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		drawPanel(ctx, 11, 10, 420, 185);
+		drawPanel(ctx, 11, 10, 420, 215);
 
 		drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
 
 
 		drawText(ctx, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 30, 40);
-		//drawText(ctx, "player_look_dir  |  " + player_look_dir[0].toFixed(1) + " : " + player_look_dir[1].toFixed(1), 30, 55);
 		drawText(ctx, "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 220, 40);
 		drawText(ctx, "pln_cyc: " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 55);
 		drawText(ctx, "grid_scale: " + grid_scale_f, 220, 55);
 
 		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 30, 75);
-		drawText(ctx, "L(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
-		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 30, 105); //, 
-		drawText(ctx, "Scroll+LOCK(vert mov), Z(undo), G(ground)", 30, 120); //, 
-		drawText(ctx, "Scroll+Shift(grid size), " + obj_cyc, 30, 135); //, 
+		drawText(ctx, "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
+		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 30, 105);
+		drawText(ctx, "Scroll+LOCK(vert mov), V(last pnt), G(ground)", 30, 120);
+		drawText(ctx, "Scroll+Shift(grid size), Z(undo), B(del obj)", 30, 135);
+		drawText(ctx, "Scroll/Arrows(obj nav), RMB(go to pnt)", 30, 150);
 		
 
 
-		drawPanel(ctx, 11, 190, 295, 215+m_objs.length*15);
+		drawPanel(ctx, 11, 220, 295, 245+m_objs.length*15);
 
         	for (var i = 0; i < m_objs.length; i++)
         	{
 
-				drawText(ctx, "objSize[" + mem_log[i][1] + "]", 50, 215+i*15); //, 
-				drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 170, 215+i*15); //, 
+				drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 50, 245+i*15); //, 
+				drawText(ctx, "objSize[" + mem_log[i][1] + "]", 170, 245+i*15); //, 
 
-				if (i==obj_cyc) {drawText(ctx, "->", 30, 215+i*15);}
+				if (i==obj_cyc) {drawText(ctx, "->", 30, 245+i*15);}
 
 			}
 
@@ -888,17 +895,121 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 
 		/*
-		________/\\\\\\\\\_______/\\\\\_______/\\\\____________/\\\\__/\\\\\\\\\\\\\____/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\\\_        
-		 _____/\\\////////______/\\\///\\\____\/\\\\\\________/\\\\\\_\/\\\/////////\\\_\/\\\_______\/\\\_\///////\\\/////__\/\\\///////////__       
-		  ___/\\\/_____________/\\\/__\///\\\__\/\\\//\\\____/\\\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_____________      
-		   __/\\\______________/\\\______\//\\\_\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_______\/\\\_______\/\\\\\\\\\\\_____     
-		    _\/\\\_____________\/\\\_______\/\\\_\/\\\__\///\\\/___\/\\\_\/\\\/////////____\/\\\_______\/\\\_______\/\\\_______\/\\\///////______    
-		     _\//\\\____________\//\\\______/\\\__\/\\\____\///_____\/\\\_\/\\\_____________\/\\\_______\/\\\_______\/\\\_______\/\\\_____________   
-		      __\///\\\___________\///\\\__/\\\____\/\\\_____________\/\\\_\/\\\_____________\//\\\______/\\\________\/\\\_______\/\\\_____________  
-		       ____\////\\\\\\\\\____\///\\\\\/_____\/\\\_____________\/\\\_\/\\\______________\///\\\\\\\\\/_________\/\\\_______\/\\\\\\\\\\\\\\\_ 
-		        _______\/////////_______\/////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
+		________/\\\\\\\\\_______/\\\\\\_______/\\\\____________/\\\\__/\\\\\\\\\\\\\____/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\\\_        
+		 _____/\\\////////______/\\\////\\\____\/\\\\\\________/\\\\\\_\/\\\/////////\\\_\/\\\_______\/\\\_\///////\\\/////__\/\\\///////////__       
+		  ___/\\\/_____________/\\\/___\///\\\__\/\\\//\\\____/\\\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_____________      
+		   __/\\\______________/\\\_______\//\\\_\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_______\/\\\_______\/\\\\\\\\\\\_____     
+		    _\/\\\_____________\/\\\________\/\\\_\/\\\__\///\\\/___\/\\\_\/\\\/////////____\/\\\_______\/\\\_______\/\\\_______\/\\\///////______    
+		     _\//\\\____________\//\\\_______/\\\__\/\\\____\///_____\/\\\_\/\\\_____________\/\\\_______\/\\\_______\/\\\_______\/\\\_____________   
+		      __\///\\\___________\///\\\___/\\\____\/\\\_____________\/\\\_\/\\\_____________\//\\\______/\\\________\/\\\_______\/\\\_____________  
+		       ____\////\\\\\\\\\____\///\\\\\\/_____\/\\\_____________\/\\\_\/\\\______________\///\\\\\\\\\/_________\/\\\_______\/\\\\\\\\\\\\\\\_ 
+		        _______\/////////_______\//////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
 		*/
 
+
+		
+	if (key_map.rmb && runEvery(350))
+	{
+
+		var _f; var _n_sku = 0; var _t1; var _d = 0;
+
+		_f = Math.pow(Math.pow(init_dat.data[mem_log[obj_cyc][0]], 2) + Math.pow(init_dat.data[mem_log[obj_cyc][0]+1], 2), 0.5);
+		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
+		{
+			//if (m_objs.length==0) {_f = Math.pow(Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]], 2) + Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]+1], 2), 0.5);}
+			_t1 = Math.pow(Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]], 2) + Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]+1], 2), 0.5);
+
+			if (_t1 < _f)
+			{
+				_f = _t1;
+				_n_sku = k;
+				
+			}
+		}
+		
+
+		for (var i = 0; i<m_t_objs.length; i++)
+		{
+			for (var j = 0; j<mem_t_log[i][1]/4; j++)
+			{
+				//if (m_t_objs.length==0) {_f = Math.pow(Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum], 2) + Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum+1], 2), 0.5);}
+				_t1 = Math.pow(Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum], 2) + Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum+1], 2), 0.5);
+				//_t1 = Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum], 2) + Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum+1], 2);
+
+				
+				//init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum],
+
+				if (_t1 < _f)
+				{
+					_f = _t1;
+					_n_sku = i;
+					_d = 1;
+				}
+
+				
+			}
+		}
+
+
+		if (_d==1)
+		{
+			//console.log(_n_sku);
+			_lp[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
+			_lp[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
+			_lp[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+		}
+		if (_d==0)
+		{
+			// console.log(_n_sku);
+			_lp[0] = m_objs[obj_cyc][4*_n_sku];
+			_lp[1] = m_objs[obj_cyc][4*_n_sku+1];
+			_lp[2] = m_objs[obj_cyc][4*_n_sku+2];
+		}
+		
+
+
+	}
+
+				// this almost worked lol
+				// let _dotsx = []; let _dotsy = []; let _vrt = []; let _near_skux = 0; let _near_skuy = 0; let _near_sku = 0;
+				// let _sx, _sy;
+				// for (var i = 0; i<m_t_objs.length; i++)
+				// {
+				// 	for (var j = 0; j<mem_t_log[i][1]/4; j++)
+				// 	{
+				// 		_vrt = [init_dat.data[4*j+mem_t_log[i][0]+mem_sum], init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]];
+				// 		_dotsx.push(Math.abs(dot2(_vrt, [1,0]))); _dotsy.push(Math.abs(dot2(_vrt, [0,1])));
+				// 		if (i==0) {_sx = _dotsx[0]; _sy = _dotsy[0];}
+						
+				// 		if (m_t_objs.length>1 )
+				// 		{
+				// 			if (_sx > _dotsx[i]) {_sx = _dotsx[i]; _near_skux = i;}
+				// 			if (_sy > _dotsy[i]) {_sy = _dotsy[i]; _near_skuy = i;}
+				// 		}
+
+				// 		// if (m_t_objs.length>1 && _dots[i]<_dots[i-1]) {_near_sku = i;}
+				// 		// if (m_t_objs.length==0) {_near_sku = 0;}
+				// 	}
+				// }
+
+				// _near_sku = (_near_skux < _near_skuy) ? _near_skux : _near_skuy;
+
+				//console.log(_sx + " : " + _sy);
+				//console.log(_dots + " : " + _near_sku);
+				//console.log(m_objs[_near_sku][(mem_log[m_objs.length-1][1]-4)]);
+				//if (!isNaN(m_objs[_near_sku][(mem_log[m_objs.length-1][1]-4)]))
+				//{
+						// _lp[0] = m_t_objs[_near_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
+						// _lp[1] = m_t_objs[_near_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
+						// _lp[2] = m_t_objs[_near_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+				//} else
+				//{
+					//console.log("NAN");
+				//}
+
+
+
+		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 		if (key_map.b && runEvery(350) && obj_cyc > 8)
 		{
 			if (obj_cyc == m_objs.length-1)
@@ -906,14 +1017,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 				m_objs.splice(-1);	mem_log.splice(-1); obj_cyc = obj_cyc-1;
 			} else {
 				let _ts = mem_log[obj_cyc][1];
-
 				for (var i = obj_cyc+1; i<mem_log.length; i++)
 				{
 					mem_log[i][0] = mem_log[i][0]-_ts;
 
 					//if (i == mem_log.length-1) {m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1);}
 				}
-				//console.log(mem_log);
 				m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1);
 			}
 		}
@@ -942,7 +1051,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
-		
 
 
 		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1){obj_cyc=0} else {obj_cyc++;}}
@@ -974,7 +1082,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*0.6*(1+key_map.shift*3);
 		}
 
-		if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);} // r u 4? srs mane key_map[" "]
+		if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);}  // r u 4? srs mane key_map[" "]
 		if (key_map.x) {player_pos[1] += 0.3*(1+key_map.shift*5);}
 		
 
@@ -1026,17 +1134,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 
-		var _oh = dot(player_pos,[0,1,0,1]);
-		var f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
-		var f_dist = -_oh/dot(N,norm(f_look));
-
-
-		var _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
-
-		var testp1 = [player_pos[0],player_pos[1],player_pos[2]];
-		var testp2 = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]];
-
-		var _inter = lpi(testp2,testp1,_pp,_nplns);
+		_oh = dot(player_pos,[0,1,0,1]);
+		f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
+		f_dist = -_oh/dot(N,norm(f_look));
+		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
+		_plr_world_pos = [player_pos[0],player_pos[1],player_pos[2]];
+		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]];
+		_inter = lpi(_plr_dtp,_plr_world_pos,_pp,_nplns);
 
 
 		m_objs[0][0] = _inter[0];
