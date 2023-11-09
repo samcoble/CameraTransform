@@ -13,6 +13,7 @@ This project is meant to be an endless exercise of mathematics with the goal of 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
 
 Save & Load not fixed yet.
+![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
 ![objfeats2](https://github.com/samcoble/CameraTransform/assets/32228102/04dfa5a4-7ed7-4f74-a452-18549d6584d8)
 ![objfeats](https://github.com/samcoble/CameraTransform/assets/32228102/e0c35a2e-1a03-4192-98ad-741ee34a4f78)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
