@@ -1,4 +1,15 @@
-// ! Memspc
+
+/*
+	__/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_______________________/\\\\\\\\\\\____/\\\\\\\\\\\\\__________/\\\\\\\\\_        
+	 _\/\\\\\\________/\\\\\\_\/\\\///////////__\/\\\\\\________/\\\\\\_____________________/\\\/////////\\\_\/\\\/////////\\\_____/\\\////////__       
+	  _\/\\\//\\\____/\\\//\\\_\/\\\_____________\/\\\//\\\____/\\\//\\\____________________\//\\\______\///__\/\\\_______\/\\\___/\\\/___________      
+	   _\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\_____\/\\\\///\\\/\\\/_\/\\\_____________________\////\\\_________\/\\\\\\\\\\\\\/___/\\\_____________     
+	    _\/\\\__\///\\\/___\/\\\_\/\\\///////______\/\\\__\///\\\/___\/\\\________________________\////\\\______\/\\\/////////____\/\\\_____________    
+	     _\/\\\____\///_____\/\\\_\/\\\_____________\/\\\____\///_____\/\\\___________________________\////\\\___\/\\\_____________\//\\\____________   
+	      _\/\\\_____________\/\\\_\/\\\_____________\/\\\_____________\/\\\____________________/\\\______\//\\\__\/\\\______________\///\\\__________  
+	       _\/\\\_____________\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_____________\/\\\__/\\\\\\\\\\\\\\\_\///\\\\\\\\\\\/___\/\\\________________\////\\\\\\\\\_ 
+	        _\///______________\///__\///////////////__\///______________\///__\///////////////____\///////////_____\///____________________\/////////__
+*/
 
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
@@ -57,18 +68,37 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
 
-	use objs for passing fn dat
+	Might still be possible to salvage w/ my own api to fix the refresh rate limitation here. Pretty bad using setInterval (only for druggies). or worse javascript eval(); you can go to jail for this.
+	Badly need to give lpi and other obj algs a go in glsl. Even worth doing until I redo api????
 
-	// To do:
 
-	-	Fix save & load
+	// PROBABLY GOING TO DO SOON:
+
+	-	Fix save & load (Just going for entire world for now. Load all objs back in)
+	-   Oh god how to fix the rounding situation. Axis and point selection is guided but also retains other scales of points by grid rounding. Wrong sequence of nightmare if tree.
+	-   Unpack function & delete locked vert => memory changes
+	-   Merge function: should already have the functions. Need to make a sequenced event (colorized). 3 keys. Start(finish). Abort. Select all non world. Maybe leave this for last????
+	-   Translate function: wait I already did this with m_obj_offs[] array. Need to parallel with obj struct. (Uh oh. Merge + translation + rotation implies perma local modif &&&&&&&& 3 mem stacks to be fixed jesus)
+	-   Rotation array stack VS Permanent rotation
+
+	-   This thing is dying for effects and sounds. Hl2 sound files or recreate similar sounds. AI GOO SOUNDS OOOOOOOOOOO.
+
+	// PROBABLY NOT SO SOON
+
+	-   Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&&&!!!! the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
+    -   Maybe a separate self made api for handling the screen interface would be wise.
+	-   It really needs 3d/2d simple text obj generation for real notepad capacity. Idk how to edit something like that other than detecting the objects vertices relative and essentially making a hash table. Easier to just store the string in the bg. More arrays...
+
+	-   Link points along obj sequence along another obj sequence. Just a linear function. Maybe if it's like 6 : 2 it'd be 3 to 1, 3 to 1. etc.    
+
+	// MAYBE SOME TIME IN 2053 (after christ)
+
 	-	CLIPPING & OPTIMIZATION
 	-	Quaternion fn. Replace all rotation functions. WEBGL fn for quat?
 	-	First try making quaternion functions that calc ops with matrices. Useful later.
-	-	Add dancing stick figures to every vertex immediately 
+	-	Add dancing stick figures to every vertex immediately. I will do this. Don't fuck with me.
 
 
-	setup requestAnimationFrame
 
 	m_obj_offs = []; // [[dx,dy,dz], [dx,dy,dz], ...]
 		place new grid overlay obj
@@ -94,14 +124,11 @@ function reDraw(c, ww, wh) {c.clearRect(0, 0, ww, wh);}
 
 	mean_ctr may work.
 
-	store surface planes as their dir vec & any point on the plane
-
-
-
-
-
+	store surface planes as their dir vec & any point on the plane. Have a list of planes basically. Localize all draw functionality to the plane allowing for direct modeling perp to the surface.
 
 */
+
+
 
 						/*-- Var Decs --\
 						\--------------*/
@@ -194,6 +221,7 @@ onmousemove = function(e)
 }
 
 
+
 //--------------------------------//
 // e.keyCode                      //
 // d - 68  |  a - 65  | shft - 16 //
@@ -229,7 +257,6 @@ var key_map =
 	lmb: false,
 	mmb: false,
 	rmb: false,
-	tab: false,
 	alt: false,
 	meta: false,
 	arrowup: false,
@@ -244,8 +271,7 @@ var key_map_prevent =
 	tab: false,
 	lmb: false,
 	mmb: false,
-	rmb: false,
-	tab: false
+	rmb: false
 };
 
 
@@ -339,12 +365,13 @@ window.addEventListener("wheel", function(e)
 
 
 
+
 						/*-- Title meme fn --\
 						\-------------------*/
 
 
 
-let title = ".-'-._.-._mem_space_.-'-._.-._";
+let title = ".-'-._.-._mem_space_.-'-._.-.__.-._friend_your_is_keyboard_the_.-._.-'-._.-._machine_my_on_works_it_";
 
 
 function makeTitle(_s)
@@ -534,15 +561,15 @@ const m_map = new Float32Array([
 
 
 	/*
-	_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
-	 ___/\\\\\\\\\\\\\__\/\\\////////\\\__\/\\\////////\\\____________\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\__       
-	  __/\\\/////////\\\_\/\\\______\//\\\_\/\\\______\//\\\___________\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\_      
-	   _\/\\\_______\/\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_     
-	    _\/\\\\\\\\\\\\\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\_    
-	     _\/\\\/////////\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\_   
-	      _\/\\\_______\/\\\_\/\\\_______/\\\__\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
-	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
-	        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
+		_____/\\\\\\\\\_____/\\\\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
+		 ___/\\\\\\\\\\\\\__\/\\\////////\\\__\/\\\////////\\\____________\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\__       
+		  __/\\\/////////\\\_\/\\\______\//\\\_\/\\\______\//\\\___________\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\_      
+		   _\/\\\_______\/\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_     
+		    _\/\\\\\\\\\\\\\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\_    
+		     _\/\\\/////////\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\_   
+		      _\/\\\_______\/\\\_\/\\\_______/\\\__\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
+		       _\/\\\_______\/\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
+		        _\///________\///__\////////////_____\////////////_______________\////////////_____\///________\///________\///________\///________\///__
 	*/
 
 
@@ -644,13 +671,25 @@ setData();
 var canvas = document.getElementById("cv");
 var ctx = canvas.getContext("2d");
 
-canvas.addEventListener("click", async () => {
+canvas.addEventListener("click", async () => 
+{
 	await canvas.requestPointerLock();
 	mouseLock = 1;
 });
 
 
-fileInput.addEventListener('change', event => {
+window.addEventListener('resize', function()
+{
+	in_win_w = document.getElementsByTagName("html")[0].clientWidth; in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
+	in_win_h = document.getElementsByTagName("html")[0].clientHeight; in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
+	document.getElementById("cv").width = in_win_w;
+	document.getElementById("cv").height = in_win_h;
+	document.getElementsByTagName("body")[0].width = in_win_w;
+	document.getElementsByTagName("body")[0].height = in_win_h;
+});
+
+fileInput.addEventListener('change', event => 
+{
 	const _f = event.target.files[0];
 	if (_f)
 	{
@@ -711,15 +750,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		/*
-		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
-		 _\/\\\////////\\\___/\\\///////\\\_____/\\\\\\\\\\\\\__\/\\\_____________\/\\\_       
-		  _\/\\\______\//\\\_\/\\\_____\/\\\____/\\\/////////\\\_\/\\\_____________\/\\\_      
-		   _\/\\\_______\/\\\_\/\\\\\\\\\\\/____\/\\\_______\/\\\_\//\\\____/\\\____/\\\__     
-		    _\/\\\_______\/\\\_\/\\\//////\\\____\/\\\\\\\\\\\\\\\__\//\\\__/\\\\\__/\\\___    
-		     _\/\\\_______\/\\\_\/\\\____\//\\\___\/\\\/////////\\\___\//\\\/\\\/\\\/\\\____   
-		      _\/\\\_______/\\\__\/\\\_____\//\\\__\/\\\_______\/\\\____\//\\\\\\//\\\\\_____  
-		       _\/\\\\\\\\\\\\/___\/\\\______\//\\\_\/\\\_______\/\\\_____\//\\\__\//\\\______ 
-		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
+			__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
+			 _\/\\\////////\\\___/\\\///////\\\_____/\\\\\\\\\\\\\__\/\\\_____________\/\\\_       
+			  _\/\\\______\//\\\_\/\\\_____\/\\\____/\\\/////////\\\_\/\\\_____________\/\\\_      
+			   _\/\\\_______\/\\\_\/\\\\\\\\\\\/____\/\\\_______\/\\\_\//\\\____/\\\____/\\\__     
+			    _\/\\\_______\/\\\_\/\\\//////\\\____\/\\\\\\\\\\\\\\\__\//\\\__/\\\\\__/\\\___    
+			     _\/\\\_______\/\\\_\/\\\____\//\\\___\/\\\/////////\\\___\//\\\/\\\/\\\/\\\____   
+			      _\/\\\_______/\\\__\/\\\_____\//\\\__\/\\\_______\/\\\____\//\\\\\\//\\\\\_____  
+			       _\/\\\\\\\\\\\\/___\/\\\______\//\\\_\/\\\_______\/\\\_____\//\\\__\//\\\______ 
+			        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
         */
 
 
@@ -736,30 +775,30 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
 
-		drawPanel(ctx, 11, 10, 410, 205);
+		drawPanel(ctx, 212, 10, 410, 205);
 
-		drawPanel(ctx, 11, 220, 330, 30+m_objs.length*15);
+		drawPanel(ctx, 11, 10, 195, 25+m_objs.length*15);
 
-		drawText(ctx, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 30, 40);
-		drawText(ctx, "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 220, 40);
-		drawText(ctx, "pln_cyc: " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 30, 55);
-		drawText(ctx, "grid_scale: " + grid_scale_f, 220, 55);
+		drawText(ctx, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 231, 40);
+		drawText(ctx, "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 421, 40);
+		drawText(ctx, "pln_cyc: " + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc], 231, 55);
+		drawText(ctx, "grid_scale: " + grid_scale_f, 421, 55);
 
-		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 30, 75);
-		drawText(ctx, "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 30, 90);
-		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 30, 105);
-		drawText(ctx, "Scroll+LOCK(vert mov), V(last pnt), G(ground)", 30, 120);
-		drawText(ctx, "Scroll+Shift(grid size), E(save obj), B(del obj)", 30, 135);
-		drawText(ctx, "Scroll/Arrows(obj nav), RMB(go to pnt), Z(undo)", 30, 150);
-		drawText(ctx, "TAB(near pnt by ctr)", 30, 165);
+		drawText(ctx, "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 231, 75);
+		drawText(ctx, "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 231, 90);
+		drawText(ctx, "Scroll(expand), F(place point), T(teleport), P(save)", 231, 105);
+		drawText(ctx, "Scroll+LOCK(vert mov), V(last pnt), G(ground)", 231, 120);
+		drawText(ctx, "Scroll+Shift(grid size), E(save obj), B(del obj)", 231, 135);
+		drawText(ctx, "Scroll/Arrows(obj nav), RMB(go to pnt), Z(undo)", 231, 150);
+		drawText(ctx, "TAB(near mean ctr)", 231, 165);
 		
 
     	for (var i = 0; i < m_objs.length; i++)
     	{
-			drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 55, 245+i*15); //, 
-			drawText(ctx, "objSize[" + mem_log[i][1] + "]", 170, 245+i*15); //, 
-			if (i==obj_cyc) {drawText(ctx, "->", 30, 245+i*15);}
-			if (i==obj_cyc) {drawText(ctx, "[B][V]", 280, 245+i*15);}
+			drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 95, 34+i*15); //, 
+			//drawText(ctx, "objSize[" + mem_log[i][1] + "]", 170, 245+i*15); //, 
+			//if (i==obj_cyc) {drawText(ctx, "->", 30, 245+i*15);}
+			if (i==obj_cyc) {drawText(ctx, "[B][V] ->", 25, 34+i*15);}
 		}
 
 
@@ -776,16 +815,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				// if (1) // Clipping off
 				{	
-					if (i>8 && j != mem_log[i][1]/4-1)
+					if (i>9 && j != mem_log[i][1]/4-1)
 					{
 						if (i==obj_cyc) {
 							drawLine(ctx,rgba_y, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
-						} else {drawLine(ctx,rgba_w, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+						} else {drawLine(ctx,rgba_w, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					}
 
 					if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					// 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3)
 					if (i==1) {
 					fillDot(ctx, rgba_w_flr, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
 					
@@ -821,9 +859,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 					if (i == m_t_objs.length-1)
 					{
 						drawText(ctx, "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-15, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
-						
-						//drawText(ctx, "[" + init_dat.data[4*j+mem_t_log[i][0]+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum] + "] [" + init_dat.data[4*j+mem_t_log[i][0]+2+mem_sum], init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-32, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
-					} else {
+						} else {
 						drawLine(ctx,rgba_b, 1.3, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
 						if (key_map.mmb) {drawText(ctx, i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
 					}
@@ -879,20 +915,20 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 
 		/*
-		________/\\\\\\\\\_______/\\\\\\_______/\\\\____________/\\\\__/\\\\\\\\\\\\\____/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\\\_        
-		 _____/\\\////////______/\\\////\\\____\/\\\\\\________/\\\\\\_\/\\\/////////\\\_\/\\\_______\/\\\_\///////\\\/////__\/\\\///////////__       
-		  ___/\\\/_____________/\\\/___\///\\\__\/\\\//\\\____/\\\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_____________      
-		   __/\\\______________/\\\_______\//\\\_\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_______\/\\\_______\/\\\\\\\\\\\_____     
-		    _\/\\\_____________\/\\\________\/\\\_\/\\\__\///\\\/___\/\\\_\/\\\/////////____\/\\\_______\/\\\_______\/\\\_______\/\\\///////______    
-		     _\//\\\____________\//\\\_______/\\\__\/\\\____\///_____\/\\\_\/\\\_____________\/\\\_______\/\\\_______\/\\\_______\/\\\_____________   
-		      __\///\\\___________\///\\\___/\\\____\/\\\_____________\/\\\_\/\\\_____________\//\\\______/\\\________\/\\\_______\/\\\_____________  
-		       ____\////\\\\\\\\\____\///\\\\\\/_____\/\\\_____________\/\\\_\/\\\______________\///\\\\\\\\\/_________\/\\\_______\/\\\\\\\\\\\\\\\_ 
-		        _______\/////////_______\//////_______\///______________\///__\///_________________\/////////___________\///________\///////////////__
+			__/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\______________/\\\__________________________/\\\\\\\\\_____        
+			 _\/\\\_______\/\\\_\/\\\///////////__\/\\\_____________\/\\\________________________/\\\///////\\\___       
+			  _\/\\\_______\/\\\_\/\\\_____________\/\\\_____________\/\\\_______________________\///______\//\\\__      
+			   _\/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\_____\/\\\_____________\/\\\_________________________________/\\\/___     
+			    _\/\\\/////////\\\_\/\\\///////______\/\\\_____________\/\\\______________________________/\\\//_____    
+			     _\/\\\_______\/\\\_\/\\\_____________\/\\\_____________\/\\\___________________________/\\\//________   
+			      _\/\\\_______\/\\\_\/\\\_____________\/\\\_____________\/\\\_________________________/\\\/___________  
+			       _\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\\\\\____________/\\\\\\\\\\\\\\\_ 
+			        _\///________\///__\///////////////__\///////////////__\///////////////____________\///////////////__
 		*/
 
 
 		
-		if (key_map.rmb && runEvery(350))
+		if (key_map.rmb && runEvery(300))
 		{
 			var _f; var _n_sku = 0; var _t1; var _d = 0;
 			_f = Math.pow(Math.pow(init_dat.data[mem_log[obj_cyc][0]], 2) + Math.pow(init_dat.data[mem_log[obj_cyc][0]+1], 2), 0.5);
@@ -939,11 +975,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 
 
-		//asdfasdf
-		if (key_map.tab && runEvery(350))
+
+		if (key_map.tab && runEvery(150))
 		{
 			var _f = []; var _n_sku = 0; var _t1 = [0, 0, 0]; var _d = 0; var _t2; 
-			//_f = Math.pow(Math.pow(init_dat.data[mem_log[obj_cyc][0]], 2) + Math.pow(init_dat.data[mem_log[obj_cyc][0]+1], 2), 0.5);
 			for (let i = 1; i<mem_log.length; i++)
 			{
 				_t1 = [0, 0, 0];
@@ -967,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
-		if (key_map.b && runEvery(350) && obj_cyc > 9)
+		if (key_map.b && runEvery(300) && obj_cyc > 9)
 		{
 			if (obj_cyc == m_objs.length-1)
 			{
@@ -1001,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
 		if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
-		if (key_map.e && runEvery(350)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+		if (key_map.e && runEvery(200)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
@@ -1066,15 +1101,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		/*
-		__/\\\\\\\\\\\\\\\__/\\\________/\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\_______/\\\\\\\\\_______/\\\\\\\\\______/\\\\\\\\\\\\\\\_        
-		 _\/\\\///////////__\/\\\_______\/\\\_\/\\\\\\___\/\\\___________\/\\\/////////\\\___/\\\\\\\\\\\\\___/\\\///////\\\___\///////\\\/////__       
-		  _\/\\\_____________\/\\\_______\/\\\_\/\\\/\\\__\/\\\___________\/\\\_______\/\\\__/\\\/////////\\\_\/\\\_____\/\\\_________\/\\\_______      
-		   _\/\\\\\\\\\\\_____\/\\\_______\/\\\_\/\\\//\\\_\/\\\___________\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_\/\\\\\\\\\\\/__________\/\\\_______     
-		    _\/\\\///////______\/\\\_______\/\\\_\/\\\\//\\\\/\\\___________\/\\\/////////____\/\\\\\\\\\\\\\\\_\/\\\//////\\\__________\/\\\_______    
-		     _\/\\\_____________\/\\\_______\/\\\_\/\\\_\//\\\/\\\___________\/\\\_____________\/\\\/////////\\\_\/\\\____\//\\\_________\/\\\_______   
-		      _\/\\\_____________\//\\\______/\\\__\/\\\__\//\\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\_____\//\\\________\/\\\_______  
-		       _\/\\\______________\///\\\\\\\\\/___\/\\\___\//\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\______\//\\\_______\/\\\_______ 
-		        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
+			__/\\\\\\\\\\\\\\\__/\\\________/\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\_______/\\\\\\\\\_______/\\\\\\\\\______/\\\\\\\\\\\\\\\_        
+			 _\/\\\///////////__\/\\\_______\/\\\_\/\\\\\\___\/\\\___________\/\\\/////////\\\___/\\\\\\\\\\\\\___/\\\///////\\\___\///////\\\/////__       
+			  _\/\\\_____________\/\\\_______\/\\\_\/\\\/\\\__\/\\\___________\/\\\_______\/\\\__/\\\/////////\\\_\/\\\_____\/\\\_________\/\\\_______      
+			   _\/\\\\\\\\\\\_____\/\\\_______\/\\\_\/\\\//\\\_\/\\\___________\/\\\\\\\\\\\\\/__\/\\\_______\/\\\_\/\\\\\\\\\\\/__________\/\\\_______     
+			    _\/\\\///////______\/\\\_______\/\\\_\/\\\\//\\\\/\\\___________\/\\\/////////____\/\\\\\\\\\\\\\\\_\/\\\//////\\\__________\/\\\_______    
+			     _\/\\\_____________\/\\\_______\/\\\_\/\\\_\//\\\/\\\___________\/\\\_____________\/\\\/////////\\\_\/\\\____\//\\\_________\/\\\_______   
+			      _\/\\\_____________\//\\\______/\\\__\/\\\__\//\\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\_____\//\\\________\/\\\_______  
+			       _\/\\\______________\///\\\\\\\\\/___\/\\\___\//\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\______\//\\\_______\/\\\_______ 
+			        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
 		*/
 
 		// Use gpu here w/ the right size array32
@@ -1113,21 +1148,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 			// Place point F
-			if (key_map.f && runEvery(250))
+			if (key_map.f && runEvery(150))
 			{
 				var np = new Float32Array([_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1.0]);
 				addTData(np);
 			}
 
 			// Return to ground g
-			if (key_map.g && runEvery(350))
+			if (key_map.g && runEvery(200))
 			{
 				_lp[1] = 0;
 				pln_cyc=1;
 			}
 
 			// Teleport T
-			if (key_map.t && runEvery(350))
+			if (key_map.t && runEvery(150))
 			{
 				player_pos[0] = _inter[0];
 				player_pos[1] = _inter[1]-4.5;
