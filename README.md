@@ -13,7 +13,7 @@ This project is meant to be an endless exercise of mathematics with the goal of 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
 
 Save & Load not fixed yet. I'm starting to get distracted using this rather than writing any code lol.
-There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of noise logarithms at some point.
+There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point.
 ![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
 ![objfeats2](https://github.com/samcoble/CameraTransform/assets/32228102/04dfa5a4-7ed7-4f74-a452-18549d6584d8)
 ![objfeats](https://github.com/samcoble/CameraTransform/assets/32228102/e0c35a2e-1a03-4192-98ad-741ee34a4f78)
