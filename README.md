@@ -17,8 +17,7 @@ There's no limit here. Make any tool you can dream of. I'm hoping to generate mo
 
 ![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
 ![botman](https://github.com/samcoble/CameraTransform/assets/32228102/308ae207-8c05-45d7-9f6e-3375862dda42)
-![objfeats2](https://github.com/samcoble/CameraTransform/assets/32228102/04dfa5a4-7ed7-4f74-a452-18549d6584d8)
-![objfeats](https://github.com/samcoble/CameraTransform/assets/32228102/e0c35a2e-1a03-4192-98ad-741ee34a4f78)
+![genderneutraldesktheythem](https://github.com/samcoble/CameraTransform/assets/32228102/8b5651b2-5644-41a9-815e-ab1863b02a4e)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
 ![fileload](https://github.com/samcoble/CameraTransform/assets/32228102/b84daf1d-51e0-4ee2-b153-21d5fddbe8b6)
 Finally I can make simple 3d models =)
