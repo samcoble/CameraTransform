@@ -12,7 +12,10 @@ This project will need to be refactored before I continue adding features. WebGL
 This project is meant to be an endless exercise of mathematics with the goal of developing intuition for the camera transform and the corresponding pipeline. 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
 
-Save & Load not fixed yet. I'm starting to get distracted using this rather than writing any code lol.
+Save & Load FIXED. So far handling any large amount of junk!
+- Move objects with (T) or (Shift+T) as well. (Shift-T) works a bit quicker in sequence with dupe (Y) 
+
+I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point.
 
 ![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
