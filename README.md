@@ -16,7 +16,9 @@ Save & Load FIXED. So far handling any large amount of junk!
 - Move objects with (T) or (Shift+T) as well. (Shift-T) works a bit quicker in sequence with dupe (Y) 
 
 I'm starting to get distracted using this rather than writing any code lol.
-There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point.
+There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
+
+
 
 ![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
 ![guuuder](https://github.com/samcoble/CameraTransform/assets/32228102/e0315b20-5aa3-407f-83ba-0ae2eec1db55)
