@@ -13,7 +13,7 @@ This project is meant to be an endless exercise of mathematics with the goal of 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
 
 Save & Load FIXED. So far handling any large amount of junk!
-- Move objects with (T) or (Shift+T) as well. (Shift-T) works a bit quicker in sequence with dupe (Y) 
+- Move objects with (V) or (Shift+T) as well. (Shift-T) works a bit quicker in sequence with dupe (T) 
 
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
