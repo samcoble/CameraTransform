@@ -466,7 +466,7 @@ window.addEventListener("wheel", function(e)
 
 
 
-let title = ".-'-._.-._space_mem_crystal_.-'-._.-.__.-.doors_hath_many__.-._.-'-._.-._silicon_bonsai_";
+let title = ".-'-._.-._space_mem_crystal_.-'-._.-.__.-.doors_hath_many_.-._.-'-._.-._silicon_bonsai_";
 
 
 function makeTitle(_s)
