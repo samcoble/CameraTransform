@@ -1057,12 +1057,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 		document.getElementById("fileInput").style.position = "absolute";
-		document.getElementById("fileInput").style.left = "226px";
+		document.getElementById("fileInput").style.left = "174px";
 		document.getElementById("fileInput").style.top = (62+menu_controls_lock*111 )+"px";
 
-		drawPanel(ctx, rgba_gray, rgba_lgray, 207, 10, 410, 88+menu_controls_lock*111);
+		drawPanel(ctx, rgba_gray, rgba_lgray, 155, 10, 410, 88+menu_controls_lock*111);
 
-		drawPanel(ctx, rgba_gray, rgba_lgray, 11, 10, 190, 25+m_objs.length*15);
+		drawPanel(ctx, rgba_gray, rgba_lgray, 11, 10, 138, 25+m_objs.length*15);
 
 		drawPanel(ctx, rgba_gray, rgba_lgray, -5, -5, 1, 1); // SUPER HOT FIX for panel 1px border. MAKES. ZERO. SENSE. EVEN. AI. SAYS. ??? I have tried everything this is actually globally broken right now WTFFFFFFFFF
 
@@ -1070,22 +1070,22 @@ document.addEventListener("DOMContentLoaded", function(event)
 		//drawRect(ctx, rgba_gray, 11, 10, 190, 25+m_objs.length*15);
 		//drawRectFrame(ctx, rgba_lgray, 11, 10, 190, 25+m_objs.length*15);
 
-		drawText(ctx, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 226, 34);
-		drawText(ctx, rgba_otext, "right", "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 600, 34);
-		drawText(ctx, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", 226, 49);
-		drawText(ctx, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", 600, 49);
+		drawText(ctx, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 174, 34);
+		drawText(ctx, rgba_otext, "right", "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 548, 34);
+		drawText(ctx, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", 174, 49);
+		drawText(ctx, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", 548, 49);
 
 		if (menu_controls_lock)
 		{
-			drawText(ctx, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 226, 69);
-			drawText(ctx, rgba_otext, "left", "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 226, 84);
-			drawText(ctx, rgba_otext, "left", "Scroll(expand), F(place point), Y(teleport), P(save)", 226, 99);
-			drawText(ctx, rgba_otext, "left", "Scroll+LOCK(vert mov), V(mov obj), G(ground)", 226, 114);
-			drawText(ctx, rgba_otext, "left", "Scroll+Shift(grid size), E(save obj), B(del obj)", 226, 129);
-			drawText(ctx, rgba_otext, "left", "Scroll/Arrows(obj nav), RMB(go to pnt), Z(undo)", 226, 144);
-			drawText(ctx, rgba_otext, "left", "TAB(near mean ctr), T(dupe obj), C(edit obj)", 226, 159);
+			drawText(ctx, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 174, 69);
+			drawText(ctx, rgba_otext, "left", "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 174, 84);
+			drawText(ctx, rgba_otext, "left", "Scroll(expand), F(place point), Y(teleport), P(save)", 174, 99);
+			drawText(ctx, rgba_otext, "left", "Scroll+LOCK(vert mov), V(mov obj), G(ground)", 174, 114);
+			drawText(ctx, rgba_otext, "left", "Scroll+Shift(grid size), E(save obj), B(del obj)", 174, 129);
+			drawText(ctx, rgba_otext, "left", "Scroll/Arrows(obj nav), RMB(go to pnt), Z(undo)", 174, 144);
+			drawText(ctx, rgba_otext, "left", "TAB(near mean ctr), T(dupe obj), C(edit obj)", 174, 159);
 		} else {
-			drawText(ctx, "right", rgba_otext, "[M][menu]", 600, 80);
+			drawText(ctx, "right", rgba_otext, "[M][menu]", 548, 80);
 		}
 
 
@@ -1093,9 +1093,9 @@ document.addEventListener("DOMContentLoaded", function(event)
     	for (var i = 0; i < m_objs.length; i++)
     	{
 			//drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 30, 34+i*15); //, 
-			if (i<=world_obj_count) {drawText(ctx, rgba_dtext, "left", "objSize[" + mem_log[i][1] + "]", 30, 34+i*15);} 
-			if (i>world_obj_count) {drawText(ctx, rgba_otext, "left", "objSize[" + mem_log[i][1] + "]", 30, 34+i*15);} 
-			if (i==obj_cyc) {drawText(ctx, rgba_otext, "left", "[B][V]", 145, 34+i*15); drawText(ctx, rgba_otext, "left", "<-", 128, 34+i*15);}
+			if (i<=world_obj_count) {drawText(ctx, rgba_dtext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
+			if (i>world_obj_count) {drawText(ctx, rgba_otext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
+			if (i==obj_cyc) {drawText(ctx, rgba_otext, "left", "->", 25, 34+i*15);} // //drawText(ctx, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
 		}
 
 
