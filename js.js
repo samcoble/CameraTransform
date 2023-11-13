@@ -22,6 +22,10 @@
 
 // button to output linear obj to console
 
+// enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
+	// and "link.k=l" 
+
+// the tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together. maybe..
 
 // low call rate mean ctr map overlay BINGO
 // 		mean ctr array by sku set (for now) while holding tab
@@ -291,6 +295,7 @@ var key_map =
 	" ": false,
 	control: false,
 	shift: false,
+	enter: false,
 	tab: false,
 	lmb: false,
 	mmb: false,
@@ -309,7 +314,8 @@ var key_map_prevent =
 	tab: false,
 	lmb: false,
 	mmb: false,
-	rmb: false
+	rmb: false,
+	q: false
 };
 
 
@@ -788,9 +794,9 @@ var canvas = document.getElementById("cv");
 var ctx = canvas.getContext("2d");
 
 
-// WTF IS THIS YO. Fix for max users at some point.
+// WTF IS THIS YO. Fix for mac users at some point.
 // const ratio = window.devicePixelRatio || 1;
-//ctx.scale(1, 1);
+ctx.scale(1, 1);
 
 
 canvas.addEventListener("click", async () => 
@@ -968,11 +974,18 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		reDraw(ctx, in_win_w, in_win_h); // Clear for next draw
 
+		//function drawRectFrame(c, rgba, x, y, w, h)
+
         if (!mouseLock)
         {
         	document.getElementById("stn_cir_d").style.display = "block";
         	document.getElementById("stn_cir_s").style.display = "block";
-        	drawPanel(ctx, rgba_gray, rgba_lgray, 155, 300, 180, 110);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, 165, 270, 500, 633);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, 675, 270, 180, 633);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, 175, 300, 180, 133);
+
+
+
         } else {
 
         	document.getElementById("stn_cir_d").style.display = "none";
@@ -1010,16 +1023,17 @@ document.addEventListener("DOMContentLoaded", function(event)
 			drawText(ctx, rgba_otext, "left", "Scroll+Shift(grid size), E(make obj), B(del obj)", 174, 129);
 			drawText(ctx, rgba_otext, "left", "Scroll/Arrows(obj nav), V(mov obj), C(edit obj)", 174, 144);
 			drawText(ctx, rgba_otext, "left", "TAB(near mean ctr), T(dupe obj), Z(undo)", 174, 159);
-			drawText(ctx, rgba_otext, "left", "Shift+T(dupe & mov)", 174, 174);
+			drawText(ctx, rgba_otext, "left", "Shift+T(dupe & mov), 2(make cir)", 174, 174);
 		} else {
 			drawText(ctx, "right", rgba_otext, "[M][menu]", 548, 80);
 		}
 
         if (!mouseLock)
         {
-			drawText(ctx, rgba_otext, "left", "[circle settings][2]", 174, 320);
-			drawText(ctx, rgba_otext, "left", "[scale]", 174, 360);
-			drawText(ctx, rgba_otext, "left", "[divider]", 174, 389);
+			drawText(ctx, rgba_otext, "left", "[circle settings][2]", 194, 320);
+
+			drawText(ctx, rgba_otext, "left", "[scale]", 194, 371);
+			drawText(ctx, rgba_otext, "left", "[divider]", 194, 379+29);
 		}
 
 
@@ -1131,7 +1145,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat)
 	{
 
-
+		if (key_map.enter)
+		{
+				canvas.requestPointerLock();
+				mouseLock = 1;
+		}
 
 		stn_cir_tool[0] = document.getElementById("stn_cir_s").value;
 		stn_cir_tool[1] = document.getElementById("stn_cir_d").value;
@@ -1140,12 +1158,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		if (trns_lock)
 		{
-			var _fd = sub(_lp_world, trans_f);
-			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
+			if (!isNaN(mem_log[trns_obj_i][1]))
 			{
-				m_obj_offs[trns_obj_i][0] = _fd[0];
-				m_obj_offs[trns_obj_i][1] = _fd[1];
-				m_obj_offs[trns_obj_i][2] =	_fd[2];
+				var _fd = sub(_lp_world, trans_f);
+				for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
+				{
+					m_obj_offs[trns_obj_i][0] = _fd[0];
+					m_obj_offs[trns_obj_i][1] = _fd[1];
+					m_obj_offs[trns_obj_i][2] =	_fd[2];
+				}
 			}
 		}
 		
@@ -1204,14 +1225,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 					// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 
 
-		if (key_map.tab && runEvery(150))
+		if (key_map.tab && runEvery(75))
 		{
 			var _f = []; var _n_sku = 0; var _t1 = [0, 0, 0]; var _d = 0; var _t2; 
-			for (let i = 1; i<mem_log.length; i++)
+			for (var i = world_obj_count; i<mem_log.length; i++)
 			{
 				_t1 = [0, 0, 0];
-				if (i==1) {_t1 = add3(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1], init_dat.data[mem_log[i][0]+2]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
-				for (let k = 0; k<mem_log[i][1]/4; k++)
+				if (i==world_obj_count) {_t1 = add3(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1], init_dat.data[mem_log[i][0]+2]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
+				for (var k = 0; k<mem_log[i][1]/4; k++)
 				{
 					_t1 = add3(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1], init_dat.data[4*k+mem_log[i][0]+2]]);
 				}
@@ -1249,8 +1270,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (key_map.n && runEvery(500)) {lock_vert_mov = !lock_vert_mov; hover_h = -player_pos[1];}
 		if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
-		if (key_map.r && runEvery(200)) {if (pln_cyc==2) {pln_cyc=0} else {pln_cyc++;}}
-		if (key_map.q && runEvery(200)) {if (pln_cyc==0) {pln_cyc=2} else {pln_cyc-=1;}}
+		if (key_map.r && runEvery(200)) {if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}}
+		// if (key_map.q && runEvery(200)) {if (pln_cyc==0) {pln_cyc=2} else {pln_cyc-=1;}}
+		if (key_map.q && runEvery(200))
+		{
+			if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;};
+		}
 
 		var keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 
