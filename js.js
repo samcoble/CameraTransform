@@ -25,6 +25,10 @@
 
 	// PROBABLY GOING TO DO SOON:
 
+	-	Show translation in real time
+			if it's real time continuous run while trns enabled
+			set relative to _lp_world
+
 	-	Circle generation
 	-	Rotate around point
 	-	Translation should have menu to select what axis are modified in the translation allowing alignment without a complete a to b.
@@ -125,7 +129,7 @@ var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0;
 var grid_scale = 3; var grid_scale_f = 8;
-var translate_lock = 0; var trans_obj_i = 0;
+var trns_lock = 0; var trns_obj_i = 0;
 var world_obj_count = 0;
 var menu_controls_lock = 0;
 
@@ -517,7 +521,7 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 			{
 				case 0:
 						_ob[(i*_l+j)*4] = _o[1];
-						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s +_s/2 + _o[1];
+						_ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[1];
 						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
 						_ob[(i*_l+j)*4+3] = 1;
 						break;
@@ -529,7 +533,7 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 						break;
 				case 2:
 						_ob[(i*_l+j)*4] = _s*j - _l/2*_s +_s/2 + _o[1];
-						_ob[(i*_l+j)*4+1]   = _s*i - _l/2*_s +_s/2 + _o[2];
+						_ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[2];
 						_ob[(i*_l+j)*4+2] = _o[2];
 						_ob[(i*_l+j)*4+3] = 1;
 						break;
@@ -791,14 +795,14 @@ function del_obj(_i)
 {
 	if (obj_cyc == m_objs.length-1)
 	{
-		m_objs.splice(-1);	mem_log.splice(-1); obj_cyc = obj_cyc-1;
+		m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); obj_cyc = obj_cyc-1;
 	} else {
 		let _ts = mem_log[obj_cyc][1];
 		for (var i = obj_cyc+1; i<mem_log.length; i++)
 		{
 			mem_log[i][0] = mem_log[i][0]-_ts;
 		}
-		m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1);
+		m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1);
 	}
 }
 
@@ -806,24 +810,27 @@ function trans_obj(_i)
 {
 	if (_i<=world_obj_count) {return;}
 	var _fd;
-	switch(translate_lock)
+	switch(trns_lock)
 	{
 		case 0:
 			trans_f[0] = _lop_world[0] = _lp_world[0];
 			trans_f[1] = _lop_world[1] = _lp_world[1];
 			trans_f[2] = _lop_world[2] = _lp_world[2];
-			translate_lock = 1; trans_obj_i = _i;
+			trns_lock = 1; trns_obj_i = _i;
 			break;
 
 		case 1:
 			_fd = sub(_inter_rnd, trans_f);
-			for (var i=0; i<mem_log[trans_obj_i][1]/4; i++)
+			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
 			{
-				m_objs[trans_obj_i][i*4] = m_objs[trans_obj_i][i*4]+_fd[0];
-				m_objs[trans_obj_i][i*4+1] = m_objs[trans_obj_i][i*4+1]+_fd[1];
-				m_objs[trans_obj_i][i*4+2] = m_objs[trans_obj_i][i*4+2]+_fd[2];
+				m_objs[trns_obj_i][i*4] = m_objs[trns_obj_i][i*4]+_fd[0];
+				m_objs[trns_obj_i][i*4+1] = m_objs[trns_obj_i][i*4+1]+_fd[1];
+				m_objs[trns_obj_i][i*4+2] = m_objs[trns_obj_i][i*4+2]+_fd[2];
 			}
-			translate_lock = 0; obj_cyc = trans_obj_i;
+				m_obj_offs[trns_obj_i][0] = 0;
+				m_obj_offs[trns_obj_i][1] = 0;
+				m_obj_offs[trns_obj_i][2] =	0;
+			trns_lock = 0; obj_cyc = trns_obj_i;
 			break;
 	}
 }
@@ -944,7 +951,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			//drawText(ctx, "objAddr[" + mem_log[i][0] + "]", 30, 34+i*15); //, 
 			if (i<=world_obj_count) {drawText(ctx, rgba_dtext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
 			if (i>world_obj_count) {drawText(ctx, rgba_otext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
-			if (i==obj_cyc) {drawText(ctx, rgba_otext, "left", "->", 25, 34+i*15);} // //drawText(ctx, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
+			if (i==obj_cyc) {drawText(ctx, rgba_otext, "left", "->", 25, 34+i*15);} // drawText(ctx, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
 		}
 
 
@@ -1005,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 					drawDot(ctx, rgba_w, 2, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
 					if (i == m_t_objs.length-1)
 					{
-						drawText(ctx, rgba_otext, "left", "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-15, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
+						drawText(ctx, rgba_otext, "left", "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-17, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
 						} else {
 						drawLine(ctx, rgba_b, 1.3, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
 						if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
@@ -1016,8 +1023,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 		// Indicators
 		if (m_t_objs.length>0 && init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0) {drawDot(ctx, rgba_lp, 1.3, init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]]*s+in_win_wc, init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1]*s+in_win_hc, 15);}
-		if (init_dat.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[translate_lock], 1.0, init_dat.data[mem_log[9][0]]*s+in_win_wc, init_dat.data[mem_log[9][0]+1]*s+in_win_hc, 8);}
-		if (translate_lock && init_dat.data[mem_log[10][0]+3] > 0) {drawDot(ctx, rgbas_trans[1], 1.0, init_dat.data[mem_log[10][0]]*s+in_win_wc, init_dat.data[mem_log[10][0]+1]*s+in_win_hc, 15);}
+		if (init_dat.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[trns_lock], 1.0, init_dat.data[mem_log[9][0]]*s+in_win_wc, init_dat.data[mem_log[9][0]+1]*s+in_win_hc, 8);}
+		if (trns_lock && init_dat.data[mem_log[10][0]+3] > 0) {drawDot(ctx, rgbas_trans[1], 1.0, init_dat.data[mem_log[10][0]]*s+in_win_wc, init_dat.data[mem_log[10][0]+1]*s+in_win_hc, 15);}
 
 
 		// Crosshair
@@ -1045,6 +1052,17 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	function Compute(init_dat)
 	{
+
+		if (trns_lock)
+		{
+			var _fd = sub(_inter_rnd, trans_f);
+			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
+			{
+				m_obj_offs[trns_obj_i][0] = _fd[0];
+				m_obj_offs[trns_obj_i][1] = _fd[1];
+				m_obj_offs[trns_obj_i][2] =	_fd[2];
+			}
+		}
 		
 		if (key_map.rmb && runEvery(100))
 		{
@@ -1139,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
 		if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
-		if (key_map.e && runEvery(200)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+		if (key_map.e && runEvery(80)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
@@ -1328,13 +1346,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			if (key_map.t && runEvery(350))
 			{
-				if (key_map.shift && !translate_lock)
+				if (key_map.shift && !trns_lock)
 				{
 					m_objs_loadPoints(new Float32Array(m_objs[obj_cyc]));
 					obj_cyc = m_objs.length-1;
 					trans_obj(m_objs.length-1);
 
-				} else if (!key_map.shift && !translate_lock)
+				} else if (!key_map.shift && !trns_lock)
 				{
 					m_objs_loadPoints(new Float32Array(m_objs[obj_cyc]));
 					obj_cyc = m_objs.length-1;
