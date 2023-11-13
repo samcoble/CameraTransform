@@ -12,6 +12,22 @@
 */
 
 
+// random idea
+// 		later in ui development there are three options for circle generation. 1: divisions of a circle. 2: preset of stacker accepting stacks(s) and dist(d). 3: mapped to an equation that only accepts 0 to 1.
+//		maybe this 3 rule tree can be the start of similar tree options for various line generation
+
+// set_mov    &    dyn_mov
+
+// obj scale by distance from upon init
+
+// button to output linear obj to console
+
+
+// low call rate mean ctr map overlay BINGO
+// 		mean ctr array by sku set (for now) while holding tab
+//		single Float32Array encodes x mean y mean x mean y mean x mean ...
+
+
 /*
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
@@ -25,12 +41,21 @@
 
 	// PROBABLY GOING TO DO SOON:
 
-	-	Show translation in real time
-			if it's real time continuous run while trns enabled
-			set relative to _lp_world
 
 	-	Circle generation
+
+			use equation of circle and it's circumference with temp static 30deg inc. like 2pi / (pi/6)
+			interpolate across circle equation placing point at each section end. first is 0th sku.
+
 	-	Rotate around point
+		
+			make obj_rots[]
+			sync w/ creation/deletion w/ [0,0,0] p,y,r in rads
+			create animated circle rotator ( later input ang in deg -> converted to rads by Math.floor(in_rad/pi), and with modulo in_rad % pi )
+			must make circle first ig..
+
+	
+
 	-	Translation should have menu to select what axis are modified in the translation allowing alignment without a complete a to b.
 	-	Shift + Tab for multi selection. Also make mouse selector
 	-	Redo grid system entirely. Or apply translation prior to round to find point near a point that is the round
@@ -102,7 +127,8 @@ var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
-var pi4 = 0.7071067811;
+var pi4 = 0.7071067811; // My fav number
+var pi2 = 6.2831853071
 
 
 
@@ -132,6 +158,8 @@ var grid_scale = 3; var grid_scale_f = 8;
 var trns_lock = 0; var trns_obj_i = 0;
 var world_obj_count = 0;
 var menu_controls_lock = 0;
+
+var stn_cir_tool = [16, 24];
 
 
 
@@ -259,6 +287,7 @@ var key_map =
 	y: false,
 	c: false,
 	m: false,
+	"2": false,
 	" ": false,
 	control: false,
 	shift: false,
@@ -490,7 +519,7 @@ var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
-var _lp = new Float32Array(3);
+var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
 var _pp = [-125,0,-125]; // Point on plane will be static
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
@@ -542,6 +571,47 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 		}
 	}
 	return _ob;
+}
+
+
+function make_cir_obj(_d, _s, _p) // divisions, scale, plane
+{
+	// r = 2pi
+	// s = x^2 + y^2
+	// x = sqrt(s)*cos(r)	y = sqrt(s)*sin(r)
+
+	var _r = pi2/_d;
+	var c_pnts = new Float32Array(4*_d+4);
+	switch(_p)
+	{
+		case 0:
+			for (var n = 0; n<=_d; n++)
+			{
+				c_pnts[n*4+0] = _lp_world[0];
+				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n);
+				c_pnts[n*4+2] = _lp_world[2]+_s*Math.cos(_r*n);
+			}
+			m_objs_loadPoints(c_pnts);
+			break;
+		case 1:
+			for (var n = 0; n<=_d; n++)
+			{
+				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n);
+				c_pnts[n*4+1] = _lp_world[1];
+				c_pnts[n*4+2] = _lp_world[2]+_s*Math.sin(_r*n);
+			}
+			m_objs_loadPoints(c_pnts);
+			break;
+		case 2:
+			for (var n = 0; n<=_d; n++)
+			{
+				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n);
+				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n);
+				c_pnts[n*4+2] = _lp_world[2];
+			}
+			m_objs_loadPoints(c_pnts);
+			break;
+	}
 }
 
 
@@ -820,7 +890,7 @@ function trans_obj(_i)
 			break;
 
 		case 1:
-			_fd = sub(_inter_rnd, trans_f);
+			_fd = sub(_lp_world, trans_f);
 			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
 			{
 				m_objs[trns_obj_i][i*4] = m_objs[trns_obj_i][i*4]+_fd[0];
@@ -898,15 +968,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		reDraw(ctx, in_win_w, in_win_h); // Clear for next draw
 
-        //if (!mouseLock)
-        //{
-        	// drawPanel(ctx, 11, 190, 420, 190+m_objs.length*20);
+        if (!mouseLock)
+        {
+        	document.getElementById("stn_cir_d").style.display = "block";
+        	document.getElementById("stn_cir_s").style.display = "block";
+        	drawPanel(ctx, rgba_gray, rgba_lgray, 155, 300, 180, 110);
+        } else {
 
-        	// for (var i = 0; i < m_objs.length; i++)
-        	// {
-        	// 	drawText(ctx, "objAddr[" + mem_log[i][0] + "]   objSize[" + mem_log[i][1] + "]", 30, 200+i*15);
-        	// }
-        //}
+        	document.getElementById("stn_cir_d").style.display = "none";
+        	document.getElementById("stn_cir_s").style.display = "none";
+        }
 
 		//drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
@@ -944,6 +1015,13 @@ document.addEventListener("DOMContentLoaded", function(event)
 			drawText(ctx, "right", rgba_otext, "[M][menu]", 548, 80);
 		}
 
+        if (!mouseLock)
+        {
+			drawText(ctx, rgba_otext, "left", "[circle settings][2]", 174, 320);
+			drawText(ctx, rgba_otext, "left", "[scale]", 174, 360);
+			drawText(ctx, rgba_otext, "left", "[divider]", 174, 389);
+		}
+
 
 
     	for (var i = 0; i < m_objs.length; i++)
@@ -968,7 +1046,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				// if (1) // Clipping off
 				{	
-					if (i>9 && j != mem_log[i][1]/4-1)
+					if (i>world_obj_count && j != mem_log[i][1]/4-1)
 					{
 						if (i==obj_cyc) {
 							drawLine(ctx,rgba_y, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
@@ -1015,7 +1093,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 						drawText(ctx, rgba_otext, "left", "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-17, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
 						} else {
 						drawLine(ctx, rgba_b, 1.3, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
-						if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
+						if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-3, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
 					}
 				}
 			}
@@ -1053,9 +1131,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat)
 	{
 
+
+
+		stn_cir_tool[0] = document.getElementById("stn_cir_s").value;
+		stn_cir_tool[1] = document.getElementById("stn_cir_d").value;
+
+		if (mouseLock && key_map["2"] && runEvery(300)) {make_cir_obj(stn_cir_tool[0], stn_cir_tool[1], pln_cyc);}
+
 		if (trns_lock)
 		{
-			var _fd = sub(_inter_rnd, trans_f);
+			var _fd = sub(_lp_world, trans_f);
 			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
 			{
 				m_obj_offs[trns_obj_i][0] = _fd[0];
@@ -1096,9 +1181,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 					_lp[0] = m_objs[obj_cyc][4*_n_sku];
 					_lp[1] = m_objs[obj_cyc][4*_n_sku+1];
 					_lp[2] = m_objs[obj_cyc][4*_n_sku+2];
-					// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-					// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-					// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 					_lp_world[0] = m_objs[obj_cyc][4*_n_sku];
 					_lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
 					_lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
@@ -1107,9 +1189,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 					_lp[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
 					_lp[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
 					_lp[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
-					// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-					// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-					// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 					_lp_world[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
 					_lp_world[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
 					_lp_world[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
@@ -1117,6 +1196,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 			}
 		}
 
+					// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
+					// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
+					// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
+					// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
+					// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
+					// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 
 
 		if (key_map.tab && runEvery(150))
@@ -1263,13 +1348,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 				// switch(pln_cyc)
 				// {
 				// 	case 0:
-
-				// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
+				// 		_inter_rnd = [_lp[0], roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
+				// 		break;
 				// 	case 1:
-				// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), _inter[1], roundTo(_lp[2], grid_scale_f)];
+				// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), _lp[1], roundTo(_lp[2], grid_scale_f)];
+				// 		break;
 				// 	case 2:
-				// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
-
+				// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), _lp[2]];
+				// 		break;
 				// }
 
 				// switch(pln_cyc)
@@ -1290,26 +1376,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 			if (key_map.lmb && mouseLock)
-			{
-
-
-				// switch(pln_cyc)
-				// {
-				// 	case 0:
-				// 		_lp[0] = _lp[0];
-				// 		_lp[1] = _inter[1];
-				// 		_lp[2] = _inter[2];
-				// 	case 1:
-				// 		_lp[0] = _inter[0];
-				// 		_lp[1] = _lp[1];
-				// 		_lp[2] = _inter[2];
-				// 	case 2:
-				// 		_lp[0] = _inter[0];
-				// 		_lp[1] = _inter[1];
-				// 		_lp[2] = _lp[2];
-				// }
-
-				
+			{	
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
 				_lp[2] = _inter[2];
@@ -1317,8 +1384,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 				_lp_world[1] = _inter_rnd[1];
 				_lp_world[2] = _inter_rnd[2];
 			}
-
-
 
 
 

@@ -11,7 +11,7 @@
 
 <style>
 
-	/* Layout normalization */
+	/* Apply to all */
 	* {
 		font-family: "Lucida Console", Courier, monospace;
 		background-color: #091016;
@@ -29,8 +29,30 @@
 	{
 		position: absolute;
 		z-index: 1;
-		left: 30px;
-		top: 150px;
+		left: 231px;
+		top: 173px;
+	}
+
+	#stn_cir_d, #stn_cir_s
+	{
+		position: absolute;
+		z-index: 1;
+		text-align: center;
+		width: 60px;
+		border: 1px solid rgba(222, 222, 222, 0.3);
+		outline: none;
+	}
+
+	#stn_cir_d
+	{
+		left: 250px;
+		top: 350px;
+	}
+
+	#stn_cir_s
+	{
+		left: 250px;
+		top: 375px;
 	}
 
 	/* Canvas Style */
@@ -54,6 +76,13 @@
 <body>
 
 	<canvas id="cv" width="1800" height="800" ></canvas>
+		<form autocomplete="off">
+	    <input type="text" id="stn_cir_d" value="16">
+	    <input type="text" id="stn_cir_s" value="24">
+		</form>
+
+		<!-- Settings input boxes -->
+
 
 </body>
 </html>
