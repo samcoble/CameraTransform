@@ -38,6 +38,24 @@
 
 // better isNan obj inspector to use where the extra time is worth doing the check ? might ruin program over time
 
+
+/*
+	Badly need to implement a structure and system for tools generally such that every tool overrides some keys.
+		Points should be a point tool (Place point - F)
+		Circle tool (Place circle - F) (I need a later formula to compress a 4 point circle to align with the grid)
+		Center Expand (Start/Finish applied as delta - F)
+		Dynamic Expand (Applies compression/expansion with 3 input numbers)
+		Rotate around Axis (For now input into box with deg. Use point and plane line)
+		Stacker tool (Accepts distance and stacks) (Two input boxes)
+
+		I'm starting to notice animated effects require a temporary duplicate object. Big system.
+
+
+
+
+
+*/
+
 /*
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
@@ -174,6 +192,7 @@ var trns_lock = 0; var trns_obj_i = 0;
 var world_obj_count = 0;
 var menu_controls_lock = 0;
 var link_lock = 0; var link_obj_i = 0;
+var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 
 var stn_cir_tool = [8, 24, 0];
 
@@ -308,6 +327,7 @@ var key_map =
 	m: false,
 	l: false,
 	"2": false,
+	"3": false,
 	" ": false,
 	control: false,
 	shift: false,
@@ -491,6 +511,11 @@ function sub3(a,b)
 	return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
 }
 
+function len3(a)
+{
+	return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
+}
+
 function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
 
 var N = [0,1,0];
@@ -555,6 +580,7 @@ var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 var _lp_world = new Float32Array([0.0,0.0,0.0,1]);
 var _lop_world = new Float32Array([0.0,0.0,0.0,1]);
 var trans_f = new Float32Array([0.0,0.0,0.0,1]);
+var exp_f = new Float32Array([0.0,0.0,0.0,1]);
 //const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_cube = new Float32Array([0.0,0.0,0.0,1, -1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
@@ -986,7 +1012,47 @@ function link_obj(_i) // Do I need to use float32array for everything what am I 
 				} else {m_objs_loadPoints(new Float32Array(_ob));}
 			}
 			link_obj_i = 0; link_lock = 0;
-		break;
+			break;
+	}
+}
+
+function expand_obj(_i)
+{
+	switch(exp_lin_lock)
+	{
+		case 0:
+			exp_lin_obj_i = _i;
+			exp_f[0] = _lp_world[0];
+			exp_f[1] = _lp_world[1];
+			exp_f[2] = _lp_world[2];
+			exp_lin_lock = 1;
+			break;
+		case 1:
+
+			var _pm = [m_objs[exp_lin_obj_i][0], m_objs[exp_lin_obj_i][1], m_objs[exp_lin_obj_i][2]];
+			for (var j=1; j<mem_log[exp_lin_obj_i][1]/4; j++)
+			{
+				_pm = add3([m_objs[exp_lin_obj_i][j*4], m_objs[exp_lin_obj_i][j*4+1], m_objs[exp_lin_obj_i][j*4+2]], _pm);
+			}
+
+			var _mc = scale(_pm, 1/(mem_log[exp_lin_obj_i][1]/4));
+			var _d = sub(_lp_world, _mc);
+			var _s = Math.pow(len3(sub(_lp_world, exp_f)),1/3);
+
+			for (var i=0; i<mem_log[exp_lin_obj_i][1]/4; i++)
+			{
+				//c=====x--------------0
+				//c--------------------0=====x
+				//c--------------------0==========x
+				//c==========x---------0
+
+				m_objs[exp_lin_obj_i][i*4] = _mc[0]+_s*(m_objs[exp_lin_obj_i][i*4]-_mc[0]);
+				m_objs[exp_lin_obj_i][i*4+1] = _mc[1]+_s*(m_objs[exp_lin_obj_i][i*4+1]-_mc[1]);
+				m_objs[exp_lin_obj_i][i*4+2] = _mc[2]+_s*(m_objs[exp_lin_obj_i][i*4+2]-_mc[2]);
+
+			}
+			exp_lin_obj_i = 0; exp_lin_lock = 0;
+			break;
 	}
 }
 
@@ -1017,11 +1083,33 @@ function drawOverlay(init_dat)
     	document.getElementById("stn_cir_d").style.display = "block";
     	document.getElementById("stn_cir_s").style.display = "block";
     	document.getElementById("stn_cir_o").style.display = "block";
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+400, menu_q_pos[1], 180, 633);
 
+    	// Large back pan
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
+    	
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+1, menu_q_pos[1]+24, 383, 598);
+
+    	///////////////////////////////
+
+    	// Medium1 pan
     	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+6, menu_q_pos[1]+30, 180, 183);
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+415, menu_q_pos[1]+30, 150, 25);
+
+    	// Medium1 pan
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+6, menu_q_pos[1]+230, 180, 183);
+
+    	///////////////////////////////
+
+		// Large back pan
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+398, menu_q_pos[1], 180, 633);
+
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 161, 598);
+    	//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+411, menu_q_pos[1]+24, 159, 598);
+
+
+
+
+
+
 
 		document.getElementById("stn_cir_d").style.left = (menu_q_pos[0]+101) + "px";
 		document.getElementById("stn_cir_d").style.top = (menu_q_pos[1]+80) + "px";
@@ -1073,7 +1161,7 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav), V(mov obj), C(edit obj)", 174, 144);
 		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov), T(dupe obj), Q(menu)", 174, 159);
 		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr), 2(make cir), Z(undo)", 174, 174);
-		drawText(ctx_o, rgba_otext, "left", "L(link objs)", 174, 189);
+		drawText(ctx_o, rgba_otext, "left", "L(link objs), 3(scale by dist)", 174, 189);
 	} else {
 		drawText(ctx_o, "right", rgba_otext, "[M][keys]", 548, 80);
 	}
@@ -1201,6 +1289,7 @@ function drawIt(init_dat)
 
 function Compute(init_dat)
 {
+	if (key_map["3"] && runEvery(300)) {expand_obj(obj_cyc);}
 
 	if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
 
@@ -1286,6 +1375,7 @@ function Compute(init_dat)
 				// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
 				// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 
+	// REMOVE THIRD 2D VALUE WTF AM I DOING
 
 	if (key_map.tab && runEvery(75))
 	{
