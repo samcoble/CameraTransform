@@ -32,6 +32,9 @@
 //		single Float32Array encodes x mean y mean x mean y mean x mean ...
 
 
+// ctx is conflicting with drawing hud so make a second canvas to manage hud. this should be fine. everything orderly and low call rate
+
+
 /*
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
@@ -162,9 +165,12 @@ var grid_scale = 3; var grid_scale_f = 8;
 var trns_lock = 0; var trns_obj_i = 0;
 var world_obj_count = 0;
 var menu_controls_lock = 0;
+var link_lock = 0; var link_obj_i = 0;
 
-var stn_cir_tool = [16, 24];
+var stn_cir_tool = [8, 24];
 
+
+var menu_q_pos = [250, 290];
 
 
 var rgba_r ="rgba(200, 50, 50, 0.6)";
@@ -182,6 +188,7 @@ var rgba_otext = "rgba(188, 118, 48, 1.0)";
 var rgba_dtext = "rgba(111, 111, 111, 1.0)";
 
 var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
+var rgbas_link = [rgba_y, rgba_b];
 var rgbas_trans = [rgba_lgray,rgba_g];
 var _inter_rnd = [0.0, 0.0, 0.0];
 
@@ -291,6 +298,7 @@ var key_map =
 	y: false,
 	c: false,
 	m: false,
+	l: false,
 	"2": false,
 	" ": false,
 	control: false,
@@ -580,7 +588,7 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 }
 
 
-function make_cir_obj(_d, _s, _p) // divisions, scale, plane
+function make_cir_obj(_d, _s, _p) // divisions, scale, plane : maybe fix z later
 {
 	// r = 2pi
 	// s = x^2 + y^2
@@ -621,7 +629,7 @@ function make_cir_obj(_d, _s, _p) // divisions, scale, plane
 }
 
 
-function splitObj(ar)
+function splitObj(ar) // Accepts linear outputs array of 4d points
 {
     const r = [];
     const _s = Math.ceil(ar.length / 4);
@@ -939,6 +947,35 @@ function m_objs_explode(_i)
 	del_obj(_i);
 }
 
+function link_obj(_i) // Do I need to use float32array for everything what am I doing. Add 3 point poly mode.
+{
+	switch(link_lock)
+	{
+		case 0:
+			link_obj_i = _i;
+			link_lock = 1;
+			break;
+		case 1:
+			if (mem_log[_i][1] != mem_log[link_obj_i][1] || _i == link_obj_i) {link_lock = 0; link_obj_i = 0; break;} //console.log("can't link");
+			var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[link_obj_i][0], m_objs[link_obj_i][1], m_objs[link_obj_i][2], 1]);
+			for (var i = 0; i<mem_log[_i][1]/4; i++)
+			{
+				//var _ob = Float32Array(8);
+				var _ob = [];
+				_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[link_obj_i][i*4], m_objs[link_obj_i][i*4+1], m_objs[link_obj_i][i*4+2], 1];
+				if (i == mem_log[_i][1]/4-1)
+				{ // Double nested to avoid unnecesarry second call to JSON.stringify()
+					if (_ia != JSON.stringify(_ob))
+					{m_objs_loadPoints(new Float32Array(_ob));}
+				} else {m_objs_loadPoints(new Float32Array(_ob));}
+			}
+			link_obj_i = 0; link_lock = 0;
+		break;
+	}
+}
+
+
+
 document.addEventListener("DOMContentLoaded", function(event)
 {
 
@@ -980,9 +1017,10 @@ document.addEventListener("DOMContentLoaded", function(event)
         {
         	document.getElementById("stn_cir_d").style.display = "block";
         	document.getElementById("stn_cir_s").style.display = "block";
-        	drawPanel(ctx, rgba_gray, rgba_lgray, 165, 270, 500, 633);
-        	drawPanel(ctx, rgba_gray, rgba_lgray, 675, 270, 180, 633);
-        	drawPanel(ctx, rgba_gray, rgba_lgray, 175, 300, 180, 133);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, 400+menu_q_pos[0], menu_q_pos[1], 180, 633);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, menu_q_pos[0], menu_q_pos[1]+30, 180, 133);
+        	drawPanel(ctx, rgba_gray, rgba_lgray, menu_q_pos[0]+415, menu_q_pos[1]+30, 150, 25);
 
 
 
@@ -992,12 +1030,18 @@ document.addEventListener("DOMContentLoaded", function(event)
         	document.getElementById("stn_cir_s").style.display = "none";
         }
 
+        document.getElementById("stn_cir_d").style.left = (menu_q_pos[0]+95) + "px";
+    	document.getElementById("stn_cir_d").style.top = (menu_q_pos[1]+80) + "px";
+    	
+        document.getElementById("stn_cir_s").style.left = (menu_q_pos[0]+95) + "px";
+    	document.getElementById("stn_cir_s").style.top = (menu_q_pos[1]+118) + "px";
+
 		//drawPanel(ctx, in_win_w*tool_pnl_sw, in_win_h*(1-tool_pnl_sh), in_win_w*(1-tool_pnl_sw), in_win_h*(1-tool_pnl_sh*0.12));
 
 
 		document.getElementById("fileInput").style.position = "absolute";
 		document.getElementById("fileInput").style.left = "174px";
-		document.getElementById("fileInput").style.top = (62+menu_controls_lock*126 )+"px";
+		document.getElementById("fileInput").style.top = (62+menu_controls_lock*126)+"px";
 
 		drawPanel(ctx, rgba_gray, rgba_lgray, 155, 10, 410, 88+menu_controls_lock*126);
 
@@ -1022,18 +1066,18 @@ document.addEventListener("DOMContentLoaded", function(event)
 			drawText(ctx, rgba_otext, "left", "Scroll+LOCK(vert mov), G(ground), RMB(go to pnt)", 174, 114);
 			drawText(ctx, rgba_otext, "left", "Scroll+Shift(grid size), E(make obj), B(del obj)", 174, 129);
 			drawText(ctx, rgba_otext, "left", "Scroll/Arrows(obj nav), V(mov obj), C(edit obj)", 174, 144);
-			drawText(ctx, rgba_otext, "left", "TAB(near mean ctr), T(dupe obj), Z(undo)", 174, 159);
-			drawText(ctx, rgba_otext, "left", "Shift+T(dupe & mov), 2(make cir)", 174, 174);
+			drawText(ctx, rgba_otext, "left", "Shift+T(dupe & mov), T(dupe obj), Q(menu)", 174, 159);
+			drawText(ctx, rgba_otext, "left", "TAB(near mean ctr), 2(make cir), Z(undo)", 174, 174);
 		} else {
-			drawText(ctx, "right", rgba_otext, "[M][menu]", 548, 80);
+			drawText(ctx, "right", rgba_otext, "[M][keys]", 548, 80);
 		}
 
         if (!mouseLock)
         {
-			drawText(ctx, rgba_otext, "left", "[circle settings][2]", 194, 320);
+			drawText(ctx, rgba_otext, "left", "[circle settings][2]", 19+menu_q_pos[0], menu_q_pos[1]+50);
 
-			drawText(ctx, rgba_otext, "left", "[scale]", 194, 371);
-			drawText(ctx, rgba_otext, "left", "[divider]", 194, 379+29);
+			drawText(ctx, rgba_otext, "left", "[scale]", 19+menu_q_pos[0], menu_q_pos[1]+101);
+			drawText(ctx, rgba_otext, "left", "[divider]", 19+menu_q_pos[0], menu_q_pos[1]+138);
 		}
 
 
@@ -1062,8 +1106,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 				{	
 					if (i>world_obj_count && j != mem_log[i][1]/4-1)
 					{
-						if (i==obj_cyc) {
-							drawLine(ctx,rgba_y, 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
+						// if obj_cyc and link_obj_i : color is rgbas_link[obj_cyc+link_obj_i] or...
+						// if obj_
+						if (i==obj_cyc || i==link_obj_i) {
+							drawLine(ctx, rgbas_link[link_lock], 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
 						} else {drawLine(ctx,rgba_w, 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 						//} else {drawLine(ctx,rgba_w, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
 					}
@@ -1145,16 +1191,20 @@ document.addEventListener("DOMContentLoaded", function(event)
 	function Compute(init_dat)
 	{
 
-		if (key_map.enter)
+		if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
+
+		if (key_map.enter && runEvery(100))
 		{
 				canvas.requestPointerLock();
 				mouseLock = 1;
 		}
 
-		stn_cir_tool[0] = document.getElementById("stn_cir_s").value;
-		stn_cir_tool[1] = document.getElementById("stn_cir_d").value;
-
-		if (mouseLock && key_map["2"] && runEvery(300)) {make_cir_obj(stn_cir_tool[0], stn_cir_tool[1], pln_cyc);}
+		if (mouseLock && key_map["2"] && runEvery(300))
+		{
+			stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value); // Fix so that any float can be used....
+			stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
+			if (!isNaN(stn_cir_tool[0]) && !isNaN(stn_cir_tool[1])) {make_cir_obj(Math.floor(stn_cir_tool[0]), stn_cir_tool[1], pln_cyc);}
+		}
 
 		if (trns_lock)
 		{
@@ -1263,7 +1313,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
 		if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
-		if (key_map.e && runEvery(80)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+		if (key_map.e && runEvery(120)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 		
 		if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
