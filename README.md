@@ -13,12 +13,14 @@ This project is meant to be an endless exercise of mathematics with the goal of 
 It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
 
 Save & Load FIXED. So far handling any large amount of junk!
-- Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V) 
+- Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V)
+- Tab finds nearest obj and right click will find nearest point in the obj. Right click also finds any points you have placed that are not made into an obj yet.
+- (L) links two objects of equal size linearly.
 
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
 
-
+![proger](https://github.com/samcoble/CameraTransform/assets/32228102/75924dff-5155-442d-86d0-5635b933413c)
 ![prog](https://github.com/samcoble/CameraTransform/assets/32228102/8e3ccc3c-def0-423b-9bf5-8f02227130e8)
 ![goodfeats](https://github.com/samcoble/CameraTransform/assets/32228102/05d36980-58e2-44b9-9112-bc1b284a27ed)
 ![cirsets](https://github.com/samcoble/CameraTransform/assets/32228102/d3bb6839-7c86-48b3-aea0-10174655bfce)
