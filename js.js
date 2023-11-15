@@ -12,6 +12,12 @@
 */
 
 
+// Make a pistol that shoots green lasers that bounce!
+// Ray trace but not? More like a reflection.
+// Must review lpi
+
+// Buy server. How to sync players_struct & m_objs & chat
+
 // set_mov    &    dyn_mov
 
 // button to output linear obj to console
@@ -191,6 +197,8 @@ var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 var stn_cir_tool = [8, 24, 0];
 var stn_draw = [true, true];
 
+var one_time_fix = 1;
+
 
 var menu_q_pos = [250, 290];
 
@@ -205,6 +213,7 @@ var rgba_y = "rgba(240, 240, 50, 1.0)";
 var rgba_o = "rgba(245, 213, 63, 1.0)";
 var rgba_ch = "rgba(50, 200, 50, 0.9)";
 var rgba_lp = "rgba(40, 40, 40, 0.75)";
+var rgba_dgray = "rgba(9, 11, 13, 1.0)";
 var rgba_gray = "rgba(10, 12, 14, 1.0)";
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_otext = "rgba(188, 118, 48, 1.0)";
@@ -225,6 +234,8 @@ var _oh, f_look, f_dist, _inter;
 var _nplns = [];
 var _plr_world_pos = [];
 var _plr_dtp = [];
+
+var g_dtp, g_pop, g_pao, g_rp, g_fp;
 
 
 
@@ -248,15 +259,24 @@ function drawRect(c, rgba, x, y, w, h)
 	c.fill();
 }
 
-function drawRectFrame(c, rgba, x, y, w, h)
-{
-	c.beginPath();
-	c.strokeStyle = rgba; 
-	c.rect(x, y, w, h);
-	c.lineWidth = 1; c.stroke();
-}
+// function drawRectFrame(c, rgba, x, y, w, h)
+// {
+// 	c.beginPath();
+// 	c.strokeStyle = rgba; 
+// 	c.rect(x, y, w, h);
+// 	c.lineWidth = 1; c.stroke();
+// }
 
-function drawPanel(c, rgba1, rgba2, x, y, w, h) {drawRect(c, rgba1, x, y, w, h); drawRectFrame(c, rgba2, x, y, w, h);}
+function drawPanel(c, rgba1, rgba2, x, y, w, h)
+{
+
+	c.fillStyle = rgba1;
+	c.strokeStyle = rgba2; 
+	c.lineWidth = 1; 
+	c.strokeRect(x, y, w, h);
+	c.fillRect(x, y, w, h);
+	//drawRect(c, rgba1, x, y, w, h); drawRectFrame(c, rgba2, x, y, w, h);
+}
 
 function fillDot(c, rgba, x, y, s)
 {
@@ -318,6 +338,7 @@ var key_map =
 	c: false,
 	m: false,
 	l: false,
+	h: false,
 	"2": false,
 	"3": false,
 	" ": false,
@@ -1096,25 +1117,25 @@ function drawOverlay(init_dat)
     	// Large back pan
     	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
     	
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+1, menu_q_pos[1]+24, 383, 598);
+    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+1, menu_q_pos[1]+24, 383, 598);
 
     	///////////////////////////////
 
     	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+6, menu_q_pos[1]+30, 180, 183);
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
 
     	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+6, menu_q_pos[1]+230, 180, 183);
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+230, 170, 183);
 
     	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+195, menu_q_pos[1]+30, 184, 183);
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+30, 185, 183);
 
     	///////////////////////////////
 
 		// Large back pan
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+398, menu_q_pos[1], 180, 633);
 
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 161, 598);
+    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 161, 598);
     	//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+411, menu_q_pos[1]+24, 159, 598);
 
 
@@ -1207,19 +1228,19 @@ function drawOverlay(init_dat)
     if (!mouseLock)
     {
 		drawText(ctx_o, rgba_otext, "left", "[circle settings][2]", menu_q_pos[0]+23, menu_q_pos[1]+50);
-		drawText(ctx_o, rgba_otext, "left", "[_scale_]", menu_q_pos[0]+23, menu_q_pos[1]+101);
+		drawText(ctx_o, rgba_otext, "left", "[ scale ]", menu_q_pos[0]+23, menu_q_pos[1]+101);
 		drawText(ctx_o, rgba_otext, "left", "[divider]", menu_q_pos[0]+23, menu_q_pos[1]+139);
-		drawText(ctx_o, rgba_otext, "left", "[__off__]", menu_q_pos[0]+23, menu_q_pos[1]+177);
+		drawText(ctx_o, rgba_otext, "left", "[  off  ]", menu_q_pos[0]+23, menu_q_pos[1]+177);
 
 		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+250);
 		drawText(ctx_o, rgba_otext, "left", "[NO FUNCTION YET]", menu_q_pos[0]+23, menu_q_pos[1]+265);
-		drawText(ctx_o, rgba_otext, "left", "[_linear_]", menu_q_pos[0]+23, menu_q_pos[1]+302);
-		drawText(ctx_o, rgba_otext, "left", "[_zigzag_]", menu_q_pos[0]+23, menu_q_pos[1]+340);
-		drawText(ctx_o, rgba_otext, "left", "[__poly__]", menu_q_pos[0]+23, menu_q_pos[1]+378);
+		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+302);
+		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+340);
+		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+378);
 
 		drawText(ctx_o, rgba_otext, "left", "[draw settings]", menu_q_pos[0]+213, menu_q_pos[1]+50);
-		drawText(ctx_o, rgba_otext, "left", "[__lines__]", menu_q_pos[0]+213, menu_q_pos[1]+101);
-		drawText(ctx_o, rgba_otext, "left", "[_surface_]", menu_q_pos[0]+213, menu_q_pos[1]+140);
+		drawText(ctx_o, rgba_otext, "left", "[  lines  ]", menu_q_pos[0]+213, menu_q_pos[1]+101);
+		drawText(ctx_o, rgba_otext, "left", "[ surface ]", menu_q_pos[0]+213, menu_q_pos[1]+140);
 	}
 
 
@@ -1569,16 +1590,52 @@ function Compute(init_dat)
 
 	// Use gpu here w/ the right size array32. Or can I even?
 
-	// if (document.ready || (key_map.lmb || key_map.rmb || key_map.f || key_map.t || key_map.g))
-	// {
+	if (one_time_fix || (key_map.lmb || key_map.f || key_map.y))
+	{
 		_oh = dot(player_pos,[0,1,0,1]);
 		f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
 		f_dist = -_oh/dot(N,norm(f_look));
 		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 		_plr_world_pos = [player_pos[0],player_pos[1],player_pos[2]];
-		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]];
+		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
 		_inter = lpi(_plr_dtp,_plr_world_pos,_pp,_nplns);
-	//}
+		one_time_fix = 0;
+	}
+
+	/*
+
+		make up as i go here
+			- get plane to use, for now grid planes, pln, and free _inter
+			- get dist to plane w/ (_inter - player_pos) . pln = d
+			- move point to plane, point_on_pln = player_pos - d * pln (here's the returner 2 * d * pln) 
+			- move point to origin, get delta first, delta = point_at_o = point_on_pln - _inter
+			- make negative (double 180) point_opp_o = -1 * point_at_o
+			- reflected point is found moving back toward plane, and again in the same direction...
+
+		or go twice distance to _inter and return to plane instead? way easier. Idk gotta review all the linear algebra again.
+	*/
+
+
+		//g_dtp = dot(sub(_inter, player_pos), _nplns); // Might have to swap sign?
+		//g_pop = add3(player_pos, scale(_nplns, -g_dtp));
+		//g_pao = scale(sub(g_pop, _inter), -1); // skipping step applying scale -1 here 
+		//g_rp = add3(g_pao, scale(_nplns,2*g_dtp));
+
+
+		// console.log(g_fp);
+
+		if (key_map.h && runEvery(300))
+		{
+
+			//g_dtp = dot(sub(_inter, player_pos), _nplns); // Might have to swap sign?
+			//g_fp = add3(scale(sub(_inter, player_pos) ,2), scale(_nplns,-2*g_dtp));
+
+			// 	console.log(g_fp);
+			//player_pos[0] = g_fp[0];
+			//player_pos[1] = g_fp[1];
+			//player_pos[2] = g_fp[2];
+			
+		}
 
 	// m_objs[0][0] = _inter[0];
 	// m_objs[0][1] = _inter[1];
@@ -1755,16 +1812,16 @@ function Compute(init_dat)
 	cos(theta) output pos & neg.
 	Can obtain sign of cos(theta) w/o trig fn call only dot product *** !!!
 
-		Now to obtain intersection w/ plane.
+	Now to obtain intersection w/ plane.
 
-		Say: I = Q1 + t(Q2-Q1)
+	Say: I = Q1 + t(Q2-Q1)
 
-		d1 = n . (Q1-P)
-		d2 = n . (Q2-P)
+	d1 = n . (Q1-P)
+	d2 = n . (Q2-P)
 
-		I = Q1 + t(Q2-Q1)
-		I-P = (Q1-P) + t( (Q2-P)-(Q1-P) )
-		n . (I-P) = n . (Q1-P) + t * ( n . (Q2-P) - n . (Q1-P) )    apply subs
+	I = Q1 + t(Q2-Q1)
+	I-P = (Q1-P) + t( (Q2-P)-(Q1-P) )
+	n . (I-P) = n . (Q1-P) + t * ( n . (Q2-P) - n . (Q1-P) )    apply subs
 	n . (I-P) = 0 ; on plane
 	0 = d1 + t*(d2 - d1)
 	t = d1 / (d2 - d1)  forget about trig fns bb
