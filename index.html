@@ -6,8 +6,8 @@
 <!-- <script src="https://turbo.github.io/js/turbo.js"></script> -->
 <script src="turbo.js"></script>
 
-  <input type="file" id="fileInput" autocomplete="off" tabindex="-1">
-  <!-- <pre id="fileContent"></pre> -->
+
+
 
 <style>
 
@@ -29,11 +29,11 @@
 	{
 		position: absolute;
 		z-index: 2;
-		left: 231px;
-		top: 173px;
+		left: -300px;
 	}
 
-	#stn_cir_d, #stn_cir_s, #stn_cir_o
+/*	#stn_cir_d, #stn_cir_s, #stn_cir_o, #stn_link_1, #stn_link_2, #stn_link_3*/
+	.stn_
 	{
 		position: absolute;
 		z-index: 2;
@@ -42,6 +42,7 @@
 		height:30px;
 		border: 1px solid rgba(222, 222, 222, 0.3);
 		outline: none;
+		left: -300px; /* To prevent the 1m where you see everything stacked on load */
 	}
 
 
@@ -76,12 +77,18 @@
 	<canvas id="cv_over" width="1800" height="800" ></canvas>
 	<canvas id="cv" width="1800" height="800" ></canvas>
 	
+	  <input type="file" id="fileInput" autocomplete="off" tabindex="-1" accept=".bin">
 
-		<form autocomplete="off">
-	    <input type="text" id="stn_cir_d" class="stn_cir" value="8">
-	    <input type="text" id="stn_cir_s" class="stn_cir" value="24">
-	    <input type="text" id="stn_cir_o" class="stn_cir" value="0">
-		</form>
+    <input type="text" id="stn_cir_d" class="stn_" class="stn_cir" value="8" autocomplete="off">
+    <input type="text" id="stn_cir_s" class="stn_" class="stn_cir" value="24" autocomplete="off">
+    <input type="text" id="stn_cir_o" class="stn_" class="stn_cir" value="0" autocomplete="off">
+
+    <input type="checkbox" id="stn_link_1" class="stn_" class="stn_link" autocomplete="off">
+    <input type="checkbox" id="stn_link_2" class="stn_" class="stn_link" autocomplete="off">
+    <input type="checkbox" id="stn_link_3" class="stn_" class="stn_link" autocomplete="off">
+
+    <input type="checkbox" id="stn_draw_l" class="stn_" class="stn_draw" autocomplete="off">
+    <input type="checkbox" id="stn_draw_s" class="stn_" class="stn_draw" autocomplete="off">
 
 		<!-- Settings input boxes -->
 

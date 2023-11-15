@@ -12,13 +12,7 @@
 */
 
 
-// random idea
-// 		later in ui development there are three options for circle generation. 1: divisions of a circle. 2: preset of stacker accepting stacks(s) and dist(d). 3: mapped to an equation that only accepts 0 to 1.
-//		maybe this 3 rule tree can be the start of similar tree options for various line generation
-
 // set_mov    &    dyn_mov
-
-// obj scale by distance from upon init
 
 // button to output linear obj to console
 
@@ -26,14 +20,10 @@
 	// and "link.k=l" rebinds link(); activator key to l. And if already bound swap.
 	// if any part of text is contained by a list of syntax display those options below and what options exist after the dot operator 
 
-// the tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together. maybe..
+// the tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
 
 // low call rate mean ctr map overlay BINGO
-// 		mean ctr array by sku set (for now) while holding tab
 //		single Float32Array encodes x mean y mean x mean y mean x mean ...
-
-
-// ctx is conflicting with drawing hud so make a second canvas to manage hud. this should be fine. everything orderly and low call rate
 
 
 // better isNan obj inspector to use where the extra time is worth doing the check ? might ruin program over time
@@ -48,11 +38,7 @@
 		Rotate around Axis (For now input into box with deg. Use point and plane line)
 		Stacker tool (Accepts distance and stacks) (Two input boxes)
 
-		I'm starting to notice animated effects require a temporary duplicate object. Big system.
-
-
-
-
+		I'm starting to notice animated effects require a temporary duplicate object to perform interpolation. Big system.
 
 */
 
@@ -65,15 +51,18 @@
 
 	Octree is a mem struct !? rewrite data or use new file type ig
 
-	use two points and their delta. some 1e(n) + off provides groupings with 4th components. limit in point values of the array to never go beyond 1e(n-1). unfortunately this implies a theoretical limit based on float32
+	To continue adding groupings I'll just make the data format [x y z w g1 g2 gn...] [x y z w g1 g2 gn...] [x y z w g1 g2 gn...] ...
 
 	// PROBABLY GOING TO DO SOON:
 
+	-	Obj explode needs update.
+			explode with c is done.
+			if an obj has been exploded or one is drawn (m_t_objs.length > 0) then c now gets sku from point finder and allows (split obj, delete point, add point in sequence)
 
-	-	Circle generation
-
-			use equation of circle and it's circumference with temp static 30deg inc. like 2pi / (pi/6)
-			interpolate across circle equation placing point at each section end. first is 0th sku.
+	-	Link settings
+			Linear is done.
+			Zigzag is for better wireframe viewing
+			Poly type is the most common but makes the wire frame very busy
 
 	-	Rotate around point
 		
@@ -81,24 +70,25 @@
 			sync w/ creation/deletion w/ [0,0,0] p,y,r in rads
 			create animated circle rotator ( later input ang in deg -> converted to rads by Math.floor(in_rad/pi), and with modulo in_rad % pi )
 			must make circle first ig..
+			actually my expansion function was the same function except instead of rotating points that were translated to origin they're expanded.. so already half done.
 
+	-	Sphere generation
+
+	-	Surface generation
 	
-
-	-	Translation should have menu to select what axis are modified in the translation allowing alignment without a complete a to b.
+	-	Fix the Tab query alg. I have made it a 3d 2d near mean instead of 2d near mean.
 	-	Shift + Tab for multi selection. Also make mouse selector
-	-	Redo grid system entirely. Or apply translation prior to round to find point near a point that is the round
 
 	-	Merge function: should already have the functions. Need to make a sequenced event (colorized). 3 keys. Start(finish). Abort. Select all non world. Maybe leave this for last????
-	-	Old translation function ? why is it still in the code ? what do?
-	-	Effects and sounds.  Recreate similar Hl2 sounds.
+
 
 	// PROBABLY NOT SO SOON
 
 	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&&&!!!! the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
 	-	Maybe a separate self made api for handling the screen interface would be wise.
 	-	It really needs 3d/2d simple text obj generation for real notepad capacity. Idk how to edit something like that other than detecting the objects vertices relative and essentially making a hash table. Easier to just store the string in the bg. More arrays...
+	-	Effects and sounds.  Recreate similar Hl2 sounds.
 
-	-	Link points along obj sequence along another obj sequence. Just a linear function. Maybe if it's like 6 : 2 it'd be 3 to 1, 3 to 1. etc.    
 
 	// MAYBE SOME TIME IN 2053 (after christ)
 
@@ -131,6 +121,7 @@
 		make a mem obj for a tool. m_vert_slct
 
 	store surface planes as their dir vec & any point on the plane. Have a list of planes basically. Localize all draw functionality to the plane allowing for direct modeling perp to the surface.
+		even more wild: localize camera to surface (insane)
 
 */
 
@@ -141,21 +132,18 @@
 						\--------------*/
 
 // !
-var runTime_int = 1; // Time delay between frames as they render // Replaced with requestanimationframe
-var menuTime_int = 100;
+//var runTime_int = 1; // Time delay between frames as they render // Replaced with requestanimationframe
+var menuTime_int = 170;
 var title_int = 350;
 // !
 
-
-
-var hover_h = 11.5;
-
+// Timer
 var date_now = 0;
-var date_now_over = 0;
 
-
+// Maybe move this into DOM LOAD event instead and keep var init.
 var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
+const fileInput = document.getElementById('fileInput');
 
 var screen_width, screen_height;
 
@@ -174,16 +162,22 @@ var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
-var fov_slide = 8.0;
-var crosshair_l = 4;
+var lookToggle = 0;
+
+var fov_slide = 8.0; var s_fov = Math.pow(fov_slide, 2);
+
+var crosshair_l = 5;
+var crosshair_w = 0.4;
 
 var player_pos = [0.0,-14.0,0]; // Having this many _player_pos need entire refactor, should use gpu
 var w_player_pos = [0.0,0.0,0.0];
 var wf_player_pos = [0.0,0.0,0.0];
 var wt_player_pos = [0.0,0.0,0.0];
+var _inter_rnd = [0.0, 0.0, 0.0];
 
-var LookToggle = 0;
 
+
+var hover_h = 11.5;
 var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0;
@@ -195,14 +189,16 @@ var link_lock = 0; var link_obj_i = 0;
 var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 
 var stn_cir_tool = [8, 24, 0];
+var stn_draw = [true, true];
 
 
 var menu_q_pos = [250, 290];
 
+// Premade color strings and color arrays
 
-var rgba_r ="rgba(200, 50, 50, 0.6)";
-var rgba_g ="rgba(50, 200, 50, 0.6)";
-var rgba_b ="rgba(50, 50, 200, 1.0)";
+var rgba_r = "rgba(200, 50, 50, 0.6)";
+var rgba_g = "rgba(50, 200, 50, 0.6)";
+var rgba_b = "rgba(50, 50, 200, 1.0)";
 var rgba_w = "rgba(255, 255, 255, 1.0)";
 var rgba_w_flr = "rgba(222, 222, 222, 0.8)";
 var rgba_y = "rgba(240, 240, 50, 1.0)";
@@ -214,16 +210,18 @@ var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_otext = "rgba(188, 118, 48, 1.0)";
 var rgba_dtext = "rgba(111, 111, 111, 1.0)";
 
-var rgbas = [rgba_r,rgba_g,rgba_b,rgba_w,rgba_o];
+var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
 var rgbas_link = [rgba_y, rgba_b];
-var rgbas_trans = [rgba_lgray,rgba_g];
-var _inter_rnd = [0.0, 0.0, 0.0];
+var rgbas_trans = [rgba_lgray, rgba_g];
 
+var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
+var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
+var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
+var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
 
-const fileInput = document.getElementById('fileInput');
+var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
 
-
-var _oh, f_look, f_dist, _inter = 0;
+var _oh, f_look, f_dist, _inter;
 var _nplns = [];
 var _plr_world_pos = [];
 var _plr_dtp = [];
@@ -281,26 +279,20 @@ function drawLine(c, rgba, lw, x0, y0, x1, y1)
 	c.lineWidth = lw; c.stroke();
 }
 
-
-
-
-
+function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
+{
+    c.beginPath();
+    c.moveTo(p1x, p1y);
+    c.lineTo(p2x, p2y);
+    c.lineTo(p3x, p3y);
+    c.closePath();
+    c.fillStyle = rgba;
+    c.fill();
+}
 
 
 						/*-- Key & Mouse event capture --\
 						\-------------------------------*/
-
-
-onmousemove = function(e)
-{
-	if (mouseLock)
-		{
-			player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
-		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
-
-	if (player_look_dir[0] > 2*pi) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
-	if (player_look_dir[0] < -2*pi) [player_look_dir[0] = 0.0];
-}
 
 
 
@@ -353,6 +345,19 @@ var key_map_prevent =
 	rmb: false,
 	q: false
 };
+
+
+
+onmousemove = function(e)
+{
+	if (mouseLock)
+		{
+			player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
+		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
+
+	if (player_look_dir[0] > 2*pi) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
+	if (player_look_dir[0] < -2*pi) [player_look_dir[0] = 0.0];
+}
 
 
 // Generic js
@@ -458,6 +463,7 @@ window.addEventListener("wheel", function(e)
 			grid_scale += -e.deltaY/Math.abs(e.deltaY);
 			grid_scale_f = Math.pow(2, grid_scale);
 	}
+	s_fov = Math.pow(fov_slide, 2);
 });
 
 
@@ -551,13 +557,6 @@ function runEvery(_ms) // works 100 honest #1 fav js fn rn
 	return (_r);
 }
 
-function runEveryOver(_ms) // works 100 honest #1 fav js fn rn
-{
-	var d_t = Date.now() - date_now_over; var _r = 0;
-	if (d_t > _ms) {_r = 1; date_now_over = Date.now();} else {_r = 0;}
-	return (_r);
-}
-
 
 
 						/*-- Placeholder 4d data generation --\
@@ -577,10 +576,12 @@ var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
 var _pp = [-125,0,-125]; // Point on plane will be static
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
+
 var _lp_world = new Float32Array([0.0,0.0,0.0,1]);
 var _lop_world = new Float32Array([0.0,0.0,0.0,1]);
 var trans_f = new Float32Array([0.0,0.0,0.0,1]);
 var exp_f = new Float32Array([0.0,0.0,0.0,1]);
+
 //const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_cube = new Float32Array([0.0,0.0,0.0,1, -1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
@@ -844,8 +845,9 @@ var ctx = canvas.getContext("2d");
 var ctx_o = canvas_over.getContext("2d");
 
 
-// WTF IS THIS YO. Fix for mac users at some point.
+// WTF IS THIS YO. Fix for mac users at some point if this doesn't already.
 // const ratio = window.devicePixelRatio || 1;
+
 ctx.scale(1, 1); ctx_o.scale(1, 1);
 
 
@@ -1075,14 +1077,21 @@ function drawOverlay(init_dat)
 {
 	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
 
+
+	//Crosshair
+	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
+	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
+
 	// Maybe use
 	// document.getElementsByClassName('stn_cir').item(0).style
+	// or
+	// var elements = document.querySelectorAll('.classhere');
 
     if (!mouseLock)
     {
-    	document.getElementById("stn_cir_d").style.display = "block";
-    	document.getElementById("stn_cir_s").style.display = "block";
-    	document.getElementById("stn_cir_o").style.display = "block";
+    	var menu_inputs = document.querySelectorAll('.stn_');
+        menu_inputs.forEach(function(e) {e.style.display = "block";});
+
 
     	// Large back pan
     	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
@@ -1096,6 +1105,9 @@ function drawOverlay(init_dat)
 
     	// Medium1 pan
     	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+6, menu_q_pos[1]+230, 180, 183);
+
+    	// Medium1 pan
+    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+195, menu_q_pos[1]+30, 184, 183);
 
     	///////////////////////////////
 
@@ -1119,11 +1131,37 @@ function drawOverlay(init_dat)
 
 		document.getElementById("stn_cir_o").style.left = (menu_q_pos[0]+101) + "px";
 		document.getElementById("stn_cir_o").style.top = (menu_q_pos[1]+156) + "px";
+
+		document.getElementById("stn_link_1").style.left = (menu_q_pos[0]+114) + "px";
+		document.getElementById("stn_link_1").style.top = (menu_q_pos[1]+280) + "px";
+
+		document.getElementById("stn_link_2").style.left = (menu_q_pos[0]+114) + "px";
+		document.getElementById("stn_link_2").style.top = (menu_q_pos[1]+318) + "px";
+
+		document.getElementById("stn_link_3").style.left = (menu_q_pos[0]+114) + "px";
+		document.getElementById("stn_link_3").style.top = (menu_q_pos[1]+356) + "px";
+
+		document.getElementById("stn_draw_l").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_draw_l").style.top = (menu_q_pos[1]+80) + "px";
+
+		document.getElementById("stn_draw_s").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_draw_s").style.top = (menu_q_pos[1]+118) + "px";
+
+
+		// While in menu with low call rate i'll set values here:
+
+		stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value); // Fix so that any float can be used....
+		stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
+		stn_cir_tool[2] = parseFloat(document.getElementById("stn_cir_o").value);
+
+		stn_draw[0] = document.getElementById("stn_draw_l").checked;
+		stn_draw[1] = document.getElementById("stn_draw_s").checked;
+
+
     } else {
 
-    	document.getElementById("stn_cir_d").style.display = "none";
-    	document.getElementById("stn_cir_s").style.display = "none";
-    	document.getElementById("stn_cir_o").style.display = "none";
+    	var menu_inputs = document.querySelectorAll('.stn_');
+        menu_inputs.forEach(function(e) {e.style.display = "none";});
     }
 
 
@@ -1169,10 +1207,19 @@ function drawOverlay(init_dat)
     if (!mouseLock)
     {
 		drawText(ctx_o, rgba_otext, "left", "[circle settings][2]", menu_q_pos[0]+23, menu_q_pos[1]+50);
-
 		drawText(ctx_o, rgba_otext, "left", "[_scale_]", menu_q_pos[0]+23, menu_q_pos[1]+101);
-		drawText(ctx_o, rgba_otext, "left", "[divider]", menu_q_pos[0]+23, menu_q_pos[1]+138);
-		drawText(ctx_o, rgba_otext, "left", "[__off__]", menu_q_pos[0]+23, menu_q_pos[1]+175);
+		drawText(ctx_o, rgba_otext, "left", "[divider]", menu_q_pos[0]+23, menu_q_pos[1]+139);
+		drawText(ctx_o, rgba_otext, "left", "[__off__]", menu_q_pos[0]+23, menu_q_pos[1]+177);
+
+		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+250);
+		drawText(ctx_o, rgba_otext, "left", "[NO FUNCTION YET]", menu_q_pos[0]+23, menu_q_pos[1]+265);
+		drawText(ctx_o, rgba_otext, "left", "[_linear_]", menu_q_pos[0]+23, menu_q_pos[1]+302);
+		drawText(ctx_o, rgba_otext, "left", "[_zigzag_]", menu_q_pos[0]+23, menu_q_pos[1]+340);
+		drawText(ctx_o, rgba_otext, "left", "[__poly__]", menu_q_pos[0]+23, menu_q_pos[1]+378);
+
+		drawText(ctx_o, rgba_otext, "left", "[draw settings]", menu_q_pos[0]+213, menu_q_pos[1]+50);
+		drawText(ctx_o, rgba_otext, "left", "[__lines__]", menu_q_pos[0]+213, menu_q_pos[1]+101);
+		drawText(ctx_o, rgba_otext, "left", "[_surface_]", menu_q_pos[0]+213, menu_q_pos[1]+140);
 	}
 
 
@@ -1185,54 +1232,87 @@ function drawOverlay(init_dat)
 		if (i==obj_cyc) {drawText(ctx_o, rgba_otext, "left", "->", 25, 34+i*15);} // drawText(ctx_o, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
 	}
 
+
+	//drawTriangle(ctx_o, 400, 500, 700, 600, 500, 700, rgba_r);
+
+
 }
 
-function drawIt(init_dat)
+function drawIt()
 {
+	Compute(m1);
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
 
-	// bad 4 cpu fix
-
-	var s = Math.pow(fov_slide, 2); // Arbitrary visual scaler
 
 	// Draw packed verts
 	for (var i = 1; i<m_objs.length; i++) // i find object
 	{
+
+		if (stn_draw[1])
+		{
+			if (i>world_obj_count)
+			{
+				//for (var k = 0; k<(mem_log[i][1]/4 - (mem_log[i][1]/4)%3); k+=3)
+				for (var k = 0; k<Math.floor(mem_log[i][1]/12); k++)
+				{
+					// p1x : m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc
+					// p1y : m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_wc
+
+					// p2x : m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc
+					// p2y : m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_wc
+
+					// p3x : m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc
+					// p3y : m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_wc
+
+
+					drawTriangle(ctx, m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_hc, rgbas_tri[k%3]);
+
+				}
+			}
+		}
+
 		for (var j = 0; j<mem_log[i][1]/4; j++) // j finds vertex
 		{
-			if (init_dat.data[4*j+mem_log[i][0]+3] > 0 && init_dat.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
+			if (m1.data[4*j+mem_log[i][0]+3] > 0 && m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
 			{	
-				if (i>world_obj_count && j != mem_log[i][1]/4-1)
+
+				if (stn_draw[0])
 				{
-					// if obj_cyc and link_obj_i : color is rgbas_link[obj_cyc+link_obj_i] or...
-					// if obj_
-					if (i==obj_cyc || i==link_obj_i) {
-						drawLine(ctx, rgbas_link[link_lock], 1.0, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);
-					} else {drawLine(ctx,rgba_w, 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-					//} else {drawLine(ctx,rgba_w, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+						if (i>world_obj_count && j != mem_log[i][1]/4-1)
+						{
+							if (i==obj_cyc || i==link_obj_i) {
+								drawLine(ctx, rgbas_link[link_lock], 1.0, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);
+							} else {
+
+								// test draw tri here
+								drawLine(ctx,rgba_w, 1, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);
+							}
+							//} else {drawLine(ctx,rgba_w, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
+						}
 				}
 
-				if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
-				if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, init_dat.data[4*(j+1)+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*(j+1)+mem_log[i][0]+1]*s+in_win_hc);}
+				if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
+				if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
 				if (i==1) {
-				fillDot(ctx, rgba_w_flr, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
+				fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
 				
 			} // END OF LINE CLIP
 
-			if (init_dat.data[4*j+mem_log[i][0]+3] > 0)
+
+
+
+			if (m1.data[4*j+mem_log[i][0]+3] > 0)
 			{
-				//if (i > 2)
-				//{
-					// if (key_map.mmb && i > 5) {drawText(ctx, j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc);}
-					// if (j == mem_log[i][1]/4-1) // Find last vertex
-					// {
-					// 	//drawText(ctx, "END " + j, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc-32, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc-18);
-					// }
-				//}
+				// if (i > 2)
+				// {
+				// 	if (key_map.mmb && i > 5) {drawText(ctx, j, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc);}
+				// 	if (j == mem_log[i][1]/4-1) {drawText(ctx, "END " + j, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc-32, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc-18);}
+				// }
+
 				if (i>2)
 				{
-					drawDot(ctx, rgbas[pln_cyc], 1, init_dat.data[4*j+mem_log[i][0]]*s+in_win_wc, init_dat.data[4*j+mem_log[i][0]+1]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
+					drawDot(ctx, rgbas[pln_cyc], 1, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
 				}
 			}
 		}
@@ -1243,34 +1323,31 @@ function drawIt(init_dat)
 	{
 		for (var j = 0; j<mem_t_log[i][1]/4; j++) // fix me?
 		{
-			if (init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && init_dat.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
+			if (m1.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
 			// if (1) // Clipping off
 			{
-				drawDot(ctx, rgba_w, 2, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, 1/Math.pow((init_dat.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
+				drawDot(ctx, rgba_w, 2, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
 				if (i == m_t_objs.length-1)
 				{
-					drawText(ctx, rgba_otext, "left", "END " + i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-17, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);
+					drawText(ctx, rgba_otext, "left", "END " + i, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-17, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);
 					} else {
-					drawLine(ctx, rgba_b, 1.3, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc, init_dat.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s+in_win_wc, init_dat.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc);
-					if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, init_dat.data[4*j+mem_t_log[i][0]+mem_sum]*s+in_win_wc-3, init_dat.data[4*j+mem_t_log[i][0]+1+mem_sum]*s+in_win_hc-18);}
+					drawLine(ctx, rgba_b, 1.3, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc);
+					if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-3, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);}
 				}
 			}
 		}
 	}
 
 	// Indicators
-	if (m_t_objs.length>0 && init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0) {drawDot(ctx, rgba_lp, 1.3, init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]]*s+in_win_wc, init_dat.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1]*s+in_win_hc, 15);}
-	if (init_dat.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[trns_lock], 1.0, init_dat.data[mem_log[9][0]]*s+in_win_wc, init_dat.data[mem_log[9][0]+1]*s+in_win_hc, 8);}
-	if (trns_lock && init_dat.data[mem_log[10][0]+3] > 0) {drawDot(ctx, rgbas_trans[1], 1.0, init_dat.data[mem_log[10][0]]*s+in_win_wc, init_dat.data[mem_log[10][0]+1]*s+in_win_hc, 15);}
+	if (m_t_objs.length>0 && m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0) {drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]]*s_fov+in_win_wc, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1]*s_fov+in_win_hc, 15);}
 
+	if (m1.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]]*s_fov+in_win_wc, m1.data[mem_log[9][0]+1]*s_fov+in_win_hc, 8);}
 
-	// Crosshair
-	drawLine(ctx, rgba_ch,0.3,in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
-	drawLine(ctx, rgba_ch,0.3,in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
+	if (trns_lock && m1.data[mem_log[10][0]+3] > 0) {drawDot(ctx, rgbas_trans[1], 1.0, m1.data[mem_log[10][0]]*s_fov+in_win_wc, m1.data[mem_log[10][0]+1]*s_fov+in_win_hc, 15);}
 
 
 
-
+	requestAnimationFrame(drawIt);
 
 } // END OF drawIt()
 
@@ -1301,9 +1378,7 @@ function Compute(init_dat)
 
 	if (mouseLock && key_map["2"] && runEvery(300))
 	{
-		stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value); // Fix so that any float can be used....
-		stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
-		stn_cir_tool[2] = parseFloat(document.getElementById("stn_cir_o").value);
+
 		if (!isNaN(stn_cir_tool[0]) && !isNaN(stn_cir_tool[1]) && !isNaN(stn_cir_tool[2])) {make_cir_obj(Math.floor(stn_cir_tool[0]), stn_cir_tool[1], stn_cir_tool[2], pln_cyc);}
 	}
 
@@ -1459,23 +1534,23 @@ function Compute(init_dat)
 
 	if ((key_map.mmb && !mouseLock) || document.ready) // ? wha
 	{
-			if (!LookToggle)
+			if (!lookToggle)
 			{
 				mouseDataS[0] = mouseData[0]; mouseDataS[1] = mouseData[1];
 				player_look_dir_i = player_look_dir;
 			}
-			LookToggle = 1;
+			lookToggle = 1;
 			var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
 			mouseDataD[0] = dX; mouseDataD[1] = dY;
 			player_look_dir = [ player_look_dir_i[0]+(dX/in_win_w * pi * 2) , player_look_dir_i[1]+(dY/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
 
 	} else 
 	{
-		if (LookToggle!=0)
+		if (lookToggle!=0)
 		{
 			mouseDataI[0] = mouseDataI[0]-mouseDataD[0];
 			mouseDataI[1] = mouseDataI[1]-mouseDataD[1];
-			LookToggle = 0;	
+			lookToggle = 0;	
 		}
 	}
 
@@ -1774,20 +1849,20 @@ function Compute(init_dat)
 	}`);	
 
 
-	drawIt(init_dat);
-	//if (runEveryOver(1000)) {drawOverlay(init_dat);}
-	return(init_dat);
+	// drawIt();
+	//return(init_dat);
 
 
 } // End of Compute()
 
 
-function runTime()
-{
+//function runTime()
+//{
 
-	Compute(m1);
+	//Compute(m1);
+	//drawIt();
 	//requestAnimationFrame(runTime);
-}
+//}
 
 
 function menuTime()
@@ -1810,12 +1885,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
+	document.getElementById("stn_draw_l").checked = true;
+	document.getElementById("stn_draw_s").checked = true;
 
+	Compute(m1);
 
+	drawIt();
 
-	runTime();
+	//runTime();
 
-	setInterval(runTime, runTime_int); 
+	//setInterval(runTime, runTime_int); 
 	setInterval(menuTime, menuTime_int); 
 	setInterval(setTitle, title_int); 
 
