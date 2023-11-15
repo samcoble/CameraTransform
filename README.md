@@ -20,6 +20,7 @@ Save & Load FIXED. So far handling any large amount of junk!
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
 
+![silly](https://github.com/samcoble/CameraTransform/assets/32228102/7537df5d-1554-4ffe-a317-be004525830f)
 ![mush](https://github.com/samcoble/CameraTransform/assets/32228102/9f91a91a-47f1-4e07-83c8-b47b7c873516)
 ![musho](https://github.com/samcoble/CameraTransform/assets/32228102/2835a077-84fd-4285-b048-fdc2f344729c)
 ![proger](https://github.com/samcoble/CameraTransform/assets/32228102/75924dff-5155-442d-86d0-5635b933413c)
