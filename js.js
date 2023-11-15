@@ -213,7 +213,7 @@ var rgba_y = "rgba(240, 240, 50, 1.0)";
 var rgba_o = "rgba(245, 213, 63, 1.0)";
 var rgba_ch = "rgba(50, 200, 50, 0.9)";
 var rgba_lp = "rgba(40, 40, 40, 0.75)";
-var rgba_dgray = "rgba(9, 11, 13, 1.0)";
+var rgba_dgray = "rgba(8, 10, 12, 1.0)";
 var rgba_gray = "rgba(10, 12, 14, 1.0)";
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_otext = "rgba(188, 118, 48, 1.0)";
@@ -1000,16 +1000,19 @@ function menu_tog_controls()
 
 function m_objs_explode(_i)
 {
-	var _tp = [];
-	for (var i=0; i<mem_log[_i][1]/4; i++)
+	if (_i>world_obj_count)
 	{
-		_tp[i*4] = m_objs[_i][i*4];
-		_tp[i*4+1] = m_objs[_i][i*4+1];
-		_tp[i*4+2] = m_objs[_i][i*4+2];
-		_tp[i*4+3] = m_objs[_i][i*4+3];
+		var _tp = [];
+		for (var i=0; i<mem_log[_i][1]/4; i++)
+		{
+			_tp[i*4] = m_objs[_i][i*4];
+			_tp[i*4+1] = m_objs[_i][i*4+1];
+			_tp[i*4+2] = m_objs[_i][i*4+2];
+			_tp[i*4+3] = m_objs[_i][i*4+3];
+		}
+		m_t_objs_loadPoints(splitObj(new Float32Array(_tp)));
+		del_obj(_i);
 	}
-	m_t_objs_loadPoints(splitObj(new Float32Array(_tp)));
-	del_obj(_i);
 }
 
 function link_obj(_i) // Do I need to use float32array for everything what am I doing. Add 3 point poly mode.
@@ -1135,7 +1138,7 @@ function drawOverlay(init_dat)
 		// Large back pan
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+398, menu_q_pos[1], 180, 633);
 
-    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 161, 598);
+    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 162, 598);
     	//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+411, menu_q_pos[1]+24, 159, 598);
 
 
