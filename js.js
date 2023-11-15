@@ -1264,9 +1264,10 @@ function drawIt()
 					// p3x : m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc
 					// p3y : m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_wc
 
-
-					drawTriangle(ctx, m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_hc, rgbas_tri[k%3]);
-
+					if (m1.data[12*k+mem_log[i][0]+3]>0 && m1.data[12*k+mem_log[i][0]+7]>0 && m1.data[12*k+mem_log[i][0]+11]>0)
+					{
+						drawTriangle(ctx, m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_hc, rgbas_tri[k%3]);
+					}
 				}
 			}
 		}
@@ -1479,13 +1480,9 @@ function Compute(init_dat)
 	// Delete obj by obj cycle & fix memory
 	if (!trns_lock && key_map.b && runEvery(300-key_map.shift*180) && obj_cyc > world_obj_count) {del_obj(obj_cyc);}
 
-	// Move obj to m_t_objs
-	if (key_map.b && runEvery(300) && obj_cyc > world_obj_count) {m_objs_mod(obj_cyc);}
-
-
 	if (key_map.m && runEvery(300)) {menu_tog_controls();}
 
-	if (key_map.c && runEvery(300)) {m_objs_explode(obj_cyc);}
+	if (!trns_lock && key_map.c && runEvery(300)) {m_objs_explode(obj_cyc);}
 
 	if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
 	if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
