@@ -14,13 +14,17 @@
 
 // Make a pistol that shoots green lasers that bounce!
 // Ray trace but not? More like a reflection.
-// Must review lpi
+// Must review lpi.
+// I have a feeling I can do a lot of what i'm doing here with glsl c. I'm only using it for the view transform. Silly but I can just port my js to c.
+// An octree will open doors to physics/rays/lights.
+
+// Add another layer to mem_log to allow for faster looping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Buy server. How to sync players_struct & m_objs & chat
 
 // set_mov    &    dyn_mov
 
-// button to output linear obj to console
+// Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
 
 // enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
 	// and "link.k=l" rebinds link(); activator key to l. And if already bound swap.
@@ -30,9 +34,6 @@
 
 // low call rate mean ctr map overlay BINGO
 //		single Float32Array encodes x mean y mean x mean y mean x mean ...
-
-
-// better isNan obj inspector to use where the extra time is worth doing the check ? might ruin program over time
 
 
 /*
@@ -150,7 +151,8 @@ var date_now = 0;
 var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
 const fileInput = document.getElementById('fileInput');
-
+var stn_link_cboxes = document.querySelectorAll('.stn_link');
+var menu_inputs = document.querySelectorAll('.stn_');
 var screen_width, screen_height;
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
@@ -169,7 +171,7 @@ var mouseDataI = [0.0, 0.0]; // initial
 var mouseDataD = [0.0, 0.0]; // delta
 var mouseLock = 0; 
 var lookToggle = 0;
-
+var keyVec = [];
 var fov_slide = 8.0; var s_fov = Math.pow(fov_slide, 2);
 
 var crosshair_l = 5;
@@ -194,13 +196,16 @@ var menu_controls_lock = 0;
 var link_lock = 0; var link_obj_i = 0;
 var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 
-var stn_cir_tool = [8, 24, 0];
 var stn_draw = [true, true];
+var stn_cir_tool = [8, 24, 0];
+var stn_link_tool = 2;
 
 var one_time_fix = 1;
 
 
-var menu_q_pos = [250, 290];
+var menu_q_pos = [30, 240];
+var menu_obj_pos = [11, 10];
+var menu_keys_pos = [155, 10];
 
 // Premade color strings and color arrays
 
@@ -311,9 +316,10 @@ function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
 }
 
 
+
+
 						/*-- Key & Mouse event capture --\
 						\-------------------------------*/
-
 
 
 var key_map =
@@ -393,7 +399,7 @@ function downloadSaveFile()
 
     for (var i = world_obj_count + 1; i < m_objs.length; i++)
     {
-        for (var j = 0; j < mem_log[i][1] / 4; j++)
+        for (var j = 0; j < mem_log[i][2]; j++)
         {
             var _bi = _ti; var _i = _bi * 4;
             _tar[_i] = m_objs[i][j * 4];
@@ -449,6 +455,29 @@ window.addEventListener('keyup', (event) =>
 				event.preventDefault();
 			}
 	}
+});
+
+
+stn_link_cboxes.forEach(function(e) // This worked out so damn good.
+{
+	e.addEventListener('change', function()
+	{
+		switch(this)
+		{
+			case stn_link_cboxes[0]:
+				stn_link_cboxes[1].checked = stn_link_cboxes[2].checked = false;
+				stn_link_tool = 0;
+				break;
+			case stn_link_cboxes[1]:
+				stn_link_cboxes[0].checked = stn_link_cboxes[2].checked = false;
+				stn_link_tool = 1;
+				break;
+			case stn_link_cboxes[2]:
+				stn_link_cboxes[0].checked = stn_link_cboxes[1].checked = false;
+				stn_link_tool = 2;
+				break;
+		}
+	});
 });
 
 document.addEventListener('mousedown', function(e)
@@ -653,7 +682,6 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 
 function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe fix z later
 {
-	// r = 2pi
 	// s = x^2 + y^2
 	// x = sqrt(s)*cos(r)	y = sqrt(s)*sin(r)
 
@@ -738,8 +766,6 @@ const m_map = new Float32Array([
 	]);
 
 
-
-
 	/*
 		__/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\_______________/\\\\\\\\\\\\\\\__/\\\\\_____/\\\_____/\\\\\\\\\\\___        
 		 _\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\____________\/\\\///////////__\/\\\\\\___\/\\\___/\\\/////////\\\_       
@@ -764,7 +790,7 @@ var m_obj_offs = [];
 function m_objs_loadPoints(ar) // Adds objects
 {
 	m_objs[m_objs.length] = ar; // Append ar to m_objs
-	mem_log.push([mem_sum, ar.length]);
+	mem_log.push([mem_sum, ar.length, Math.floor(ar.length/4), Math.floor(ar.length/12)]);
 	mem_sum += ar.length;
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 }
@@ -802,6 +828,20 @@ function mem_t_mov() // Puts m_t_objs into m_objs as single array
 		m_objs_loadPoints(_tar);
 	}
 }
+
+function packObj(ar) // Puts m_t_objs into m_objs as single array 
+{
+	var _tar = new Float32Array(ar.length*4);
+	for (i=0; i<ar.length; i++)
+	{
+		_tar[i*4+0] = ar[i][0]
+		_tar[i*4+1] = ar[i][1]
+		_tar[i*4+2] = ar[i][2]
+		_tar[i*4+3] = ar[i][3]
+	}
+	return _tar;
+}
+
 
 function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification
 {
@@ -946,7 +986,7 @@ function del_obj(_i)
 	{
 		m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); obj_cyc = obj_cyc-1;
 	} else {
-		let _ts = mem_log[obj_cyc][1];
+		var _ts = mem_log[obj_cyc][1];
 		for (var i = obj_cyc+1; i<mem_log.length; i++)
 		{
 			mem_log[i][0] = mem_log[i][0]-_ts;
@@ -1015,7 +1055,7 @@ function m_objs_explode(_i)
 	}
 }
 
-function link_obj(_i) // Do I need to use float32array for everything what am I doing. Add 3 point poly mode.
+function link_obj(_i, _t)
 {
 	switch(link_lock)
 	{
@@ -1025,19 +1065,50 @@ function link_obj(_i) // Do I need to use float32array for everything what am I 
 			break;
 		case 1:
 			if (mem_log[_i][1] != mem_log[link_obj_i][1] || _i == link_obj_i) {link_lock = 0; link_obj_i = 0; break;} //console.log("can't link");
-			var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[link_obj_i][0], m_objs[link_obj_i][1], m_objs[link_obj_i][2], 1]);
-			for (var i = 0; i<mem_log[_i][1]/4; i++)
+			var _of = [];
+			var _o1 = splitObj(m_objs[_i]);
+			var _o2 = splitObj(m_objs[link_obj_i]);
+			switch(_t)
 			{
-				//var _ob = Float32Array(8);
-				var _ob = [];
-				_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[link_obj_i][i*4], m_objs[link_obj_i][i*4+1], m_objs[link_obj_i][i*4+2], 1];
-				if (i == mem_log[_i][1]/4-1)
-				{ // Double nested to avoid unnecesarry second call to JSON.stringify()
-					if (_ia != JSON.stringify(_ob))
-					{m_objs_loadPoints(new Float32Array(_ob));}
-				} else {m_objs_loadPoints(new Float32Array(_ob));}
+				case 0:
+					var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[link_obj_i][0], m_objs[link_obj_i][1], m_objs[link_obj_i][2], 1]);
+					for (var i = 0; i<mem_log[_i][2]; i++)
+					{
+						var _ob = [];
+						_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[link_obj_i][i*4], m_objs[link_obj_i][i*4+1], m_objs[link_obj_i][i*4+2], 1];
+						if (i == mem_log[_i][2]-1)
+						{ // Double nested to avoid unnecesarry second call to JSON.stringify()
+							if (_ia != JSON.stringify(_ob))
+							{m_objs_loadPoints(new Float32Array(_ob));}
+						} else {m_objs_loadPoints(new Float32Array(_ob));}
+					}
+					link_obj_i = 0; link_lock = 0;
+					break;
+
+				case 1:
+					for (var i = 0; i<mem_log[_i][2]; i++)
+					{
+						_of.push(_o1[i]);
+						_of.push(_o2[i]);
+						if (i != mem_log[_i][2]-1)
+							{_of.push(_o2[i+1]); _of.push(_o2[i+1]); _of.push(_o1[i+1]); _of.push(_o1[i]);}
+					}
+					m_objs_loadPoints(packObj(_of));
+					link_obj_i = 0; link_lock = 0;
+					break;
+
+				case 2:
+					for (var i = 0; i<mem_log[_i][2]; i++)
+					{
+						_of.push(_o1[i]);
+						_of.push(_o2[i]);
+						if (i != mem_log[_i][2]-1)
+							{_of.push(_o2[i+1]); _of.push(_o1[i]); _of.push(_o1[i+1]); _of.push(_o2[i+1]);}
+					}
+					m_objs_loadPoints(packObj(_of));
+					link_obj_i = 0; link_lock = 0;
+					break;
 			}
-			link_obj_i = 0; link_lock = 0;
 			break;
 	}
 }
@@ -1106,43 +1177,37 @@ function drawOverlay(init_dat)
 	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
 	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
-	// Maybe use
-	// document.getElementsByClassName('stn_cir').item(0).style
-	// or
-	// var elements = document.querySelectorAll('.classhere');
-
     if (!mouseLock)
     {
-    	var menu_inputs = document.querySelectorAll('.stn_');
+
+
+    	
         menu_inputs.forEach(function(e) {e.style.display = "block";});
 
 
-    	// Large back pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
-    	
-    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+1, menu_q_pos[1]+24, 383, 598);
+		// Large back pan
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-10, menu_q_pos[1], 400, 633);
 
-    	///////////////////////////////
+		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+1, menu_q_pos[1]+24, 383, 598);
 
-    	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
+		///////////////////////////////
 
-    	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+230, 170, 183);
+		// Medium1 pan
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
 
-    	// Medium1 pan
-    	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+30, 185, 183);
+		// Medium1 pan
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+230, 170, 183);
 
-    	///////////////////////////////
+		// Medium1 pan
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+30, 185, 183);
+
+		///////////////////////////////
 
 		// Large back pan
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+398, menu_q_pos[1], 180, 633);
 
-    	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 162, 598);
-    	//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+411, menu_q_pos[1]+24, 159, 598);
-
-
-
+		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+404, menu_q_pos[1]+24, 162, 598);
+		//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+411, menu_q_pos[1]+24, 159, 598);
 
 
 
@@ -1174,6 +1239,12 @@ function drawOverlay(init_dat)
 
 		// While in menu with low call rate i'll set values here:
 
+		/*========================================================*/
+		/*================--------------------------==============*/
+		/*================----- SET TOOL VALUES ----==============*/
+		/*================--------------------------==============*/
+		/*========================================================*/
+
 		stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value); // Fix so that any float can be used....
 		stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
 		stn_cir_tool[2] = parseFloat(document.getElementById("stn_cir_o").value);
@@ -1184,7 +1255,6 @@ function drawOverlay(init_dat)
 
     } else {
 
-    	var menu_inputs = document.querySelectorAll('.stn_');
         menu_inputs.forEach(function(e) {e.style.display = "none";});
     }
 
@@ -1195,12 +1265,13 @@ function drawOverlay(init_dat)
 	
 
 	document.getElementById("fileInput").style.position = "absolute";
-	document.getElementById("fileInput").style.left = "174px";
+	document.getElementById("fileInput").style.left = (menu_keys_pos[0]+15)+"px";
 	document.getElementById("fileInput").style.top = (62+menu_controls_lock*141)+"px";
 
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, 155, 10, 410, 88+menu_controls_lock*141);
 
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, 11, 10, 138, 25+m_objs.length*15);
+	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_keys_pos[0], menu_keys_pos[1], 410, 88+menu_controls_lock*141);
+
+	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_obj_pos[0], menu_obj_pos[1], 138, 25+m_objs.length*15);
 
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, -5, -5, 1, 1); // SUPER HOT FIX for panel 1px border. MAKES. ZERO. SENSE. I have tried everything this is actually globally broken right now.
 
@@ -1208,24 +1279,24 @@ function drawOverlay(init_dat)
 	//drawRect(ctx_o, rgba_gray, 11, 10, 190, 25+m_objs.length*15);
 	//drawRectFrame(ctx_o, rgba_lgray, 11, 10, 190, 25+m_objs.length*15);
 
-	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", 174, 34);
-	drawText(ctx_o, rgba_otext, "right", "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", 548, 34);
-	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", 174, 49);
-	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", 548, 49);
+	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", menu_keys_pos[0]+15, 34);
+	drawText(ctx_o, rgba_otext, "right", "aim[" + init_dat.data[mem_log[1][0]].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+1].toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
+	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
+	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", menu_keys_pos[0]+398, 49);
 
 	if (menu_controls_lock)
 	{
-		drawText(ctx_o, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), X(down), R(plane)", 174, 69);
-		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", 174, 84);
-		drawText(ctx_o, rgba_otext, "left", "Scroll(expand), F(place point), Y(teleport), P(save)", 174, 99);
-		drawText(ctx_o, rgba_otext, "left", "Scroll+LOCK(vert mov), G(ground), RMB(go to pnt)", 174, 114);
-		drawText(ctx_o, rgba_otext, "left", "Scroll+Shift(grid size), E(make obj), B(del obj)", 174, 129);
-		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav), V(mov obj), C(edit obj)", 174, 144);
-		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov), T(dupe obj), Q(menu)", 174, 159);
-		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr), 2(make cir), Z(undo)", 174, 174);
-		drawText(ctx_o, rgba_otext, "left", "L(link objs), 3(scale by dist)", 174, 189);
+		drawText(ctx_o, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), B(down), R(plane)", menu_keys_pos[0]+16, 69);
+		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov), Ctrl(mouse), Middle Mouse(camera & sku)", menu_keys_pos[0]+16, 84);
+		drawText(ctx_o, rgba_otext, "left", "Scroll(expand), F(place point), Y(teleport), P(save)", menu_keys_pos[0]+16, 99);
+		drawText(ctx_o, rgba_otext, "left", "Scroll+LOCK(vert mov), G(ground), RMB(go to pnt)", menu_keys_pos[0]+16, 114);
+		drawText(ctx_o, rgba_otext, "left", "Scroll+Shift(grid size), E(make obj), X(del obj)", menu_keys_pos[0]+16, 129);
+		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav), V(mov obj), C(edit obj)", menu_keys_pos[0]+16, 144);
+		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov), T(dupe obj), Q(menu)", menu_keys_pos[0]+16, 159);
+		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr), 2(make cir), Z(undo)", menu_keys_pos[0]+16, 174);
+		drawText(ctx_o, rgba_otext, "left", "L(link objs), 3(scale by dist)", menu_keys_pos[0]+16, 189);
 	} else {
-		drawText(ctx_o, "right", rgba_otext, "[M][keys]", 548, 80);
+		drawText(ctx_o, "right", rgba_otext, "[M][keys]", menu_keys_pos[0]+398, 80);
 	}
 
     if (!mouseLock)
@@ -1236,7 +1307,7 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "[  off  ]", menu_q_pos[0]+23, menu_q_pos[1]+177);
 
 		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+250);
-		drawText(ctx_o, rgba_otext, "left", "[NO FUNCTION YET]", menu_q_pos[0]+23, menu_q_pos[1]+265);
+
 		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+302);
 		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+340);
 		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+378);
@@ -1251,16 +1322,23 @@ function drawOverlay(init_dat)
 	for (var i = 0; i < m_objs.length; i++)
 	{
 		//drawText(ctx_o, "objAddr[" + mem_log[i][0] + "]", 30, 34+i*15); //, 
-		if (i<=world_obj_count) {drawText(ctx_o, rgba_dtext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
-		if (i>world_obj_count) {drawText(ctx_o, rgba_otext, "left", "objSize[" + mem_log[i][1] + "]", 44, 34+i*15);} 
-		if (i==obj_cyc) {drawText(ctx_o, rgba_otext, "left", "->", 25, 34+i*15);} // drawText(ctx_o, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
+		if (i<=world_obj_count) {drawText(ctx_o, rgba_dtext, "left", "[" + mem_log[i][1] + "]", menu_obj_pos[0]+23, 34+i*15); drawText(ctx_o, rgba_dtext, "left", "[" + mem_log[i][2] + "]", menu_obj_pos[0]+79, 34+i*15);} 
+		if (i>world_obj_count)  {drawText(ctx_o, rgba_otext, "left", "[" + mem_log[i][1] + "]", menu_obj_pos[0]+23, 34+i*15); drawText(ctx_o, rgba_otext, "left", "[" + mem_log[i][2] + "]", menu_obj_pos[0]+79, 34+i*15);} 
+		if (i==obj_cyc) {drawText(ctx_o, rgba_otext, "left", "[", menu_obj_pos[0]+7, 34+i*15); drawText(ctx_o, rgba_otext, "left", "]", menu_obj_pos[0]+123, 34+i*15);} // drawText(ctx_o, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
 	}
 
 
-	//drawTriangle(ctx_o, 400, 500, 700, 600, 500, 700, rgba_r);
-
 
 }
+
+	// Pluggers.
+	// p1x : m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc
+	// p1y : m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_wc
+		// p2x : m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc
+		// p2y : m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_wc
+			// p3x : m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc
+			// p3y : m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_wc
+
 
 function drawIt()
 {
@@ -1275,19 +1353,9 @@ function drawIt()
 		if (stn_draw[1])
 		{
 			if (i>world_obj_count)
-			{
-				//for (var k = 0; k<(mem_log[i][1]/4 - (mem_log[i][1]/4)%3); k+=3)
-				for (var k = 0; k<Math.floor(mem_log[i][1]/12); k++)
+			{	
+				for (var k = 0; k<Math.floor(mem_log[i][3]); k++)
 				{
-					// p1x : m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc
-					// p1y : m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_wc
-
-					// p2x : m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc
-					// p2y : m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_wc
-
-					// p3x : m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc
-					// p3y : m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_wc
-
 					if (m1.data[12*k+mem_log[i][0]+3]>0 && m1.data[12*k+mem_log[i][0]+7]>0 && m1.data[12*k+mem_log[i][0]+11]>0)
 					{
 						drawTriangle(ctx, m1.data[12*k+mem_log[i][0]]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+4]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+5]*s_fov+in_win_hc, m1.data[12*k+mem_log[i][0]+8]*s_fov+in_win_wc, m1.data[12*k+mem_log[i][0]+9]*s_fov+in_win_hc, rgbas_tri[k%3]);
@@ -1296,7 +1364,7 @@ function drawIt()
 			}
 		}
 
-		for (var j = 0; j<mem_log[i][1]/4; j++) // j finds vertex
+		for (var j = 0; j<mem_log[i][2]; j++) // j finds vertex
 		{
 			if (m1.data[4*j+mem_log[i][0]+3] > 0 && m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
@@ -1304,13 +1372,11 @@ function drawIt()
 
 				if (stn_draw[0])
 				{
-						if (i>world_obj_count && j != mem_log[i][1]/4-1)
+						if (i>world_obj_count && j != mem_log[i][2]-1)
 						{
 							if (i==obj_cyc || i==link_obj_i) {
 								drawLine(ctx, rgbas_link[link_lock], 1.0, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);
 							} else {
-
-								// test draw tri here
 								drawLine(ctx,rgba_w, 1, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);
 							}
 							//} else {drawLine(ctx,rgba_w, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
@@ -1318,7 +1384,7 @@ function drawIt()
 				}
 
 				if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
-				if (i == 2 && j != mem_log[i][1]/4-1) {drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
+				if (i == 2 && j != mem_log[i][2]-1) {drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_log[i][0]+1]*s_fov+in_win_hc);}
 				if (i==1) {
 				fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
 				
@@ -1327,7 +1393,8 @@ function drawIt()
 
 
 
-			if (m1.data[4*j+mem_log[i][0]+3] > 0)
+			// if (m1.data[4*j+mem_log[i][0]+3] > 0)
+			if (i>2)
 			{
 				// if (i > 2)
 				// {
@@ -1335,7 +1402,8 @@ function drawIt()
 				// 	if (j == mem_log[i][1]/4-1) {drawText(ctx, "END " + j, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc-32, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc-18);}
 				// }
 
-				if (i>2)
+				// if (i>2)
+				if (m1.data[4*j+mem_log[i][0]+3] > 0)
 				{
 					drawDot(ctx, rgbas[pln_cyc], 1, m1.data[4*j+mem_log[i][0]]*s_fov+in_win_wc, m1.data[4*j+mem_log[i][0]+1]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
 				}
@@ -1346,19 +1414,16 @@ function drawIt()
 	// Draw unpacked verts
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
-		for (var j = 0; j<mem_t_log[i][1]/4; j++) // fix me?
+		if (m1.data[mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
+		// if (1) // Clipping off
 		{
-			if (m1.data[4*j+mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4*(j+1)+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
-			// if (1) // Clipping off
+			drawDot(ctx, rgba_w, 2, m1.data[mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, 1/Math.pow((m1.data[mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
+			if (i == m_t_objs.length-1)
 			{
-				drawDot(ctx, rgba_w, 2, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, 1/Math.pow((m1.data[4*j+mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
-				if (i == m_t_objs.length-1)
-				{
-					drawText(ctx, rgba_otext, "left", "END " + i, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-17, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);
-					} else {
-					drawLine(ctx, rgba_b, 1.3, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, m1.data[4*(j+1)+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4*(j+1)+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc);
-					if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, m1.data[4*j+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-3, m1.data[4*j+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);}
-				}
+				drawText(ctx, rgba_otext, "left", "END " + i, m1.data[mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-17, m1.data[mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);
+				} else {
+				drawLine(ctx, rgba_b, 1.3, m1.data[mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc, m1.data[4+mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc, m1.data[4+mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc);
+				if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, m1.data[mem_t_log[i][0]+mem_sum]*s_fov+in_win_wc-3, m1.data[mem_t_log[i][0]+1+mem_sum]*s_fov+in_win_hc-18);}
 			}
 		}
 	}
@@ -1377,6 +1442,7 @@ function drawIt()
 } // END OF drawIt()
 
 
+
 /*
 	__/\\\________/\\\__/\\\\\\\\\\\\\\\__/\\\______________/\\\__________________________/\\\\\\\\\_____        
 	 _\/\\\_______\/\\\_\/\\\///////////__\/\\\_____________\/\\\________________________/\\\///////\\\___       
@@ -1393,7 +1459,7 @@ function Compute(init_dat)
 {
 	if (key_map["3"] && runEvery(300)) {expand_obj(obj_cyc);}
 
-	if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
+	if (key_map.l && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
 
 	if (key_map.enter && runEvery(100))
 	{
@@ -1468,13 +1534,6 @@ function Compute(init_dat)
 		}
 	}
 
-				// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-				// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-				// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
-				// _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-				// _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-				// _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
-
 	// REMOVE THIRD 2D VALUE WTF AM I DOING
 
 	if (key_map.tab && runEvery(75))
@@ -1484,7 +1543,7 @@ function Compute(init_dat)
 		{
 			_t1 = [0, 0, 0];
 			if (i==world_obj_count) {_t1 = add3(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1], init_dat.data[mem_log[i][0]+2]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
-			for (var k = 0; k<mem_log[i][1]/4; k++)
+			for (var k = 0; k<mem_log[i][2]; k++)
 			{
 				_t1 = add3(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1], init_dat.data[4*k+mem_log[i][0]+2]]);
 			}
@@ -1502,7 +1561,9 @@ function Compute(init_dat)
 
 
 	// Delete obj by obj cycle & fix memory
-	if (!trns_lock && key_map.b && runEvery(300-key_map.shift*180) && obj_cyc > world_obj_count) {del_obj(obj_cyc);}
+	if (!trns_lock && key_map.x && runEvery(300-key_map.shift*180) && obj_cyc > world_obj_count) {del_obj(obj_cyc);}
+
+	if (key_map.v && runEvery(350)) {trans_obj(obj_cyc);}
 
 	if (key_map.m && runEvery(300)) {menu_tog_controls();}
 
@@ -1519,13 +1580,12 @@ function Compute(init_dat)
 	if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
 	if (key_map.r && runEvery(200)) {if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}}
-	// if (key_map.q && runEvery(200)) {if (pln_cyc==0) {pln_cyc=2} else {pln_cyc-=1;}}
 	if (key_map.q && runEvery(200))
 	{
 		if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;};
 	}
 
-	var keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
+	keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 
 
 	if (keyVec[1] != 0)
@@ -1542,7 +1602,7 @@ function Compute(init_dat)
 	}
 
 	if (key_map[" "]) {player_pos[1] -= 0.3*(1+key_map.shift*5);}  // r u 4? srs mane key_map[" "]
-	if (key_map.x) {player_pos[1] += 0.3*(1+key_map.shift*5);}
+	if (key_map.b) {player_pos[1] += 0.3*(1+key_map.shift*5);}
 	
 
 
@@ -1616,6 +1676,7 @@ function Compute(init_dat)
 			- reflected point is found moving back toward plane, and again in the same direction...
 
 		or go twice distance to _inter and return to plane instead? way easier. Idk gotta review all the linear algebra again.
+		There's probably a way to just do this with matrices and it'll be magic.
 	*/
 
 
@@ -1649,39 +1710,9 @@ function Compute(init_dat)
 
 
 
-	if (!isNaN( _inter[0])) // Fix nightmare here. I need a real plan first not just random tests
+	if (!isNaN( _inter[0]))
 	{
 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
-
-
-			// switch(pln_cyc)
-			// {
-			// 	case 0:
-			// 		_inter_rnd = [_lp[0], roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];
-			// 		break;
-			// 	case 1:
-			// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), _lp[1], roundTo(_lp[2], grid_scale_f)];
-			// 		break;
-			// 	case 2:
-			// 		_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), _lp[2]];
-			// 		break;
-			// }
-
-			// switch(pln_cyc)
-			// {
-			// 	case 0:
-			// 		_lp[0] = _lp[0];
-			// 		_lp[1] = _inter[1];
-			// 		_lp[2] = _inter[2];
-			// 	case 1:
-			// 		_lp[0] = _inter[0];
-			// 		_lp[1] = _lp[1];
-			// 		_lp[2] = _inter[2];
-			// 	case 2:
-			// 		_lp[0] = _inter[0];
-			// 		_lp[1] = _inter[1];
-			// 		_lp[2] = _lp[2];
-			// }
 
 
 		if (key_map.lmb && mouseLock)
@@ -1693,8 +1724,6 @@ function Compute(init_dat)
 			_lp_world[1] = _inter_rnd[1];
 			_lp_world[2] = _inter_rnd[2];
 		}
-
-
 
 		// Place point
 		if (key_map.f && runEvery(150))
@@ -1734,11 +1763,7 @@ function Compute(init_dat)
 
 		}
 
-		if (key_map.v && runEvery(350))
-		{
-			trans_obj(obj_cyc);
-			//m_obj_offs[obj_cyc] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
-		}
+		
 
 	}
 
@@ -1904,22 +1929,8 @@ function Compute(init_dat)
 		}
 
 	}`);	
-
-
-	// drawIt();
-	//return(init_dat);
-
-
 } // End of Compute()
 
-
-//function runTime()
-//{
-
-	//Compute(m1);
-	//drawIt();
-	//requestAnimationFrame(runTime);
-//}
 
 
 function menuTime()
@@ -1930,7 +1941,6 @@ function menuTime()
 
 document.addEventListener("DOMContentLoaded", function(event)
 {
-
 						/*-- GET&SET SCREEN DIMENSIONS --\
 						\-------------------------------*/
 
@@ -1942,19 +1952,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
-	document.getElementById("stn_draw_l").checked = true;
-	document.getElementById("stn_draw_s").checked = true;
+	menu_q_pos = [30, 240];
+	menu_obj_pos = [in_win_w-150, 10];
+	menu_keys_pos = [11, 10];
 
 	Compute(m1);
-
 	drawIt();
 
-	//runTime();
-
-	//setInterval(runTime, runTime_int); 
 	setInterval(menuTime, menuTime_int); 
 	setInterval(setTitle, title_int); 
-
 });
 
 
