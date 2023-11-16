@@ -18,6 +18,27 @@
 // I have a feeling I can do a lot of what i'm doing here with glsl c. I'm only using it for the view transform. Silly but I can just port my js to c.
 // An octree will open doors to physics/rays/lights.
 
+/*
+
+- research k-d tree / octree
+- ken joy probably made a lecture about it
+
+
+- make god damn phys gun
+
+- make obj spawn list !!!!
+
+- need two tabs
+
+- need square tool
+
+- need rect cube tool
+
+- need way to lock center of obj
+
+
+*/
+
 // Add another layer to mem_log to allow for faster looping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Buy server. How to sync players_struct & m_objs & chat
@@ -37,7 +58,7 @@
 
 
 /*
-	Badly need to implement a structure and system for tools generally such that every tool overrides some keys.
+	Badly need to implement a struct system for tools generally such that every tool overrides some keys.
 		Points should be a point tool (Place point - F)
 		Circle tool (Place circle - F) (I need a later formula to compress a 4 point circle to align with the grid)
 		Center Expand (Start/Finish applied as delta - F)
@@ -161,7 +182,7 @@ var pi2 = 6.2831853071
 
 
 
-var player_look_dir = [0, 0, 0]; //-pi/12
+var player_look_dir = [0, 0, 0];
 var player_look_dir_i = [0, 0, 0];
 var aim_dir = [0.0, 0.0, 0.0];
 var aim_dir_n = [0.0, 0.0, 0.0];
@@ -182,6 +203,7 @@ var w_player_pos = [0.0,0.0,0.0];
 var wf_player_pos = [0.0,0.0,0.0];
 var wt_player_pos = [0.0,0.0,0.0];
 var _inter_rnd = [0.0, 0.0, 0.0];
+var _paint_track = [0.0, 0.0, 0.0];
 
 
 
@@ -190,7 +212,7 @@ var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0;
 var grid_scale = 3; var grid_scale_f = 8;
-var trns_lock = 0; var trns_obj_i = 0;
+var trns_lock = 0; var trns_obj_i = 0; var stn_trns = [false, false, false];
 var world_obj_count = 0;
 var menu_controls_lock = 0;
 var link_lock = 0; var link_obj_i = 0;
@@ -199,6 +221,9 @@ var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 var stn_draw = [true, true];
 var stn_cir_tool = [8, 24, 0];
 var stn_link_tool = 2;
+var stn_paint = false;
+var paint_d = 0;
+
 
 var one_time_fix = 1;
 
@@ -387,8 +412,8 @@ onmousemove = function(e)
 			player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 
-	if (player_look_dir[0] > 2*pi) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
-	if (player_look_dir[0] < -2*pi) [player_look_dir[0] = 0.0];
+	if (player_look_dir[0] > pi2) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
+	if (player_look_dir[0] < -pi2) [player_look_dir[0] = 0.0];
 }
 
 
@@ -557,6 +582,11 @@ function dot2(a,b)
 	return a[0]*b[0] + a[1]*b[1];
 }
 
+function add2(a,b)
+{
+	return [a[0]+b[0], a[1]+b[1]];
+}
+
 function add3(a,b)
 {
 	return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
@@ -578,6 +608,8 @@ function len3(a)
 }
 
 function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
+
+function scale2(a,s) {return [a[0]*s, a[1]*s];}
 
 var N = [0,1,0];
 
@@ -1018,9 +1050,9 @@ function trans_obj(_i)
 			_fd = sub(_lp_world, trans_f);
 			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
 			{
-				m_objs[trns_obj_i][i*4] = m_objs[trns_obj_i][i*4]+_fd[0];
-				m_objs[trns_obj_i][i*4+1] = m_objs[trns_obj_i][i*4+1]+_fd[1];
-				m_objs[trns_obj_i][i*4+2] = m_objs[trns_obj_i][i*4+2]+_fd[2];
+				if (!stn_trns[0]) {m_objs[trns_obj_i][i*4] = m_objs[trns_obj_i][i*4]+_fd[0];}
+				if (!stn_trns[1]) {m_objs[trns_obj_i][i*4+1] = m_objs[trns_obj_i][i*4+1]+_fd[1];}
+				if (!stn_trns[2]) {m_objs[trns_obj_i][i*4+2] = m_objs[trns_obj_i][i*4+2]+_fd[2];}
 			}
 				m_obj_offs[trns_obj_i][0] = 0;
 				m_obj_offs[trns_obj_i][1] = 0;
@@ -1083,7 +1115,7 @@ function link_obj(_i, _t)
 						var _ob = [];
 						_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[link_obj_i][i*4], m_objs[link_obj_i][i*4+1], m_objs[link_obj_i][i*4+2], 1];
 						if (i == mem_log[_i][2]-1)
-						{ // Double nested to avoid unnecesarry second call to JSON.stringify()
+						{ // Double nested to avoid unnecesarry second call to JSON.stringify(). Dirty fix.
 							if (_ia != JSON.stringify(_ob))
 							{m_objs_loadPoints(new Float32Array(_ob));}
 						} else {m_objs_loadPoints(new Float32Array(_ob));}
@@ -1198,13 +1230,16 @@ function drawOverlay(init_dat)
 
 		///////////////////////////////
 
-		// Medium1 pan
+		// Circle settings
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
 
-		// Medium1 pan
+		// Link settings
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+230, 170, 183);
 
-		// Medium1 pan
+		// Translation settings
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+230, 185, 183);
+
+		// Draw Settings
 		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+30, 185, 183);
 
 		///////////////////////////////
@@ -1220,28 +1255,31 @@ function drawOverlay(init_dat)
 
 		document.getElementById("stn_cir_d").style.left = (menu_q_pos[0]+101) + "px";
 		document.getElementById("stn_cir_d").style.top = (menu_q_pos[1]+80) + "px";
-
 		document.getElementById("stn_cir_s").style.left = (menu_q_pos[0]+101) + "px";
 		document.getElementById("stn_cir_s").style.top = (menu_q_pos[1]+118) + "px";
-
 		document.getElementById("stn_cir_o").style.left = (menu_q_pos[0]+101) + "px";
 		document.getElementById("stn_cir_o").style.top = (menu_q_pos[1]+156) + "px";
 
 		document.getElementById("stn_link_1").style.left = (menu_q_pos[0]+114) + "px";
 		document.getElementById("stn_link_1").style.top = (menu_q_pos[1]+280) + "px";
-
 		document.getElementById("stn_link_2").style.left = (menu_q_pos[0]+114) + "px";
 		document.getElementById("stn_link_2").style.top = (menu_q_pos[1]+318) + "px";
-
 		document.getElementById("stn_link_3").style.left = (menu_q_pos[0]+114) + "px";
 		document.getElementById("stn_link_3").style.top = (menu_q_pos[1]+356) + "px";
 
 		document.getElementById("stn_draw_l").style.left = (menu_q_pos[0]+308) + "px";
 		document.getElementById("stn_draw_l").style.top = (menu_q_pos[1]+80) + "px";
-
 		document.getElementById("stn_draw_s").style.left = (menu_q_pos[0]+308) + "px";
 		document.getElementById("stn_draw_s").style.top = (menu_q_pos[1]+118) + "px";
+		document.getElementById("stn_paint").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_paint").style.top = (menu_q_pos[1]+156) + "px";
 
+		document.getElementById("stn_trns_x").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_trns_x").style.top = (menu_q_pos[1]+280) + "px";
+		document.getElementById("stn_trns_y").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_trns_y").style.top = (menu_q_pos[1]+318) + "px";
+		document.getElementById("stn_trns_z").style.left = (menu_q_pos[0]+308) + "px";
+		document.getElementById("stn_trns_z").style.top = (menu_q_pos[1]+356) + "px";
 
 		// While in menu with low call rate i'll set values here:
 
@@ -1251,13 +1289,18 @@ function drawOverlay(init_dat)
 		/*================--------------------------==============*/
 		/*========================================================*/
 
-		stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value); // Fix so that any float can be used....
+		stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value);
 		stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
 		stn_cir_tool[2] = parseFloat(document.getElementById("stn_cir_o").value);
 
 		stn_draw[0] = document.getElementById("stn_draw_l").checked;
 		stn_draw[1] = document.getElementById("stn_draw_s").checked;
 
+		stn_paint = document.getElementById("stn_paint").checked;
+
+		stn_trns[0] = document.getElementById("stn_trns_x").checked;
+		stn_trns[1] = document.getElementById("stn_trns_y").checked;
+		stn_trns[2] = document.getElementById("stn_trns_z").checked;
 
     } else {
 
@@ -1313,7 +1356,6 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "[  off  ]", menu_q_pos[0]+23, menu_q_pos[1]+177);
 
 		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+250);
-
 		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+302);
 		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+340);
 		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+378);
@@ -1321,6 +1363,12 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "[draw settings]", menu_q_pos[0]+213, menu_q_pos[1]+50);
 		drawText(ctx_o, rgba_otext, "left", "[  lines  ]", menu_q_pos[0]+213, menu_q_pos[1]+101);
 		drawText(ctx_o, rgba_otext, "left", "[ surface ]", menu_q_pos[0]+213, menu_q_pos[1]+140);
+		drawText(ctx_o, rgba_otext, "left", "[  paint  ]", menu_q_pos[0]+213, menu_q_pos[1]+177);
+
+		drawText(ctx_o, rgba_otext, "left", "[lock x-y-z][V]", menu_q_pos[0]+213, menu_q_pos[1]+250);
+		drawText(ctx_o, rgba_otext, "left", "[    X    ]", menu_q_pos[0]+213, menu_q_pos[1]+302);
+		drawText(ctx_o, rgba_otext, "left", "[    Y    ]", menu_q_pos[0]+213, menu_q_pos[1]+340);
+		drawText(ctx_o, rgba_otext, "left", "[    Z    ]", menu_q_pos[0]+213, menu_q_pos[1]+378);
 	}
 
 
@@ -1479,6 +1527,7 @@ function Compute(init_dat)
 		if (!isNaN(stn_cir_tool[0]) && !isNaN(stn_cir_tool[1]) && !isNaN(stn_cir_tool[2])) {make_cir_obj(Math.floor(stn_cir_tool[0]), stn_cir_tool[1], stn_cir_tool[2], pln_cyc);}
 	}
 
+	// This needs a system wtf
 	if (trns_lock)
 	{
 		if (!isNaN(mem_log[trns_obj_i][1]))
@@ -1486,9 +1535,9 @@ function Compute(init_dat)
 			var _fd = sub(_lp_world, trans_f);
 			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
 			{
-				m_obj_offs[trns_obj_i][0] = _fd[0];
-				m_obj_offs[trns_obj_i][1] = _fd[1];
-				m_obj_offs[trns_obj_i][2] =	_fd[2];
+				if (!stn_trns[0]) {m_obj_offs[trns_obj_i][0] = _fd[0];}
+				if (!stn_trns[1]) {m_obj_offs[trns_obj_i][1] = _fd[1];}
+				if (!stn_trns[2]) {m_obj_offs[trns_obj_i][2] =	_fd[2];}
 			}
 		}
 	}
@@ -1540,21 +1589,22 @@ function Compute(init_dat)
 		}
 	}
 
-	// REMOVE THIRD 2D VALUE WTF AM I DOING
-
 	if (key_map.tab && runEvery(75))
 	{
-		var _f = []; var _n_sku = 0; var _t1 = [0, 0, 0]; var _d = 0; var _t2; 
+		var _f = []; var _n_sku = 0; var _t1 = [0, 0]; var _d = 0; var _t2; 
 		for (var i = world_obj_count; i<mem_log.length; i++)
 		{
-			_t1 = [0, 0, 0];
-			if (i==world_obj_count) {_t1 = add3(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1], init_dat.data[mem_log[i][0]+2]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
+			_t1 = [0, 0];
+			if (i==world_obj_count) {_t1 = add2(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
 			for (var k = 0; k<mem_log[i][2]; k++)
 			{
-				_t1 = add3(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1], init_dat.data[4*k+mem_log[i][0]+2]]);
+				//_t1 = add3(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1], init_dat.data[4*k+mem_log[i][0]+2]]);
+				_t1 = add2(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1]]);
 			}
-			var _l = scale(_t1, 1/(mem_log[i][1]));
-			_t2 = Math.pow(Math.pow(_l[0], 2) + Math.pow(_l[1], 2), 0.5);
+			var _l = scale2(_t1, 1/(mem_log[i][2]));
+			
+			_t2 = Math.pow(_l[0]*_l[0] + _l[1]*_l[1], 0.5);
+
 			if (_t2 < _f)
 			{
 				_f = _t2;
@@ -1659,7 +1709,7 @@ function Compute(init_dat)
 
 	// Use gpu here w/ the right size array32. Or can I even?
 
-	if (one_time_fix || (key_map.lmb || key_map.f || key_map.y))
+	if (one_time_fix || key_map.lmb || key_map.f || key_map.y)
 	{
 		_oh = dot(player_pos,[0,1,0,1]);
 		f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
@@ -1694,8 +1744,8 @@ function Compute(init_dat)
 
 		// console.log(g_fp);
 
-		if (key_map.h && runEvery(300))
-		{
+		//if (key_map.h && runEvery(300))
+		//{
 
 			//g_dtp = dot(sub(_inter, player_pos), _nplns); // Might have to swap sign?
 			//g_fp = add3(scale(sub(_inter, player_pos) ,2), scale(_nplns,-2*g_dtp));
@@ -1705,7 +1755,7 @@ function Compute(init_dat)
 			//player_pos[1] = g_fp[1];
 			//player_pos[2] = g_fp[2];
 			
-		}
+		//}
 
 	// m_objs[0][0] = _inter[0];
 	// m_objs[0][1] = _inter[1];
@@ -1723,20 +1773,33 @@ function Compute(init_dat)
 
 		if (key_map.lmb && mouseLock)
 		{	
-			_lp[0] = _inter[0];
-			_lp[1] = _inter[1];
-			_lp[2] = _inter[2];
-			_lp_world[0] = _inter_rnd[0];
-			_lp_world[1] = _inter_rnd[1];
-			_lp_world[2] = _inter_rnd[2];
+			switch(stn_paint)
+			{
+				case false:
+					_lp[0] = _paint_track[0] = _inter[0];
+					_lp[1] = _paint_track[0] = _inter[1];
+					_lp[2] = _paint_track[0] = _inter[2];
+					_lp_world[0] = _inter_rnd[0];
+					_lp_world[1] = _inter_rnd[1];
+					_lp_world[2] = _inter_rnd[2];
+					break;
+				case true:
+					paint_d = len3(sub(_inter, _paint_track));
+					if (paint_d > 1)
+					{
+						m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
+						_paint_track[0] = _inter[0];
+						_paint_track[1] = _inter[1];
+						_paint_track[2] = _inter[2];
+					}
+					break;
+			}
+
 		}
+		if (stn_paint && key_map.lmb == false) {mem_t_mov();} // Finish draw !
 
 		// Place point
-		if (key_map.f && runEvery(150))
-		{
-			var np = new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]);
-			m_t_objs_loadPoint(np);
-		}
+		if (key_map.f && runEvery(150)) {m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));}
 
 		// Return to ground
 		if (key_map.g && runEvery(200))
@@ -1751,6 +1814,10 @@ function Compute(init_dat)
 			player_pos[0] = _inter[0];
 			if (!lock_vert_mov) {player_pos[1] = _inter[1]-14}; // Omit when vert mov locked
 			player_pos[2] = _inter[2];
+
+			// Test flippero
+			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi;
+
 		}
 
 		if (key_map.t && runEvery(350))
