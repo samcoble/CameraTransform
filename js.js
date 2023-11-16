@@ -315,7 +315,12 @@ function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
     c.fill();
 }
 
-
+function setMenuPos()
+{
+	menu_q_pos = [30, 240];
+	menu_obj_pos = [in_win_w-150, 10];
+	menu_keys_pos = [11, 10];
+}
 
 
 						/*-- Key & Mouse event capture --\
@@ -927,6 +932,7 @@ window.addEventListener('resize', function()
 	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
+	setMenuPos();
 });
 
 
@@ -1952,9 +1958,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
-	menu_q_pos = [30, 240];
-	menu_obj_pos = [in_win_w-150, 10];
-	menu_keys_pos = [11, 10];
+	setMenuPos();
 
 	Compute(m1);
 	drawIt();
