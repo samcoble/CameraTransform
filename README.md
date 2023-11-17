@@ -6,6 +6,8 @@ Experimentation with the Camera Transform.
 
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
+Give it a go!  memspc.xyz
+
 ~~This project will need to be refactored before I continue adding features.~~ I'm going to continue to add new features and work on building structures that carry over to a better engine in the future. WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. So far this app uses about 3% of my GPU... For this application the back end webGL will be very small as it's only job will be to provide allocation and manipulation of Float32Arrays made accessible to javascript. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I would prefer to write this in C++ as the pointer system is very good for this type of project but html&javascript provide tremendous accessibility.
 
 This project is meant to be an endless exercise of mathematics with the goal of developing intuition for the camera transform and the corresponding pipeline. 
