@@ -258,6 +258,11 @@ var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
 var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
 var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
 
+// var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
+// var rgba_w_tri2 = "rgba(0, 225, 0, 1)";
+// var rgba_w_tri3 = "rgba(0, 0, 195, 1)";
+// var rgba_w_tri4 = "rgba(165, 0, 165, 1)";
+
 var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
 
 var _oh, f_look, f_dist, _inter;
@@ -608,7 +613,7 @@ function len3(a)
 }
 
 function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
-
+function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
 function scale2(a,s) {return [a[0]*s, a[1]*s];}
 
 var N = [0,1,0];
@@ -644,6 +649,15 @@ function runEvery(_ms) // works 100 honest #1 fav js fn rn
 	return (_r);
 }
 
+function meanctr_obj(_i)
+{
+	var _pm = [m_objs[_i][0], m_objs[_i][1], m_objs[_i][2]];
+	for (var j=1; j<mem_log[_i][2]; j++)
+	{
+		_pm = add3([m_objs[_i][j*4], m_objs[_i][j*4+1], m_objs[_i][j*4+2]], _pm);
+	}
+	return scale(_pm, 1/(mem_log[_i][1]/4));
+}
 
 
 						/*-- Placeholder 4d data generation --\
@@ -1033,6 +1047,32 @@ function del_obj(_i)
 	}
 }
 
+function findbyctr_obj()
+{
+	var _f = []; var _n_sku = 0; var _t1 = [0, 0]; var _d = 0; var _t2; 
+	for (var i = world_obj_count; i<mem_log.length; i++)
+	{
+		_t1 = [0, 0];
+		if (i==world_obj_count) {_t1 = add2(_t1, [m1.data[mem_log[0][0]], m1.data[mem_log[i][0]+1]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
+		for (var k = 0; k<mem_log[i][2]; k++)
+		{
+			//_t1 = add3(_t1, [m1.data[4*k+mem_log[i][0]], m1.data[4*k+mem_log[i][0]+1], m1.data[4*k+mem_log[i][0]+2]]);
+			_t1 = add2(_t1, [m1.data[4*k+mem_log[i][0]], m1.data[4*k+mem_log[i][0]+1]]);
+		}
+		var _l = scale2(_t1, 1/(mem_log[i][2]));
+		
+		_t2 = Math.pow(_l[0]*_l[0] + _l[1]*_l[1], 0.5);
+
+		if (_t2 < _f)
+		{
+			_f = _t2;
+			_n_sku = i;
+			_d = 1;
+		}
+	}
+	return _n_sku;
+}
+
 function trans_obj(_i)
 {
 	if (_i<=world_obj_count) {return;}
@@ -1151,6 +1191,10 @@ function link_obj(_i, _t)
 	}
 }
 
+
+
+
+
 function expand_obj(_i)
 {
 	switch(exp_lin_lock)
@@ -1163,16 +1207,17 @@ function expand_obj(_i)
 			exp_lin_lock = 1;
 			break;
 		case 1:
-
-			var _pm = [m_objs[exp_lin_obj_i][0], m_objs[exp_lin_obj_i][1], m_objs[exp_lin_obj_i][2]];
-			for (var j=1; j<mem_log[exp_lin_obj_i][1]/4; j++)
-			{
-				_pm = add3([m_objs[exp_lin_obj_i][j*4], m_objs[exp_lin_obj_i][j*4+1], m_objs[exp_lin_obj_i][j*4+2]], _pm);
-			}
-
-			var _mc = scale(_pm, 1/(mem_log[exp_lin_obj_i][1]/4));
+			var _mc = meanctr_obj(exp_lin_obj_i);
 			var _d = sub(_lp_world, _mc);
+			var _w = sub(_lp_world, exp_f);
 			var _s = Math.pow(len3(sub(_lp_world, exp_f)),1/3);
+
+			for (var k=0; k<_w.length; k++) {if(_w[k]==0){_w[k]=1;}else{_w[k] = _w[k]/_s;}}
+			// for (var k=0; k<_w.length; k++) {if(_w[k]==0){_w[k]=1;}}
+
+			//console.log(_w);
+
+			//var _rs = []; var _re = []; var _rf = [];
 
 			for (var i=0; i<mem_log[exp_lin_obj_i][1]/4; i++)
 			{
@@ -1181,9 +1226,18 @@ function expand_obj(_i)
 				//c--------------------0==========x
 				//c==========x---------0
 
-				m_objs[exp_lin_obj_i][i*4] = _mc[0]+_s*(m_objs[exp_lin_obj_i][i*4]-_mc[0]);
-				m_objs[exp_lin_obj_i][i*4+1] = _mc[1]+_s*(m_objs[exp_lin_obj_i][i*4+1]-_mc[1]);
-				m_objs[exp_lin_obj_i][i*4+2] = _mc[2]+_s*(m_objs[exp_lin_obj_i][i*4+2]-_mc[2]);
+				// console.log([m_objs[exp_lin_obj_i][i*4]-_mc[0], m_objs[exp_lin_obj_i][i*4+1]-_mc[1], m_objs[exp_lin_obj_i][i*4+2]-_mc[1]]);
+				// console.log(_mc);
+				//_rs = [m_objs[exp_lin_obj_i][i*4]-_mc[0], m_objs[exp_lin_obj_i][i*4+1]-_mc[1], m_objs[exp_lin_obj_i][i*4+2]-_mc[1]];
+
+				// _rs = [m_objs[exp_lin_obj_i][i*4], m_objs[exp_lin_obj_i][i*4+1], m_objs[exp_lin_obj_i][i*4+2]];
+				// _re = scale3(_rs, 1/len3(_rs));
+				// _rf = 
+				// console.log(_rs);
+
+				m_objs[exp_lin_obj_i][i*4]   = _mc[0] + _w[0]*(m_objs[exp_lin_obj_i][i*4]  -_mc[0]);
+				m_objs[exp_lin_obj_i][i*4+1] = _mc[1] + _w[1]*(m_objs[exp_lin_obj_i][i*4+1]-_mc[1]);
+				m_objs[exp_lin_obj_i][i*4+2] = _mc[2] + _w[2]*(m_objs[exp_lin_obj_i][i*4+2]-_mc[2]);
 
 			}
 			exp_lin_obj_i = 0; exp_lin_lock = 0;
@@ -1589,30 +1643,11 @@ function Compute(init_dat)
 		}
 	}
 
+
+
 	if (key_map.tab && runEvery(75))
 	{
-		var _f = []; var _n_sku = 0; var _t1 = [0, 0]; var _d = 0; var _t2; 
-		for (var i = world_obj_count; i<mem_log.length; i++)
-		{
-			_t1 = [0, 0];
-			if (i==world_obj_count) {_t1 = add2(_t1, [init_dat.data[mem_log[0][0]], init_dat.data[mem_log[i][0]+1]]); _f = Math.pow(Math.pow(_t1[0], 2) + Math.pow(_t1[1], 2), 0.5);}
-			for (var k = 0; k<mem_log[i][2]; k++)
-			{
-				//_t1 = add3(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1], init_dat.data[4*k+mem_log[i][0]+2]]);
-				_t1 = add2(_t1, [init_dat.data[4*k+mem_log[i][0]], init_dat.data[4*k+mem_log[i][0]+1]]);
-			}
-			var _l = scale2(_t1, 1/(mem_log[i][2]));
-			
-			_t2 = Math.pow(_l[0]*_l[0] + _l[1]*_l[1], 0.5);
-
-			if (_t2 < _f)
-			{
-				_f = _t2;
-				_n_sku = i;
-				_d = 1;
-			}
-		}
-		obj_cyc = _n_sku;
+		obj_cyc = findbyctr_obj();
 	}
 
 
@@ -1866,45 +1901,40 @@ function Compute(init_dat)
 	setData(); // Load all vertices
 
 
-	turbojs.run(init_dat, `void main(void) {
-
-	// if (read().w == 0.0) {
-    //     discard;  // Discard the fragment
-    // }
-
-	commit(vec4(
-		read().x+float(${-player_pos[0]}), 
-		read().y+float(${-player_pos[1]}),
-		read().z+float(${-player_pos[2]}),
-		1.0
-	));
-	}`);
-
-	// Rotate around y-axis
-	turbojs.run(init_dat, `void main(void) {
-	float _yaw = float(${player_look_dir[0]});
-	commit(vec4(
-		cos(_yaw)*read().x+sin(_yaw)*read().z,
-		read().y,
-		cos(_yaw)*read().z-sin(_yaw)*read().x,
-		read().w 
-	));
-	}`);
-
-	// Rotate around x-axis (i can't believe dis)
-	turbojs.run(init_dat, `void main(void) {
-	float _pit = float(${player_look_dir[1]});
-	commit(vec4(
-		read().x,
-		cos(_pit)*read().y-sin(_pit)*read().z,
-		sin(_pit)*read().y+cos(_pit)*read().z,
-		read().w 
-	));
-	}`);
 
 
+turbojs.run(init_dat, `void main(void) {
+    float _yaw = float(${player_look_dir[0]});
+    float _pit = float(${player_look_dir[1]});
 
-	/*
+	vec4 after_tran = vec4(
+		read().x-float(${player_pos[0]}), 
+		read().y-float(${player_pos[1]}),
+		read().z-float(${player_pos[2]}),
+		read().w
+	);
+
+    // Rotate around y-axis (yaw)
+    vec4 after_yaw = vec4(
+        cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
+        after_tran.y,
+        cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
+        after_tran.w
+    );
+
+    // Rotate around x-axis (pitch)
+    vec4 final_result = vec4(
+        after_yaw.x,
+        cos(_pit) * after_yaw.y - sin(_pit) * after_yaw.z,
+        sin(_pit) * after_yaw.y + cos(_pit) * after_yaw.z,
+        after_yaw.w
+    );
+
+    commit(final_result);
+}`);
+
+
+/*
 
 	Define plane w/ [ n . (Q-P) = 0 ]
 
