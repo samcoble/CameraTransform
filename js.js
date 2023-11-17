@@ -1744,6 +1744,45 @@ function Compute(init_dat)
 
 	// Use gpu here w/ the right size array32. Or can I even?
 
+
+	/*
+
+	Define plane w/ [ n . (Q-P) = 0 ]
+
+	After given theta: [ n . (Q-P) = ||N|| ||Q-P|| cos(theta) ]
+	theta: ang between n & Q
+	cos(theta) output pos & neg.
+	Can obtain sign of cos(theta) w/o trig fn call only dot product *** !!!
+
+	Now to obtain intersection w/ plane.
+
+	Say: I = Q1 + t(Q2-Q1)
+
+	d1 = n . (Q1-P)
+	d2 = n . (Q2-P)
+
+	I = Q1 + t(Q2-Q1)
+	I-P = (Q1-P) + t( (Q2-P)-(Q1-P) )
+	n . (I-P) = n . (Q1-P) + t * ( n . (Q2-P) - n . (Q1-P) )    apply subs
+	n . (I-P) = 0 ; on plane
+	0 = d1 + t*(d2 - d1)
+	t = d1 / (d2 - d1)  forget about trig fns bb
+
+	So aprox using a 0.00001
+	P is on plane at center of pin hole.
+	n . (Q-P) = 0 takes P and four n planes 
+
+	Because it's image space prior to horizontal/vertical expansions proportional to depth,
+	[1 0 0] [-1 0 0] [0 1 0] [0 -1 0] are the clipping planes by normal vec
+	Can also clip near and far.
+
+
+	if n . (Q-P) > 0 then Q is "in" <=> z > 0
+	if n . (Q-P) < 0 then Q is "out" <=> z < 0
+	if n . (Q-P) = 0 then Q is "on" <=> z = 0
+	*/
+
+
 	if (one_time_fix || key_map.lmb || key_map.f || key_map.y)
 	{
 		_oh = dot(player_pos,[0,1,0,1]);
@@ -1906,6 +1945,9 @@ function Compute(init_dat)
 turbojs.run(init_dat, `void main(void) {
     float _yaw = float(${player_look_dir[0]});
     float _pit = float(${player_look_dir[1]});
+	#define _S1 1.0000600006
+	#define _S2 7.55682619647
+	#define d 0.112672939
 
 	vec4 after_tran = vec4(
 		read().x-float(${player_pos[0]}), 
@@ -1923,104 +1965,29 @@ turbojs.run(init_dat, `void main(void) {
     );
 
     // Rotate around x-axis (pitch)
-    vec4 final_result = vec4(
+    vec4 after_pit = vec4(
         after_yaw.x,
         cos(_pit) * after_yaw.y - sin(_pit) * after_yaw.z,
         sin(_pit) * after_yaw.y + cos(_pit) * after_yaw.z,
         after_yaw.w
     );
 
-    commit(final_result);
-}`);
+    // Perspective
+	vec4 after_per = vec4(
+		after_pit.x/d,
+		after_pit.y/d,
+		after_pit.z * _S1+_S2,
+		-after_pit.z
+	);
 
-
-/*
-
-	Define plane w/ [ n . (Q-P) = 0 ]
-
-	After given theta: [ n . (Q-P) = ||N|| ||Q-P|| cos(theta) ]
-	theta: ang between n & Q
-	cos(theta) output pos & neg.
-	Can obtain sign of cos(theta) w/o trig fn call only dot product *** !!!
-
-	Now to obtain intersection w/ plane.
-
-	Say: I = Q1 + t(Q2-Q1)
-
-	d1 = n . (Q1-P)
-	d2 = n . (Q2-P)
-
-	I = Q1 + t(Q2-Q1)
-	I-P = (Q1-P) + t( (Q2-P)-(Q1-P) )
-	n . (I-P) = n . (Q1-P) + t * ( n . (Q2-P) - n . (Q1-P) )    apply subs
-	n . (I-P) = 0 ; on plane
-	0 = d1 + t*(d2 - d1)
-	t = d1 / (d2 - d1)  forget about trig fns bb
-
-	So aprox using a 0.00001
-	P is on plane at center of pin hole.
-	n . (Q-P) = 0 takes P and four n planes 
-
-	Because it's image space prior to horizontal/vertical expansions proportional to depth,
-	[1 0 0] [-1 0 0] [0 1 0] [0 -1 0] are the clipping planes by normal vec
-	Can also clip near and far.
-
-
-	if n . (Q-P) > 0 then Q is "in" <=> z > 0
-	if n . (Q-P) < 0 then Q is "out" <=> z < 0
-	if n . (Q-P) = 0 then Q is "on" <=> z = 0
-	*/
-
-
-
-		/*-- Perspective Transfrom --\
-		\---------------------------*/
-
-
-	//${player_look_dir[1]}
-
-	//#define PI 3.1415926538
-	//float a = PI/14.;
-
-	// float n = 0.015;
-	// float f = 500.01;
-
-	//(   read().z * (f+n)/(f-n)+(2.*n*f)/(2.-n)   ),
-
-
-	turbojs.run(init_dat, `void main(void) {
-
-	// if (read().z > 0.0) {
-    //     discard;  // Discard the fragment
-    // }
-	
-	#define _S1 1.0000600006
-	#define _S2 7.55682619647
-	#define d 0.112672939
-
-
-	commit(vec4(
-		(read().x/d),
-		(read().y/d),
-		(read().z * _S1+_S2),
-		(-read().z)
-	));
-	}`);	
-
-	turbojs.run(init_dat, `void main(void) {
-
-	// if (read().x > 0.0) {
-    //     discard;  // Discard the fragment
-    // } 
-
-
-	if (read().w != 0.)
+	// Divide by w
+	if (after_per.w != 0.)
 	{
 		commit(vec4(
-			(read().x/read().w),
-			(read().y/read().w),
-			(read().z/read().w),
-			read().w
+			after_per.x/after_per.w,
+			after_per.y/after_per.w,
+			after_per.z/after_per.w,
+			after_per.w
 			));
 		} else {
 		commit(vec4(
@@ -2029,9 +1996,12 @@ turbojs.run(init_dat, `void main(void) {
 			0,
 			0
 			));
-		}
+	}
 
-	}`);	
+    // commit(final_result);
+}`);
+
+
 } // End of Compute()
 
 
