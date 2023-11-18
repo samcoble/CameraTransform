@@ -2,9 +2,9 @@
 
 
 <!-- <script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script> -->
-<script src="math.min.js"></script>
+<script src="js/math.min.js"></script>
 <!-- <script src="https://turbo.github.io/js/turbo.js"></script> -->
-<script src="turbo.js"></script>
+<script src="js/turbo.js"></script>
 
 
 
@@ -42,7 +42,7 @@
 		height:30px;
 		border: 1px solid rgba(222, 222, 222, 0.3);
 		outline: none;
-		left: -300px; /* To prevent the 1m where you see everything stacked on load */
+		left: -300px; /* To prevent the 1ms where you see everything stacked on load */
 	}
 
 
@@ -77,13 +77,12 @@
 	<canvas id="cv_over" width="1800" height="800" ></canvas>
 	<canvas id="cv" width="1800" height="800" ></canvas>
 	
-	  <input type="file" id="fileInput" autocomplete="off" tabindex="-1" accept=".bin">
+	 <input type="file" id="fileInput" autocomplete="off" tabindex="-1" accept=".bin">
 
-    <input type="text" id="stn_cir_d" class="stn_" class="stn_cir" value="8" autocomplete="off">
-    <input type="text" id="stn_cir_s" class="stn_" class="stn_cir" value="24" autocomplete="off">
-    <input type="text" id="stn_cir_o" class="stn_" class="stn_cir" value="0" autocomplete="off">
+    <input type="text" id="stn_cir_d" class="stn_ stn_cir" value="8" autocomplete="off">
+    <input type="text" id="stn_cir_s" class="stn_ stn_cir" value="24" autocomplete="off">
+    <input type="text" id="stn_cir_o" class="stn_ stn_cir" value="0" autocomplete="off">
 
-    <input type="checkbox" id="stn_paint" class="stn_" autocomplete="off">
     <input type="checkbox" id="stn_link_1" class="stn_link stn_" autocomplete="off">
     <input type="checkbox" id="stn_link_2" class="stn_link stn_" autocomplete="off">
     <input type="checkbox" id="stn_link_3" class="stn_link stn_" autocomplete="off" checked="true">
@@ -93,6 +92,11 @@
     <input type="checkbox" id="stn_trns_y" class="stn_trns stn_" autocomplete="off">
     <input type="checkbox" id="stn_trns_z" class="stn_trns stn_" autocomplete="off">
 
+    <input type="checkbox" id="stn_paint" class="stn_ stn_paint" autocomplete="off">
+    <input type="checkbox" id="stn_paint_inf" class="stn_ stn_paint" autocomplete="off">
+    <input type="text" id="stn_paint_l" class="stn_ stn_paint" value="12" autocomplete="off">
+    <input type="text" id="stn_paint_line_l" class="stn_ stn_paint" value="8" autocomplete="off">
+
 		<!-- Settings input boxes -->
 
 
@@ -100,4 +104,4 @@
 </html>
 
 
-<script src="js.js"></script>
+<script src="js/js.js"></script>
