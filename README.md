@@ -6,7 +6,7 @@ Experimentation with the Camera Transform.
 
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
-Give it a go!  [memspc.xyz](https://memspc.xyz/)
+Give it a go! Sometimes broken entirely. [memspc.xyz](https://memspc.xyz/)
 
 ~~This project will need to be refactored before I continue adding features.~~ I'm going to continue to add new features and work on building structures that carry over to a better engine in the future. WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. So far this app uses about 3% of my GPU... For this application the back end webGL will be very small as it's only job will be to provide allocation and manipulation of Float32Arrays made accessible to javascript. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I would prefer to write this in C++ as the pointer system is very good for this type of project but html&javascript provide tremendous accessibility.
 
@@ -22,6 +22,8 @@ Save & Load FIXED. So far handling any large amount of junk!
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
 
+![MOVE](https://github.com/samcoble/CameraTransform/assets/32228102/ef8d9f11-f2c2-46f8-a2e6-283a431f728d)
+![GRID](https://github.com/samcoble/CameraTransform/assets/32228102/4c6ec41b-14de-440e-a175-2f30474f6f67)
 ![linker](https://github.com/samcoble/CameraTransform/assets/32228102/8a8411a2-cd39-480a-980e-874c6529ecf3)
 ![silly](https://github.com/samcoble/CameraTransform/assets/32228102/7537df5d-1554-4ffe-a317-be004525830f)
 ![Screenshot 2023-11-16 025203](https://github.com/samcoble/CameraTransform/assets/32228102/9da981a7-05ad-4940-b3d9-ebf9aa8188a2)
