@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 
-
 <!-- <script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script> -->
 <script src="js/math.min.js"></script>
 <!-- <script src="https://turbo.github.io/js/turbo.js"></script> -->
 <script src="js/turbo.js"></script>
-
-
-
 
 <style>
 
@@ -32,7 +28,6 @@
 		left: -300px;
 	}
 
-/*	#stn_cir_d, #stn_cir_s, #stn_cir_o, #stn_link_1, #stn_link_2, #stn_link_3*/
 	.stn_
 	{
 		position: absolute;
@@ -43,6 +38,8 @@
 		border: 1px rgba(222, 222, 222, 0.3);
 		outline: none;
 		left: -300px; /* To prevent the 1ms where you see everything stacked on load */
+		background: rgb(111 111 111 / 30%);
+		color: #DDD;
 	}
 
 	input[type="checkbox"]:checked
@@ -61,7 +58,7 @@
 		-moz-appearance: none;
 		appearance: none;
 		outline: 0;
-		background: rgba(222, 222, 222, 0.3);
+		background: rgb(57 57 57 / 30%);
 		width: 40px;
 		height:30px;
 		color: rgba(1, 1, 1, 0);
@@ -71,7 +68,6 @@
 	{
 		display: block;
 	}
-
 
 	/* Canvas Style */
 	#cv, #cv_over
@@ -83,25 +79,20 @@
 		height: 100%;*/
 	}
 
+	#cv
+	{
+		z-index: 0;
+	}
 
-
-#cv
-{
-	z-index: 0;
-}
-
-#cv_over
-{
-	z-index: 1;
-}
-
-
+	#cv_over
+	{
+		z-index: 1;
+	}
 
 </style>
 
 <html id = "html">
 <body>
-
 
 	<canvas id="cv_over" width="1800" height="800" ></canvas>
 	<canvas id="cv" width="1800" height="800" ></canvas>
@@ -125,11 +116,7 @@
     <input type="text" id="stn_paint_l" class="stn_ stn_paint" value="12" autocomplete="off">
     <input type="text" id="stn_paint_line_l" class="stn_ stn_paint" value="8" autocomplete="off">
 
-		<!-- Settings input boxes -->
-
-
 </body>
 </html>
-
 
 <script src="js/js.js"></script>
