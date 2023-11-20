@@ -1,14 +1,14 @@
 
 /*
-	__/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_______________________/\\\\\\\\\\\____/\\\\\\\\\\\\\__________/\\\\\\\\\_        
-	 _\/\\\\\\________/\\\\\\_\/\\\///////////__\/\\\\\\________/\\\\\\_____________________/\\\/////////\\\_\/\\\/////////\\\_____/\\\////////__       
-	  _\/\\\//\\\____/\\\//\\\_\/\\\_____________\/\\\//\\\____/\\\//\\\____________________\//\\\______\///__\/\\\_______\/\\\___/\\\/___________      
-	   _\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\_____\/\\\\///\\\/\\\/_\/\\\_____________________\////\\\_________\/\\\\\\\\\\\\\/___/\\\_____________     
-	    _\/\\\__\///\\\/___\/\\\_\/\\\///////______\/\\\__\///\\\/___\/\\\________________________\////\\\______\/\\\/////////____\/\\\_____________    
-	     _\/\\\____\///_____\/\\\_\/\\\_____________\/\\\____\///_____\/\\\___________________________\////\\\___\/\\\_____________\//\\\____________   
-	      _\/\\\_____________\/\\\_\/\\\_____________\/\\\_____________\/\\\____________________/\\\______\//\\\__\/\\\______________\///\\\__________  
-	       _\/\\\_____________\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_____________\/\\\__/\\\\\\\\\\\\\\\_\///\\\\\\\\\\\/___\/\\\________________\////\\\\\\\\\_ 
-	        _\///______________\///__\///////////////__\///______________\///__\///////////////____\///////////_____\///____________________\/////////__
+__/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\\\\____/\\\\\\\\\\\\\________/\\\\\\\\________/\\\_______/\\\__/\\\________/\\\__/\\\\\\\\\\\\\_        
+ _\/\\\\\\________/\\\\\\_\/\\\///////////__\/\\\\\\________/\\\\\\___/\\\/////////\\\_\/\\\/////////\\\___/\\\///////________\///\\\___/\\\/__\///\\\____/\\\/__\//////////\\\__       
+  _\/\\\//\\\____/\\\//\\\_\/\\\_____________\/\\\//\\\____/\\\//\\\__\//\\\______\///__\/\\\_______\/\\\_/\\\/__________________\///\\\\\\/______\///\\\/\\\/____________/\\\/___      
+   _\/\\\\///\\\/\\\/_\/\\\_\/\\\\\\\\\\\_____\/\\\\///\\\/\\\/_\/\\\___\////\\\_________\/\\\\\\\\\\\\\/_/\\\______________________\//\\\\__________\///\\\/____________/\\\/_____     
+    _\/\\\__\///\\\/___\/\\\_\/\\\///////______\/\\\__\///\\\/___\/\\\______\////\\\______\/\\\/////////__\/\\\_______________________\/\\\\____________\/\\\___________/\\\/_______    
+     _\/\\\____\///_____\/\\\_\/\\\_____________\/\\\____\///_____\/\\\_________\////\\\___\/\\\___________\//\\\______________________/\\\\\\___________\/\\\_________/\\\/_________   
+      _\/\\\_____________\/\\\_\/\\\_____________\/\\\_____________\/\\\__/\\\______\//\\\__\/\\\____________\///\\\__________________/\\\////\\\_________\/\\\_______/\\\/___________  
+       _\/\\\_____________\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_____________\/\\\_\///\\\\\\\\\\\/___\/\\\______________\////\\\\\\\\__/\\\__/\\\/___\///\\\_______\/\\\______/\\\\\\\\\\\\\\\_ 
+        _\///______________\///__\///////////////__\///______________\///____\///////////_____\///__________________\////////__\///__\///_______\///________\///______\///////////////__
 */
 
 
@@ -19,6 +19,9 @@
 // I have a feeling I can do a lot of what i'm doing here with glsl c. I'm only using it for the perspective transform. Silly but I can just port my js to c.
 // I will make a second version of this game/app that accepts data from this one in the future ! I could even embed this game in another game lol.
 
+// If I mark a circle generated as a circle
+
+// Split 
 
 // modulo distributes with switch with for loop ez wow
 /* for ex:
@@ -262,6 +265,7 @@ var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_otext = "rgba(188, 118, 48, 1.0)";
 var rgba_dtext = "rgba(111, 111, 111, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
+var rgba_cindig = "rgb(102, 79, 185)";
 
 var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
 var rgbas_link = [rgba_y, rgba_b];
@@ -1425,7 +1429,7 @@ function drawOverlay(init_dat)
 {
 	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
 
-	if (wpn_select==1 && key_map.lmb==false) {obj_cyc = findbyctr_obj();}
+	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj();}
 
 	//Crosshair
 	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
@@ -1652,8 +1656,13 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\___________/\\\\\\\\\\\__/
 			// p3x : m1.data[8*k+mem_log[i][0]+4]*s_fov+in_win_wc
 			// p3y : m1.data[8*k+mem_log[i][0]+5]*s_fov+in_win_hc
 
-// DRAW!
+						// only draw when length > 2
+						// every second point draws a tri from ith to previous and ahead
+						// i is offset by len%2, so at 4th do -1. (len-1)%2
+						// if obj is static pat could be pregen
+						// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
 
+// DRAW!
 
 function drawIt()
 {
@@ -1676,11 +1685,6 @@ function drawIt()
 						{
 							drawTriangle(ctx, m1.data[8*k+mem_log[i][0]], m1.data[8*k+mem_log[i][0]+1], m1.data[8*k+mem_log[i][0]+4], m1.data[8*k+mem_log[i][0]+5], m1.data[8*k+mem_log[i][0]+8], m1.data[8*k+mem_log[i][0]+9], rgbas_tri[k%3]);
 						}
-						// only draw when length > 2
-						// every second point draws a tri from ith to previous and ahead
-						// i is offset by len%2, so at 4th do -1. (len-1)%2
-						// if obj is static pat could be pregen
-						// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
 					}
 				}
 			}
@@ -1688,11 +1692,13 @@ function drawIt()
 
 		for (var j=0; j<mem_log[i][2]-1; j++) // Lines & Points
 		{
-			if (m1.data[4*j+mem_log[i][0]+3] > 0 && m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
+			if (m1.data[4*j+mem_log[i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
 			{	
-				if (stn_draw[0])
+				if (m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
 				{
+					if (stn_draw[0])
+					{
 						if (i>world_obj_count && j != mem_log[i][2]-2)
 						{
 							if (i==obj_cyc || i==link_obj_i) {
@@ -1700,36 +1706,67 @@ function drawIt()
 							} else {
 								drawLine(ctx,rgba_w, 1, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);
 							}
-							//} else {drawLine(ctx,rgba_w, 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7), m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);}
 						}
-				}
+					}
 
-				if (i >= 6 && i <= 8 && j == 0) {drawLine(ctx,rgbas[i-6], 0.5, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);}
-				if (i == 2 && j != mem_log[i][2]-2) {drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);} // Map lines?
-				if (i==1) {fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.7))}; 
+					if (i >= 6)
+					{
+						if (i <= 8)
+						{
+							if (j == 0)
+							{drawLine(ctx,rgbas[i-6], 0.5, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);}
+						}
+					}
 
-				// Center point
-				if ((key_map.tab || wpn_select==1) && i>world_obj_count && j == mem_log[i][2]-2) {drawCircle(ctx, rgba_cindi, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 3);} 
-				
+					if (i == 2)
+					{
+						if (j != mem_log[i][2]-2)
+						{
+							drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);
+						}
+					}
+
+					if (i==1) {fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2], 0.7)}; //1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
+
+					// Center point
+
+					if (key_map.tab || wpn_select==1)
+					{
+						if (i>world_obj_count)
+						{
+							if (j == mem_log[i][2]-2)
+							{
+								if (i==obj_cyc)
+								{drawCircle(ctx, rgba_cindig, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 3);}
+								if (i!=obj_cyc)
+								{drawCircle(ctx, rgba_cindi, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 3);}
+							}
+						}
+					}
+				}	
 			} // END OF LINE CLIP
+
 			if (i>2)
 			{
-				if (m1.data[4*j+mem_log[i][0]+3] > 0)
+				if (i<6)
 				{
-					drawDot(ctx, rgbas[pln_cyc], 1, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], 1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3), 0.5));
+					if (m1.data[mem_log[i][0]+4*j+3] > 0)
+					{
+						drawDot(ctx, rgbas[pln_cyc], 0.6, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]-3); // Dot planes rgba(102, 79, 185, 0.8)
+					}
 				}
 			}
-		}
-	}
+		} // End of Lines & Points
+	} // End of m_objs
 
 
 	// Draw unpacked verts
 	for (var i=0; i<m_t_objs.length; i++)
 	{
-		if (m1.data[mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping
+		if (m1.data[mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping, can even be optimized? js has no clue?
 		// if (1) // Clipping off
 		{
-			drawDot(ctx, rgba_w, 2, m1.data[mem_t_log[i][0]+mem_sum], m1.data[mem_t_log[i][0]+1+mem_sum], 1/Math.pow((m1.data[mem_t_log[i][0]+3+mem_sum]*(0.03)).toFixed(3),0.7));
+			drawDot(ctx, rgba_w, 0, m1.data[mem_t_log[i][0]+mem_sum], m1.data[mem_t_log[i][0]+1+mem_sum], 3*m1.data[mem_t_log[i][0]+2+mem_sum]); // Is this doing anything????
 			if (i == m_t_objs.length-1)
 			{
 				drawText(ctx, rgba_otext, "left", "END " + i, m1.data[mem_t_log[i][0]+mem_sum]-17, m1.data[mem_t_log[i][0]+1+mem_sum]-18);
@@ -1743,11 +1780,19 @@ function drawIt()
 	// Indicators
 
 	// Last point of m_t_objs
-	if (m_t_objs.length>0 && m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0) {drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]], m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1], 15);}
+	if (m_t_objs.length>0)
+	{
+		if (m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0)
+			{drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]], m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1], 15);}
+	}
 
 	if (m1.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 8);}
 
-	if (trns_lock && m1.data[mem_log[10][0]+3] > 0) {drawDot(ctx, rgbas_trans[1], 1.0, m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1], 15);}
+	if (trns_lock)
+	{
+		if (m1.data[mem_log[10][0]+3] > 0)
+			{drawDot(ctx, rgbas_trans[1], 1.0, m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1], 15);}
+	}
 
 
 	requestAnimationFrame(drawIt);
@@ -2186,6 +2231,7 @@ function Compute(init_dat)
 			break;
 
 		case 1:
+			if (trns_lock) {trans_obj(trns_obj_i);}
 			if (obj_cyc>world_obj_count)
 			{
 				
@@ -2339,7 +2385,7 @@ turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
 			after_per.x/after_per.w*_fov+_wc,
 			after_per.y/after_per.w*_fov+_hc,
-			after_per.z/after_per.w,
+			1.0 / pow(after_per.w*0.2, 0.3),
 			after_per.w
 			));
 		} else {
@@ -2357,7 +2403,7 @@ turbojs.run(init_dat, `void main(void) {
 
 } // End of Compute()
 
-
+// 1/Math.pow((w*(0.03))
 
 function menuTime()
 {
