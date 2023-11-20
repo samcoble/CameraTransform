@@ -265,7 +265,7 @@ var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_otext = "rgba(188, 118, 48, 1.0)";
 var rgba_dtext = "rgba(111, 111, 111, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
-var rgba_cindig = "rgb(102, 79, 185)";
+var rgba_cindig = "rgb(152 106 179)";
 
 var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
 var rgbas_link = [rgba_y, rgba_b];
@@ -1726,7 +1726,7 @@ function drawIt()
 						}
 					}
 
-					if (i==1) {fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2], 0.7)}; //1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
+					if (i==1) {fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]+0.5, 0.7)}; ///////////////////////////1/Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
 
 					// Center point
 
@@ -1737,9 +1737,9 @@ function drawIt()
 							if (j == mem_log[i][2]-2)
 							{
 								if (i==obj_cyc)
-								{drawCircle(ctx, rgba_cindig, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 3);}
+								{drawCircle(ctx, rgba_cindig, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 8*m1.data[4*j+mem_log[i][0]+2]);}
 								if (i!=obj_cyc)
-								{drawCircle(ctx, rgba_cindi, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 3);}
+								{drawCircle(ctx, rgba_cindi, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 8*m1.data[4*j+mem_log[i][0]+2]);}
 							}
 						}
 					}
@@ -1752,7 +1752,7 @@ function drawIt()
 				{
 					if (m1.data[mem_log[i][0]+4*j+3] > 0)
 					{
-						drawDot(ctx, rgbas[pln_cyc], 0.6, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]-3); // Dot planes rgba(102, 79, 185, 0.8)
+						drawDot(ctx, rgbas[pln_cyc], 1, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
 					}
 				}
 			}
@@ -2385,7 +2385,7 @@ turbojs.run(init_dat, `void main(void) {
 		commit(vec4(
 			after_per.x/after_per.w*_fov+_wc,
 			after_per.y/after_per.w*_fov+_hc,
-			1.0 / pow(after_per.w*0.2, 0.3),
+			1.0 / pow(after_per.w*0.03, 0.7),
 			after_per.w
 			));
 		} else {
