@@ -22,7 +22,7 @@ Save & Load FIXED. So far handling any large amount of junk!
 - (L) links two objects of equal size linearly.
 - ZIGZAG is now broken.
 
-<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" width="300" height="300">
+<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" width="381" height="323">
 
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
