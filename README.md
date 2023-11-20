@@ -8,7 +8,7 @@ Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.
 
 
 
-<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" style="padding-left: 400px;" width="381" height="323">
+<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" style="left: 400px;" width="381" height="323">
 
 
 
