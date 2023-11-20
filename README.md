@@ -4,7 +4,6 @@
 
 Experimentation with the Camera Transform.
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
-
  .
  .
  .
