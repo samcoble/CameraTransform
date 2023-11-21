@@ -20,8 +20,6 @@ Save & Load FIXED. So far handling any large amount of junk!
 - Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V)
 - Tab finds nearest obj and right click will find nearest point in the obj. Right click also finds any points you have placed that are not made into an obj yet.
 - (L) links two objects of equal size linearly.
-- ZIGZAG is now broken.
-
 
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
