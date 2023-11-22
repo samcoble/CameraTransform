@@ -35,9 +35,49 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		colors mapped as numbers converted by static array of colors.
 
 */
+/*
+	starting with 1 call to trace
 
+	3 sides 3 vec a b c ommni order thus equally in sign implies within poly
+
+	sign is a/|a| , a/Math.abs(a) , Math.sign will be fastest? least ops w/ js calc sign
+
+	for every entry, later refine to shorten loop. for ex: dot all [largest obj point from center (lrgp-ctr) premapped] w/ look_f (look dir)
+
+		tri in order a b c (points) 
+
+             b
+             /\         n from dataset: obj_normalMaps
+            /n \
+           a     c
+
+               b                     b                   b
+              /|\ 	      =>        /|        <=>        |\
+             / | \                 / |                   | \
+           a       c             a    (a-c)/2     (a-c)/2    c
+
+	maybe this is related in a sense to the barycentric coordinates. say I have a middle vector 
+	point on poly can be on either one to confirm that it is inside 3 points
+	two instances of comparing a series of signs IF the first one misses. So sometimes there is only one call! wow
+	v01 = b-a                 ->        sub(b,a)
+	v02 = (a-c)/2 - b         ->        sub(scale(sub(a,c),0.5),b)
+	v03 = a - (a-c)/2         ->        sub(a, scale(sub(a,c),0.5))
+	v11 = c-b                 ->        sub(c,b)
+	v12 = (a-c)/2 - b         ->        sub(scale(sub(a,c),0.5),b)
+	v13 = b - (a-c)/2         ->        sub(b, scale(sub(a,c),0.5))
+	if     sign(a) == sign(b) && sign(b) == sign(c)   =>   push point to rayInterMap[] && rayIMap[]. wat
+
+*/
 /*
 - DO NOW
+
+	= Return nearest & in front of function
+		getNearest(array of float32array(4), point testing from) -> nearest point
+			or combine point to test from w/ a tiny offset to give it direction so first dot points w/ that plane
+
+	= Make ray trace fn use inputs so I can call it to get data anywhere.
+
+	= Strange some polys not detected by rays..?? may come from zigzag gen? should be considering it's visually parallel w/ data
 
 	= Next big problem 2 solve:
 		Object rotations!
@@ -48,7 +88,13 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	?@?@?@?@ END # is broken
 	?@?@?@?@ Make files drag & drop
 
+	= Cut obj in half by plane!
+		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
+
+	= Bezier tool!!!!!!!!!!!!!!!!!!! ASAP.
+
 	= add file name setting
+	= interpolation framework for anim -> prerender
 
 
 	= For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
