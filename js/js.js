@@ -18,6 +18,33 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 // I have a feeling I can do a lot of what i'm doing here with glsl c. I'm only using it for the perspective transform. Silly but I can just port my js to c.
 // I will make a second version of this game/app that accepts data from this one in the future ! I could even embed this game in another game lol.
 // If I could convert font data into 2d -> 3d/2d text gen!
+// I could also manually insert the alphabet as copied data from paint
+
+//	?@?@?@?@ Make files drag & drop
+//				and Delete all button
+
+//  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
+//				this raises the question: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
+//					maybe try reversing the process.
+//					if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
+//					if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
+//					the procedure of rotation around an arbitrary axis applies to many things,
+//						conclusion: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
+
+//  @?@?@?@?@ Make the planetary ico 
+
+/*
+.reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
+*/
+
+//  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
+//		for a lil extra travel just offset
+//		next step is using 2d data to clip away even more draw calls.  
+
+
+// Use this to push to top stack? ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
+
+// PYR to dir vec fn !
 
 // modulo distributes with switch with for loop ez wow
 /* for ex:
@@ -46,15 +73,15 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 		tri in order a b c (points) 
 
-             b
+              b
              /\         n from dataset: obj_normalMaps
-            /n \
+            / n \
            a     c
 
-               b                     b                   b
-              /|\ 	      =>        /|        <=>        |\
-             / | \                 / |                   | \
-           a       c             a    (a-c)/2     (a-c)/2    c
+               b                     b                                     b
+              /|\         =>        /|        <SHARED => SWAP SIGN>        |\
+             / | \                 / |                                     | \
+           a       c             a    (a-c)/2                       (a-c)/2    c
 
 	maybe this is related in a sense to the barycentric coordinates. say I have a middle vector 
 	point on poly can be on either one to confirm that it is inside 3 points
@@ -71,7 +98,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 /*
 - DO NOW
 
-	= Return nearest & in front of function
+	= Return nearest & in front of 
+		First dot(sub(p, player_pos),f_look)
 		getNearest(array of float32array(4), point testing from) -> nearest point
 			or combine point to test from w/ a tiny offset to give it direction so first dot points w/ that plane
 
@@ -86,7 +114,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	?@?@?@?@ mouse slow down for draw !!!!
 	?@?@?@?@ END # is broken
-	?@?@?@?@ Make files drag & drop
+
 
 	= Cut obj in half by plane!
 		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
@@ -295,7 +323,7 @@ var crosshair_w = 0.4;
 var player_pos = [0.0,-14.0,0];
 var _inter_rnd = [0.0, 0.0, 0.0];
 var _paint_track = [0.0, 0.0, 0.0];
-var m_obj_offs = [];
+
 
 var wpn_select = 0; 
 var wpn_1, wpn_1_d;
@@ -319,7 +347,8 @@ var stn_link_tool = 1; // Default link pat
 var paint_d = 0; var paint_n = 0;
 var stn_paint_l = 1; var stn_paint_line_l = 8; var stn_paint_inf = false;
 
-
+var _epsilon = 150;
+var in_win_clip;
 var one_time_fix = 1;
 
 
@@ -368,6 +397,8 @@ var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
 
 var N = [0,1,0];
 
+
+
 var _oh, f_look, f_dist, _inter;
 var _nplns = [0,1,0];
 var _plr_dtp = [0,0,0];
@@ -376,6 +407,9 @@ var g_dtp, g_pop, g_pao, g_rp, g_fp;
 
 var obj_normalMaps = [];
 var rayInterMap = [];
+
+// Junk needs to be organized
+var _gp = [0,0,0]; var _nps; var tse = 0; var mg; var sih; var _nps0; var _gunq = []; var _viewq = [];
 
 
 						/*-- 2D Canvas Draw Functions --\
@@ -454,6 +488,15 @@ function updateMenuPos()
 	menu_keys_pos = [11, 10];
 	menu_q_pos = [in_win_w/100*3, in_win_h/100*50 - 0.5*671];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
+
+	in_win_clip = in_win_w+_epsilon;
+
+	in_win_w = document.getElementsByTagName("html")[0].clientWidth; in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
+	in_win_h = document.getElementsByTagName("html")[0].clientHeight; in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
+	document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
+	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
+	document.getElementsByTagName("body")[0].width = in_win_w;
+	document.getElementsByTagName("body")[0].height = in_win_h;
 }
 
 
@@ -484,6 +527,7 @@ var key_map =
 	m: false,
 	l: false,
 	h: false,
+	o: false,
 	"1": false,
 	"2": false,
 	"3": false,
@@ -492,6 +536,9 @@ var key_map =
 	"6": false,
 	"7": false,
 	" ": false,
+	"/": false,
+	"[": false,
+	"]": false,
 	control: false,
 	shift: false,
 	enter: false,
@@ -526,8 +573,8 @@ onmousemove = function(e)
 			player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
 		} else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
 
-	if (player_look_dir[0] > pi2) [player_look_dir[0] = 0.0]; // This is kinda wack need to refactor entire system for this
-	if (player_look_dir[0] < -pi2) [player_look_dir[0] = 0.0];
+	if (player_look_dir[0] > pi) [player_look_dir[0] = -pi]; // This is kinda wack need to refactor entire system for this
+	if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
 }
 
 
@@ -686,35 +733,17 @@ function setTitle()
 	document.title = title;
 }
 
-function dot(a,b)
-{
-	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
-}
+function dot4(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];}
+function dot(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];}
+function dot2(a,b) {return a[0]*b[0] + a[1]*b[1];}
 
-function dot2(a,b)
-{
-	return a[0]*b[0] + a[1]*b[1];
-}
+function add2(a,b) {return [a[0]+b[0], a[1]+b[1]];}
+function add3(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];}
+function add4(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]];} // quats
+function add(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], 1];}
 
-function add2(a,b)
-{
-	return [a[0]+b[0], a[1]+b[1]];
-}
-
-function add3(a,b)
-{
-	return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
-}
-
-function sub(a,b)
-{
-	return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1]; // Must keep last 1 to make it easy to push. Keep in mind..
-}
-
-function sub3(a,b)
-{
-	return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
-}
+function sub3(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];}
+function sub(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];} // Must keep last 1 to make it easy to push. Keep in mind..
 
 function len3(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);}
 function len2(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]);}
@@ -728,6 +757,13 @@ function norm(_p)
 	_l = dot(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
 }
+
+function norm4(_p)
+{
+	_l = dot4(_p,_p);
+	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
+}
+
 
 function lpi(p1,p2,pp,n)
 {
@@ -795,10 +831,16 @@ function meanctr_obj(ar) // I think this work. I hope so.
 						\------------------------------------*/
 
 
-// 2 many arrays pls fix
+var m_obj_offs = [];
+
+// var m_obj_rots = [];
+
+
 var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
 var mem_sum = 0;
+
+var m_objs_ghost = []; // Cloned m_obj data
 
 var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
@@ -820,10 +862,11 @@ const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10
 const m_x = new Float32Array([0,0,0,1, 8,0,0,1]);
 const m_y = new Float32Array([0,0,0,1, 0,8,0,1]);
 const m_z = new Float32Array([0,0,0,1, 0,0,8,1]);
+//const m_gun = new Float32Array([0.0000,-28.0000,4.0000,1.0000,0.0000,-28.0000,-8.0000,1.0000,0.0000,-32.0000,-8.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-28.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-22.0000,9.0000,1.0000,0.0000,-22.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-34.0000,10.0000,1.0000,0.0000,-33.0000,11.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-29.2222,3.8889,0.0000]);
 //const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
-
-
-
+//const m_gun = new Float32Array([0.0512,0.0000,-1.0000,0.0000,0.0512,0.0000,1.0000,0.0000,0.0495,0.0133,1.0000,0.0000,0.0495,0.0133,-1.0000,0.0000,0.0444,0.0256,-1.0000,0.0000,0.0444,0.0256,1.0000,0.0000,0.0362,0.0362,1.0000,0.0000,0.0362,0.0362,-1.0000,0.0000,0.0256,0.0444,-1.0000,0.0000,0.0256,0.0444,1.0000,0.0000,0.0133,0.0495,1.0000,0.0000,0.0133,0.0495,-1.0000,0.0000,0.0000,0.0512,-1.0000,0.0000,0.0000,0.0512,1.0000,0.0000,-0.0133,0.0495,1.0000,0.0000,-0.0133,0.0495,-1.0000,0.0000,-0.0256,0.0444,-1.0000,0.0000,-0.0256,0.0444,1.0000,0.0000,-0.0362,0.0362,1.0000,0.0000,-0.0362,0.0362,-1.0000,0.0000,-0.0444,0.0256,-1.0000,0.0000,-0.0444,0.0256,1.0000,0.0000,-0.0495,0.0133,1.0000,0.0000,-0.0495,0.0133,-1.0000,0.0000,-0.0512,0.0000,-1.0000,0.0000,-0.0512,0.0000,1.0000,0.0000,-0.0495,-0.0133,1.0000,0.0000,-0.0495,-0.0133,-1.0000,0.0000,-0.0444,-0.0256,-1.0000,0.0000,-0.0444,-0.0256,1.0000,0.0000,-0.0362,-0.0362,1.0000,0.0000,-0.0362,-0.0362,-1.0000,0.0000,-0.0256,-0.0444,-1.0000,0.0000,-0.0256,-0.0444,1.0000,0.0000,-0.0133,-0.0495,1.0000,0.0000,-0.0133,-0.0495,-1.0000,0.0000,-0.0000,-0.0512,-1.0000,0.0000,-0.0000,-0.0512,1.0000,0.0000,0.0133,-0.0495,1.0000,0.0000,0.0133,-0.0495,-1.0000,0.0000,0.0256,-0.0444,-1.0000,0.0000,0.0256,-0.0444,1.0000,0.0000,0.0362,-0.0362,1.0000,0.0000,0.0362,-0.0362,-1.0000,0.0000,0.0444,-0.0256,-1.0000,0.0000,0.0444,-0.0256,1.0000,0.0000,0.0495,-0.0133,1.0000,0.0000,0.0495,-0.0133,-1.0000,0.0000,0.0512,-0.0000,-1.0000,0.0000,0.0512,-0.0000,1.0000,0.0000,0.0495,-0.0133,1.0000,0.0000,0.0495,-0.0133,-1.0000,0.0000,0.0444,-0.0256,-1.0000,0.0000,0.0444,-0.0256,1.0000,0.0000,0.0362,-0.0362,1.0000,0.0000,0.0362,-0.0362,-1.0000,0.0000,0.0256,-0.0444,-1.0000,0.0000,0.0256,-0.0444,1.0000,0.0000,0.0133,-0.0495,1.0000,0.0000,0.0133,-0.0495,-1.0000,0.0000,-0.0000,-0.0512,-1.0000,0.0000,-0.0000,-0.0512,1.0000,0.0000,-0.0133,-0.0495,1.0000,0.0000,-0.0133,-0.0495,-1.0000,0.0000,-0.0256,-0.0444,-1.0000,0.0000,-0.0256,-0.0444,1.0000,0.0000,-0.0362,-0.0362,1.0000,0.0000,-0.0362,-0.0362,-1.0000,0.0000,-0.0444,-0.0256,-1.0000,0.0000,-0.0444,-0.0256,1.0000,0.0000,-0.0495,-0.0133,1.0000,0.0000,-0.0495,-0.0133,-1.0000,0.0000,-0.0512,0.0000,-1.0000,0.0000,-0.0512,0.0000,1.0000,0.0000,-0.0495,0.0133,1.0000,0.0000,-0.0495,0.0133,-1.0000,0.0000,-0.0444,0.0256,-1.0000,0.0000,-0.0444,0.0256,1.0000,0.0000,-0.0362,0.0362,1.0000,0.0000,-0.0362,0.0362,-1.0000,0.0000,-0.0256,0.0444,-1.0000,0.0000,-0.0256,0.0444,1.0000,0.0000,-0.0133,0.0495,1.0000,0.0000,-0.0133,0.0495,-1.0000,0.0000,0.0000,0.0512,-1.0000,0.0000,0.0000,0.0512,1.0000,0.0000,0.0133,0.0495,1.0000,0.0000,0.0133,0.0495,-1.0000,0.0000,0.0256,0.0444,-1.0000,0.0000,0.0256,0.0444,1.0000,0.0000,0.0362,0.0362,1.0000,0.0000,0.0362,0.0362,-1.0000,0.0000,0.0444,0.0256,-1.0000,0.0000,0.0444,0.0256,1.0000,0.0000,0.0495,0.0133,1.0000,0.0000,0.0495,0.0133,-1.0000,0.0000,0.0512,0.0000,-1.0000,0.0000]);
+//const m_gun = new Float32Array([8.0000,0.0000,16.0000,0.0000,8.0000,0.0000,-16.0000,0.0000,7.7274,2.0706,-16.0000,0.0000,7.7274,2.0706,16.0000,0.0000,6.9282,4.0000,16.0000,0.0000,6.9282,4.0000,-16.0000,0.0000,5.6569,5.6569,-16.0000,0.0000,5.6569,5.6569,16.0000,0.0000,4.0000,6.9282,16.0000,0.0000,4.0000,6.9282,-16.0000,0.0000,2.0706,7.7274,-16.0000,0.0000,2.0706,7.7274,16.0000,0.0000,0.0000,8.0000,16.0000,0.0000,0.0000,8.0000,-16.0000,0.0000,-2.0706,7.7274,-16.0000,0.0000,-2.0706,7.7274,16.0000,0.0000,-4.0000,6.9282,16.0000,0.0000,-4.0000,6.9282,-16.0000,0.0000,-5.6569,5.6569,-16.0000,0.0000,-5.6569,5.6569,16.0000,0.0000,-6.9282,4.0000,16.0000,0.0000,-6.9282,4.0000,-16.0000,0.0000,-7.7274,2.0706,-16.0000,0.0000,-7.7274,2.0706,16.0000,0.0000,-8.0000,0.0000,16.0000,0.0000,-8.0000,0.0000,-16.0000,0.0000,-7.7274,-2.0706,-16.0000,0.0000,-7.7274,-2.0706,16.0000,0.0000,-6.9282,-4.0000,16.0000,0.0000,-6.9282,-4.0000,-16.0000,0.0000,-5.6569,-5.6569,-16.0000,0.0000,-5.6569,-5.6569,16.0000,0.0000,-4.0000,-6.9282,16.0000,0.0000,-4.0000,-6.9282,-16.0000,0.0000,-2.0706,-7.7274,-16.0000,0.0000,-2.0706,-7.7274,16.0000,0.0000,-0.0000,-8.0000,16.0000,0.0000,-0.0000,-8.0000,-16.0000,0.0000,2.0706,-7.7274,-16.0000,0.0000,2.0706,-7.7274,16.0000,0.0000,4.0000,-6.9282,16.0000,0.0000,4.0000,-6.9282,-16.0000,0.0000,5.6569,-5.6569,-16.0000,0.0000,5.6569,-5.6569,16.0000,0.0000,6.9282,-4.0000,16.0000,0.0000,6.9282,-4.0000,-16.0000,0.0000,7.7274,-2.0706,-16.0000,0.0000,7.7274,-2.0706,16.0000,0.0000,8.0000,-0.0000,16.0000,0.0000,8.0000,-0.0000,-16.0000,0.0000,7.7274,-2.0706,-16.0000,0.0000,7.7274,-2.0706,16.0000,0.0000,6.9282,-4.0000,16.0000,0.0000,6.9282,-4.0000,-16.0000,0.0000,5.6569,-5.6569,-16.0000,0.0000,5.6569,-5.6569,16.0000,0.0000,4.0000,-6.9282,16.0000,0.0000,4.0000,-6.9282,-16.0000,0.0000,2.0706,-7.7274,-16.0000,0.0000,2.0706,-7.7274,16.0000,0.0000,-0.0000,-8.0000,16.0000,0.0000,-0.0000,-8.0000,-16.0000,0.0000,-2.0706,-7.7274,-16.0000,0.0000,-2.0706,-7.7274,16.0000,0.0000,-4.0000,-6.9282,16.0000,0.0000,-4.0000,-6.9282,-16.0000,0.0000,-5.6569,-5.6569,-16.0000,0.0000,-5.6569,-5.6569,16.0000,0.0000,-6.9282,-4.0000,16.0000,0.0000,-6.9282,-4.0000,-16.0000,0.0000,-7.7274,-2.0706,-16.0000,0.0000,-7.7274,-2.0706,16.0000,0.0000,-8.0000,0.0000,16.0000,0.0000,-8.0000,0.0000,-16.0000,0.0000,-7.7274,2.0706,-16.0000,0.0000,-7.7274,2.0706,16.0000,0.0000,-6.9282,4.0000,16.0000,0.0000,-6.9282,4.0000,-16.0000,0.0000,-5.6569,5.6569,-16.0000,0.0000,-5.6569,5.6569,16.0000,0.0000,-4.0000,6.9282,16.0000,0.0000,-4.0000,6.9282,-16.0000,0.0000,-2.0706,7.7274,-16.0000,0.0000,-2.0706,7.7274,16.0000,0.0000,0.0000,8.0000,16.0000,0.0000,0.0000,8.0000,-16.0000,0.0000,2.0706,7.7274,-16.0000,0.0000,2.0706,7.7274,16.0000,0.0000,4.0000,6.9282,16.0000,0.0000,4.0000,6.9282,-16.0000,0.0000,5.6569,5.6569,-16.0000,0.0000,5.6569,5.6569,16.0000,0.0000,6.9282,4.0000,16.0000,0.0000,6.9282,4.0000,-16.0000,0.0000,7.7274,2.0706,-16.0000,0.0000,7.7274,2.0706,16.0000,0.0000,8.0000,0.0000,16.0000,0.0000]);
+const m_gun = new Float32Array([2.3755,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6443,8.9091,13.1931,0.000,2.3954,8.9091,13.1931,0.000,2.3954,9.2918,13.1170,0.000,-2.6443,9.2918,13.1170,0.000,-2.6443,9.6162,12.9002,0.000,2.3954,9.6162,12.9002,0.000,2.3954,9.8330,12.5758,0.000,-2.6443,9.8330,12.5758,0.000,-2.6443,9.9091,12.1931,0.000,2.3954,9.9091,12.1931,0.000,2.6255,9.9475,-1.6896,0.000,-2.4142,9.9475,-1.6896,0.000,-2.4142,9.8713,-2.0723,0.000,2.6255,9.8713,-2.0723,0.000,2.6255,9.6546,-2.3967,0.000,-2.4142,9.6546,-2.3967,0.000,-2.4142,9.3301,-2.6135,0.000,2.6255,9.3301,-2.6135,0.000,2.6255,8.9475,-2.6896,0.000,-2.4142,8.9475,-2.6896,0.000,-2.4142,-5.8025,-3.9396,0.000,2.6255,-5.8025,-3.9396,0.000,2.3755,-6.8025,-4.1896,0.000,-2.6642,-6.8025,-4.1896,0.000,-2.6642,-6.8025,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.3755,-6.8025,-4.1896,0.000,-2.6642,-6.8025,-4.1896,0.000,-2.4142,-5.8025,-3.9396,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,8.9475,-2.6896,0.000,-2.4142,8.9475,-2.6896,0.000,-2.4142,9.3301,-2.6135,0.000,2.6255,9.3301,-2.6135,0.000,2.6255,9.6546,-2.3967,0.000,-2.4142,9.6546,-2.3967,0.000,-2.4142,9.8713,-2.0723,0.000,2.6255,9.8713,-2.0723,0.000,2.6255,9.9475,-1.6896,0.000,-2.4142,9.9475,-1.6896,0.000,-2.6443,9.9091,12.1931,0.000,2.3954,9.9091,12.1931,0.000,2.3954,9.8330,12.5758,0.000,-2.6443,9.8330,12.5758,0.000,-2.6443,9.6162,12.9002,0.000,2.3954,9.6162,12.9002,0.000,2.3954,9.2918,13.1170,0.000,-2.6443,9.2918,13.1170,0.000,-2.6443,8.9091,13.1931,0.000,2.3954,8.9091,13.1931,0.000,2.3755,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6443,8.9091,13.1931,0.000,-2.6443,9.2918,13.1170,0.000,-2.6443,9.6162,12.9002,0.000,-2.6443,9.8330,12.5758,0.000,-2.6443,9.9091,12.1931,0.000,-2.4142,9.9475,-1.6896,0.000,-2.4142,9.8713,-2.0723,0.000,-2.4142,9.6546,-2.3967,0.000,-2.4142,9.3301,-2.6135,0.000,-2.4142,8.9475,-2.6896,0.000,2.6255,8.9475,-2.6896,0.000,2.6255,7.8330,-1.6896,0.000,2.6255,8.2157,-1.6135,0.000,2.6255,9.3301,-2.6135,0.000,2.6255,9.6546,-2.3967,0.000,2.6255,8.5401,-1.3967,0.000,2.6255,8.7569,-1.0723,0.000,2.6255,9.8713,-2.0723,0.000,2.6255,9.9475,-1.6896,0.000,2.6255,8.8330,5.3104,0.000,2.6255,8.7569,5.6931,0.000,2.3954,9.9091,12.1931,0.000,2.3954,9.8330,12.5758,0.000,2.6255,8.5401,6.0175,0.000,2.6255,8.2157,6.2343,0.000,2.3954,9.6162,12.9002,0.000,2.3954,9.2918,13.1170,0.000,2.6255,7.8330,6.3104,0.000,2.6255,-4.6670,5.3104,0.000,2.3954,8.9091,13.1931,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.0497,5.2343,0.000,2.6255,-5.3741,5.0175,0.000,2.3755,-6.8025,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.5909,4.6931,0.000,2.6255,-5.6670,4.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.6670,-1.6896,0.000,2.6255,-5.6670,-1.6896,0.000,2.3755,-6.8025,-4.1896,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.5909,-2.0723,0.000,2.6255,-5.3741,-2.3967,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.0497,-2.6135,0.000,2.6255,-4.6670,-2.6896,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,8.9475,-2.6896,0.000,2.6255,7.8330,-1.6896,0.000,2.6255,-4.6670,-2.6896,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.0497,-2.6135,0.000,2.6255,-5.3741,-2.3967,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.8025,-3.9396,0.000,2.6255,-5.5909,-2.0723,0.000,2.6255,-5.6670,-1.6896,0.000,2.3755,-6.8025,-4.1896,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.6670,-1.6896,0.000,2.6255,-5.6670,4.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.5909,4.6931,0.000,2.6255,-5.3741,5.0175,0.000,2.3755,-6.8025,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,2.6255,-5.0497,5.2343,0.000,2.6255,-4.6670,5.3104,0.000,2.3954,8.9091,13.1931,0.000,2.3954,9.2918,13.1170,0.000,2.6255,7.8330,6.3104,0.000,2.6255,8.2157,6.2343,0.000,2.3954,9.6162,12.9002,0.000,2.3954,9.8330,12.5758,0.000,2.6255,8.5401,6.0175,0.000,2.6255,8.7569,5.6931,0.000,2.3954,9.9091,12.1931,0.000,2.6255,9.9475,-1.6896,0.000,2.6255,8.8330,5.3104,0.000,2.6255,8.7569,-1.0723,0.000,2.6255,9.8713,-2.0723,0.000,2.6255,9.6546,-2.3967,0.000,2.6255,8.5401,-1.3967,0.000,2.6255,8.2157,-1.6135,0.000,2.6255,9.3301,-2.6135,0.000,2.6255,8.9475,-2.6896,0.000,-2.4142,8.9475,-2.6896,0.000,-2.4142,7.8330,-1.6896,0.000,-2.4142,8.2157,-1.6135,0.000,-2.4142,9.3301,-2.6135,0.000,-2.4142,9.6546,-2.3967,0.000,-2.4142,8.5401,-1.3967,0.000,-2.4142,8.7569,-1.0723,0.000,-2.4142,9.8713,-2.0723,0.000,-2.4142,9.9475,-1.6896,0.000,-2.4142,8.8330,5.3104,0.000,-2.4142,8.7569,5.6931,0.000,-2.6443,9.9091,12.1931,0.000,-2.6443,9.8330,12.5758,0.000,-2.4142,8.5401,6.0175,0.000,-2.4142,8.2157,6.2343,0.000,-2.6443,9.6162,12.9002,0.000,-2.6443,9.2918,13.1170,0.000,-2.4142,7.8330,6.3104,0.000,-2.4142,-4.6670,5.3104,0.000,-2.6443,8.9091,13.1931,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.0497,5.2343,0.000,-2.4142,-5.3741,5.0175,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.5909,4.6931,0.000,-2.4142,-5.6670,4.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.6670,-1.6896,0.000,-2.4142,-5.6670,-1.6896,0.000,-2.6642,-6.8025,-4.1896,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.5909,-2.0723,0.000,-2.4142,-5.3741,-2.3967,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.0497,-2.6135,0.000,-2.4142,-4.6670,-2.6896,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,8.9475,-2.6896,0.000,-2.4142,7.8330,-1.6896,0.000,-2.4142,-4.6670,-2.6896,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.0497,-2.6135,0.000,-2.4142,-5.3741,-2.3967,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.4142,-5.5909,-2.0723,0.000,-2.4142,-5.6670,-1.6896,0.000,-2.6642,-6.8025,-4.1896,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.6670,-1.6896,0.000,-2.4142,-5.6670,4.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.5909,4.6931,0.000,-2.4142,-5.3741,5.0175,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.4142,-5.0497,5.2343,0.000,-2.4142,-4.6670,5.3104,0.000,-2.6443,8.9091,13.1931,0.000,-2.6443,9.2918,13.1170,0.000,-2.4142,7.8330,6.3104,0.000,-2.4142,8.2157,6.2343,0.000,-2.6443,9.6162,12.9002,0.000,-2.6443,9.8330,12.5758,0.000,-2.4142,8.5401,6.0175,0.000,-2.4142,8.7569,5.6931,0.000,-2.6443,9.9091,12.1931,0.000,-2.4142,9.9475,-1.6896,0.000,-2.4142,8.8330,5.3104,0.000,-2.4142,8.7569,-1.0723,0.000,-2.4142,9.8713,-2.0723,0.000,-2.4142,9.6546,-2.3967,0.000,-2.4142,8.5401,-1.3967,0.000,-2.4142,8.2157,-1.6135,0.000,-2.4142,9.3301,-2.6135,0.000,-2.4142,8.9475,-2.6896,0.000,-2.4142,-5.8025,-3.9396,0.000,-2.6642,-6.8025,-4.1896,0.000,-2.6642,-6.8025,11.3104,0.000,-4.5088,-8.6472,11.3104,0.000,-4.5088,-13.6869,11.3104,0.000,-3.7079,-14.7307,11.3104,0.000,-3.7079,-7.6034,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-15.5315,11.3104,0.000,2.3755,-15.5315,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,3.4193,-7.6034,11.3104,0.000,3.4193,-14.7307,11.3104,0.000,4.2202,-13.6869,11.3104,0.000,4.2202,-8.6472,11.3104,0.000,3.4193,-7.6034,11.3104,0.000,3.4193,-14.7307,11.3104,0.000,2.3755,-15.5315,11.3104,0.000,2.3755,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-15.5315,11.3104,0.000,-3.7079,-14.7307,11.3104,0.000,-3.7079,-7.6034,11.3104,0.000,-4.5088,-8.6472,11.3104,0.000,-4.5088,-8.6472,-28.6896,0.000,-4.5088,-13.6869,-28.6896,0.000,-3.7079,-14.7307,-28.6896,0.000,-3.7079,-7.6034,-28.6896,0.000,-2.6642,-6.8025,-28.6896,0.000,-2.6642,-15.5315,-28.6896,0.000,2.3755,-15.5315,-28.6896,0.000,2.3755,-6.8025,-28.6896,0.000,3.4193,-7.6034,-28.6896,0.000,3.4193,-14.7307,-28.6896,0.000,4.2202,-13.6869,-28.6896,0.000,4.2202,-8.6472,-28.6896,0.000,3.4193,-7.6034,-28.6896,0.000,3.4193,-14.7307,-28.6896,0.000,2.3755,-15.5315,-28.6896,0.000,2.3755,-6.8025,-28.6896,0.000,-2.6642,-6.8025,-28.6896,0.000,-2.6642,-15.5315,-28.6896,0.000,-3.7079,-14.7307,-28.6896,0.000,-3.7079,-7.6034,-28.6896,0.000,-4.5088,-8.6472,-28.6896,0.000,2.3755,-6.8025,-28.6896,0.000,2.3755,-6.8025,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,-28.6896,0.000,-3.7079,-7.6034,-28.6896,0.000,-3.7079,-7.6034,11.3104,0.000,-4.5088,-8.6472,11.3104,0.000,-4.5088,-8.6472,-28.6896,0.000,-4.5088,-13.6869,-28.6896,0.000,-4.5088,-13.6869,11.3104,0.000,-3.7079,-14.7307,11.3104,0.000,-3.7079,-14.7307,-28.6896,0.000,-2.6642,-15.5315,-28.6896,0.000,-2.6642,-15.5315,11.3104,0.000,2.3755,-15.5315,11.3104,0.000,2.3755,-15.5315,-28.6896,0.000,3.4193,-14.7307,-28.6896,0.000,3.4193,-14.7307,11.3104,0.000,4.2202,-13.6869,11.3104,0.000,4.2202,-13.6869,-28.6896,0.000,4.2202,-8.6472,-28.6896,0.000,4.2202,-8.6472,11.3104,0.000,3.4193,-7.6034,11.3104,0.000,3.4193,-7.6034,-28.6896,0.000,2.3755,-6.8025,-28.6896,0.000,2.3755,-6.8025,11.3104,0.000,3.4193,-7.6034,11.3104,0.000,3.4193,-7.6034,-28.6896,0.000,4.2202,-8.6472,-28.6896,0.000,4.2202,-8.6472,11.3104,0.000,4.2202,-13.6869,11.3104,0.000,4.2202,-13.6869,-28.6896,0.000,3.4193,-14.7307,-28.6896,0.000,3.4193,-14.7307,11.3104,0.000,2.3755,-15.5315,11.3104,0.000,2.3755,-15.5315,-28.6896,0.000,-2.6642,-15.5315,-28.6896,0.000,-2.6642,-15.5315,11.3104,0.000,-3.7079,-14.7307,11.3104,0.000,-3.7079,-14.7307,-28.6896,0.000,-4.5088,-13.6869,-28.6896,0.000,-4.5088,-13.6869,11.3104,0.000,-4.5088,-8.6472,11.3104,0.000,-4.5088,-8.6472,-28.6896,0.000,-3.7079,-7.6034,-28.6896,0.000,-3.7079,-7.6034,11.3104,0.000,-2.6642,-6.8025,11.3104,0.000,-2.6642,-6.8025,-28.6896,0.000,2.3755,-6.8025,-28.6896,0.000,3.4193,-7.6034,-28.6896,0.000,4.2202,-8.6472,-28.6896,0.000,4.2202,-13.6869,-28.6896,0.000,3.4193,-14.7307,-28.6896,0.000,2.3755,-15.5315,-28.6896,0.000]);
 var _flr = 6*8; // Side length of square
 var edit_sum = 0;
 
@@ -971,7 +1014,7 @@ const m_map = new Float32Array([
 		       _\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\_____________\/\\\___\//\\\\\_\///\\\\\\\\\\\/___ 
 		        _\////////////_____\///________\///________\///________\///________\///____________\///______________\///_____\/////____\///////////_____
 	*/
-
+	// #DATAFNS
 
 var m1 = turbojs.alloc(20000); // Everything
 for (i=0; i<m1.data.length; i++)
@@ -986,16 +1029,21 @@ function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
 	{
 		var ar_f = new Float32Array(ar.length + 4);
 		ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
+		var ar_g = new Float32Array(ar.length + 4);
+		ar_g.set(ar_f); // new ghost
 		m_objs[m_objs.length] = ar_f; // Append ar to m_objs. m_objs.length points to end
+		m_objs_ghost[m_objs_ghost.length] = ar_g;
 		mem_log.push([mem_sum, ar_f.length, Math.floor(ar_f.length/4), Math.floor(ar_f.length/12)]);
 		mem_sum += ar_f.length;
 		obj_normalMaps.push(new Float32Array(ar.length + 4)); // Idk this works for now??
+
 		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
 		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
 		//obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
 	} else {
 		m_objs[m_objs.length] = ar;
+		m_objs_ghost[m_objs_ghost.length] = ar;
 		mem_log.push([mem_sum, ar.length, Math.floor(ar.length/4), Math.floor(ar.length/12)]);
 		mem_sum += ar.length;
 		obj_normalMaps.push(new Float32Array([0.0, 0.0, 0.0, 0.0]));
@@ -1108,9 +1156,12 @@ m_objs_loadPoints(m_y);          // 7
 m_objs_loadPoints(m_z);          // 8
 m_objs_loadPoints(_lp_world);    // 9
 m_objs_loadPoints(_lop_world);   // 10
-m_objs_loadPoints(m_cube);       // 11
+m_objs_loadPoints(m_gun);       // 11
+
 
 world_obj_count = obj_cyc = m_objs.length-1;
+
+
 
 setData();
 
@@ -1144,12 +1195,8 @@ function pointerLockSwap()
 
 window.addEventListener('resize', function()
 {
-	in_win_w = document.getElementsByTagName("html")[0].clientWidth; in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
-	in_win_h = document.getElementsByTagName("html")[0].clientHeight; in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
-	document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
-	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
-	document.getElementsByTagName("body")[0].width = in_win_w;
-	document.getElementsByTagName("body")[0].height = in_win_h;
+
+	
 	updateMenuPos();
 });
 
@@ -1245,7 +1292,7 @@ function isPointInsideTriangle(p, p1, p2, p3)
 }
 
 
-function updateRayInters() // make return true when finished so i can if (updateRayInters()) {draw points from rayInterMap} ?? NEEDED?
+function updateRayInters()
 {
 	if (m_objs.length>world_obj_count+1) // Remove?
 	{
@@ -1260,7 +1307,8 @@ function updateRayInters() // make return true when finished so i can if (update
 				{
 						// Replace this part w/ fn
 						_oh = dot(player_pos,[0,1,0,1]);
-						f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
+						updateLook();
+
 						f_dist = -_oh/dot(N,norm(f_look));
 						_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 						_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
@@ -1376,22 +1424,99 @@ function mir_w_pln(_p,_c)
 	return _f;
 }
 
+// Rotation around arbitrary axis
+function rot_aa(_p, _v, _r) // _p must be local 
+{
+	// Ang from y axis must be arctan(y/x) y is literally opposite of x.
+	// Reciprocal of opposite/adjacent gives the other angle (pi - ang)
+
+	var _a1 = Math.atan(_v[0]/_v[2]); // x/z ang that moves to y pln
+	var _d2 = Math.sqrt(_v[0]*_v[0] + _v[2]*_v[2]);
+	var _a2 = Math.atan(_v[1]/_d2);	// ang that moves to z pln
+
+	var _op1 = rot_y_pln(_p, -_a1);
+	var _opz = rot_x_pln(_op1, -_a2);
+	var _op4 = rot_z_pln(_opz, _r); // Apply our radians
+	var _op5 = rot_x_pln(_op4, _a2);
+	var _op6 = rot_y_pln(_op5, _a1);
+
+	return _op6;
+}
+
+// I don't remember much of the derivation for this matrix but it wasn't impossible.
+// The concepts of the math seem to imply the code structure.
+
+function multiplyQuaternions(q1, q2) // The scaler part of the quaternion comes first here ***
+{
+    const w = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3];
+    const x = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2];
+    const y = q1[0] * q2[2] - q1[1] * q2[3] + q1[2] * q2[0] + q1[3] * q2[1];
+    const z = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
+    return [w, x, y, z];
+}
+
+
+function makeQuaternion(_r, _a) // Radians, Axis
+{
+	// Quaternion (cos(theta/2), sin(theta/2) * V) converts to 4d array of data like this.
+	// Implied if computed w/ matrices.
+	var _q = [
+	    Math.cos(_r / 2),
+	    Math.sin(_r / 2) * _a[0],
+	    Math.sin(_r / 2) * _a[1],
+	    Math.sin(_r / 2) * _a[2]
+	];
+	return _q;
+}
+
+
+// Quat rot using matrix quat multiplier
+function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
+{
+
+    var _fq = [1, 0, 0, 0]; // Initial quaternion for rotation accumulation
+
+    for (var i = 0; i < _q_ar.length; i++) {
+        _fq = multiplyQuaternions(_q_ar[i], _fq);
+    }
+	// Normalize it. Makes sense when you are adding many together.
+	const _nq = norm4(_fq);
+	// Make a vector quaternion / quaternion vector
+    const _vq = [0, _p[0], _p[1], _p[2]]; // q w/ no scaler
+    const _rq0 = multiplyQuaternions(_nq, _vq); // Must do this first (l2r)
+    const _rq = multiplyQuaternions(_rq0, [
+         _nq[0],
+        -_nq[1],
+        -_nq[2],
+        -_nq[3]
+    ]);
+    return [_rq[1], _rq[2], _rq[3]];
+}
+
+
 function del_obj(_i)
 {
 	if (_i > world_obj_count)
 	{
 		if (obj_cyc == m_objs.length-1)
 		{
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); obj_cyc = obj_cyc-1;
+			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
 		} else {
 			var _ts = mem_log[obj_cyc][1];
 			for (var i = obj_cyc+1; i<mem_log.length; i++)
 			{
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
-			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1);
+			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1);
 		}
 	}
+}
+
+function updateLook()
+{
+		_viewq = [makeQuaternion(-player_look_dir[1], norm([1,0.001,0.001])),
+				  makeQuaternion(-player_look_dir[0], norm([0.001,1,0.001]))];
+		f_look = quatRot( [0,0,1], _viewq );
 }
 
 function finishTrnsAnim(_i)
@@ -1678,7 +1803,7 @@ function expand_obj(_i)
 		       _\/\\\\\\\\\\\\/___\/\\\______\//\\\_\/\\\_______\/\\\_____\//\\\__\//\\\______ 
 		        _\////////////_____\///________\///__\///________\///_______\///____\///_______ 
     */
-
+	// #DRAW
 	
 function drawOverlay(init_dat)
 {
@@ -1699,7 +1824,7 @@ function drawOverlay(init_dat)
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+142, menu_wpn_pos[1]+6, 62, 58);
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+210, menu_wpn_pos[1]+6, 62, 58);
 
-	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 61, 56); // Darklighter box
+	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56); // Darklighter box
 
     if (!mouseLock)
     {
@@ -1823,7 +1948,8 @@ function drawOverlay(init_dat)
 	// Remove aim thing
 
 	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", menu_keys_pos[0]+15, 34);
-	drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
+	//drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
+	drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
 	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
 	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", menu_keys_pos[0]+398, 49);
 
@@ -1906,23 +2032,14 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\___________/\\\\\\\\\\\__/
       _______\/\\\_____\/\\\_____\//\\\______\/\\\_____\/\\\______________\/\\\_____\/\\\__\//\\\\\\_\/\\\___________\/\\\_____/\\\___\///\\\__/\\\_________\/\\\_______  
        _______\/\\\_____\/\\\______\//\\\__/\\\\\\\\\\\_\/\\\\\\\\\\\\__/\\\\\\\\\\\_\/\\\___\//\\\\\_\/\\\\\\\\\\\\\_\/\\\\\\\\\\/______\///\\\\\/__________\/\\\_______ 
         _______\///______\///________\///__\///////////__\////////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
-*/
+*/ 
+// #trilinedot
 
-	// Pluggers.
-	// p1x : m1.data[8*k+mem_log[i][0]-4]*s_fov+in_win_wc
-	// p1y : m1.data[8*k+mem_log[i][0]-3]*s_fov+in_win_hc
-		// p2x : m1.data[8*k+mem_log[i][0]]*s_fov+in_win_wc
-		// p2y : m1.data[8*k+mem_log[i][0]+1]*s_fov+in_win_hc
-			// p3x : m1.data[8*k+mem_log[i][0]+4]*s_fov+in_win_wc
-			// p3y : m1.data[8*k+mem_log[i][0]+5]*s_fov+in_win_hc
-
-						// only draw when length > 2
-						// every second point draws a tri from ith to previous and ahead
-						// i is offset by len%2, so at 4th do -1. (len-1)%2
-						// if obj is static pat could be pregen
-						// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
-
-// DRAW!
+				// only draw when length > 2
+				// every second point draws a tri from ith to previous and ahead
+				// i is offset by len%2, so at 4th do -1. (len-1)%2
+				// if obj is static pat could be pregen
+				// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
 
 function drawIt()
 {
@@ -1935,86 +2052,139 @@ function drawIt()
 	{
 		if (stn_draw[1]) // Tris
 		{
-			if (i>world_obj_count)
+			if (i>world_obj_count-1)
 			{	
 				if (mem_log[i][2]>2)
 				{
 					for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
 					{
-						if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
+						//if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
+						if (m1.data[8*k+mem_log[i][0]+3] > 0)
 						{
-							drawTriangle(ctx, m1.data[8*k+mem_log[i][0]], m1.data[8*k+mem_log[i][0]+1], m1.data[8*k+mem_log[i][0]+4], m1.data[8*k+mem_log[i][0]+5], m1.data[8*k+mem_log[i][0]+8], m1.data[8*k+mem_log[i][0]+9], rgbas_tri[k%3]);
+							if (m1.data[8*k+mem_log[i][0]+7] > 0)
+							{
+								if (m1.data[8*k+mem_log[i][0]+11] > 0)
+								{
+									if (m1.data[8*k+mem_log[i][0]] > -_epsilon)
+									{
+										if (m1.data[8*k+mem_log[i][0]] < in_win_clip)
+										{
+											drawTriangle(ctx,
+												 m1.data[8*k+mem_log[i][0]],
+												  m1.data[8*k+mem_log[i][0]+1],
+												   m1.data[8*k+mem_log[i][0]+4],
+												    m1.data[8*k+mem_log[i][0]+5],
+												     m1.data[8*k+mem_log[i][0]+8],
+												      m1.data[8*k+mem_log[i][0]+9],
+												       rgbas_tri[k%3]);
+										}
+									}
+								}
+							}
 						}
 					}
 				}
 			}
 		}
 
-		for (var j=0; j<mem_log[i][2]-1; j++) // Lines & Points
+		for (var j=0; j<mem_log[i][2]-1; j++) // Draw Lines & Points
 		{
 			if (m1.data[4*j+mem_log[i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
 			{	
-				if (m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping
+				if (m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping second point
 				{
-					if (stn_draw[0])
+					if (m1.data[4*j+mem_log[i][0]] > -_epsilon) // Left side plane clip
 					{
-						if (i>world_obj_count && j != mem_log[i][2]-2)
-						{
-							if (i==obj_cyc || i==link_obj_i) {
-								drawLine(ctx, rgbas_link[link_lock], 1.0, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);
-							} else {
-								drawLine(ctx,rgba_w, 1, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);
-							}
-						}
-					}
-
-					if (i >= 6)
-					{
-						if (i <= 8)
-						{
-							if (j == 0)
-							{drawLine(ctx,rgbas[i-6], 0.5, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);}
-						}
-					}
-
-					if (i == 2)
-					{
-						if (j != mem_log[i][2]-2)
-						{
-							drawLine(ctx,rgba_w, 0.4, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*(j+1)+mem_log[i][0]], m1.data[4*(j+1)+mem_log[i][0]+1]);
-						}
-					}
-
-					if (i==1) {fillDot(ctx, rgba_w_flr, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]+0.5, 0.7)}; ///////////////////////////  Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
-
-					// Center point
-
-					if (key_map.tab || wpn_select==1)
-					{
-						if (i>world_obj_count)
-						{
-							if (j == mem_log[i][2]-2)
+						if (m1.data[4*j+mem_log[i][0]] < in_win_clip) // Right side plane clip. Add top and bottom later.
+						{		
+							if (stn_draw[0])
 							{
-								if (i==obj_cyc)
-								{drawCircle(ctx, rgba_cindig, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 8*m1.data[4*j+mem_log[i][0]+2]);}
-								if (i!=obj_cyc)
-								{drawCircle(ctx, rgba_cindi, 1.5, m1.data[4*j+mem_log[i][0]+4], m1.data[4*j+mem_log[i][0]+5], 8*m1.data[4*j+mem_log[i][0]+2]);}
+								if (i>world_obj_count-1 && j != mem_log[i][2]-2)
+								{
+									if (i==obj_cyc || i==link_obj_i) {
+										drawLine(ctx, rgbas_link[link_lock], 1.0,
+										 m1.data[4*j+mem_log[i][0]],
+										  m1.data[4*j+mem_log[i][0]+1],
+										   m1.data[4*(j+1)+mem_log[i][0]],
+										    m1.data[4*(j+1)+mem_log[i][0]+1]);
+									} else {
+										drawLine(ctx,rgba_w, 1,
+										 m1.data[4*j+mem_log[i][0]],
+										  m1.data[4*j+mem_log[i][0]+1],
+										   m1.data[4*(j+1)+mem_log[i][0]],
+										    m1.data[4*(j+1)+mem_log[i][0]+1]);
+									}
+								}
 							}
-						}
+
+							if (i >= 6)
+							{
+								if (i <= 8)
+								{
+									if (j == 0)
+									{drawLine(ctx,rgbas[i-6], 0.5,
+									 m1.data[4*j+mem_log[i][0]],
+									  m1.data[4*j+mem_log[i][0]+1],
+									   m1.data[4*(j+1)+mem_log[i][0]],
+									    m1.data[4*(j+1)+mem_log[i][0]+1]);}
+								}
+							}
+
+							if (i == 2)
+							{
+								if (j != mem_log[i][2]-2)
+								{
+									drawLine(ctx,rgba_w, 0.4,
+									 m1.data[4*j+mem_log[i][0]],
+									  m1.data[4*j+mem_log[i][0]+1],
+									   m1.data[4*(j+1)+mem_log[i][0]],
+									    m1.data[4*(j+1)+mem_log[i][0]+1]);
+								}
+							}
+
+							if (i==1) {fillDot(ctx, rgba_w_flr,
+							 m1.data[4*j+mem_log[i][0]],
+							  m1.data[4*j+mem_log[i][0]+1],
+							   m1.data[4*j+mem_log[i][0]+2]+0.5, 0.7)}; ///////////////////////////  Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
+
+							// Center point
+
+							if (key_map.tab || wpn_select==1)
+							{
+								if (i>world_obj_count)
+								{
+									if (j == mem_log[i][2]-2)
+									{
+										if (i==obj_cyc)
+										{drawCircle(ctx, rgba_cindig, 1.5,
+										 m1.data[4*j+mem_log[i][0]+4],
+										  m1.data[4*j+mem_log[i][0]+5],
+										   8*m1.data[4*j+mem_log[i][0]+2]);}
+										if (i!=obj_cyc)
+										{drawCircle(ctx, rgba_cindi, 1.5,
+										 m1.data[4*j+mem_log[i][0]+4],
+										  m1.data[4*j+mem_log[i][0]+5],
+										   8*m1.data[4*j+mem_log[i][0]+2]);}
+									}
+								}
+							}
+							if (i>2)
+							{
+								if (i<6)
+								{
+									if (m1.data[mem_log[i][0]+4*j+3] > 0)
+									{
+										drawDot(ctx, rgbas[pln_cyc], 1,
+										 m1.data[4*j+mem_log[i][0]],
+										  m1.data[4*j+mem_log[i][0]+1],
+										   m1.data[4*j+mem_log[i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
+									}
+								}
+							}
+						} // End of all clipping
 					}
 				}	
-			} // END OF LINE CLIP
-
-			if (i>2)
-			{
-				if (i<6)
-				{
-					if (m1.data[mem_log[i][0]+4*j+3] > 0)
-					{
-						drawDot(ctx, rgbas[pln_cyc], 1, m1.data[4*j+mem_log[i][0]], m1.data[4*j+mem_log[i][0]+1], m1.data[4*j+mem_log[i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
-					}
-				}
 			}
 		} // End of Lines & Points
 	} // End of m_objs
@@ -2072,10 +2242,51 @@ function drawIt()
 	       _\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\\\\\____________/\\\\\\\\\\\\\\\_ 
 	        _\///________\///__\///////////////__\///////////////__\///////////////____________\///////////////__
 */
+// #HELL2
+
+
 
 function Compute(init_dat)
 {
-	//COMPUTE!
+	// #COMPUTE
+
+	// merging center data is insane holy shit
+
+
+
+	// save before I do a diff usage. world anim here
+	// if (m_objs.length > tse)
+	// {
+
+	// 		_c = [m_objs[tse][mem_log[tse][1]-4],
+	// 			 m_objs[tse][mem_log[tse][1]-3],
+	// 			 m_objs[tse][mem_log[tse][1]-2]];
+
+	// 		//console.log(_c);
+
+	// 	for (var i=0; i<mem_log[tse][2]-1; i++)
+	// 	{
+	// 		_gp = [m_objs_ghost[tse][i*4],
+	// 			  m_objs_ghost[tse][i*4+1],
+	// 			  m_objs_ghost[tse][i*4+2]
+	// 			];
+
+	// 		//console.log(_gp);
+
+
+
+	// 		_nps = add3(_c,rot_aa(sub(_gp, _c), norm([0.001,1,0.001]), player_look_dir[0])); // lmao crack norm([0.001,1,0.001])
+
+	// 		//console.log(_nps);
+
+	// 		m_objs[tse][i*4] = _nps[0];
+	// 		m_objs[tse][i*4+1] = _nps[1];
+	// 		m_objs[tse][i*4+2] = _nps[2];
+	// 	}
+	// }
+
+
+
 
 	if (key_map.shift && key_map.r && mouseLock && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
 	{
@@ -2347,7 +2558,7 @@ function Compute(init_dat)
 		       _\/\\\______________\///\\\\\\\\\/___\/\\\___\//\\\\\___________\/\\\_____________\/\\\_______\/\\\_\/\\\______\//\\\_______\/\\\_______ 
 		        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
 	*/
-
+	// #FUNPART
 	// Use gpu here w/ the right size array32. Or can I even?
 
 
@@ -2400,8 +2611,8 @@ function Compute(init_dat)
 
 	if (one_time_fix || key_map.lmb || key_map.f || key_map.y) // Remove one_time_fix by setting vars to [0,0,0,0]
 	{
+		updateLook();
 		_oh = dot(player_pos,[0,1,0,1]);
-		f_look = rot_y_pln(rot_x_pln([0,0,1,1],-player_look_dir[1]),-player_look_dir[0]);
 		f_dist = -_oh/dot(N,norm(f_look));
 		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
 		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
@@ -2410,6 +2621,57 @@ function Compute(init_dat)
 	}
 
 
+	//tse = world_obj_count+1;
+
+	// if (key_map["["] && runEvery(200))
+	// {
+	// 	tse = obj_cyc;
+	// }
+
+	tse = 11;
+
+	// if (m_objs.length > tse && tse!=0)
+	// {
+		if (wpn_select==3)
+		{
+			_c = [m_objs_ghost[tse][mem_log[tse][1]-4],
+				 m_objs_ghost[tse][mem_log[tse][1]-3],
+				 m_objs_ghost[tse][mem_log[tse][1]-2]];
+
+			for (var i=0; i<mem_log[tse][2]-1; i++)
+			{
+				_gp = [m_objs_ghost[tse][i*4]+20+Date.now()%3/5*key_map.lmb,
+					  m_objs_ghost[tse][i*4+1]+30,
+					  m_objs_ghost[tse][i*4+2]+35+Date.now()%3*key_map.lmb
+					];
+
+				// New attempt w/ quaternions
+
+				_nps = add3(_c,quatRot( sub(_gp, _c), _viewq )); // lmao crack norm([0.001,1,0.001])
+
+				m_objs[tse][i*4] = _nps[0];
+				m_objs[tse][i*4+1] = _nps[1];
+				m_objs[tse][i*4+2] = _nps[2];
+
+				updateLook();
+
+				m_obj_offs[tse] = [player_pos[0]-f_look[0]*3, player_pos[1]-f_look[1]*3, player_pos[2]-f_look[2]*3, 1/(4*7)];
+			}
+
+		//}
+		/*
+		 else {
+			m_obj_offs[tse] = [0, 0, 0, 1];
+			for (var i=0; i<mem_log[tse][2]-1; i++)
+			{
+				m_objs[tse][i*4] = m_objs_ghost[tse][i*4],
+				m_objs[tse][i*4+1] = m_objs_ghost[tse][i*4+1],
+				m_objs[tse][i*4+2] = m_objs_ghost[tse][i*4+2]
+				// and ctr?
+			}
+		}
+		*/
+	}
 
 	/*
 			- get plane to use, for now grid planes, pln, and free _inter
@@ -2455,7 +2717,7 @@ function Compute(init_dat)
  	// check nan other place? like lpi?
 	if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_scale_f), roundTo(_lp[1], grid_scale_f), roundTo(_lp[2], grid_scale_f)];}
 
-	switch(wpn_select)
+	switch(wpn_select) //#WEAPONSCRIPT
 	{
 		case 0:
 
@@ -2567,7 +2829,7 @@ function Compute(init_dat)
 			if (stn_paint_inf && key_map.lmb == false) {mem_t_mov();} // Finish draw !
 			break;
 		case 3:
-			if (key_map.lmb && mouseLock && runEvery(500))
+			if (key_map.lmb && mouseLock && runEvery(100))
 			{
 				updateRayInters();
 				m_t_objs_loadPoints(rayInterMap);
@@ -2590,6 +2852,21 @@ function Compute(init_dat)
 
 	// Teleport
 	if (key_map.y && runEvery(150)) {teleport_plr();}
+
+	// Send array as easy to copy for float32array
+	if (key_map["/"] && runEvery(150))
+	{
+		var _d = m_objs[obj_cyc]; // String
+		var _f = "[";
+		for (var i=0; i<_d.length; i++)
+		{
+			_f = _f+_d[i].toFixed(4)+",";
+			if (i==_d.length-1) {_f = _f+"]";}
+		}
+		console.log(_f);
+	}
+
+	
 
 
 
@@ -2617,6 +2894,27 @@ function Compute(init_dat)
 
 	setData(); // Load all vertices
 
+/*
+	// float a = PI/6.;
+	float a = PI/24.;
+	float n = 0.015;
+	float f = 500.01;
+
+	commit(vec4(
+		(read().x/tan(a/2.)),
+		(read().y/tan(a/2.)),
+		(read().z*((f+n)/(f-n))+(2.*n*f)/(2.-n)),
+		(-read().z)
+
+		#define _S1 1.0689655172413792
+		#define _S2 750.
+		#define d 0.06554346281523822 
+
+		((f+n)/(f-n))
+		1.006789411194167
+		(2.*n*f)/(2.-n)
+		618.2947208121826 
+*/
 
 
 turbojs.run(init_dat, `void main(void) {
