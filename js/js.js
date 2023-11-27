@@ -1572,8 +1572,8 @@ function del_world()
 
 function updateLook()
 {
-		_viewq = [makeQuaternion(-player_look_dir[1], norm([1,0.0001,0.0001])),
-				  makeQuaternion(-player_look_dir[0], norm([0.0001,1,0.0001]))];
+		_viewq = [makeQuaternion(-player_look_dir[1], norm([1,0.000001,0.000001])),
+				  makeQuaternion(-player_look_dir[0], norm([0.000001,1,0.000001]))];
 		f_look = quatRot( [0,0,1], _viewq );
 }
 
@@ -2878,9 +2878,9 @@ function Compute(init_dat)
 
 			for (var i=0; i<mem_log[tse][2]-1; i++)
 			{
-				_gp = [m_objs_ghost[tse][i*4]+20+Date.now()%3/5*key_map.lmb,
-					  m_objs_ghost[tse][i*4+1]+30,
-					  m_objs_ghost[tse][i*4+2]+32+Date.now()%3*key_map.lmb
+				_gp = [m_objs_ghost[tse][i*4]+20+Date.now()%3/5*key_map.lmb-key_map.rmb*20,
+					  m_objs_ghost[tse][i*4+1]+30-key_map.rmb*20,
+					  m_objs_ghost[tse][i*4+2]+32+Date.now()%3*key_map.lmb+key_map.rmb*30
 					];
 
 				// New attempt w/ quaternions
