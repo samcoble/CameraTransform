@@ -3102,7 +3102,7 @@ function Compute(init_dat)
 	}
 
 	// Teleport
-	if (key_map.y && runEvery(150)) {teleport_plr();}
+	if (key_map.y && runEvery(350)) {teleport_plr();}
 
 	// Send array as easy to copy for float32array
 	if (key_map["/"] && runEvery(150))
