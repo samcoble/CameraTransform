@@ -418,7 +418,10 @@ var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
 var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
 
 
-var _oh, f_look, f_dist, _inter;
+var _oh = [0,0,0,0];
+var f_look = [0,0,0,0];
+var f_dist = [0,0,0,0];
+var _inter = [0,0,0,0];
 var _nplns = [0,1,0];
 var _plr_dtp = [0,0,0];
 
@@ -1069,7 +1072,7 @@ const m_map = new Float32Array([
 	*/
 	// #DATAFNS
 
-var m1 = turbojs.alloc(40000); // Everything
+var m1 = turbojs.alloc(80000); // Everything
 for (i=0; i<m1.data.length; i++)
 {
 	m1.data[i] = 0.0;
@@ -2151,65 +2154,65 @@ function drawOverlay(init_dat)
 
 	if (!mouseLock && menu_tab==1)
 	{
-		drawText(ctx_o, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), B(down)", menu_keys_pos[0]+50, 69+220);
+		drawText(ctx_o, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), B(down)", menu_q_pos[0]+14,menu_q_pos[1]+ 69-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Q(toggle unlock mouse)", menu_keys_pos[0]+50, 84+220);
+		drawText(ctx_o, rgba_otext, "left", "Q(toggle unlock mouse)", menu_q_pos[0]+14,menu_q_pos[1]+ 84-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Scroll(expand)", menu_keys_pos[0]+50, 99+220);
+		drawText(ctx_o, rgba_otext, "left", "Scroll(expand)", menu_q_pos[0]+14,menu_q_pos[1]+ 99-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Scroll+LOCK(vert mov)", menu_keys_pos[0]+50, 114+220);
+		drawText(ctx_o, rgba_otext, "left", "Scroll+LOCK(vert mov)", menu_q_pos[0]+14, menu_q_pos[1]+114-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Scroll+Shift(grid size)", menu_keys_pos[0]+50, 129+220);
+		drawText(ctx_o, rgba_otext, "left", "Scroll+Shift(grid size)", menu_q_pos[0]+14, menu_q_pos[1]+129-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav)", menu_keys_pos[0]+50, 144+220);
+		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav)", menu_q_pos[0]+14, menu_q_pos[1]+144-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Scroll+QMENU(select obj)", menu_keys_pos[0]+50, 159+220);
+		drawText(ctx_o, rgba_otext, "left", "Scroll+QMENU(select obj)", menu_q_pos[0]+14, menu_q_pos[1]+159-30);
 
-		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr)", menu_keys_pos[0]+50, 174+220);
+		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr)", menu_q_pos[0]+14, menu_q_pos[1]+174-30);
 
-		drawText(ctx_o, rgba_otext, "left", "[Ctrl or Alt](both unlock mouse)", menu_keys_pos[0]+50, 189+220);
+		drawText(ctx_o, rgba_otext, "left", "[Ctrl or Alt](both unlock mouse)", menu_q_pos[0]+14, menu_q_pos[1]+189-30);
 
-		drawText(ctx_o, rgba_otext, "left", "/(print obj to console)", menu_keys_pos[0]+50, 204+220);
+		drawText(ctx_o, rgba_otext, "left", "/(print obj to console)", menu_q_pos[0]+14, menu_q_pos[1]+204-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov & finish)", menu_keys_pos[0]+50, 219+220);
+		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov & finish)", menu_q_pos[0]+14, menu_q_pos[1]+219-30);
 
-		drawText(ctx_o, rgba_otext, "left", "G(send cursor to ground)", menu_keys_pos[0]+50, 234+220);
+		drawText(ctx_o, rgba_otext, "left", "G(send cursor to ground)", menu_q_pos[0]+14, menu_q_pos[1]+234-30);
 
-		drawText(ctx_o, rgba_otext, "left", "RMB(go to pnt in current obj)", menu_keys_pos[0]+50, 249+220);
+		drawText(ctx_o, rgba_otext, "left", "RMB(go to pnt in current obj)", menu_q_pos[0]+14, menu_q_pos[1]+249-30);
 
-		drawText(ctx_o, rgba_otext, "left", "5(mirror by pln)", menu_keys_pos[0]+50, 264+220);
+		drawText(ctx_o, rgba_otext, "left", "5(mirror by pln)", menu_q_pos[0]+14, menu_q_pos[1]+264-30);
 
-		drawText(ctx_o, rgba_otext, "left", "6(scale by dist)", menu_keys_pos[0]+50, 279+220);
+		drawText(ctx_o, rgba_otext, "left", "6(scale by dist)", menu_q_pos[0]+14, menu_q_pos[1]+279-30);
 
-		drawText(ctx_o, rgba_otext, "left", "7(make cir)", menu_keys_pos[0]+50, 294+220);
+		drawText(ctx_o, rgba_otext, "left", "7(make cir)", menu_q_pos[0]+14, menu_q_pos[1]+294-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Shift+R(rot obj)", menu_keys_pos[0]+50, 309+220);
+		drawText(ctx_o, rgba_otext, "left", "Shift+R(rot obj)", menu_q_pos[0]+14, menu_q_pos[1]+309-30);
 
-		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov)", menu_keys_pos[0]+50, 324+220);
+		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov)", menu_q_pos[0]+14, menu_q_pos[1]+324-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Q(menu)", menu_keys_pos[0]+50, 339+220);
+		drawText(ctx_o, rgba_otext, "left", "Q(menu)", menu_q_pos[0]+14, menu_q_pos[1]+339-30);
 
-		drawText(ctx_o, rgba_otext, "left", "C(edit obj)", menu_keys_pos[0]+50, 354+220);
+		drawText(ctx_o, rgba_otext, "left", "C(edit obj)", menu_q_pos[0]+14, menu_q_pos[1]+354-30);
 
-		drawText(ctx_o, rgba_otext, "left", "V(mov obj)", menu_keys_pos[0]+50, 369+220);
+		drawText(ctx_o, rgba_otext, "left", "V(mov obj)", menu_q_pos[0]+14, menu_q_pos[1]+369-30);
 
-		drawText(ctx_o, rgba_otext, "left", "E(make obj)", menu_keys_pos[0]+50, 384+220);
+		drawText(ctx_o, rgba_otext, "left", "E(make obj)", menu_q_pos[0]+14, menu_q_pos[1]+384-30);
 
-		drawText(ctx_o, rgba_otext, "left", "X(del obj)", menu_keys_pos[0]+50, 399+220);
+		drawText(ctx_o, rgba_otext, "left", "X(del obj)", menu_q_pos[0]+14, menu_q_pos[1]+399-30);
 
-		drawText(ctx_o, rgba_otext, "left", "F(place point)", menu_keys_pos[0]+50, 414+220);
+		drawText(ctx_o, rgba_otext, "left", "F(place point)", menu_q_pos[0]+14, menu_q_pos[1]+414-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Y(teleport)", menu_keys_pos[0]+50, 429+220);
+		drawText(ctx_o, rgba_otext, "left", "Y(teleport)", menu_q_pos[0]+14, menu_q_pos[1]+429-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Z(undo)", menu_keys_pos[0]+50, 444+220);
+		drawText(ctx_o, rgba_otext, "left", "Z(undo)", menu_q_pos[0]+14, menu_q_pos[1]+444-30);
 
-		drawText(ctx_o, rgba_otext, "left", "T(dupe obj)", menu_keys_pos[0]+50, 459+220);
+		drawText(ctx_o, rgba_otext, "left", "T(dupe obj)", menu_q_pos[0]+14, menu_q_pos[1]+459-30);
 
-		drawText(ctx_o, rgba_otext, "left", "H(go to obj ctr)", menu_keys_pos[0]+50, 474+220);
+		drawText(ctx_o, rgba_otext, "left", "H(go to obj ctr)", menu_q_pos[0]+14, menu_q_pos[1]+474-30);
 
-		drawText(ctx_o, rgba_otext, "left", "I(join objs)", menu_keys_pos[0]+50, 489+220);
+		drawText(ctx_o, rgba_otext, "left", "I(join objs)", menu_q_pos[0]+14, menu_q_pos[1]+489-30);
 
-		drawText(ctx_o, rgba_otext, "left", "L(link objs)", menu_keys_pos[0]+50, 504+220);
+		drawText(ctx_o, rgba_otext, "left", "L(link objs)", menu_q_pos[0]+14, menu_q_pos[1]+504-30);
 	}
 
 	//  else {
@@ -2857,7 +2860,7 @@ function Compute(init_dat)
 
 	*/
 
-	if (one_time_fix || key_map.lmb || key_map.f || key_map.y) // Remove one_time_fix by setting vars to [0,0,0,0]
+	if (key_map.lmb || key_map.f || key_map.y) // Remove one_time_fix by setting vars to [0,0,0,0]
 	{
 		updateLook();
 		_oh = dot(player_pos,[0,1,0,1]);
