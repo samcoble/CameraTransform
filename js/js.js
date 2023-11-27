@@ -669,7 +669,7 @@ stn_menu_clearall.addEventListener('click', function(e)
 
 stn_grid_s.addEventListener('change', function(e)
 {
-	grid_scale_f = this.value; 
+	if (checkNumber(this.value)) {grid_scale_f = this.value;}
 });
 
 
@@ -845,6 +845,13 @@ function runEvery(_ms) // works 100 honest #1 fav js fn rn
 	if (d_t > _ms) {_r = 1; date_now = Date.now();} else {_r = 0;}
 	return (_r);
 }
+
+
+function checkNumber(n)
+{
+	if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;}
+}
+
 
 function meanctr_obj(ar) // I think this work. I hope so.
 {
@@ -2086,9 +2093,11 @@ function drawOverlay(init_dat)
 			/*================--------------------------==============*/
 			/*========================================================*/
 
-			stn_cir_tool[0] = parseFloat(document.getElementById("stn_cir_s").value);
-			stn_cir_tool[1] = parseFloat(document.getElementById("stn_cir_d").value);
-			stn_cir_tool[2] = parseFloat(document.getElementById("stn_cir_o").value);
+		
+			stn_cir_tool[0] = checkNumber(document.getElementById("stn_cir_s").value) != false ? parseFloat(document.getElementById("stn_cir_s").value) : stn_cir_tool[0];
+			stn_cir_tool[1] = checkNumber(document.getElementById("stn_cir_d").value) != false ? parseFloat(document.getElementById("stn_cir_d").value) : stn_cir_tool[1];
+			stn_cir_tool[2] = checkNumber(document.getElementById("stn_cir_o").value) != false ? parseFloat(document.getElementById("stn_cir_o").value) : stn_cir_tool[2];
+
 
 			stn_draw[0] = document.getElementById("stn_draw_l").checked;
 			stn_draw[1] = document.getElementById("stn_draw_s").checked;
@@ -2100,9 +2109,10 @@ function drawOverlay(init_dat)
 
 
 			stn_paint_inf = document.getElementById("stn_paint_inf").checked;
-			stn_paint_l = document.getElementById("stn_paint_l").value;
-			stn_paint_line_l = document.getElementById("stn_paint_line_l").value;
-		
+
+			stn_paint_l = checkNumber(document.getElementById("stn_paint_l").value) != false ? parseFloat(document.getElementById("stn_paint_l").value) : stn_paint_l;
+			stn_paint_line_l = checkNumber(document.getElementById("stn_paint_line_l").value) != false ? parseFloat(document.getElementById("stn_paint_line_l").value) : stn_paint_line_l;
+
 
     } else {
 
