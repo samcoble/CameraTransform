@@ -45,7 +45,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Push to top of stack function OR draw with reverse loop same thing
 	Try making a list in real time of anything entirely behind another obj's triangles?
 		try in 2d w/ triangle intersector later
-	Obj cut hole
+	Obj cut hole { i could try using the link script on to the hole... }
+		oh wow i need to start logging the 
 	Obj preview on screen below highlighted obj in mem
 		Make new model view mem region
 	Condense code structure / move fns
@@ -54,6 +55,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Mover should show bounding box w/ corners to drag size
 	Outside of this I'm making a menu constructor. Starting to feel like TeX o_0
 		All of the menu will be replaced with html because that makes sense.
+	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet.
 
 	QUICK TASK
 	Event log box would help
@@ -360,7 +362,7 @@ var wpn_1_mc = [];
 var hover_h = 11.5;
 var lock_vert_mov = false;
 var pln_cyc = 1;
-var obj_cyc = 0;
+var obj_cyc = 0; // Selector
 var grid_scale = 3; var grid_scale_f = 8; var grid_scale_ar = [8, 8, 8];
 var del_obj_lock = 0;
 var trns_lock = 0; var trns_obj_i = 0; var stn_trns = [false, false, false];
@@ -415,6 +417,7 @@ var rgba_gray = "rgb(17, 18, 21)";
 //var rgba_mgray = "rgba(10, 12, 14, 1.0)"; o
 
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
+var rgba_ldgray = "rgba(85, 85, 85, 0.3)";
 var rgba_otext = "rgba(194, 122, 52, 1.0)";
 var rgba_dtext = "rgba(155, 155, 155, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
@@ -430,6 +433,11 @@ var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
 var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
 var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
 var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
+
+// var rgba_w_tri1 = "rgba(200, 200, 200, 1)";
+// var rgba_w_tri2 = "rgba(150, 150, 150, 1)";
+// var rgba_w_tri3 = "rgba(100, 100, 100, 1)";
+// var rgba_w_tri4 = "rgba(50, 50, 50, 1)";
 
 // var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
 // var rgba_w_tri2 = "rgba(0, 225, 0, 1)";
@@ -1717,7 +1725,6 @@ function bond_obj(_i)
 	switch(_all_lock)
 	{
 		case 0: // Alternator
-			console.log(_i);
 			_all_lock_i = _i;
 			_all_lock = 2;
 			break;
@@ -1805,7 +1812,8 @@ function bond_obj(_i)
 			// }
 
 			m_objs_loadPoints(packObj(_f));
-			_all_lock = 0;
+			_all_lock_i = 0; _all_lock = 0;
+
 			break;
 	}
 }
@@ -1990,6 +1998,8 @@ function drawOverlay(init_dat)
 {
 	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
 
+	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
+
 	//obj_updateNormalMaps();
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj();}
@@ -2009,10 +2019,10 @@ function drawOverlay(init_dat)
 
 
 	document.getElementById("stn_menu_tab_0").style.left = (menu_q_pos[0]-1+11-6) + "px";
-	document.getElementById("stn_menu_tab_0").style.top = (menu_q_pos[1]-15-1) + "px";
+	document.getElementById("stn_menu_tab_0").style.top = (menu_q_pos[1]-15-1-13) + "px";
 
 	document.getElementById("stn_menu_tab_1").style.left = (menu_q_pos[0]+150-6) + "px";
-	document.getElementById("stn_menu_tab_1").style.top = (menu_q_pos[1]-15-1) + "px";
+	document.getElementById("stn_menu_tab_1").style.top = (menu_q_pos[1]-15-1-13) + "px";
 
 
     if (!mouseLock)
@@ -2028,14 +2038,14 @@ function drawOverlay(init_dat)
 
 		// Large back pan
 		//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-12, menu_q_pos[1]-24, 388, 662);
-		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-12, menu_q_pos[1]-24, 550, 662);
+		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-12, menu_q_pos[1]-24-14, 550, 662-5);
 
 		// bg left
-		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0], menu_q_pos[1]+18, 369, 606);
+		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0], menu_q_pos[1]+18-14, 369, 606-5);
 
 		// bg right
 
-		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+377, menu_q_pos[1]+18, 147, 606);
+		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+377, menu_q_pos[1]+18-14, 147, 606-5);
 
 		///////////////////////////////
 
@@ -2045,22 +2055,22 @@ function drawOverlay(init_dat)
 
 
 			// Circle settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
 
 			// Link settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+230, 170, 183);
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+220, 170, 183);
 
 			// Translation settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+230, 170, 183);
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+220, 170, 183);
 
 			// Draw Settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+30, 170, 183);
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+30, 170, 183);
 
 			// Paint settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+11, menu_q_pos[1]+430, 170, 183);
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+410, 170, 183);
 
-			// Paint settings
-			drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+189, menu_q_pos[1]+430, 170, 183);
+			// Grid settings
+			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+410, 170, 183);
 
 			///////////////////////////////
 
@@ -2074,11 +2084,11 @@ function drawOverlay(init_dat)
 			document.getElementById("stn_cir_o").style.top = (menu_q_pos[1]+156) + "px";
 
 			document.getElementById("stn_link_1").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_1").style.top = (menu_q_pos[1]+280) + "px";
+			document.getElementById("stn_link_1").style.top = (menu_q_pos[1]+270) + "px";
 			document.getElementById("stn_link_2").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_2").style.top = (menu_q_pos[1]+318) + "px";
+			document.getElementById("stn_link_2").style.top = (menu_q_pos[1]+308) + "px";
 			document.getElementById("stn_link_3").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_3").style.top = (menu_q_pos[1]+356) + "px";
+			document.getElementById("stn_link_3").style.top = (menu_q_pos[1]+346) + "px";
 
 			document.getElementById("stn_draw_l").style.left = (menu_q_pos[0]+296) + "px";
 			document.getElementById("stn_draw_l").style.top = (menu_q_pos[1]+80) + "px";
@@ -2086,24 +2096,24 @@ function drawOverlay(init_dat)
 			document.getElementById("stn_draw_s").style.top = (menu_q_pos[1]+118) + "px";
 
 			document.getElementById("stn_trns_x").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_x").style.top = (menu_q_pos[1]+280) + "px";
+			document.getElementById("stn_trns_x").style.top = (menu_q_pos[1]+270) + "px";
 			document.getElementById("stn_trns_y").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_y").style.top = (menu_q_pos[1]+318) + "px";
+			document.getElementById("stn_trns_y").style.top = (menu_q_pos[1]+308) + "px";
 			document.getElementById("stn_trns_z").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_z").style.top = (menu_q_pos[1]+356) + "px";
+			document.getElementById("stn_trns_z").style.top = (menu_q_pos[1]+346) + "px";
 
 			document.getElementById("stn_paint_inf").style.left = (menu_q_pos[0]+110) + "px";
-			document.getElementById("stn_paint_inf").style.top = (menu_q_pos[1]+477) + "px";
+			document.getElementById("stn_paint_inf").style.top = (menu_q_pos[1]+457) + "px";
 			document.getElementById("stn_paint_l").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_paint_l").style.top = (menu_q_pos[1]+518) + "px";
+			document.getElementById("stn_paint_l").style.top = (menu_q_pos[1]+498) + "px";
 			document.getElementById("stn_paint_line_l").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_paint_line_l").style.top = (menu_q_pos[1]+556) + "px";
+			document.getElementById("stn_paint_line_l").style.top = (menu_q_pos[1]+536) + "px";
 
 			document.getElementById("stn_grid_s").style.left = (menu_q_pos[0]+279) + "px";
-			document.getElementById("stn_grid_s").style.top = (menu_q_pos[1]+480) + "px";
+			document.getElementById("stn_grid_s").style.top = (menu_q_pos[1]+460) + "px";
 
 			document.getElementById("stn_menu_clearall").style.left = (menu_q_pos[0]+386) + "px";
-			document.getElementById("stn_menu_clearall").style.top = (menu_q_pos[1]+587) + "px";
+			document.getElementById("stn_menu_clearall").style.top = (menu_q_pos[1]+567) + "px";
 		}
 
 
@@ -2244,27 +2254,27 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "[divider]", menu_q_pos[0]+23, menu_q_pos[1]+139);
 		drawText(ctx_o, rgba_otext, "left", "[  off  ]", menu_q_pos[0]+23, menu_q_pos[1]+177);
 
-		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+250);
-		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+302);
-		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+340);
-		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+378);
+		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+240);
+		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+292);
+		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+330);
+		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+368);
 
 		drawText(ctx_o, rgba_otext, "left", "[draw settings]", menu_q_pos[0]+218, menu_q_pos[1]+50);
 		drawText(ctx_o, rgba_otext, "left", "[  lines  ]", menu_q_pos[0]+201, menu_q_pos[1]+101);
 		drawText(ctx_o, rgba_otext, "left", "[ surface ]", menu_q_pos[0]+201, menu_q_pos[1]+140);
 
 		drawText(ctx_o, rgba_otext, "left", "[lock x-y-z][V]", menu_q_pos[0]+218, menu_q_pos[1]+250);
-		drawText(ctx_o, rgba_otext, "left", "[   X   ]", menu_q_pos[0]+201, menu_q_pos[1]+302);
-		drawText(ctx_o, rgba_otext, "left", "[   Y   ]", menu_q_pos[0]+201, menu_q_pos[1]+340);
-		drawText(ctx_o, rgba_otext, "left", "[   Z   ]", menu_q_pos[0]+201, menu_q_pos[1]+378);
+		drawText(ctx_o, rgba_otext, "left", "[   X   ]", menu_q_pos[0]+201, menu_q_pos[1]+292);
+		drawText(ctx_o, rgba_otext, "left", "[   Y   ]", menu_q_pos[0]+201, menu_q_pos[1]+330);
+		drawText(ctx_o, rgba_otext, "left", "[   Z   ]", menu_q_pos[0]+201, menu_q_pos[1]+368);
 
-		drawText(ctx_o, rgba_otext, "left", "[paint settings][3]", menu_q_pos[0]+23, menu_q_pos[1]+450);
-		drawText(ctx_o, rgba_otext, "left", "[  inf  ]", menu_q_pos[0]+23, menu_q_pos[1]+501);
-		drawText(ctx_o, rgba_otext, "left", "[  dist ]", menu_q_pos[0]+23, menu_q_pos[1]+540);
-		drawText(ctx_o, rgba_otext, "left", "[ nodes ]", menu_q_pos[0]+23, menu_q_pos[1]+578);
+		drawText(ctx_o, rgba_otext, "left", "[paint settings][3]", menu_q_pos[0]+23, menu_q_pos[1]+430);
+		drawText(ctx_o, rgba_otext, "left", "[  inf  ]", menu_q_pos[0]+23, menu_q_pos[1]+481);
+		drawText(ctx_o, rgba_otext, "left", "[  dist ]", menu_q_pos[0]+23, menu_q_pos[1]+520);
+		drawText(ctx_o, rgba_otext, "left", "[ nodes ]", menu_q_pos[0]+23, menu_q_pos[1]+558);
 
-		drawText(ctx_o, rgba_otext, "left", "[grid settings]", menu_q_pos[0]+218, menu_q_pos[1]+450);
-		drawText(ctx_o, rgba_otext, "left", "[ scale ]", menu_q_pos[0]+201, menu_q_pos[1]+501);
+		drawText(ctx_o, rgba_otext, "left", "[grid settings]", menu_q_pos[0]+218, menu_q_pos[1]+430);
+		drawText(ctx_o, rgba_otext, "left", "[ scale ]", menu_q_pos[0]+201, menu_q_pos[1]+481);
 		// drawText(ctx_o, rgba_otext, "left", "[  b  ]", menu_q_pos[0]+201, menu_q_pos[1]+540);
 		// drawText(ctx_o, rgba_otext, "left", "[  c  ]", menu_q_pos[0]+201, menu_q_pos[1]+578);
 	}
@@ -2313,7 +2323,9 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\___________/\\\\\\\\\\\__/
 				// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
 
 
-				// Fix so loops are reversed
+				// I could only do a 2d alg ig
+				// maybe clip objs entire inside?
+				// hardest of them all
 
 function drawIt()
 {
@@ -2522,6 +2534,9 @@ function drawIt()
 
 function Compute(init_dat)
 {
+
+
+
 	// #COMPUTE
 
 	// merging center data is insane holy shit
@@ -3288,6 +3303,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	m_obj_offs[tse] = [0,-500,0,1];
 	drawIt();
+
+	obj_cyc = 10; // Temp fix
 
 	setInterval(menuTime, menuTime_int); 
 	setInterval(setTitle, title_int); 
