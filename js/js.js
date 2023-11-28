@@ -255,7 +255,7 @@ Assault cube old code
 	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
 	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
 
-	Might still be possible to salvage w/ my own api to fix the refresh rate limitation here. Pretty bad using setInterval (only for druggies). or worse javascript eval(); you can go to jail for this.
+	Pretty bad using setInterval (only for druggies). or worse javascript eval(); you can go to jail for this.
 	Badly need to give lpi and other obj algs a go in glsl. Even worth doing until I redo api????
 
 	Octree is a mem struct !? rewrite data or use new file type ig
@@ -1112,7 +1112,7 @@ const m_map = new Float32Array([
 	*/
 	// #DATAFNS
 
-var m1 = turbojs.alloc(80000); // Everything
+var m1 = GLSLfragmentShader.alloc(80000); // Everything
 for (i=0; i<m1.data.length; i++)
 {
 	m1.data[i] = 0.0;
@@ -3232,7 +3232,9 @@ function Compute(init_dat)
 */
 
 
-turbojs.run(init_dat, `void main(void) {
+GLSLfragmentShader.run(init_dat,
+
+	`void main(void) {
 
     float _yaw = float(${player_look_dir[0]});
     float _pit = float(${player_look_dir[1]});
