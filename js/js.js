@@ -35,6 +35,13 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	LONG TASK
 
+	Maybe web workers will make a lot more possible.
+		can pass things like updateNormalMaps, updateRayInters maybe too.
+		there must be a way to do the damn poly clip this way.
+		some super fast painter's algorithm + spotting manual clip locations
+		could do the mild shadow map eventually
+		will determine if I can make this a useable engine
+
 
 	Wrap data increase to hold more layers
 		r g b a comes first
@@ -326,6 +333,7 @@ var screen_width, screen_height;
 
 
 
+
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi4 = 0.7071067811; // My fav number
 var pi2 = 6.2831853071;
@@ -523,6 +531,9 @@ function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
     c.fillStyle = rgba;
     c.fill();
 }
+
+
+
 
 function drawCircle(c, rgba, lw, x, y, r)
 {
@@ -1696,12 +1707,6 @@ function m_obj_explode(_i)
 	}
 }
 
-function m_objs_bottom(_i)
-{
-	m_objs_loadPoints(cloneObj(m_objs[_i]));
-	del_obj(_i);
-}
-
 
 // New plan way better. Shift elements along so that
 //		first array's overlapping point is it's last.
@@ -1887,7 +1892,6 @@ function link_obj(_i, _t)
 
 									for (var j = _s-1; j>=0; j--)
 									{
-										console.log(j);
 										switch(j%2)
 										{
 											case 0: // even
@@ -2327,6 +2331,41 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\___________/\\\\\\\\\\\__/
 				// maybe clip objs entire inside?
 				// hardest of them all
 
+
+function drawTriangleF(ctx, i, k)
+{
+	drawTriangle(ctx,
+	m1.data[8*k+mem_log[i][0]],
+	m1.data[8*k+mem_log[i][0]+1],
+	m1.data[8*k+mem_log[i][0]+4],
+	m1.data[8*k+mem_log[i][0]+5],
+	m1.data[8*k+mem_log[i][0]+8],
+	m1.data[8*k+mem_log[i][0]+9],
+	rgbas_tri[k%3]);
+}
+
+
+function drawLineF(ctx, i, j, c, lw)
+{
+	drawLine(ctx, c, lw,
+	m1.data[4*j+mem_log[i][0]],
+	m1.data[4*j+mem_log[i][0]+1],
+	m1.data[4*(j+1)+mem_log[i][0]],
+	m1.data[4*(j+1)+mem_log[i][0]+1]);
+}
+
+
+
+function fillDotF(ctx, i, j, c, lw)
+{
+	fillDot(ctx, c,
+	m1.data[4*j+mem_log[i][0]],
+	m1.data[4*j+mem_log[i][0]+1],
+	m1.data[4*j+mem_log[i][0]+2]+0.5, lw)
+}
+
+
+
 function drawIt()
 {
 	Compute(m1);
@@ -2334,7 +2373,8 @@ function drawIt()
 
 
 	// Draw packed verts
-	for (var i=1; i<m_objs.length; i++) // i find object
+	//for (var i=1; i<m_objs.length; i++) // i find object
+	for (var i = m_objs.length-1; i >= 0; i--)
 	{
 		if (stn_draw[1]) // Tris
 		{
@@ -2342,7 +2382,9 @@ function drawIt()
 			{	
 				if (mem_log[i][2]>2)
 				{
-					for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
+					//for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
+					
+					for (var k = (Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2)-1; k >= 0; k--)
 					{
 						//if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
 						if (m1.data[8*k+mem_log[i][0]+3] > 0)
@@ -2355,14 +2397,7 @@ function drawIt()
 									{
 										if (m1.data[8*k+mem_log[i][0]] < in_win_clip)
 										{
-											drawTriangle(ctx,
-												 m1.data[8*k+mem_log[i][0]],
-												  m1.data[8*k+mem_log[i][0]+1],
-												   m1.data[8*k+mem_log[i][0]+4],
-												    m1.data[8*k+mem_log[i][0]+5],
-												     m1.data[8*k+mem_log[i][0]+8],
-												      m1.data[8*k+mem_log[i][0]+9],
-												       rgbas_tri[k%3]);
+											drawTriangleF(ctx, i, k);
 										}
 									}
 								}
@@ -2373,7 +2408,9 @@ function drawIt()
 			}
 		}
 
-		for (var j=0; j<mem_log[i][2]-1; j++) // Draw Lines & Points
+		//for (var j=0; j<mem_log[i][2]-1; j++) // Draw Lines & Points
+
+		for (var j = mem_log[i][2]-2; j >= 0; j--)
 		{
 			if (m1.data[4*j+mem_log[i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
@@ -2388,18 +2425,11 @@ function drawIt()
 							{
 								if (i>world_obj_count-1 && j != mem_log[i][2]-2)
 								{
-									if (i==obj_cyc || i==_all_lock_i) {
-										drawLine(ctx, rgbas_link[_all_lock], 1.0,
-										 m1.data[4*j+mem_log[i][0]],
-										  m1.data[4*j+mem_log[i][0]+1],
-										   m1.data[4*(j+1)+mem_log[i][0]],
-										    m1.data[4*(j+1)+mem_log[i][0]+1]);
+									if (i==obj_cyc || i==_all_lock_i)
+									{
+										drawLineF(ctx, i, j, rgbas_link[_all_lock], 1);
 									} else {
-										drawLine(ctx,rgba_w, 1,
-										 m1.data[4*j+mem_log[i][0]],
-										  m1.data[4*j+mem_log[i][0]+1],
-										   m1.data[4*(j+1)+mem_log[i][0]],
-										    m1.data[4*(j+1)+mem_log[i][0]+1]);
+										drawLineF(ctx, i, j, rgba_w, 1);
 									}
 								}
 							}
@@ -2409,11 +2439,9 @@ function drawIt()
 								if (i <= 8)
 								{
 									if (j == 0)
-									{drawLine(ctx,rgbas[i-6], 0.5,
-									 m1.data[4*j+mem_log[i][0]],
-									  m1.data[4*j+mem_log[i][0]+1],
-									   m1.data[4*(j+1)+mem_log[i][0]],
-									    m1.data[4*(j+1)+mem_log[i][0]+1]);}
+									{
+										drawLineF(ctx, i, j, rgbas[i-6], 0.5);
+									}
 								}
 							}
 
@@ -2421,18 +2449,14 @@ function drawIt()
 							{
 								if (j != mem_log[i][2]-2)
 								{
-									drawLine(ctx,rgba_w, 0.4,
-									 m1.data[4*j+mem_log[i][0]],
-									  m1.data[4*j+mem_log[i][0]+1],
-									   m1.data[4*(j+1)+mem_log[i][0]],
-									    m1.data[4*(j+1)+mem_log[i][0]+1]);
+									drawLineF(ctx, i, j, rgba_w, 0.4);
 								}
 							}
 
-							if (i==1) {fillDot(ctx, rgba_w_flr,
-							 m1.data[4*j+mem_log[i][0]],
-							  m1.data[4*j+mem_log[i][0]+1],
-							   m1.data[4*j+mem_log[i][0]+2]+0.5, 0.7)}; ///////////////////////////  Math.pow((m1.data[4*j+mem_log[i][0]+3]*(0.03)).toFixed(3) => 1/Math.pow((w*(0.03)).toFixed(3)
+							if (i==1)
+							{
+								fillDotF(ctx, i, j, rgba_w_flr, 0.7);
+							};
 
 							// Center point
 
@@ -3154,7 +3178,7 @@ function Compute(init_dat)
 			_f = _f+_d[i].toFixed(4)+",";
 			if (i==_d.length-1) {_f = _f+"]";}
 		}
-		console.log(_f);
+		console.log(_f); // Do not remove
 	}
 
 	
