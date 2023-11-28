@@ -9,7 +9,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
       _\/\\\_____________\/\\\_\/\\\_____________\/\\\_____________\/\\\__/\\\______\//\\\__\/\\\____________\///\\\__________________/\\\////\\\_________\/\\\_______/\\\/___________  
        _\/\\\_____________\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_____________\/\\\_\///\\\\\\\\\\\/___\/\\\______________\////\\\\\\\\__/\\\__/\\\/___\///\\\_______\/\\\______/\\\\\\\\\\\\\\\_ 
         _\///______________\///__\///////////////__\///______________\///____\///////////_____\///__________________\////////__\///__\///_______\///________\///______\///////////////__
-*/
+*/ // You exist in a .bin of floating point numbers.
 
 
 // Make a pistol that shoots green lasers that bounce!
@@ -63,7 +63,15 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Hey I noticed %3 ran faster. I could just multithread the draw loop and make it setting ...... 
 	..................man I did this 9 years ago in C# on MAC to image track csgo lmao never got banned never got past no cursor input but worked on simulated image data in js
 	- solution here is to pat gen something a head of time I do believe.
-			fill array with index
+			fill array with indice map pointing to an even 1/n stack
+			pickUp array basically takes the remaining fraction and draws it.
+				example: n=5 -> use 4 even stacks to compute 4 renders at once
+						 remainder here is 1 so I go through at original per second point sequence to finish w/ modulo even/odd offset
+
+						 I put this in chatgpt and it couldn't split it for me. It probably could given a better prompt? Not even best code ai? Not sure honestly I tried everything it output
+						 into the draw sequence and it couldn't get me the correct render sequence for halfing render loop.
+						 simple concept to implement but it get's weird when i'm considering the modulo and referencing future points that may not exist yet.
+
 
 
 I can make real physgun by compounding quaternions and ray trace AYYYYYYYYYYYYYYYYYYYYYYY
@@ -361,6 +369,10 @@ var link_lock = 0; var link_obj_i = 0;
 var bond_lock = 0; var bond_obj_i = 0;
 var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 
+var _all_lock = 0; // Pass through color
+var _all_lock_i = 0;
+
+
 var stn_draw = [true, true];
 var stn_cir_tool = [8, 24, 0];
 var stn_link_tool = 1; // Default link pat
@@ -381,6 +393,7 @@ var menu_tab = 0;
 
 // Premade color strings and color arrays
 
+// #COLORS
 var rgba_r = "rgba(200, 50, 50, 0.6)";
 var rgba_g = "rgba(50, 200, 50, 0.6)";
 var rgba_b = "rgba(50, 50, 200, 1.0)";
@@ -390,20 +403,28 @@ var rgba_y = "rgba(240, 240, 50, 1.0)";
 var rgba_o = "rgba(245, 213, 63, 1.0)";
 var rgba_ch = "rgba(50, 200, 50, 0.9)";
 var rgba_lp = "rgba(40, 40, 40, 0.75)";
-//var rgba_dgray = "rgba(8, 10, 12, 1.0)";
-var rgba_dgray = "rgba(10, 12, 14, 1.0)";
-//var rgba_gray = "rgba(11, 13, 15, 1.0)";
-var rgba_gray = "rgba(13, 15, 17, 1.0)";
-//var rgba_mgray = "rgba(10, 12, 14, 1.0)";
+//var rgba_dgray = "rgba(8, 10, 12, 1.0)"; o
+
+// var rgba_dgray = "rgba(10, 12, 14, 1.0)";
+
+var rgba_dgray = "rgba(11, 12, 15, 1.0)";
+//var rgba_gray = "rgba(11, 13, 15, 1.0)"; o
+
+//var rgba_gray = "rgba(15, 16, 18, 1.0)"; g
+var rgba_gray = "rgb(17, 18, 21)";
+//var rgba_mgray = "rgba(10, 12, 14, 1.0)"; o
+
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
-var rgba_otext = "rgba(188, 118, 48, 1.0)";
-var rgba_dtext = "rgba(111, 111, 111, 1.0)";
+var rgba_otext = "rgba(194, 122, 52, 1.0)";
+var rgba_dtext = "rgba(155, 155, 155, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
-var rgba_cindig = "rgb(152 106 179)";
+var rgba_cindig = "rgb(152, 106, 179)";
+var rgba_cindiga = "rgba(152, 106, 179, 0.9)";
 
 var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
-var rgbas_link = [rgba_y, rgba_b];
+var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // main for loop
 var rgbas_trans = [rgba_lgray, rgba_g];
+
 
 var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
 var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
@@ -525,7 +546,7 @@ function updateMenuPos()
 						/*-- Key & Mouse event capture --\
 						\-------------------------------*/
 
-
+//#KEYMAP
 var key_map =
 {
 	w: false,
@@ -1693,17 +1714,17 @@ function m_objs_bottom(_i)
 
 function bond_obj(_i)
 {
-	switch(bond_lock)
+	switch(_all_lock)
 	{
 		case 0: // Alternator
 			console.log(_i);
-			bond_obj_i = _i;
-			bond_lock = 1;
+			_all_lock_i = _i;
+			_all_lock = 2;
 			break;
-		case 1:
+		case 2:
 
 			var _oi = splitObj(m_objs[_i]);
-			var _of = splitObj(m_objs[bond_obj_i]);
+			var _of = splitObj(m_objs[_all_lock_i]);
 			// Some for each practice
 			var lap_oi = -1; var lap_of = -1;
 			_oi.forEach((e1, i1) =>
@@ -1784,39 +1805,39 @@ function bond_obj(_i)
 			// }
 
 			m_objs_loadPoints(packObj(_f));
-			bond_lock = 0;
+			_all_lock = 0;
 			break;
 	}
 }
 
 function link_obj(_i, _t)
 {
-	switch(link_lock)
+	switch(_all_lock)
 	{
 		case 0: // Alternator
-			link_obj_i = _i;
-			link_lock = 1;
+			_all_lock_i = _i;
+			_all_lock = 1;
 			break;
 		case 1:
-			if (mem_log[_i][1] != mem_log[link_obj_i][1] || _i == link_obj_i) {link_lock = 0; link_obj_i = 0; break;} //console.log("can't link");
+			if (mem_log[_i][1] != mem_log[_all_lock_i][1] || _i == _all_lock_i) {_all_lock = 0; _all_lock_i = 0; break;} //console.log("can't link");
 			var _of = [];
 			var _o1 = splitObj(m_objs[_i]);
-			var _o2 = splitObj(m_objs[link_obj_i]);
+			var _o2 = splitObj(m_objs[_all_lock_i]);
 			switch(_t)
 			{
 				case 0:
-					var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[link_obj_i][0], m_objs[link_obj_i][1], m_objs[link_obj_i][2], 1]);
+					var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[_all_lock_i][0], m_objs[_all_lock_i][1], m_objs[_all_lock_i][2], 1]);
 					for (var i = 0; i<mem_log[_i][2]-1; i++)
 					{
 						var _ob = [];
-						_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[link_obj_i][i*4], m_objs[link_obj_i][i*4+1], m_objs[link_obj_i][i*4+2], 1];
+						_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[_all_lock_i][i*4], m_objs[_all_lock_i][i*4+1], m_objs[_all_lock_i][i*4+2], 1];
 						if (i == mem_log[_i][2]-2)
 						{ // Double nested to avoid unnecesarry second call to JSON.stringify(). Dirty fix.
 							if (_ia != JSON.stringify(_ob))
 							{m_objs_loadPoints(new Float32Array(_ob));}
 						} else {m_objs_loadPoints(new Float32Array(_ob));}
 					}
-					link_obj_i = 0; link_lock = 0;
+					_all_lock_i = 0; _all_lock = 0;
 					break;
 
 				case 1:
@@ -1876,7 +1897,7 @@ function link_obj(_i, _t)
 						}
 					}
 					m_objs_loadPoints(packObj(_of));
-					link_obj_i = 0; link_lock = 0;
+					_all_lock_i = 0; _all_lock = 0;
 					break;
 
 				case 2:
@@ -1887,7 +1908,7 @@ function link_obj(_i, _t)
 						if (i != mem_log[_i][2]-2) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);}
 					}
 					m_objs_loadPoints(packObj(_of));
-					link_obj_i = 0; link_lock = 0;
+					_all_lock_i = 0; _all_lock = 0;
 					break;
 			}
 			break;
@@ -1896,21 +1917,19 @@ function link_obj(_i, _t)
 
 
 
-
-
 function expand_obj(_i)
 {
-	switch(exp_lin_lock)
+	switch(_all_lock)
 	{
 		case 0:
-			exp_lin_obj_i = _i;
+			_all_lock_i = _i;
+			_all_lock = 3;
 			exp_f[0] = _lp_world[0];
 			exp_f[1] = _lp_world[1];
 			exp_f[2] = _lp_world[2];
-			exp_lin_lock = 1;
 			break;
-		case 1:
-			var _mc = getctr_obj(exp_lin_obj_i);
+		case 3:
+			var _mc = getctr_obj(_all_lock_i);
 			var _d = sub(_lp_world, _mc);
 			var _w = sub(_lp_world, exp_f);
 			var _s = Math.pow(len3(sub(_lp_world, exp_f)),1/3);
@@ -1922,35 +1941,34 @@ function expand_obj(_i)
 
 			//var _rs = []; var _re = []; var _rf = [];
 
-			for (var i=0; i<mem_log[exp_lin_obj_i][1]/4; i++)
+			for (var i=0; i<mem_log[_all_lock_i][1]/4; i++)
 			{
 				//c=====x--------------0
 				//c--------------------0=====x
 				//c--------------------0==========x
 				//c==========x---------0
 
-				// console.log([m_objs[exp_lin_obj_i][i*4]-_mc[0], m_objs[exp_lin_obj_i][i*4+1]-_mc[1], m_objs[exp_lin_obj_i][i*4+2]-_mc[1]]);
+				// console.log([m_objs[_all_lock_i][i*4]-_mc[0], m_objs[_all_lock_i][i*4+1]-_mc[1], m_objs[_all_lock_i][i*4+2]-_mc[1]]);
 				// console.log(_mc);
-				//_rs = [m_objs[exp_lin_obj_i][i*4]-_mc[0], m_objs[exp_lin_obj_i][i*4+1]-_mc[1], m_objs[exp_lin_obj_i][i*4+2]-_mc[1]];
+				//_rs = [m_objs[_all_lock_i][i*4]-_mc[0], m_objs[_all_lock_i][i*4+1]-_mc[1], m_objs[_all_lock_i][i*4+2]-_mc[1]];
 
-				// _rs = [m_objs[exp_lin_obj_i][i*4], m_objs[exp_lin_obj_i][i*4+1], m_objs[exp_lin_obj_i][i*4+2]];
+				// _rs = [m_objs[_all_lock_i][i*4], m_objs[_all_lock_i][i*4+1], m_objs[_all_lock_i][i*4+2]];
 				// _re = scale3(_rs, 1/len3(_rs));
 				// _rf = 
 				// console.log(_rs);
 
-				// m_objs[exp_lin_obj_i][i*4]   = _mc[0] + _w[0]*(m_objs[exp_lin_obj_i][i*4]  -_mc[0]);
-				// m_objs[exp_lin_obj_i][i*4+1] = _mc[1] + _w[1]*(m_objs[exp_lin_obj_i][i*4+1]-_mc[1]);
-				// m_objs[exp_lin_obj_i][i*4+2] = _mc[2] + _w[2]*(m_objs[exp_lin_obj_i][i*4+2]-_mc[2]);
-				m_objs[exp_lin_obj_i][i*4]   = _mc[0] + _w[0]*(m_objs[exp_lin_obj_i][i*4]  -_mc[0]);
-				m_objs[exp_lin_obj_i][i*4+1] = _mc[1] + _w[1]*(m_objs[exp_lin_obj_i][i*4+1]-_mc[1]);
-				m_objs[exp_lin_obj_i][i*4+2] = _mc[2] + _w[2]*(m_objs[exp_lin_obj_i][i*4+2]-_mc[2]);
+				// m_objs[_all_lock_i][i*4]   = _mc[0] + _w[0]*(m_objs[_all_lock_i][i*4]  -_mc[0]);
+				// m_objs[_all_lock_i][i*4+1] = _mc[1] + _w[1]*(m_objs[_all_lock_i][i*4+1]-_mc[1]);
+				// m_objs[_all_lock_i][i*4+2] = _mc[2] + _w[2]*(m_objs[_all_lock_i][i*4+2]-_mc[2]);
+				m_objs[_all_lock_i][i*4]   = _mc[0] + _w[0]*(m_objs[_all_lock_i][i*4]  -_mc[0]);
+				m_objs[_all_lock_i][i*4+1] = _mc[1] + _w[1]*(m_objs[_all_lock_i][i*4+1]-_mc[1]);
+				m_objs[_all_lock_i][i*4+2] = _mc[2] + _w[2]*(m_objs[_all_lock_i][i*4+2]-_mc[2]);
 
 			}
-			exp_lin_obj_i = 0; exp_lin_lock = 0;
+			_all_lock_i = 0; _all_lock = 0;
 			break;
 	}
 }
-
 
 
 
@@ -1990,11 +2008,11 @@ function drawOverlay(init_dat)
 	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56); // Darklighter box
 
 
-	document.getElementById("stn_menu_tab_0").style.left = (menu_q_pos[0]-1+11) + "px";
-	document.getElementById("stn_menu_tab_0").style.top = (menu_q_pos[1]-15-2) + "px";
+	document.getElementById("stn_menu_tab_0").style.left = (menu_q_pos[0]-1+11-6) + "px";
+	document.getElementById("stn_menu_tab_0").style.top = (menu_q_pos[1]-15-1) + "px";
 
-	document.getElementById("stn_menu_tab_1").style.left = (menu_q_pos[0]+150) + "px";
-	document.getElementById("stn_menu_tab_1").style.top = (menu_q_pos[1]-15-2) + "px";
+	document.getElementById("stn_menu_tab_1").style.left = (menu_q_pos[0]+150-6) + "px";
+	document.getElementById("stn_menu_tab_1").style.top = (menu_q_pos[1]-15-1) + "px";
 
 
     if (!mouseLock)
@@ -2149,7 +2167,7 @@ function drawOverlay(init_dat)
 	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", menu_keys_pos[0]+15, 34);
 	//drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
 	drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
-	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + ["X-Plane","Y-Plane","Z-Plane"][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
+	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
 	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", menu_keys_pos[0]+398, 49);
 
 	if (!mouseLock && menu_tab==1)
@@ -2315,7 +2333,6 @@ function drawIt()
 					for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
 					{
 						//if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
-						// I did write this whole thing (in general 99%) but it's funny to me at this point in time I could not get chat gpt to rewrite this and multithread it ???? y so ez tho
 						if (m1.data[8*k+mem_log[i][0]+3] > 0)
 						{
 							if (m1.data[8*k+mem_log[i][0]+7] > 0)
@@ -2359,8 +2376,8 @@ function drawIt()
 							{
 								if (i>world_obj_count-1 && j != mem_log[i][2]-2)
 								{
-									if (i==obj_cyc || i==link_obj_i) {
-										drawLine(ctx, rgbas_link[link_lock], 1.0,
+									if (i==obj_cyc || i==_all_lock_i) {
+										drawLine(ctx, rgbas_link[_all_lock], 1.0,
 										 m1.data[4*j+mem_log[i][0]],
 										  m1.data[4*j+mem_log[i][0]+1],
 										   m1.data[4*(j+1)+mem_log[i][0]],
