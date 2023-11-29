@@ -35,6 +35,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	LONG TASK
 
+	First try rotating an array.
+
+
 	Maybe web workers will make a lot more possible.
 		can pass things like updateNormalMaps, updateRayInters maybe too.
 		there must be a way to do the damn poly clip this way.
@@ -53,15 +56,18 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Try making a list in real time of anything entirely behind another obj's triangles?
 		try in 2d w/ triangle intersector later
 	Obj cut hole { i could try using the link script on to the hole... }
-		oh wow i need to start logging the 
-	Obj preview on screen below highlighted obj in mem
+		i keep reusing my linear link. need to learn poly fill alg
+		i need to implement geometric obj creation.
+	3D Obj preview on screen below highlighted obj in mem
 		Make new model view mem region
 	Condense code structure / move fns
 		Setup fn to perform a series of operations.
 		Use where I have link_obj_i and pass fn color -> set index
 	Mover should show bounding box w/ corners to drag size
+	All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
 	Outside of this I'm making a menu constructor. Starting to feel like TeX o_0
 		All of the menu will be replaced with html because that makes sense.
+			Eventually I will make a 3d hud type menu that's a bit more ridiculous.
 	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet.
 
 	QUICK TASK
@@ -76,11 +82,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			pickUp array basically takes the remaining fraction and draws it.
 				example: n=5 -> use 4 even stacks to compute 4 renders at once
 						 remainder here is 1 so I go through at original per second point sequence to finish w/ modulo even/odd offset
-
-						 I put this in chatgpt and it couldn't split it for me. It probably could given a better prompt? Not even best code ai? Not sure honestly I tried everything it output
-						 into the draw sequence and it couldn't get me the correct render sequence for halfing render loop.
-						 simple concept to implement but it get's weird when i'm considering the modulo and referencing future points that may not exist yet.
-
 
 
 I can make real physgun by compounding quaternions and ray trace AYYYYYYYYYYYYYYYYYYYYYYY
@@ -128,7 +129,7 @@ Assault cube old code
 		tri in order a b c (points) 
 
               b
-             /\         n from dataset: obj_normalMaps
+             /|\         n from dataset: obj_normalMaps
             / n \
            a     c
 
@@ -328,6 +329,15 @@ var stn_tab_query = document.querySelectorAll('.stn_tab');
 var menu_inputs = document.querySelectorAll('._menu');
 var menu_tab0 = document.querySelectorAll('._tab0');
 
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
+// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
 
 var screen_width, screen_height;
 
@@ -389,7 +399,7 @@ var stn_link_tool = 1; // Default link pat
 var paint_d = 0; var paint_n = 0;
 var stn_paint_l = 1; var stn_paint_line_l = 8; var stn_paint_inf = false;
 
-var _epsilon = 150;
+var _epsilon = 300;
 var in_win_clip;
 var one_time_fix = 1;
 
@@ -400,6 +410,16 @@ var menu_keys_pos = [155, 10];
 var menu_wpn_pos = [155, 10];
 
 var menu_tab = 0;
+
+var indices = [];
+var distances = [];
+var indexMapping = [];
+var originalIndices = [];
+var newIndex = {};
+var d_i = 0;
+
+
+
 
 // Premade color strings and color arrays
 
@@ -417,11 +437,13 @@ var rgba_lp = "rgba(40, 40, 40, 0.75)";
 
 // var rgba_dgray = "rgba(10, 12, 14, 1.0)";
 
-var rgba_dgray = "rgba(11, 12, 15, 1.0)";
+var rgba_dgray = "rgb(12, 12, 12)";
+//var rgba_dgray = "rgba(11, 12, 15, 1.0)";
 //var rgba_gray = "rgba(11, 13, 15, 1.0)"; o
 
 //var rgba_gray = "rgba(15, 16, 18, 1.0)"; g
-var rgba_gray = "rgb(17, 18, 21)";
+//var rgba_gray = "rgb(17, 18, 21)";
+var rgba_gray = "rgb(17, 17, 18)";
 //var rgba_mgray = "rgba(10, 12, 14, 1.0)"; o
 
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
@@ -437,15 +459,17 @@ var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // 
 var rgbas_trans = [rgba_lgray, rgba_g];
 
 
-var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
-var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
-var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
-var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
+// var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
+// var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
+// var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
+// var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
 
-// var rgba_w_tri1 = "rgba(200, 200, 200, 1)";
-// var rgba_w_tri2 = "rgba(150, 150, 150, 1)";
-// var rgba_w_tri3 = "rgba(100, 100, 100, 1)";
-// var rgba_w_tri4 = "rgba(50, 50, 50, 1)";
+
+var rgba_w_tri1 = "rgba(130, 130, 130, 1)";
+var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
+var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
+var rgba_w_tri4 = "rgba(90, 90, 90, 1)";
+
 
 // var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
 // var rgba_w_tri2 = "rgba(0, 225, 0, 1)";
@@ -453,7 +477,6 @@ var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
 // var rgba_w_tri4 = "rgba(165, 0, 165, 1)";
 
 var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
-
 
 var _oh = [0,0,0,0];
 var f_look = [0,0,0,0];
@@ -600,6 +623,7 @@ var key_map =
 	"7": false,
 	" ": false,
 	"/": false,
+	"[": false,
 	control: false,
 	shift: false,
 	enter: false,
@@ -1289,8 +1313,6 @@ function pointerLockSwap()
 
 window.addEventListener('resize', function()
 {
-
-	
 	updateMenuPos();
 });
 
@@ -1588,6 +1610,36 @@ function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
     return [_rq[1], _rq[2], _rq[3]];
 }
 
+function updateDrawMap()
+{
+	for (var i=0; i<m_objs.length; i++)
+	{
+		indices.push(i);
+		//distances.push(len3(sub(getctr_obj(i), player_pos)));
+		distances.push(Math.abs(m1.data[mem_log[i][0]+mem_log[i][1]-1]));
+	}
+
+	originalIndices = indices.slice();
+
+	indices.sort((a, b) => distances[a] - distances[b]);
+	//indices.sort((a, b) => distances[b] - distances[a]);
+
+	indexMapping = originalIndices.map((originalIndex, sortedIndex) => ({
+	  originalIndex: originalIndex,
+	  sortedIndex: indices[sortedIndex],
+	  distance: distances[indices[sortedIndex]],
+	}));
+
+	indices.length = 0;
+	distances.length = 0;
+
+	indexMapping.forEach(item => {
+	  newIndex[item.originalIndex] = item.sortedIndex;
+	});
+
+	//console.log(init_dat.data[mem_log[i][0]+mem_log[i][1]-1]); // Z dist test
+	return indexMapping;
+}
 
 function del_obj(_i)
 {
@@ -1725,6 +1777,18 @@ function m_obj_explode(_i)
 //		I give up. Just going to fix load/save encoding and group objs instead.
 //		My final attempt should work but it didn't. I just can't waste more time on this one for now.
 
+
+function rotateArray(ar, n)
+{
+	const l = ar.length;
+	if (l === 0 || n % l === 0) {return ar.slice();}
+	const nn = n % l;
+	const rotatedArray = array.slice(l - nn).concat(array.slice(0, l - nn));
+	return rotatedArray;
+}
+
+
+
 function bond_obj(_i)
 {
 	switch(_all_lock)
@@ -1749,20 +1813,86 @@ function bond_obj(_i)
 				if (lap_oi != -1) {return;}
 			});
 
-			//console.log(lap_oi + " : " + lap_of);
-			
-			// shift around indexs so that it changes the order drawn to align with the overlap point and then just connect the two end to end removing the first point of second one
-
-			//var _oi_half0 = _oi.slice(lap_oi);
-			//var _oi_r = circularRotate(_oi, _oi.length-1 - lap_oi);
-
-			//const endIndex = lap_oi+1; // Inclusive end index
-			//const elementsToRemove = _oi.length - endIndex - 1;
-			//const _oi_half1 = _oi.splice(endIndex + 1, elementsToRemove); // end. _oi is now beginning half
-
 			var _f = [];
 
-			_oi.push(_oi[_oi.length-1]);
+
+
+			_oi.push(_oi[_oi.length-1]); // ??
+
+			// var itorLog = 0;
+
+			// var matchPoint = _oi[lap_oi]; // Can use either one
+			// var matchPoint2 = _of[lap_of]; // Can use either one
+
+			// console.log(_of);
+			// console.log(_oi);
+
+			// console.log(matchPoint);
+			// console.log(matchPoint2);
+
+			// for (var i = 0; i<_oi.length; i++) // idk just use len for now
+			// {
+			// 	// if (_oi[_oi.length-1] != matchPoint) // checking if last point in array is not match point.
+			// 	if (!pIsEqual(_oi[_oi.length-1], matchPoint))
+			// 	{
+			// 		_oi = rotateArray(_oi, 1);
+			// 		itorLog++;
+			// 	}
+
+			// 	if (i == _oi.length-1) {console.log(itorLog);}
+			// }
+
+
+			// for (var i = _of.length - 1; i >= 0; i--)
+			// {
+			// 	// if (_of[0] != matchPoint) // checking if last point in array is not match point.
+			// 	if (!pIsEqual(_of[0], matchPoint))
+			// 	{
+			// 		_of = rotateArray(_of, 1);
+			// 	}
+
+			// }
+
+
+
+
+
+			// assume objs for now are closed loop with an overlapping end point.
+			// I hope this design wasn't a mistake. Maybe additional 3d data isn't too bad
+			// rendering must be redone from linear to one more layer. like a way to draw objs based on on new list.
+			// I could map obj by memory...
+			/*
+				obj in general by mem sections measured for mean ctr which could act as simple reorganize for z buffer
+					so draw obj rel to dist using 3d ctr??
+					mem redirect would say..
+					table:
+						[i][0][dist..]
+						[i][1][dist...]
+						[i][2][dist..]
+						[i][3][dist...]
+						[i][4][dist..]
+
+						so put i map into reorganize list by dist
+						generate a draw -> nvm ref table from 0 to n and access table[1]
+
+			*/
+			// take last one out -> rotate -> recreate last
+
+
+			//_oi.splice(-1);
+			// for (var j = 0; j<_of.length; j++) // idk just use len for now
+			// {
+			// 	if (_of[0] != matchPoint) // checking if last point in array is not match point.
+			// 	{
+			// 		_of = rotateArray(_of, 1);
+			// 	}
+			// }
+
+			//console.log("zzzzzzzzzzzzzzzzzzzzzz------");
+
+
+			//console.log(_oi);
+			//console.log(_of);
 
 			_oi.forEach(e1 =>
 			{
@@ -1774,47 +1904,7 @@ function bond_obj(_i)
 				_f.push(e1);
 			});
 
-			// _oi_half1.forEach(e1 =>
-			// {
-			// 	_f.push(e1);
-			// });
 
-			// Now get tails in reverse
-
-			// console.log(lap_oi);
-			// console.log(lap_of);
-			
-			// var _of_tail = _of.slice(lap_of).reverse();
-
-			// if ( (_oi_tail.length) %2 != 0)
-			// {_oi_tail.push(_oi_tail[_oi_tail.length-1]);}
-
-			// if ( (_of_tail.length) %2 == 0)
-			// {_of_tail.push(_of_tail[_of_tail.length-1]);}
-
-			// console.log(_of_tail);
-
-			// // Now to push tails onto original arrays
-
-			// _oi_tail.forEach(e1 =>
-			// {
-			// 	_oi.push(e1);
-			// });
-
-			// _of_tail.forEach(e1 =>
-			// {
-			// 	_of.push(e1);
-			// });
-
-			// console.log(_oi);
-			// console.log(_of);
-
-			// Using the reverse loop to construct final obj
-
-			// for (var i = _of.length - 1; i >= 0; i--)
-			// {
-			// 	_oi.push(_of[i]);
-			// }
 
 			m_objs_loadPoints(packObj(_f));
 			_all_lock_i = 0; _all_lock = 0;
@@ -2001,6 +2091,8 @@ function expand_obj(_i)
 function drawOverlay(init_dat)
 {
 	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
+
+	updateMenuPos();
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 
@@ -2212,15 +2304,15 @@ function drawOverlay(init_dat)
 
 		drawText(ctx_o, rgba_otext, "left", "RMB(go to pnt in current obj)", menu_q_pos[0]+14, menu_q_pos[1]+249-30);
 
-		drawText(ctx_o, rgba_otext, "left", "5(mirror by pln)", menu_q_pos[0]+14, menu_q_pos[1]+264-30);
+		drawText(ctx_o, rgba_otext, "left", "MMB(show point sku & rot camera)", menu_q_pos[0]+14, menu_q_pos[1]+264-30);
 
-		drawText(ctx_o, rgba_otext, "left", "6(scale by dist)", menu_q_pos[0]+14, menu_q_pos[1]+279-30);
+		drawText(ctx_o, rgba_otext, "left", "5(mirror by pln)", menu_q_pos[0]+14, menu_q_pos[1]+279-30);
 
-		drawText(ctx_o, rgba_otext, "left", "7(make cir)", menu_q_pos[0]+14, menu_q_pos[1]+294-30);
+		drawText(ctx_o, rgba_otext, "left", "6(scale by dist)", menu_q_pos[0]+14, menu_q_pos[1]+294-30);
 
-		drawText(ctx_o, rgba_otext, "left", "Shift+R(rot obj)", menu_q_pos[0]+14, menu_q_pos[1]+309-30);
+		drawText(ctx_o, rgba_otext, "left", "7(make cir)", menu_q_pos[0]+14, menu_q_pos[1]+309-30);
 
-		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov)", menu_q_pos[0]+14, menu_q_pos[1]+324-30);
+		drawText(ctx_o, rgba_otext, "left", "Shift+R(rot obj)", menu_q_pos[0]+14, menu_q_pos[1]+324-30);
 
 		drawText(ctx_o, rgba_otext, "left", "Q(menu)", menu_q_pos[0]+14, menu_q_pos[1]+339-30);
 
@@ -2245,6 +2337,8 @@ function drawOverlay(init_dat)
 		drawText(ctx_o, rgba_otext, "left", "I(join objs)", menu_q_pos[0]+14, menu_q_pos[1]+489-30);
 
 		drawText(ctx_o, rgba_otext, "left", "L(link objs)", menu_q_pos[0]+14, menu_q_pos[1]+504-30);
+
+		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov)", menu_q_pos[0]+14, menu_q_pos[1]+519-30);
 	}
 
 	//  else {
@@ -2369,35 +2463,41 @@ function fillDotF(ctx, i, j, c, lw)
 function drawIt()
 {
 	Compute(m1);
+	updateDrawMap();
+
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
+
+
 
 
 	// Draw packed verts
 	//for (var i=1; i<m_objs.length; i++) // i find object
-	for (var i = m_objs.length-1; i >= 0; i--)
+	// for (var i = m_objs.length-1; i >= 0; i--)
+	for (var n = m_objs.length-1; n >= 0; n--)
 	{
+		d_i = newIndex[n];
 		if (stn_draw[1]) // Tris
 		{
-			if (i>world_obj_count-1)
+			if (d_i>world_obj_count-1)
 			{	
-				if (mem_log[i][2]>2)
+				if (mem_log[d_i][2]>2)
 				{
 					//for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
 					
-					for (var k = (Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2)-1; k >= 0; k--)
+					for (var k = (Math.floor((mem_log[d_i][2]-1)/2)-mem_log[d_i][2]%2)-1; k >= 0; k--)
 					{
 						//if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
-						if (m1.data[8*k+mem_log[i][0]+3] > 0)
+						if (m1.data[8*k+mem_log[d_i][0]+3] > 0)
 						{
-							if (m1.data[8*k+mem_log[i][0]+7] > 0)
+							if (m1.data[8*k+mem_log[d_i][0]+7] > 0)
 							{
-								if (m1.data[8*k+mem_log[i][0]+11] > 0)
+								if (m1.data[8*k+mem_log[d_i][0]+11] > 0)
 								{
-									if (m1.data[8*k+mem_log[i][0]] > -_epsilon)
+									if (m1.data[8*k+mem_log[d_i][0]] > -_epsilon)
 									{
-										if (m1.data[8*k+mem_log[i][0]] < in_win_clip)
+										if (m1.data[8*k+mem_log[d_i][0]] < in_win_clip)
 										{
-											drawTriangleF(ctx, i, k);
+											drawTriangleF(ctx, d_i, k);
 										}
 									}
 								}
@@ -2410,85 +2510,85 @@ function drawIt()
 
 		//for (var j=0; j<mem_log[i][2]-1; j++) // Draw Lines & Points
 
-		for (var j = mem_log[i][2]-2; j >= 0; j--)
+		for (var j = mem_log[d_i][2]-2; j >= 0; j--)
 		{
-			if (m1.data[4*j+mem_log[i][0]+3] > 0) // Line clipping
+			if (m1.data[4*j+mem_log[d_i][0]+3] > 0) // Line clipping
 			// if (1) // Clipping off
 			{	
-				if (m1.data[4*(j+1)+mem_log[i][0]+3] > 0) // Line clipping second point
+				if (m1.data[4*(j+1)+mem_log[d_i][0]+3] > 0) // Line clipping second point
 				{
-					if (m1.data[4*j+mem_log[i][0]] > -_epsilon) // Left side plane clip
+					if (m1.data[4*j+mem_log[d_i][0]] > -_epsilon) // Left side plane clip
 					{
-						if (m1.data[4*j+mem_log[i][0]] < in_win_clip) // Right side plane clip. Add top and bottom later.
+						if (m1.data[4*j+mem_log[d_i][0]] < in_win_clip) // Right side plane clip. Add top and bottom later.
 						{		
 							if (stn_draw[0])
 							{
-								if (i>world_obj_count-1 && j != mem_log[i][2]-2)
+								if (d_i>world_obj_count-1 && j != mem_log[d_i][2]-2)
 								{
-									if (i==obj_cyc || i==_all_lock_i)
+									if (d_i==obj_cyc || d_i==_all_lock_i)
 									{
-										drawLineF(ctx, i, j, rgbas_link[_all_lock], 1);
+										drawLineF(ctx, d_i, j, rgbas_link[_all_lock], 1);
 									} else {
-										drawLineF(ctx, i, j, rgba_w, 1);
+										drawLineF(ctx, d_i, j, rgba_w, 1);
 									}
 								}
 							}
 
-							if (i >= 6)
+							if (d_i >= 6)
 							{
-								if (i <= 8)
+								if (d_i <= 8)
 								{
 									if (j == 0)
 									{
-										drawLineF(ctx, i, j, rgbas[i-6], 0.5);
+										drawLineF(ctx, d_i, j, rgbas[d_i-6], 0.5);
 									}
 								}
 							}
 
-							if (i == 2)
+							if (d_i == 2)
 							{
-								if (j != mem_log[i][2]-2)
+								if (j != mem_log[d_i][2]-2)
 								{
-									drawLineF(ctx, i, j, rgba_w, 0.4);
+									drawLineF(ctx, d_i, j, rgba_w, 0.4);
 								}
 							}
 
-							if (i==1)
+							if (d_i==1)
 							{
-								fillDotF(ctx, i, j, rgba_w_flr, 0.7);
+								fillDotF(ctx, d_i, j, rgba_w_flr, 0.7);
 							};
 
 							// Center point
 
 							if (key_map.tab || wpn_select==1)
 							{
-								if (i>world_obj_count)
+								if (d_i>world_obj_count)
 								{
-									if (j == mem_log[i][2]-2)
+									if (j == mem_log[d_i][2]-2)
 									{
-										if (i==obj_cyc)
+										if (d_i==obj_cyc)
 										{drawCircle(ctx, rgba_cindig, 1.5,
-										 m1.data[4*j+mem_log[i][0]+4],
-										  m1.data[4*j+mem_log[i][0]+5],
-										   8*m1.data[4*j+mem_log[i][0]+2]);}
-										if (i!=obj_cyc)
+										 m1.data[4*j+mem_log[d_i][0]+4],
+										  m1.data[4*j+mem_log[d_i][0]+5],
+										   8*m1.data[4*j+mem_log[d_i][0]+2]);}
+										if (d_i!=obj_cyc)
 										{drawCircle(ctx, rgba_cindi, 1.5,
-										 m1.data[4*j+mem_log[i][0]+4],
-										  m1.data[4*j+mem_log[i][0]+5],
-										   8*m1.data[4*j+mem_log[i][0]+2]);}
+										 m1.data[4*j+mem_log[d_i][0]+4],
+										  m1.data[4*j+mem_log[d_i][0]+5],
+										   8*m1.data[4*j+mem_log[d_i][0]+2]);}
 									}
 								}
 							}
-							if (i>2)
+							if (d_i>2)
 							{
-								if (i<6)
+								if (d_i<6)
 								{
-									if (m1.data[mem_log[i][0]+4*j+3] > 0)
+									if (m1.data[mem_log[d_i][0]+4*j+3] > 0)
 									{
 										drawDot(ctx, rgbas[pln_cyc], 1,
-										 m1.data[4*j+mem_log[i][0]],
-										  m1.data[4*j+mem_log[i][0]+1],
-										   m1.data[4*j+mem_log[i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
+										 m1.data[4*j+mem_log[d_i][0]],
+										  m1.data[4*j+mem_log[d_i][0]+1],
+										   m1.data[4*j+mem_log[d_i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
 									}
 								}
 							}
@@ -2556,10 +2656,20 @@ function drawIt()
 
 
 
+// var yomane = [1,2,3,4,5,6,7];
 function Compute(init_dat)
 {
 
-
+	// if (key_map["["] && runEvery(300))
+	// {
+	// 	console.log(yomane);
+	// 	console.log("----------");
+	// 	for (var i = yomane.length - 1; i >= 0; i--)
+	// 	{
+	// 	 	yomane = rotateArray(yomane, 1);
+	// 	 	console.log(yomane);
+	// 	 }
+	// }
 
 	// #COMPUTE
 
@@ -3178,7 +3288,7 @@ function Compute(init_dat)
 			_f = _f+_d[i].toFixed(4)+",";
 			if (i==_d.length-1) {_f = _f+"]";}
 		}
-		console.log(_f); // Do not remove
+		console.log(_f); // Do not remove please fix: len - 4 & don't add , before when last?
 	}
 
 	
