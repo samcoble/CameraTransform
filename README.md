@@ -26,7 +26,6 @@ There's no limit here. Make any tool you can dream of. I'm hoping to generate mo
 
 So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save. Also I noticed when saving with Chrome the file was empty (0KB) despite having been labeled with the correct size upon creation.
 
-![zbuff](https://github.com/samcoble/CameraTransform/assets/32228102/b67936bf-5674-49b7-9116-c004a0bb5036)
 ![boatpics](https://github.com/samcoble/CameraTransform/assets/32228102/3dae0e7a-140b-49b2-8d38-12be1603c392)
 ![sight](https://github.com/samcoble/CameraTransform/assets/32228102/7596d805-3844-4424-a671-e18a67cb1fbc)
 ![goyin](https://github.com/samcoble/CameraTransform/assets/32228102/6e67584c-79a8-4406-8b77-01cad1497af6)
