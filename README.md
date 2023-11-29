@@ -26,7 +26,10 @@ There's no limit here. Make any tool you can dream of. I'm hoping to generate mo
 
 So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save. Also I noticed when saving with Chrome the file was empty (0KB) despite having been labeled with the correct size upon creation.
 
+Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally simple sun light.
+
 ![boatpics](https://github.com/samcoble/CameraTransform/assets/32228102/3dae0e7a-140b-49b2-8d38-12be1603c392)
+![zbuff](https://github.com/samcoble/CameraTransform/assets/32228102/c899384c-e2fe-4540-b015-0e5635a57e4e)
 ![sight](https://github.com/samcoble/CameraTransform/assets/32228102/7596d805-3844-4424-a671-e18a67cb1fbc)
 ![goyin](https://github.com/samcoble/CameraTransform/assets/32228102/6e67584c-79a8-4406-8b77-01cad1497af6)
 ![newz](https://github.com/samcoble/CameraTransform/assets/32228102/19106736-ec6f-49ff-a570-44e8f76adb4d)
