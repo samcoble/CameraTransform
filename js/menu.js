@@ -943,11 +943,27 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_lockSettings);
 
+                var div_lockSettings_r =
+                `
+                    color: rgb(140,40,40);
+                    text-shadow: 0px 0px 7px #000;
+                `;
+                var div_lockSettings_g =
+                `
+                    color: rgb(40,140,40);
+                    text-shadow: 0px 0px 7px #000;
+                `;
+                var div_lockSettings_b =
+                `
+                    color: rgb(40,40,140);
+                    text-shadow: 0px 0px 7px #000;
+                `;
+
                 var div_lockxSettings =
                 {
                     id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
                     text: `X`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_r
                 }; addDiv(div_lockxSettings);
 
                         var cbx_lockx =
@@ -966,7 +982,7 @@ var div_root =
                 {
                     id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
                     text: `Y`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_g
                 }; addDiv(div_lockySettings);
 
                         var cbx_lockySettings =
@@ -984,7 +1000,7 @@ var div_root =
                 {
                     id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
                     text: `Z`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_b
                 }; addDiv(div_lockzSettings);
 
                         var cbx_lockzSettings =
@@ -1026,7 +1042,7 @@ var div_root =
                 var div_paintInf =
                 {
                     id: "div_paintInf", cls: "", prnt: "detail_box_paintSettings",
-                    text: `Infinite`,
+                    text: `infinite &#8734;`,
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_paintInf);
 
