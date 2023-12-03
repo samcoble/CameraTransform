@@ -559,7 +559,7 @@ var div_root =
 
             var _btn =
              `
-            color: rgb(255, 123, 0);
+            color: rgb(195, 123, 0);
             background-color: rgb(27, 27, 30);
             text-align: center;
             //border: 1px rgba(222, 222, 222, 0.3);
