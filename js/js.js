@@ -20,6 +20,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 // If I could convert font data into 2d -> 3d/2d text gen!
 // I could also manually insert the alphabet as copied data from paint
 
+// New menu script almost finished.
+
 
 
 //  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
@@ -35,8 +37,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	LONG TASK
 
-	First try rotating an array.
-
+	So I guess I need to learn geometric algebra now. Linear algebra isn't enough. Quaternions are not even meta anymore.
+	W/ new menu script I can provide a better sense of what tools are.
 
 	Maybe web workers will make a lot more possible.
 		can pass things like updateNormalMaps, updateRayInters maybe too.
@@ -71,9 +73,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet.
 
 	QUICK TASK
+
 	Event log box would help
 	Allow grid size to be changed by regenerating the grid to match round size.
-	Color for bond obj
 
 	Hey I noticed %3 ran faster. I could just multithread the draw loop and make it setting ...... 
 	..................man I did this 9 years ago in C# on MAC to image track csgo lmao never got banned never got past no cursor input but worked on simulated image data in js
@@ -91,14 +93,12 @@ Assault cube old code
 
 /*
 .reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
+ Use this to push to top stack? ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
 */
 
 //  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
 //		for a lil extra travel just offset
 //		next step is using 2d data to clip away even more draw calls.  
-
-
-// Use this to push to top stack? ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
 
 
 // modulo distributes with switch with for loop ez wow
@@ -317,31 +317,14 @@ var title_int = 350;
 
 // Timer
 var date_now = 0;
+var date_now_after = 0;
 
 // Maybe move this into DOM LOAD event instead and keep var init.
 var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
 const fileInput = document.getElementById('fileInput');
-const stn_grid_s = document.getElementById('stn_grid_s');
-var stn_menu_clearall = document.getElementById('stn_menu_clearall');
-var stn_link_cboxes = document.querySelectorAll('.stn_link');
-var stn_tab_query = document.querySelectorAll('.stn_tab');
-var menu_inputs = document.querySelectorAll('._menu');
-var menu_tab0 = document.querySelectorAll('._tab0');
-
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
-// MOVE TO DOM OR REPLACE WITH SYSTEM HERE
 
 var screen_width, screen_height;
-
-
 
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
@@ -381,9 +364,18 @@ var hover_h = 11.5;
 var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0; // Selector
+
+// So bad fix jesus
 var grid_scale = 3; var grid_scale_f = 8; var grid_scale_ar = [8, 8, 8];
+var grid_ =
+{
+	scale:3,
+	scale_f:8,
+	scale_ar:[8,8,8]
+};
+
 var del_obj_lock = 0;
-var trns_lock = 0; var trns_obj_i = 0; var stn_trns = [false, false, false];
+var stn_trns = [false, false, false]; var trns_lock = 0; var trns_obj_i = 0; // replace w/ all lock
 var world_obj_count = 0;
 var link_lock = 0; var link_obj_i = 0;
 var bond_lock = 0; var bond_obj_i = 0;
@@ -392,12 +384,33 @@ var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 var _all_lock = 0; // Pass through color
 var _all_lock_i = 0;
 
+var stn_draw = [true, true, false];
 
-var stn_draw = [true, true];
-var stn_cir_tool = [8, 24, 0];
-var stn_link_tool = 1; // Default link pat
+
+//var stn_cir_tool = [8, 24, 0];
+//var stn_cir
+var stn_link_tool = 1; // Default link pat :: set by menu.js
+
+
+// var stn_paint_l = 1;
+// var stn_paint_line_l = 8;
+// var stn_paint_inf = false;
+
+var stn_paint =
+[
+	1, // length per node
+	8, // nodes per line
+	false // infinite nodes
+];
+
+var stn_cir_tool = 
+{
+	scale: 8,
+	divider: 24,
+	off: 0
+};
+
 var paint_d = 0; var paint_n = 0;
-var stn_paint_l = 1; var stn_paint_line_l = 8; var stn_paint_inf = false;
 
 var _epsilon = 300;
 var in_win_clip;
@@ -411,13 +424,16 @@ var menu_wpn_pos = [155, 10];
 
 var menu_tab = 0;
 
+// New type of js entirely for this.
+// Sorting algorithm provided by js. 
+// Mapping indicies in a table is a useful concept
 var indices = [];
 var distances = [];
 var indexMapping = [];
 var originalIndices = [];
 var newIndex = {};
+var modIndex = [];
 var d_i = 0;
-
 
 
 
@@ -452,6 +468,7 @@ var rgba_otext = "rgba(194, 122, 52, 1.0)";
 var rgba_dtext = "rgba(155, 155, 155, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
 var rgba_cindig = "rgb(152, 106, 179)";
+var rgba_cindiglite = "rgba(0, 0, 0, 0.2)";
 var rgba_cindiga = "rgba(152, 106, 179, 0.9)";
 
 var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
@@ -470,6 +487,11 @@ var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
 var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
 var rgba_w_tri4 = "rgba(90, 90, 90, 1)";
 
+var rgba_w_trio1 = "rgba(130, 130, 130, 0.5)";
+var rgba_w_trio2 = "rgba(120, 120, 120, 0.5)";
+var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
+var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
+
 
 // var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
 // var rgba_w_tri2 = "rgba(0, 225, 0, 1)";
@@ -477,6 +499,9 @@ var rgba_w_tri4 = "rgba(90, 90, 90, 1)";
 // var rgba_w_tri4 = "rgba(165, 0, 165, 1)";
 
 var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
+var rgbas_tri_opacity = [rgba_w_trio1, rgba_w_trio2, rgba_w_trio3, rgba_w_trio4];
+
+var rgbas_tri_f = rgbas_tri;
 
 var _oh = [0,0,0,0];
 var f_look = [0,0,0,0];
@@ -555,9 +580,6 @@ function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
     c.fill();
 }
 
-
-
-
 function drawCircle(c, rgba, lw, x, y, r)
 {
     c.beginPath();
@@ -567,12 +589,14 @@ function drawCircle(c, rgba, lw, x, y, r)
 }
 
 function updateMenuPos()
-{	//671 fix later
-	menu_q_pos = [30, 240];
+{	
 	menu_obj_pos = [in_win_w-150, 10];
 	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w/100*3, in_win_h/100*50 - 0.5*671];
+	menu_q_pos = [in_win_w/100*3, in_win_h/100*50 - 0.5*660]; //660 fix later
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
+
+	// Updating new menu script.
+	document.getElementById("menu_q").style.top = menu_q_pos[1]+"px";
 
 	in_win_clip = in_win_w+_epsilon;
 
@@ -733,57 +757,13 @@ window.addEventListener('keyup', (event) =>
 	}
 });
 
-stn_menu_clearall.addEventListener('click', function(e)
-{
-	for (var i=world_obj_count+1; i<m_objs.length; i++)
-	{
-		del_world();
-	}
-});
 
-stn_grid_s.addEventListener('change', function(e)
+function setGridScale(par) // crack cojamane
 {
-	if (checkNumber(this.value)) {grid_scale_f = this.value;}
-});
+	grid_scale_f = par.scale;
+	grid_.scale = par.scale;
+}
 
-
-stn_link_cboxes.forEach(function(e) // This worked out so damn good.
-{
-	e.addEventListener('change', function()
-	{
-		switch(this)
-		{
-			case stn_link_cboxes[0]:
-				stn_link_cboxes[1].checked = stn_link_cboxes[2].checked = false;
-				stn_link_tool = 0;
-				break;
-			case stn_link_cboxes[1]:
-				stn_link_cboxes[0].checked = stn_link_cboxes[2].checked = false;
-				stn_link_tool = 1;
-				break;
-			case stn_link_cboxes[2]:
-				stn_link_cboxes[0].checked = stn_link_cboxes[1].checked = false;
-				stn_link_tool = 2;
-				break;
-		}
-	});
-});
-
-stn_tab_query.forEach(function(e) // This worked out so damn good.
-{
-	e.addEventListener('click', function()
-	{
-		switch(this)
-		{
-			case stn_tab_query[0]:
-				menu_tab = 0;
-				break;
-			case stn_tab_query[1]:
-				menu_tab = 1;
-				break;
-		}
-	});
-});
 
 document.addEventListener('mousedown', function(e)
 {
@@ -816,7 +796,9 @@ window.addEventListener("wheel", function(e)
 
 	} else if (runEvery(200)) {
 			grid_scale += -e.deltaY/Math.abs(e.deltaY);
+			grid_.scale += -e.deltaY/Math.abs(e.deltaY);
 			grid_scale_f = Math.pow(2, grid_scale);
+			grid_.scale_f = Math.pow(2, grid_.scale);
 	}
 	s_fov = Math.pow(fov_slide, 2);
 });
@@ -853,7 +835,6 @@ function dot2(a,b) {return a[0]*b[0] + a[1]*b[1];}
 
 function add2(a,b) {return [a[0]+b[0], a[1]+b[1]];}
 function add3(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];}
-//function add4(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]];} // quats
 function add(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], 1];}
 
 function sub3(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];}
@@ -917,6 +898,13 @@ function runEvery(_ms) // works 100 honest #1 fav js fn rn
 {
 	var d_t = Date.now() - date_now; var _r = 0;
 	if (d_t > _ms) {_r = 1; date_now = Date.now();} else {_r = 0;}
+	return (_r);
+}
+
+function runEveryLong(_ms)
+{
+	var d_t = Date.now() - date_now_after; var _r = 0;
+	if (d_t > _ms) {_r = 1; date_now_after = Date.now();} else {_r = 0;}
 	return (_r);
 }
 
@@ -1300,11 +1288,11 @@ var ctx_o = canvas_over.getContext("2d");
 ctx.scale(1, 1); ctx_o.scale(1, 1);
 
 
-canvas_over.addEventListener("click", async () => 
-{
-	await canvas_over.requestPointerLock();
-	mouseLock = 1;
-});
+// canvas_over.addEventListener("click", async () => 
+// {
+// 	await canvas_over.requestPointerLock();
+// 	mouseLock = 1;
+// });
 
 
 function pointerLockSwap()
@@ -1610,7 +1598,18 @@ function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
     return [_rq[1], _rq[2], _rq[3]];
 }
 
-function updateDrawMap()
+function arHasC(ar, c)
+{
+    var _r = false;
+    for (var i = 0; i < ar.length; i++)
+    {
+        if (ar[i] === c) {_r = true;break;}
+    }
+    //console.log(_r);
+    return _r;
+}
+
+function updateDrawMap(priorityObjects)
 {
 	for (var i=0; i<m_objs.length; i++)
 	{
@@ -1636,6 +1635,18 @@ function updateDrawMap()
 	indexMapping.forEach(item => {
 	  newIndex[item.originalIndex] = item.sortedIndex;
 	});
+
+	modIndex = Object.values(newIndex);
+
+	for (var i = 0; i < priorityObjects.length; i++)
+	{
+	    let priorityIndex = modIndex.indexOf(priorityObjects[i]);
+	    if (priorityIndex !== -1)
+	    {
+	        let entry = modIndex.splice(priorityIndex, 1)[0];
+	        modIndex.unshift(entry);
+	    }
+	}
 
 	//console.log(init_dat.data[mem_log[i][0]+mem_log[i][1]-1]); // Z dist test
 	return indexMapping;
@@ -1676,9 +1687,9 @@ function finishTrnsAnim(_i)
 {
 	for (var i=0; i<mem_log[_i][2]; i++)
 	{
-		m_objs[_i][i*4+0] = m_objs[_i][i*4+0]+roundTo(m_obj_offs[_i][0], grid_scale_f);
-		m_objs[_i][i*4+1] = m_objs[_i][i*4+1]+roundTo(m_obj_offs[_i][1], grid_scale_f);
-		m_objs[_i][i*4+2] = m_objs[_i][i*4+2]+roundTo(m_obj_offs[_i][2], grid_scale_f);
+		m_objs[_i][i*4+0] = m_objs[_i][i*4+0]+roundTo(m_obj_offs[_i][0], grid_.scale_f);
+		m_objs[_i][i*4+1] = m_objs[_i][i*4+1]+roundTo(m_obj_offs[_i][1], grid_.scale_f);
+		m_objs[_i][i*4+2] = m_objs[_i][i*4+2]+roundTo(m_obj_offs[_i][2], grid_.scale_f);
 	}
 }
 
@@ -1776,6 +1787,8 @@ function m_obj_explode(_i)
 //		my poly link needs fix
 //		I give up. Just going to fix load/save encoding and group objs instead.
 //		My final attempt should work but it didn't. I just can't waste more time on this one for now.
+
+//		So far so good they're rotating. I realized it's more complex because start and end can be removed from rotation as their location is implied
 
 
 function rotateArray(ar, n)
@@ -2094,8 +2107,13 @@ function drawOverlay(init_dat)
 
 	updateMenuPos();
 
-	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
+	// This needs to be fixed. Temp as I port menu to new script.
+	if (mouseLock)
+	{setVisibility({hide:"menu_1", show:""});
+	} else
+	{setVisibility({hide:"", show:"menu_1"});}
 
+	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 	//obj_updateNormalMaps();
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj();}
@@ -2113,148 +2131,15 @@ function drawOverlay(init_dat)
 
 	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56); // Darklighter box
 
+ 
+	// While in menu with low call rate i'll set values here:
 
-	document.getElementById("stn_menu_tab_0").style.left = (menu_q_pos[0]-1+11-6) + "px";
-	document.getElementById("stn_menu_tab_0").style.top = (menu_q_pos[1]-15-1-13) + "px";
+	/*========================================================*/
+	/*================--------------------------==============*/
+	/*================----- SET TOOL VALUES ----==============*/
+	/*================--------------------------==============*/
+	/*========================================================*/
 
-	document.getElementById("stn_menu_tab_1").style.left = (menu_q_pos[0]+150-6) + "px";
-	document.getElementById("stn_menu_tab_1").style.top = (menu_q_pos[1]-15-1-13) + "px";
-
-
-    if (!mouseLock)
-    {
-
-
-    	
-        menu_inputs.forEach(function(e) {e.style.display = "block";});
-
-
-		// Large back pan
-		//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]+376, menu_q_pos[1]-24, 180, 662);
-
-		// Large back pan
-		//drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-12, menu_q_pos[1]-24, 388, 662);
-		drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_q_pos[0]-12, menu_q_pos[1]-24-14, 550, 662-5);
-
-		// bg left
-		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0], menu_q_pos[1]+18-14, 369, 606-5);
-
-		// bg right
-
-		drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_q_pos[0]+377, menu_q_pos[1]+18-14, 147, 606-5);
-
-		///////////////////////////////
-
-		if (menu_tab==0)
-		{
-
-
-
-			// Circle settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+30, 170, 183);
-
-			// Link settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+220, 170, 183);
-
-			// Translation settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+220, 170, 183);
-
-			// Draw Settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+30, 170, 183);
-
-			// Paint settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+11, menu_q_pos[1]+410, 170, 183);
-
-			// Grid settings
-			drawPanel(ctx_o, rgba_gray, rgba_ldgray, menu_q_pos[0]+187, menu_q_pos[1]+410, 170, 183);
-
-			///////////////////////////////
-
-
-
-			document.getElementById("stn_cir_d").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_cir_d").style.top = (menu_q_pos[1]+80) + "px";
-			document.getElementById("stn_cir_s").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_cir_s").style.top = (menu_q_pos[1]+118) + "px";
-			document.getElementById("stn_cir_o").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_cir_o").style.top = (menu_q_pos[1]+156) + "px";
-
-			document.getElementById("stn_link_1").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_1").style.top = (menu_q_pos[1]+270) + "px";
-			document.getElementById("stn_link_2").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_2").style.top = (menu_q_pos[1]+308) + "px";
-			document.getElementById("stn_link_3").style.left = (menu_q_pos[0]+114) + "px";
-			document.getElementById("stn_link_3").style.top = (menu_q_pos[1]+346) + "px";
-
-			document.getElementById("stn_draw_l").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_draw_l").style.top = (menu_q_pos[1]+80) + "px";
-			document.getElementById("stn_draw_s").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_draw_s").style.top = (menu_q_pos[1]+118) + "px";
-
-			document.getElementById("stn_trns_x").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_x").style.top = (menu_q_pos[1]+270) + "px";
-			document.getElementById("stn_trns_y").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_y").style.top = (menu_q_pos[1]+308) + "px";
-			document.getElementById("stn_trns_z").style.left = (menu_q_pos[0]+296) + "px";
-			document.getElementById("stn_trns_z").style.top = (menu_q_pos[1]+346) + "px";
-
-			document.getElementById("stn_paint_inf").style.left = (menu_q_pos[0]+110) + "px";
-			document.getElementById("stn_paint_inf").style.top = (menu_q_pos[1]+457) + "px";
-			document.getElementById("stn_paint_l").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_paint_l").style.top = (menu_q_pos[1]+498) + "px";
-			document.getElementById("stn_paint_line_l").style.left = (menu_q_pos[0]+101) + "px";
-			document.getElementById("stn_paint_line_l").style.top = (menu_q_pos[1]+536) + "px";
-
-			document.getElementById("stn_grid_s").style.left = (menu_q_pos[0]+279) + "px";
-			document.getElementById("stn_grid_s").style.top = (menu_q_pos[1]+460) + "px";
-
-			document.getElementById("stn_menu_clearall").style.left = (menu_q_pos[0]+386) + "px";
-			document.getElementById("stn_menu_clearall").style.top = (menu_q_pos[1]+567) + "px";
-		}
-
-
-
-
-	   
-			// While in menu with low call rate i'll set values here:
-
-			/*========================================================*/
-			/*================--------------------------==============*/
-			/*================----- SET TOOL VALUES ----==============*/
-			/*================--------------------------==============*/
-			/*========================================================*/
-
-		
-			stn_cir_tool[0] = checkNumber(document.getElementById("stn_cir_s").value) != false ? parseFloat(document.getElementById("stn_cir_s").value) : stn_cir_tool[0];
-			stn_cir_tool[1] = checkNumber(document.getElementById("stn_cir_d").value) != false ? parseFloat(document.getElementById("stn_cir_d").value) : stn_cir_tool[1];
-			stn_cir_tool[2] = checkNumber(document.getElementById("stn_cir_o").value) != false ? parseFloat(document.getElementById("stn_cir_o").value) : stn_cir_tool[2];
-
-
-			stn_draw[0] = document.getElementById("stn_draw_l").checked;
-			stn_draw[1] = document.getElementById("stn_draw_s").checked;
-
-
-			stn_trns[0] = document.getElementById("stn_trns_x").checked;
-			stn_trns[1] = document.getElementById("stn_trns_y").checked;
-			stn_trns[2] = document.getElementById("stn_trns_z").checked;
-
-
-			stn_paint_inf = document.getElementById("stn_paint_inf").checked;
-
-			stn_paint_l = checkNumber(document.getElementById("stn_paint_l").value) != false ? parseFloat(document.getElementById("stn_paint_l").value) : stn_paint_l;
-			stn_paint_line_l = checkNumber(document.getElementById("stn_paint_line_l").value) != false ? parseFloat(document.getElementById("stn_paint_line_l").value) : stn_paint_line_l;
-
-
-    } else {
-
-        menu_inputs.forEach(function(e) {e.style.display = "none";});
-        
-    }
-
-    if (menu_tab!=0)
-    {
-    	menu_tab0.forEach(function(e) {e.style.display = "none";});
-    }
 
 
 	document.getElementById("fileInput").style.position = "absolute";
@@ -2274,109 +2159,7 @@ function drawOverlay(init_dat)
 	//drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
 	drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
 	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
-	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_scale_f+"]", menu_keys_pos[0]+398, 49);
-
-	if (!mouseLock && menu_tab==1)
-	{
-		drawText(ctx_o, rgba_otext, "left", "W,A,S,D, Shift(sprint), Space(up), B(down)", menu_q_pos[0]+14,menu_q_pos[1]+ 69-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Q(toggle unlock mouse)", menu_q_pos[0]+14,menu_q_pos[1]+ 84-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Scroll(expand)", menu_q_pos[0]+14,menu_q_pos[1]+ 99-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Scroll+LOCK(vert mov)", menu_q_pos[0]+14, menu_q_pos[1]+114-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Scroll+Shift(grid size)", menu_q_pos[0]+14, menu_q_pos[1]+129-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Scroll/Arrows(obj nav)", menu_q_pos[0]+14, menu_q_pos[1]+144-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Scroll+QMENU(select obj)", menu_q_pos[0]+14, menu_q_pos[1]+159-30);
-
-		drawText(ctx_o, rgba_otext, "left", "TAB(near mean ctr)", menu_q_pos[0]+14, menu_q_pos[1]+174-30);
-
-		drawText(ctx_o, rgba_otext, "left", "[Ctrl or Alt](both unlock mouse)", menu_q_pos[0]+14, menu_q_pos[1]+189-30);
-
-		drawText(ctx_o, rgba_otext, "left", "/(print obj to console)", menu_q_pos[0]+14, menu_q_pos[1]+204-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Shift+T(dupe & mov & finish)", menu_q_pos[0]+14, menu_q_pos[1]+219-30);
-
-		drawText(ctx_o, rgba_otext, "left", "G(send cursor to ground)", menu_q_pos[0]+14, menu_q_pos[1]+234-30);
-
-		drawText(ctx_o, rgba_otext, "left", "RMB(go to pnt in current obj)", menu_q_pos[0]+14, menu_q_pos[1]+249-30);
-
-		drawText(ctx_o, rgba_otext, "left", "MMB(show point sku & rot camera)", menu_q_pos[0]+14, menu_q_pos[1]+264-30);
-
-		drawText(ctx_o, rgba_otext, "left", "5(mirror by pln)", menu_q_pos[0]+14, menu_q_pos[1]+279-30);
-
-		drawText(ctx_o, rgba_otext, "left", "6(scale by dist)", menu_q_pos[0]+14, menu_q_pos[1]+294-30);
-
-		drawText(ctx_o, rgba_otext, "left", "7(make cir)", menu_q_pos[0]+14, menu_q_pos[1]+309-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Shift+R(rot obj)", menu_q_pos[0]+14, menu_q_pos[1]+324-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Q(menu)", menu_q_pos[0]+14, menu_q_pos[1]+339-30);
-
-		drawText(ctx_o, rgba_otext, "left", "C(edit obj)", menu_q_pos[0]+14, menu_q_pos[1]+354-30);
-
-		drawText(ctx_o, rgba_otext, "left", "V(mov obj)", menu_q_pos[0]+14, menu_q_pos[1]+369-30);
-
-		drawText(ctx_o, rgba_otext, "left", "E(make obj)", menu_q_pos[0]+14, menu_q_pos[1]+384-30);
-
-		drawText(ctx_o, rgba_otext, "left", "X(del obj)", menu_q_pos[0]+14, menu_q_pos[1]+399-30);
-
-		drawText(ctx_o, rgba_otext, "left", "F(place point)", menu_q_pos[0]+14, menu_q_pos[1]+414-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Y(teleport)", menu_q_pos[0]+14, menu_q_pos[1]+429-30);
-
-		drawText(ctx_o, rgba_otext, "left", "Z(undo)", menu_q_pos[0]+14, menu_q_pos[1]+444-30);
-
-		drawText(ctx_o, rgba_otext, "left", "T(dupe obj)", menu_q_pos[0]+14, menu_q_pos[1]+459-30);
-
-		drawText(ctx_o, rgba_otext, "left", "H(go to obj ctr)", menu_q_pos[0]+14, menu_q_pos[1]+474-30);
-
-		drawText(ctx_o, rgba_otext, "left", "I(join objs)", menu_q_pos[0]+14, menu_q_pos[1]+489-30);
-
-		drawText(ctx_o, rgba_otext, "left", "L(link objs)", menu_q_pos[0]+14, menu_q_pos[1]+504-30);
-
-		drawText(ctx_o, rgba_otext, "left", "N(LOCK mov)", menu_q_pos[0]+14, menu_q_pos[1]+519-30);
-	}
-
-	//  else {
-	// 	drawText(ctx_o, "right", rgba_otext, "[M][keys]", menu_keys_pos[0]+398, 80);
-	// }
-
-    if (!mouseLock && menu_tab==0)
-    {
-		drawText(ctx_o, rgba_otext, "left", "[circle settings][7]", menu_q_pos[0]+23, menu_q_pos[1]+50);
-		drawText(ctx_o, rgba_otext, "left", "[ scale ]", menu_q_pos[0]+23, menu_q_pos[1]+101);
-		drawText(ctx_o, rgba_otext, "left", "[divider]", menu_q_pos[0]+23, menu_q_pos[1]+139);
-		drawText(ctx_o, rgba_otext, "left", "[  off  ]", menu_q_pos[0]+23, menu_q_pos[1]+177);
-
-		drawText(ctx_o, rgba_otext, "left", "[link settings][L]", menu_q_pos[0]+23, menu_q_pos[1]+240);
-		drawText(ctx_o, rgba_otext, "left", "[ linear ]", menu_q_pos[0]+23, menu_q_pos[1]+292);
-		drawText(ctx_o, rgba_otext, "left", "[ zigzag ]", menu_q_pos[0]+23, menu_q_pos[1]+330);
-		drawText(ctx_o, rgba_otext, "left", "[  poly  ]", menu_q_pos[0]+23, menu_q_pos[1]+368);
-
-		drawText(ctx_o, rgba_otext, "left", "[draw settings]", menu_q_pos[0]+218, menu_q_pos[1]+50);
-		drawText(ctx_o, rgba_otext, "left", "[  lines  ]", menu_q_pos[0]+201, menu_q_pos[1]+101);
-		drawText(ctx_o, rgba_otext, "left", "[ surface ]", menu_q_pos[0]+201, menu_q_pos[1]+140);
-
-		drawText(ctx_o, rgba_otext, "left", "[lock x-y-z][V]", menu_q_pos[0]+218, menu_q_pos[1]+250);
-		drawText(ctx_o, rgba_otext, "left", "[   X   ]", menu_q_pos[0]+201, menu_q_pos[1]+292);
-		drawText(ctx_o, rgba_otext, "left", "[   Y   ]", menu_q_pos[0]+201, menu_q_pos[1]+330);
-		drawText(ctx_o, rgba_otext, "left", "[   Z   ]", menu_q_pos[0]+201, menu_q_pos[1]+368);
-
-		drawText(ctx_o, rgba_otext, "left", "[paint settings][3]", menu_q_pos[0]+23, menu_q_pos[1]+430);
-		drawText(ctx_o, rgba_otext, "left", "[  inf  ]", menu_q_pos[0]+23, menu_q_pos[1]+481);
-		drawText(ctx_o, rgba_otext, "left", "[  dist ]", menu_q_pos[0]+23, menu_q_pos[1]+520);
-		drawText(ctx_o, rgba_otext, "left", "[ nodes ]", menu_q_pos[0]+23, menu_q_pos[1]+558);
-
-		drawText(ctx_o, rgba_otext, "left", "[grid settings]", menu_q_pos[0]+218, menu_q_pos[1]+430);
-		drawText(ctx_o, rgba_otext, "left", "[ scale ]", menu_q_pos[0]+201, menu_q_pos[1]+481);
-		// drawText(ctx_o, rgba_otext, "left", "[  b  ]", menu_q_pos[0]+201, menu_q_pos[1]+540);
-		// drawText(ctx_o, rgba_otext, "left", "[  c  ]", menu_q_pos[0]+201, menu_q_pos[1]+578);
-	}
-
+	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_.scale_f+"]", menu_keys_pos[0]+398, 49);
 
 
 	for (var i = 0; i < m_objs.length; i++)
@@ -2435,7 +2218,7 @@ function drawTriangleF(ctx, i, k)
 	m1.data[8*k+mem_log[i][0]+5],
 	m1.data[8*k+mem_log[i][0]+8],
 	m1.data[8*k+mem_log[i][0]+9],
-	rgbas_tri[k%3]);
+	rgbas_tri_f[k%3]);
 }
 
 
@@ -2463,7 +2246,7 @@ function fillDotF(ctx, i, j, c, lw)
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap();
+	updateDrawMap([3,4,5]);
 
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
 
@@ -2475,7 +2258,8 @@ function drawIt()
 	// for (var i = m_objs.length-1; i >= 0; i--)
 	for (var n = m_objs.length-1; n >= 0; n--)
 	{
-		d_i = newIndex[n];
+		d_i = modIndex[n];
+
 		if (stn_draw[1]) // Tris
 		{
 			if (d_i>world_obj_count-1)
@@ -2626,7 +2410,14 @@ function drawIt()
 			{drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]], m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1], 15);}
 	}
 
-	if (m1.data[mem_log[9][0]+3] > 0) {drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 8);}
+	if (m1.data[mem_log[9][0]+3] > 0)
+	{
+		drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 8);
+	}
+	if (m1.data[mem_log[9][0]+3] > 0 && key_map.rmb)
+	{
+		drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 20); // goback
+	}
 
 	if (trns_lock)
 	{
@@ -2806,7 +2597,7 @@ function Compute(init_dat)
 	if (mouseLock && key_map["7"] && runEvery(300))
 	{
 
-		if (!isNaN(stn_cir_tool[0]) && !isNaN(stn_cir_tool[1]) && !isNaN(stn_cir_tool[2])) {make_cir_obj(Math.floor(stn_cir_tool[0]), stn_cir_tool[1], stn_cir_tool[2], pln_cyc);}
+		if (!isNaN(stn_cir_tool.divider) && !isNaN(stn_cir_tool.scale) && !isNaN(stn_cir_tool.off)) {make_cir_obj(Math.floor(stn_cir_tool.divider), stn_cir_tool.scale, stn_cir_tool.off, pln_cyc);}
 	}
 
 	// This needs a system wtf
@@ -2824,7 +2615,7 @@ function Compute(init_dat)
 		}
 	}
 	
-	if (key_map.rmb && runEvery(100))
+	if (key_map.rmb && runEveryLong(100))
 	{
 		var _f; var _n_sku = 0; var _t1; var _d = 0;
 		_f = Math.pow(Math.pow(init_dat.data[mem_log[obj_cyc][0]]-in_win_wc, 2) + Math.pow(init_dat.data[mem_log[obj_cyc][0]+1]-in_win_hc, 2), 0.5);
@@ -2889,10 +2680,6 @@ function Compute(init_dat)
 	}
 
 	if (key_map.x == false) {del_obj_lock = 0;}
-
-
-	//if (key_map.m && runEvery(300)) {menu_tog_controls();}
-
 
 	if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
 	if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
@@ -3125,22 +2912,22 @@ function Compute(init_dat)
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
 		case 0:
-			grid_scale_ar[1] = grid_scale_f;
-			grid_scale_ar[2] = grid_scale_f;
+			grid_.scale_ar[1] = grid_.scale_f;
+			grid_.scale_ar[2] = grid_.scale_f;
 			break
 		case 1:
-			grid_scale_ar[0] = grid_scale_f;
-			grid_scale_ar[2] = grid_scale_f;
+			grid_.scale_ar[0] = grid_.scale_f;
+			grid_.scale_ar[2] = grid_.scale_f;
 			break
 		case 2:
-			grid_scale_ar[0] = grid_scale_f;
-			grid_scale_ar[1] = grid_scale_f;
+			grid_.scale_ar[0] = grid_.scale_f;
+			grid_.scale_ar[1] = grid_.scale_f;
 			break
 	}
 
 
  	// check nan other place? like lpi?
-	if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_scale_ar[0]), roundTo(_lp[1], grid_scale_ar[1]), roundTo(_lp[2], grid_scale_ar[2])];}
+	if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_.scale_ar[0]), roundTo(_lp[1], grid_.scale_ar[1]), roundTo(_lp[2], grid_.scale_ar[2])];}
 
 	switch(wpn_select) //#WEAPONSCRIPT
 	{
@@ -3203,7 +2990,7 @@ function Compute(init_dat)
 					wpn_1 = 1;
 				}
 
-				if (wpn_1) {m_obj_offs[obj_cyc] = roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), grid_scale_f);}
+				if (wpn_1) {m_obj_offs[obj_cyc] = roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), grid_.scale_f);}
 
 				if (key_map.lmb == false && wpn_1)
 				{
@@ -3223,13 +3010,13 @@ function Compute(init_dat)
 		case 2:
 			if (key_map.lmb)
 			{
-				switch(stn_paint_inf)
+				switch(stn_paint[2])
 				{
 					case false:
-						if (paint_n < stn_paint_line_l)
+						if (paint_n < stn_paint[1])
 						{
 							paint_d = len3(sub(_inter, _paint_track));
-							if (paint_d > stn_paint_l)
+							if (paint_d > stn_paint[0])
 							{
 								m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
 								_paint_track[0] = _inter[0];
@@ -3241,7 +3028,7 @@ function Compute(init_dat)
 						break;
 					case true:
 						paint_d = len3(sub(_inter, _paint_track));
-						if (paint_d > stn_paint_l)
+						if (paint_d > stn_paint[0])
 						{
 							m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
 							_paint_track[0] = _inter[0];
@@ -3251,7 +3038,7 @@ function Compute(init_dat)
 						break;
 				}
 			}
-			if (stn_paint_inf && key_map.lmb == false) {mem_t_mov();} // Finish draw !
+			if (stn_paint[2] && key_map.lmb == false) {mem_t_mov();} // Finish draw !
 			break;
 		case 3:
 			if (key_map.lmb && mouseLock && runEvery(10))
@@ -3299,19 +3086,19 @@ function Compute(init_dat)
 	switch(pln_cyc)
 	{
 		case 0:
-			m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
-			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
-			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
+			m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
+			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_.scale_f];
+			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_.scale_f];
 			break;
 		case 1:
-			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
-			m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
-			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_scale_f];
+			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_.scale_f];
+			m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
+			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_.scale_f];
 			break;
 		case 2:
-			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_scale_f];
-			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_scale_f];
-			m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_scale_f];
+			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_.scale_f];
+			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_.scale_f];
+			m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
 			break;
 	}
 
@@ -3437,7 +3224,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	Compute(m1);
 
-	m_obj_offs[tse] = [0,-500,0,1];
+	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
 	drawIt();
 
 	obj_cyc = 10; // Temp fix

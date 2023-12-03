@@ -3,6 +3,7 @@
 <script src="js/math.min.js"></script>
 <script src="js/shader.js"></script>
 
+
 <style>
 
 	/* Apply to all */
@@ -29,109 +30,15 @@
 		color: #999;
 	}
 
-	.stn_
-	{
-		position: absolute;
-		z-index: 2;
-		text-align: center;
-		width: 60px;
-		height:30px;
-		border: 1px rgba(222, 222, 222, 0.3);
-		outline: none;
-		left: -300px; /* To prevent the 1ms where you see everything stacked on load */
-		background: rgb(111 111 111 / 30%);
-		color: #DDD;
-	}
 
-	.stn_btn
-	{
-		color: rgb(255, 123, 0);
-		background-color: rgb(27, 27, 30);
-		position: absolute;
-		z-index: 2;
-		text-align: center;
-		border: 1px rgba(222, 222, 222, 0.3);
-		outline: none;
-		line-height: 2.6;
-		left: -300px; /* To prevent the 1ms where you see everything stacked on load 
-		background: rgb(55 55 55 / 40%);
-		-webkit-box-shadow:inset 0px 0px 0px 1px rgba(44, 44, 44, 0.6);
-	    -moz-box-shadow:inset 0px 0px 0px 1px rgba(44, 44, 44, 0.6);
-	    box-shadow:inset 0px 0px 0px 1px rgba(44, 44, 44, 0.6);
-/*		font-weight: bold;*/
-	}
-
-	.stn_btn:hover
-	{
-	background: rgb(55 55 55 / 20%);
-	}
-
-	.stn_tab
-	{
-/*		padding: 10px 0px 6px 0px;*/
-		width: 135px;
-		font-size: 14px;
-		text-align: center;
-		height: 33px;
-	}
-
-	.stn_tool
-	{
-/*		padding: 10px 0px 6px 0px;*/
-
-		width: 129px;
-		font-size: 12px;
-		text-align: center;
-		line-height: 2;
-		height: 24px;
-	}
-
-/*	input[type=file]
-	{
-	  background: rgb(55 55 55 / 40%);
-	}
-*/
-	input[type="checkbox"]:checked
-	{
-/*		background: rgb(151, 138, 78, 0.8);*/
-		background: rgba(159, 144, 75, 0.8);
-		color: white;
-		-webkit-box-shadow:inset 0px 0px 0px 1px rgba(222, 222, 222, 0.3);
-	    -moz-box-shadow:inset 0px 0px 0px 1px rgba(222, 222, 222, 0.3);
-	    box-shadow:inset 0px 0px 0px 1px rgba(222, 222, 222, 0.3);
-	}
-
-	input[type="checkbox"]
-	{
-		cursor: pointer;
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-		outline: 0;
-		background: rgb(57 57 57 / 30%);
-		width: 40px;
-		height:30px;
-		color: rgba(1, 1, 1, 0);
-	}
-
-	input[type="checkbox"]:checked:after
-	{
-		display: block;
-	}
-
-	input[type="checkbox"]:hover
-	{
-		-webkit-box-shadow:inset 0px 0px 0px 1px rgba(55, 55, 55, 0.6);
-	    -moz-box-shadow:inset 0px 0px 0px 1px rgba(55, 55, 55, 0.6);
-	    box-shadow:inset 0px 0px 0px 1px rgba(55, 55, 55, 0.6);
-	}
-	
+	/*	Replace  */
 	input[type="text"]:hover
 	{
 		-webkit-box-shadow:inset 0px 0px 0px 1px rgba(88, 88, 88, 0.6);
 	    -moz-box-shadow:inset 0px 0px 0px 1px rgba(88, 88, 88, 0.6);
 	    box-shadow:inset 0px 0px 0px 1px rgba(88, 88, 88, 0.6);
 	}
+
 
 	/* Canvas Style */
 	#cv, #cv_over
@@ -163,33 +70,10 @@
 	
 	 <input type="file" id="fileInput" autocomplete="off" tabindex="-1" accept=".bin">
 
-    <input type="text" id="stn_cir_d" class="_menu _tab0 stn_ stn_cir" value="8" autocomplete="off">
-    <input type="text" id="stn_cir_s" class="_menu _tab0 stn_ stn_cir" value="24" autocomplete="off">
-    <input type="text" id="stn_cir_o" class="_menu _tab0 stn_ stn_cir" value="0" autocomplete="off">
-
-    <input type="checkbox" id="stn_link_1" class="_menu _tab0 _tab0 stn_link stn_" autocomplete="off">
-    <input type="checkbox" id="stn_link_2" class="_menu _tab0 stn_link stn_" autocomplete="off" checked="true">
-    <input type="checkbox" id="stn_link_3" class="_menu _tab0 stn_link stn_" autocomplete="off">
-    <input type="checkbox" id="stn_draw_l" class="_menu _tab0 stn_draw stn_" autocomplete="off" checked="true">
-    <input type="checkbox" id="stn_draw_s" class="_menu _tab0 stn_draw stn_" autocomplete="off" checked="true">
-    <input type="checkbox" id="stn_trns_x" class="_menu _tab0 stn_trns stn_" autocomplete="off">
-    <input type="checkbox" id="stn_trns_y" class="_menu _tab0 stn_trns stn_" autocomplete="off">
-    <input type="checkbox" id="stn_trns_z" class="_menu _tab0 stn_trns stn_" autocomplete="off">
-
-    <input type="checkbox" id="stn_paint_inf" class="_menu _tab0 stn_ stn_paint" autocomplete="off">
-    <input type="text" id="stn_paint_l" class="_menu _tab0 stn_ stn_paint" value="12" autocomplete="off">
-    <input type="text" id="stn_paint_line_l" class="_menu _tab0 stn_ stn_paint" value="8" autocomplete="off">
-
-    <button type="button" id="stn_menu_tab_0" class="_menu stn_tab stn_btn">tool settings</button> 
-    <button type="button" id="stn_menu_tab_1" class="_menu stn_tab stn_btn">key binds</button> 
-
-    <input type="text" id="stn_grid_s" class="_menu _tab0 stn_ stn_grid" value="8" autocomplete="off">
-
-    <button type="button" id="stn_menu_clearall" class="_menu stn_tool stn_btn">clear world</button> 
-
-
 </body>
 </html>
 
+
 <script src="js/mgun.js"></script>
 <script src="js/js.js"></script>
+<script src="js/menu.js"></script>
