@@ -374,7 +374,7 @@ var rootStyle =
 z-index: 2;
 font-size: 12px;
 box-sizing: border-box;
-color: rgb(255, 123, 0);
+color: rgb(195, 123, 0);
 background-color: rgb(17, 17, 18);
 `;
 
