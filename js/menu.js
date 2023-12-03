@@ -578,14 +578,71 @@ var div_root =
                 callback: del_world
             }; addButton(btn_tool_01);
 
-            var btn_tool_02 =
+            var btn_tool_curToCtr =
+            {
+                text: "Get Object Center",
+                id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: setCursorToObjCenter
+            }; addButton(btn_tool_curToCtr);
+
+            var btn_tool_curToGrnd =
+            {
+                text: "Cursor to Ground",
+                id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: returnCursorToGround
+            }; addButton(btn_tool_curToGrnd);
+
+            var btn_tool_createCircle =
+            {
+                text: "Create Circle",
+                id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: createCircleAtCursor
+            }; addButton(btn_tool_createCircle);
+
+            var btn_tool_mirrorOverPlane =
+            {
+                text: "Mirror over Plane",
+                id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: mirrorOverPlane
+            }; addButton(btn_tool_mirrorOverPlane);
+
+            var btn_tool_dupeObj =
+            {
+                text: "Duplicate Object",
+                id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: cloneObjSelected
+            }; addButton(btn_tool_dupeObj);
+
+            var btn_tool_objLink =
             {
                 text: "Link Obj",
-                id: "tool_02", cls: "_btn", prnt: "menu_tools",
+                id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + darkBorder,
                 hoverStyles: _btn_hover + _btn_hover_tool,
                 callback: menuLinkObj
-            }; addButton(btn_tool_02);
+            }; addButton(btn_tool_objLink);
+
+            var btn_tool_delObj =
+            {
+                text: "Delete Object",
+                id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + darkBorder,
+                hoverStyles: _btn_hover + _btn_hover_tool,
+                callback: deleteObjectSelected
+            }; addButton(btn_tool_delObj);
+
+
+//del_obj(obj_cyc);
 
             //            visibility: hidden;
         var detail_menu =

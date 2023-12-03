@@ -1053,6 +1053,13 @@ function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe
 	}
 }
 
+function createCircleAtCursor()
+{
+	if (!isNaN(stn_cir_tool.divider) && !isNaN(stn_cir_tool.scale) && !isNaN(stn_cir_tool.off))
+	{
+		make_cir_obj(Math.floor(stn_cir_tool.divider), stn_cir_tool.scale, stn_cir_tool.off, pln_cyc);
+	}
+}
 
 function splitObj(ar) // Accepts linear : outputs array of 4d points
 {
@@ -1670,6 +1677,24 @@ function del_obj(_i)
 	}
 }
 
+function deleteObjectSelected()
+{
+	if (obj_cyc > world_obj_count)
+	{
+		if (obj_cyc == m_objs.length-1)
+		{
+			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
+		} else {
+			var _ts = mem_log[obj_cyc][1];
+			for (var i = obj_cyc+1; i<mem_log.length; i++)
+			{
+				mem_log[i][0] = mem_log[i][0]-_ts;
+			}
+			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1);
+		}
+	}
+}
+
 function del_world()
 {
 	m_objs.splice(world_obj_count+1);	mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
@@ -2085,7 +2110,63 @@ function expand_obj(_i)
 	}
 }
 
+//if (key_map["5"] && mouseLock && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
+function mirrorOverPlane()
+{
+	if (obj_cyc>world_obj_count)
+	{
+		var _to = splitObjS(m_objs[obj_cyc]);
+		var _c = getctr_obj(obj_cyc);
+		for (var i=0; i<_to.length; i++)
+		{
+			switch(wpn_select)
+			{
+			case 0:
+				_to[i] = add3(_inter_rnd, mir_w_pln(sub(_to[i], _inter_rnd), pln_cyc));
+				break;
+			case 1:
+				_to[i] = add3(_c, mir_w_pln(sub(_to[i], _c), pln_cyc));
+				break;
+			}
 
+			if (i==_to.length-1)
+			{
+				for (var j=0; j<mem_log[obj_cyc][2]; j++)
+				{
+					m_objs[obj_cyc][j*4+0] = _to[j][0];
+					m_objs[obj_cyc][j*4+1] = _to[j][1];
+					m_objs[obj_cyc][j*4+2] = _to[j][2];
+
+				}
+			}
+		}
+	}
+}
+
+function cloneObjSelected()
+{
+	if (obj_cyc>world_obj_count)
+	{
+		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+	}
+}
+
+function setCursorToObjCenter()
+{
+	var _t = meanctr_obj(m_objs[obj_cyc]);
+	if (!stn_trns[0]) {_lp[0] = _t[0];}
+	if (!stn_trns[1]) {_lp[1] = _t[1];}
+	if (!stn_trns[2]) {_lp[2] = _t[2];}
+	if (!stn_trns[0]) {_lp_world[0] = _t[0];}
+	if (!stn_trns[1]) {_lp_world[1] = _t[1];}
+	if (!stn_trns[2]) {_lp_world[2] = _t[2];}	
+}
+
+function returnCursorToGround()
+{
+	_lp[1] = 0; _lp_world[1] = 0;
+	pln_cyc=1;
+}
 
 
 	/*
@@ -2557,33 +2638,9 @@ function Compute(init_dat)
 	}
 
 
-	if (key_map["5"] && mouseLock && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
+	if (key_map["5"] && runEvery(150)) // Move to fn later
 	{
-		var _to = splitObjS(m_objs[obj_cyc]);
-		var _c = getctr_obj(obj_cyc);
-		for (var i=0; i<_to.length; i++)
-		{
-			switch(wpn_select)
-			{
-			case 0:
-				_to[i] = add3(_inter_rnd, mir_w_pln(sub(_to[i], _inter_rnd), pln_cyc));
-				break;
-			case 1:
-				_to[i] = add3(_c, mir_w_pln(sub(_to[i], _c), pln_cyc));
-				break;
-			}
-
-			if (i==_to.length-1)
-			{
-				for (var j=0; j<mem_log[obj_cyc][2]; j++)
-				{
-					m_objs[obj_cyc][j*4+0] = _to[j][0];
-					m_objs[obj_cyc][j*4+1] = _to[j][1];
-					m_objs[obj_cyc][j*4+2] = _to[j][2];
-
-				}
-			}
-		}
+		mirrorOverPlane();
 	}
 
 
@@ -2596,8 +2653,7 @@ function Compute(init_dat)
 
 	if (mouseLock && key_map["7"] && runEvery(300))
 	{
-
-		if (!isNaN(stn_cir_tool.divider) && !isNaN(stn_cir_tool.scale) && !isNaN(stn_cir_tool.off)) {make_cir_obj(Math.floor(stn_cir_tool.divider), stn_cir_tool.scale, stn_cir_tool.off, pln_cyc);}
+		createCircleAtCursor();
 	}
 
 	// This needs a system wtf
@@ -2659,13 +2715,7 @@ function Compute(init_dat)
 
 	if (key_map.h && runEvery(200))
 	{
-		var _t = meanctr_obj(m_objs[obj_cyc]);
-		if (!stn_trns[0]) {_lp[0] = _t[0];}
-		if (!stn_trns[1]) {_lp[1] = _t[1];}
-		if (!stn_trns[2]) {_lp[2] = _t[2];}
-		if (!stn_trns[0]) {_lp_world[0] = _t[0];}
-		if (!stn_trns[1]) {_lp_world[1] = _t[1];}
-		if (!stn_trns[2]) {_lp_world[2] = _t[2];}
+		setCursorToObjCenter();
 	}
 
 	// Delete obj by obj cycle & fix memory
@@ -2950,6 +3000,8 @@ function Compute(init_dat)
 
 			if (key_map.v && runEvery(150)) {trans_obj(obj_cyc);}
 
+
+
 			if (key_map.t && obj_cyc>world_obj_count && runEvery(350)) // Fix this area needs to check obj_cyc or in fn
 			{
 				if (key_map.shift)
@@ -2957,13 +3009,13 @@ function Compute(init_dat)
 					switch(trns_lock)
 					{
 						case 0:
-							m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+							cloneObjSelected();
 							obj_cyc = m_objs.length-1;
 							trans_obj(m_objs.length-1);
 							break;
 						case 1:
 							trans_obj(m_objs.length-1); // Finish needn't require index pls fix
-							m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+							cloneObjSelected();
 							obj_cyc = m_objs.length-1;
 							trans_obj(m_objs.length-1);
 					}
@@ -2971,7 +3023,7 @@ function Compute(init_dat)
 				}
 				if (!key_map.shift && !trns_lock)
 				{
-					m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+					cloneObjSelected();
 					obj_cyc = m_objs.length-1;
 				}
 			}
@@ -3058,8 +3110,7 @@ function Compute(init_dat)
 	// Return to ground
 	if (key_map.g && runEvery(200))
 	{
-		_lp[1] = 0; _lp_world[1] = 0;
-		pln_cyc=1;
+		returnCursorToGround();
 	}
 
 	// Teleport
