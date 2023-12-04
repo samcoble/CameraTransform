@@ -51,6 +51,12 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- THE MENU SCRIPT ISN"T FLUID ENOUGH
 
+			-- So each action logs a copy of all objs for each operation
+				- not very efficient though right? probably not worth worrying about size yet
+					just limit amount of save states..?
+				- this way the log box on screen has a goto & the time it was so you can jump around in time.
+					if you can manipulate time you could use a copy tool to bring data into any other time frame
+						to reduce complexity this starts a new branch at current time end of stack.
 
 			-- mouse to world ray trace from eye...
 	@?@?@
@@ -621,11 +627,12 @@ function updateMenuPos()
 {	
 	menu_obj_pos = [in_win_w-150, 10];
 	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w/100*3, in_win_h/100*50 - 0.5*660]; //660 fix later
+	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*660]; //660 fix later
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
 	document.getElementById("menu_q").style.top = menu_q_pos[1]+"px";
+	document.getElementById("menu_q").style.left = menu_q_pos[0]+"px";
 
 	in_win_clip = in_win_w+_epsilon;
 
@@ -696,9 +703,6 @@ var key_map_prevent =
 {
 	shift: false,
 	tab: false,
-	lmb: false,
-	mmb: false,
-	rmb: false,
 	q: false
 };
 
@@ -3028,6 +3032,24 @@ function Compute(init_dat)
 					// mouseLock
 					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 				}
+			}
+
+			if (key_map.lmb && !mouseLock && runEveryLong(75)) // Avoids menu changing your selection
+			{
+				var _in = 0;
+				if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+610)))
+				{
+					if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+660)))
+					{
+						_in = 1;
+					}
+				}
+
+				if (!_in)
+				{
+					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+				}
+				
 			}
 
 			if (key_map.lmb && mouseLock)

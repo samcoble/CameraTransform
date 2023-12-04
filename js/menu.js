@@ -631,7 +631,7 @@ var div_root =
              `
             color: rgb(195, 123, 0);
             background-color: rgb(27, 27, 30);
-            text-align: center;
+            text-align: right;
             border: 1px solid rgba(200, 200, 200, 0.1);
             outline: none;
             width: 94%;
@@ -641,7 +641,7 @@ var div_root =
 
             var btn_tool_moveMode =
             {
-                text: `Lock Player Planar`,
+                text: `Lock Player Planar \u26C7`,
                 id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
@@ -650,7 +650,7 @@ var div_root =
 
             var btn_tool_curToCtr =
             {
-                text: "Get Object Center",
+                text: "Get Object Center \u22A1",
                 id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
@@ -659,7 +659,7 @@ var div_root =
 
             var btn_tool_curToGrnd =
             {
-                text: "Cursor to Ground",
+                text: "Cursor to Ground \u2356",
                 id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
