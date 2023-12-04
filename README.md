@@ -28,7 +28,7 @@ So far ray tracing is working but I noticed in one test instance a surface would
 
 Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally simple sun light.
 
-![opacity](https://github.com/samcoble/CameraTransform/assets/32228102/856b7b85-6215-4f2d-8ec2-088046a74c30)
+![opacity](https://github.com/samcoble/CameraTransform/assets/32228102/af285eac-080d-46c6-adc8-6358b8e845a2)
 ![linearlinkz](https://github.com/samcoble/CameraTransform/assets/32228102/3bdf03bb-211f-4c77-9cfb-b64822816109)
 ![boatpics](https://github.com/samcoble/CameraTransform/assets/32228102/3dae0e7a-140b-49b2-8d38-12be1603c392)
 ![zbuff](https://github.com/samcoble/CameraTransform/assets/32228102/c899384c-e2fe-4540-b015-0e5635a57e4e)
@@ -42,7 +42,7 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 ![rayz](https://github.com/samcoble/CameraTransform/assets/32228102/642ba171-ebf4-47db-8851-fd533c091c36)
 ![linker](https://github.com/samcoble/CameraTransform/assets/32228102/8a8411a2-cd39-480a-980e-874c6529ecf3)
 ![silly](https://github.com/samcoble/CameraTransform/assets/32228102/7537df5d-1554-4ffe-a317-be004525830f)
-![Screenshot 2023-11-16 025203](https://github.com/samcoble/CameraTransform/assets/32228102/9da981a7-05ad-4940-b3d9-ebf9aa8188a2)
+![qq](https://github.com/samcoble/CameraTransform/assets/32228102/9da981a7-05ad-4940-b3d9-ebf9aa8188a2)
 ![mush](https://github.com/samcoble/CameraTransform/assets/32228102/9f91a91a-47f1-4e07-83c8-b47b7c873516)
 ![musho](https://github.com/samcoble/CameraTransform/assets/32228102/2835a077-84fd-4285-b048-fdc2f344729c)
 ![proger](https://github.com/samcoble/CameraTransform/assets/32228102/75924dff-5155-442d-86d0-5635b933413c)
