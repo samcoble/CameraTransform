@@ -7,6 +7,8 @@
                         : maybe i can design it such that
                         :
                         :      [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
+
+                        i'll learn how if I properly create a windowDraggable feature that's automatic per section.
 */
 
 
@@ -613,7 +615,7 @@ var div_root =
 
             var _btn_tooln =
             `
-            margin: 4px 0% 0 5%;
+            margin: 2px 0% 0 5%;
             `;
 
             var _btn =
@@ -1303,10 +1305,11 @@ var div_root =
              `
             box-sizing: border-box;
             width: 100%;
+            height: 25px;
             padding 0px; margin: 0px;
             border-bottom: 1px solid rgb(12,12,12);
             text-align: center;
-            line-height: 2;
+            line-height: 2.09;
             `;
 
             var list_keyBindInfo =
