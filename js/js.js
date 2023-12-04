@@ -22,7 +22,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 // New menu script almost finished.
 
-
+// Fix teleport flip to use quaternions
 
 //  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
 //				this raises the question: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
@@ -35,7 +35,33 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 /*
 
+	New priorities after menu.js
+
+	@?@?@
+	@?@?@
+	@?@?@
+
+			--  setup 2d_findbyctr w/ coordinate options :: functionize
+			--  add functions
+				- edit obj
+					: done but needs full mode
+
+			--	menu scrollbar hide ???
+			--	need rotation settings
+
+			-- THE MENU SCRIPT ISN"T FLUID ENOUGH
+
+
+			-- mouse to world ray trace from eye...
+	@?@?@
+	@?@?@
+	@?@?@
+
 	LONG TASK
+
+	Random idea ::
+		if I can clip a region of polygon's in 2d space creating two sets
+			-> i could then display them at two different fov's creating a zoomed region for scopes/sights
 
 	So I guess I need to learn geometric algebra now. Linear algebra isn't enough. Quaternions are not even meta anymore.
 	W/ new menu script I can provide a better sense of what tools are.
@@ -60,6 +86,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Obj cut hole { i could try using the link script on to the hole... }
 		i keep reusing my linear link. need to learn poly fill alg
 		i need to implement geometric obj creation.
+			with more layers of encoded data i can keep logs of what obj's are fundamentally
+				for ex:   points,	point-chain,	surface,	circle,	??????????
 	3D Obj preview on screen below highlighted obj in mem
 		Make new model view mem region
 	Condense code structure / move fns
@@ -74,6 +102,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	QUICK TASK
 
+	RMB + Shift T duping causes loop due to call rate changing pos at full rmb speed
 	Event log box would help
 	Allow grid size to be changed by regenerating the grid to match round size.
 
@@ -1452,8 +1481,8 @@ function teleport_plr()
 			break;
 
 		case true:
-			player_pos[0] = 2*(_inter[0]-player_pos[0]) + player_pos[0];
-			player_pos[2] = 2*(_inter[2]-player_pos[2]) + player_pos[2];
+			player_pos[0] = _inter[0];
+			player_pos[2] = _inter[2];
 			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero
 			break;
 	}
@@ -1688,16 +1717,16 @@ function finishTrnsAnim(_i) // Maybe make this a system
 	}
 }
 
-function findbyctr_obj() // 2D find by encoded center point
+function findbyctr_obj(x, y) // 2D find by encoded center point
 {
 	if (m_objs.length > world_obj_count+1)
 	{
 		var _lt;
 		var _i = world_obj_count+1;
-		var _l = len2([m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-4]-in_win_wc, m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-3]-in_win_hc]);
+		var _l = len2([m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-4]-in_win_wc+x, m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-3]-in_win_hc+y]);
 		for (var i=world_obj_count+2; i<m_objs.length; i++)
 		{
-			_lt = len2([m1.data[mem_log[i][0]+mem_log[i][1]-4]-in_win_wc, m1.data[mem_log[i][0]+mem_log[i][1]-3]-in_win_hc]);
+			_lt = len2([m1.data[mem_log[i][0]+mem_log[i][1]-4]-in_win_wc+x, m1.data[mem_log[i][0]+mem_log[i][1]-3]-in_win_hc+y]);
 			if (_lt < _l) {_i = i; _l = _lt;}
 		}
 		return _i;
@@ -2169,6 +2198,16 @@ function returnCursorToGround()
 	pln_cyc=1;
 }
 
+function playerChangeMovementMode()
+{
+	lock_vert_mov = !lock_vert_mov; hover_h = -player_pos[1];
+}
+
+function editSelectedObject()
+{
+	m_obj_explode(obj_cyc);
+}
+
 
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -2198,7 +2237,10 @@ function drawOverlay(init_dat)
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 	//obj_updateNormalMaps();
 
-	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj();}
+	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
+
+
+
 
 	//Crosshair
 	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
@@ -2420,7 +2462,7 @@ function drawIt()
 
 							// Center point
 
-							if (key_map.tab || wpn_select==1)
+							if (key_map.tab || wpn_select==1 || !mouseLock)
 							{
 								if (d_i>world_obj_count)
 								{
@@ -2477,7 +2519,7 @@ function drawIt()
 		}
 	}
 
-	// Indicators
+	// #INDICATORS
 
 	// Last point of m_t_objs
 	if (m_t_objs.length>0)
@@ -2721,7 +2763,7 @@ function Compute(init_dat)
 		} else if (key_map.x && !del_obj_lock)
 		{del_obj(obj_cyc); del_obj_lock = 1;}
 
-		if (key_map.c && runEvery(300)) {m_obj_explode(obj_cyc);}
+		if (key_map.c && runEvery(300)) {editSelectedObject();}
 	}
 
 	if (key_map.x == false) {del_obj_lock = 0;}
@@ -2733,7 +2775,8 @@ function Compute(init_dat)
 	
 	if (key_map.p && runEvery(350)) {if (mouseLock) {pointerLockSwap();} downloadSaveFile();}
 
-	if (key_map.n && runEvery(500)) {lock_vert_mov = !lock_vert_mov; hover_h = -player_pos[1];}
+
+	if (key_map.n && runEvery(500)) {playerChangeMovementMode();}
 	if (lock_vert_mov) {player_pos[1] = -hover_h;}
 
 	if (key_map.r && !key_map.shift && runEvery(150)) {if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}}
@@ -2973,9 +3016,18 @@ function Compute(init_dat)
 	{
 		case 0:
 
-			if (key_map.tab && runEvery(75))
+			if (key_map.tab && runEvery(75)) // Fix this by separating by in menu / in game
 			{
-				obj_cyc = findbyctr_obj();
+				if (mouseLock)
+				{
+					// Menu mouse
+					obj_cyc = findbyctr_obj(0, 0);
+				}
+				else
+				{
+					// mouseLock
+					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+				}
 			}
 
 			if (key_map.lmb && mouseLock)

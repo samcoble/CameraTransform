@@ -408,36 +408,44 @@ var key_bind_info =
     "A(move left), D(move right)",
     "Space(up), B(down)",
     "Shift(speed up movement & deletion)",
-    "Q(toggle unlock mouse)",
-    "Scroll(expand)",
-    "Scroll+LOCK(vert mov)",
-    "Scroll+Shift(grid size)",
-    "Scroll/Arrows(obj nav)",
-    "Scroll+QMENU(select obj)",
-    "TAB(near mean ctr)",
-    "[Ctrl or Alt](both unlock mouse)",
-    "/(print obj to console)",
-    "Shift+T(dupe & mov & finish)",
+    "Q(toggle menu & unlock mouse)",
+    "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
+    "...",
+    "Scroll+Shift(grid size) 2^n",
+    "[IN GAME] TAB(select by aiming at 3D center)",
+    "[IN MENU] TAB(select by hovering over 3D center)",
+    "LMB(move 3D cursor to aim location)",
+    "RMB(move cursor to near point in selected object)",
+    "MMB(show point indices & rotate camera from menu)",
     "G(send cursor to ground)",
-    "RMB(go to pnt in current obj)",
-    "MMB(show point sku & rot camera)",
-    "5(mirror by pln)",
-    "6(scale by dist)",
-    "7(make cir)",
-    "Shift+R(rot obj)",
-    "Q(menu)",
-    "C(edit obj)",
-    "V(mov obj)",
-    "E(make obj)",
-    "X(del obj)",
-    "F(place point)",
-    "Y(teleport)",
-    "Z(undo)",
-    "T(dupe obj)",
-    "H(go to obj ctr)",
-    "I(join objs)",
-    "L(link objs)",
-    "N(LOCK mov)",
+    "F(place point at cursor)",
+    "Z(undo last point placed)",
+    "E(make object from points)",
+    "C(edit object -> converts to points)",
+    "L(link objects -> select in sequence)",
+    "I(join objects -> select in sequence) [BUGGY]",
+    "...",
+    "N(LOCK movement planar)",
+    "[PLANAR LOCK] Scroll(vertical movement)",
+    "Scroll(expand world from center)",
+    "[FREE FLY] Y(teleport)",
+    "[PLANAR LOCK] Y(teleport & 180 flip)",
+    "...",
+    "Arrows(object selection)",
+    "[IN MENU] Scroll(object selection)",
+    "...",
+    "V(move object -> select in sequence)",
+    "X(delete selected object)",
+    "[GRID] Shift+R(rotate around cursor axis)",
+    "[MOVE] Shift+R(rotate around object center)",
+    "T(duplicate selected object)",
+    "Shift+T(dupe -> move cursor -> end[V] OR cont.)",
+    "[GRID] 5(mirror over selected plane & point)",
+    "[MOVE] 5(mirror over selected plane & object center)",
+    "6(scale by dist -> select in sequence)",
+    "7(generate circle at cursor & plane)",
+    "H(set cursor to object's encoded 3D center)",
+    "/(print object to console)",
     "hey man my name is gym",
     "hey man my name is gym",
     "hey man my name is gym",
@@ -479,7 +487,7 @@ var div_root =
     `
     box-sizing: border-box;
     position: absolute;
-    width: 600px;
+    width: 610px;
     height: 660px;
     left: 30px;
     top: 190px;
@@ -528,7 +536,7 @@ var div_root =
             border-left: 1px solid rgba(222, 222, 222, 0.1);
             outline: none;
             width: 23%;
-            height: 64%;
+            height: 63%;
             padding: 0;
             `;
 
@@ -597,8 +605,9 @@ var div_root =
                 Fqking spooky bugs AHHHHHHH
                     -- can't apply border here after
                             : rootStyle + _btn + _btn_tool_border,
-
-
+    
+                benzene ring
+                \u232C
             */
 
 
@@ -629,14 +638,15 @@ var div_root =
             height: 26px;
             line-height: 2.06;
             `;
-            var btn_tool_clearWorld =
+
+            var btn_tool_moveMode =
             {
-                text: `\u05D0 Clear World \u05D0`,
-                id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
+                text: `Lock Player Planar`,
+                id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
-                callback: del_world
-            }; addButton(btn_tool_clearWorld);
+                callback: playerChangeMovementMode
+            }; addButton(btn_tool_moveMode);
 
             var btn_tool_curToCtr =
             {
@@ -658,7 +668,7 @@ var div_root =
 
             var btn_tool_createCircle =
             {
-                text: "Create Circle \u2299",
+                text: "Create Circle \u25EF",
                 id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
@@ -676,16 +686,26 @@ var div_root =
 
             var btn_tool_dupeObj =
             {
-                text: "Duplicate Object \u02AD",
+                text: "Duplicate Object \u26FC",
                 id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: cloneObjSelected
             }; addButton(btn_tool_dupeObj);
 
+            var btn_tool_editObj =
+            {
+                text: "Edit Obj \u2188",
+                id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: editSelectedObject
+            }; addButton(btn_tool_editObj);
+
+
             var btn_tool_objLink =
             {
-                text: "Link Obj \u046A",
+                text: "Link Obj \u2366",
                 id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
@@ -700,6 +720,15 @@ var div_root =
                 hoverStyles: _btn_hover_tool,
                 callback: deleteObjectSelected
             }; addButton(btn_tool_delObj);
+
+            var btn_tool_clearWorld =
+            {
+                text: `\u05D0 Clear World \u05D0`,
+                id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: del_world
+            }; addButton(btn_tool_clearWorld);
 
 
         /*
@@ -805,7 +834,7 @@ var div_root =
                 var div_label =
                 {
                     id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
-                    text: `circle settings \u2299`,
+                    text: `circle settings \u25CB`,
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_label);
 
@@ -990,7 +1019,7 @@ var div_root =
                 var div_linkSettings =
                 {
                     id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
-                    text: 'link settings \u046A',
+                    text: 'link settings \u2366',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_linkSettings);
 
@@ -1240,7 +1269,7 @@ var div_root =
                 var div_gridSettings =
                 {
                     id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
-                    text: 'grid settings ::',
+                    text: 'grid settings \u2637',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_gridSettings);
 
