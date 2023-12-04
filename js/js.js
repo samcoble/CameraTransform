@@ -2675,13 +2675,13 @@ function Compute(init_dat)
 	}
 
 
-	if (key_map["5"] && runEvery(150)) // Move to fn later
+	if (mouseLock && key_map["5"] && runEvery(150)) // Move to fn later
 	{
 		mirrorOverPlane();
 	}
 
 
-	if (key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
+	if (mouseLock && key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
 
 	if (key_map.l && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
 
