@@ -41,7 +41,6 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 ![GRID](https://github.com/samcoble/CameraTransform/assets/32228102/4c6ec41b-14de-440e-a175-2f30474f6f67)
 ![rayz](https://github.com/samcoble/CameraTransform/assets/32228102/642ba171-ebf4-47db-8851-fd533c091c36)
 ![linker](https://github.com/samcoble/CameraTransform/assets/32228102/8a8411a2-cd39-480a-980e-874c6529ecf3)
-![silly](https://github.com/samcoble/CameraTransform/assets/32228102/7537df5d-1554-4ffe-a317-be004525830f)
 ![qq](https://github.com/samcoble/CameraTransform/assets/32228102/9da981a7-05ad-4940-b3d9-ebf9aa8188a2)
 ![mush](https://github.com/samcoble/CameraTransform/assets/32228102/9f91a91a-47f1-4e07-83c8-b47b7c873516)
 ![musho](https://github.com/samcoble/CameraTransform/assets/32228102/2835a077-84fd-4285-b048-fdc2f344729c)
