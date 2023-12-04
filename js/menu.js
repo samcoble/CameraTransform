@@ -479,7 +479,7 @@ var div_root =
     `
     box-sizing: border-box;
     position: absolute;
-    width: 650px;
+    width: 600px;
     height: 660px;
     left: 30px;
     top: 190px;
@@ -527,8 +527,8 @@ var div_root =
             border-right: 1px solid rgba(222, 222, 222, 0.1);
             border-left: 1px solid rgba(222, 222, 222, 0.1);
             outline: none;
-            width: 20%;
-            height: 60%;
+            width: 23%;
+            height: 64%;
             padding: 0;
             `;
 
@@ -564,7 +564,7 @@ var div_root =
          `
         box-sizing: border-box;
         float: right;
-        width: 27.75%;
+        width: 29.25%;
 
         margin-left: 0%;
         margin-right: 1%;
@@ -610,12 +610,12 @@ var div_root =
 
             var _btn_tool0 =
             `
-            margin: 4% 0% 0 5%;
+            margin: 5px 0% 0 3%;
             `;
 
             var _btn_tooln =
             `
-            margin: 2px 0% 0 5%;
+            margin: 2px 0% 0 3%;
             `;
 
             var _btn =
@@ -625,7 +625,7 @@ var div_root =
             text-align: center;
             border: 1px solid rgba(200, 200, 200, 0.1);
             outline: none;
-            width: 90%;
+            width: 94%;
             height: 26px;
             line-height: 2.06;
             `;
@@ -717,7 +717,7 @@ var div_root =
          `
         box-sizing: border-box;
         float: left;
-        width: 69%;
+        width: 68%;
         margin: 0 0% 0 1%;
         padding-top: 3%;
         height: 92%;
@@ -751,9 +751,9 @@ var div_root =
              `
             box-sizing: border-box;
             float: left;
-            width: 47%;
-            margin: 2% 0 0 2%;
-            height: 29%;
+            width: 48.5%;
+            margin: 5px 0 0 1%;
+            height: 26%;
             background-color: rgb(17, 17, 18);
             z-index: -1;
             `;
@@ -770,7 +770,7 @@ var div_root =
                 text-align: center;
                 //border: 1px rgba(222, 222, 222, 0.3);
                 outline: none;
-                margin: 4% 0% 0 5%;
+                margin: 7px 0% 0 5%;
                 width: 90%;
                 line-height: 2.4;
                 height: 30px;
@@ -784,12 +784,12 @@ var div_root =
                     height: 100%;
                     text-align: center;
                     outline: none;
-                    background: rgb(55 55 55 / 20%);
+                    background: rgb(60 60 60 / 50%);
                     border: 1px solid rgba(31,31,31,0.3);
                 `;
                 var myTitleStyle =
                 `
-                    margin: 0px 0px 10% 0px;
+                    margin: 0px 0px 6% 0px;
                     width: 100%;
                     height: 24px;
                     line-height: 2;
@@ -896,22 +896,27 @@ var div_root =
                         `
                             background: rgba(159, 144, 75, 0.8);
                             box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.3);
+                            border: 0px;
                         `;
 
                         var cbx_myStyle_hover =
                         `
                             box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
+                            border: 0px;
                         `;
-
+                        /*
+                        box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
+                        */
                         var cbx_myStyle =
                          `
                             border: 0px;
                             float: right;
-                            box-shadow: none;
+                            box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.0);
+                            border-right: 1px solid rgba(120,120,120,0.1);
                             cursor: pointer;
                             appearance: none;
                             outline: 0;
-                            background: rgb(57 57 57 / 30%);
+                            background: rgb(60 60 60 / 50%);
                             width: 40px;
                             height:100%;
                             color: rgba(1, 1, 1, 0);
@@ -921,7 +926,7 @@ var div_root =
                         var cbx_lines =
                         {
                             id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
-                            rootStyle: rootStyle+cbx_myStyle,
+                            rootStyle: rootStyle + cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
                             callback: drawSettingsUpdate,
@@ -940,7 +945,7 @@ var div_root =
                         var cbx_surfaces =
                         {
                             id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
-                            rootStyle: rootStyle+cbx_myStyle,
+                            rootStyle: rootStyle + cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
                             callback: drawSettingsUpdate,
