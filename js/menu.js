@@ -1,6 +1,14 @@
 // memspc.xyz menu generation.
 
 // this one really helped me understand objects in javascript that's for sure.
+// very noob level implementation here though. I just wan't absolute freedom.
+/*
+                    -- i can't tell if i'm on the right track.
+                        : maybe i can design it such that
+                        :
+                        :      [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
+*/
+
 
 function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles, liStyle)
 {
@@ -359,6 +367,7 @@ function paintSettingsUpdate() // bad needs system
 //          -- super key here to put that fn inside the listener assigned to text boxes.
 //          -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
 //      
+//      
 
 var justOuter =
 `
@@ -368,6 +377,18 @@ var darkBorder =
 `
 border: 1px solid rgba(31,31,31,0.3);
 `;
+var lightSideBorder =
+`
+border-right: 1px solid rgba(100, 100, 100, 0.1);
+border-top: 1px solid rgba(150, 150, 150, 0.2);
+border-left: 1px solid rgba(100, 100, 100, 0.1);
+border-bottom: 1px solid rgba(100, 100, 100, 0.1);
+`;
+//background: radial-gradient(circle, rgba(18,18,18,1) 0%, rgba(12,12,12,1) 100%);
+var radial_bg =
+`
+background: radial-gradient(circle, rgba(17,17,17,1) 0%, rgba(12,12,12,1) 100%);
+`;
 
 var rootStyle =
  `
@@ -376,6 +397,7 @@ font-size: 12px;
 box-sizing: border-box;
 color: rgb(195, 123, 0);
 background-color: rgb(17, 17, 18);
+
 `;
 
 var key_bind_info = 
@@ -460,6 +482,7 @@ var div_root =
     left: 30px;
     top: 190px;
     user-select: none;
+    background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
     `;
     var div_q_menu =
     {
@@ -482,15 +505,16 @@ var div_root =
         }; addDiv(div_q_tabs);
 
             var _btn_hover_tool =
-             `
-             background-color: rgb(27, 27, 33);
-             box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
-             `;
+            `
+            background-color: rgb(27, 27, 33);
+            box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+            `;
 
             var _btn_hover =
-             `
-             background-color: rgb(27, 27, 33);
-             `;
+            `
+            background-color: rgb(27, 27, 33);
+            `;
+
             var _btn_tab =
              `
             line-height: 2.4;
@@ -526,7 +550,7 @@ var div_root =
 
             var btn_open_tab2 =
             {
-                text: "Key Binds",
+                text: "Key Binds \u1CC4",
                 id: "tab2", cls: "_btn", prnt: "menu_tabs",
                 rootStyle: rootStyle + _btn_tab + _btn_tabn,
                 hoverStyles: _btn_hover,
@@ -557,33 +581,67 @@ var div_root =
             rootStyle: rootStyle + tool_menu
         }; addDiv(div_toolMenu); // help
 
+            /*
+             ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
+            ╔╝╚╗        ║║     ║║      ╔╝╚╗╔╝╚╗
+            ╚╗╔╝╔══╗╔══╗║║     ║╚═╗╔╗╔╗╚╗╔╝╚╗╔╝╔══╗╔═╗ ╔══╗
+             ║║ ║╔╗║║╔╗║║║     ║╔╗║║║║║ ║║  ║║ ║╔╗║║╔╗╗║══╣
+             ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝║ ║╚╗ ║╚╗║╚╝║║║║║╠══║
+             ╚═╝╚══╝╚══╝╚═╝    ╚══╝╚══╝ ╚═╝ ╚═╝╚══╝╚╝╚╝╚══╝
+            #toolbuttons
+            */
+
+            /*
+                Fqking spooky bugs AHHHHHHH
+                    -- can't apply border here after
+                            : rootStyle + _btn + _btn_tool_border,
+
+
+            */
+
+
+
+            // var _btn_tool_border
+            // `
+
+            // `;
+
+            var _btn_tool0 =
+            `
+            margin: 4% 0% 0 5%;
+            `;
+
+            var _btn_tooln =
+            `
+            margin: 4px 0% 0 5%;
+            `;
+
             var _btn =
              `
             color: rgb(195, 123, 0);
             background-color: rgb(27, 27, 30);
             text-align: center;
-            //border: 1px rgba(222, 222, 222, 0.3);
+            border: 1px solid rgba(200, 200, 200, 0.1);
             outline: none;
-            margin: 4% 0% 0 5%;
             width: 90%;
-            height: 25px;
-            line-height: 2;
+            height: 26px;
+            line-height: 2.06;
             `;
-            var btn_tool_01 =
+            var btn_tool_clearWorld =
             {
-                text: "Clear World",
-                id: "tool_01", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                text: `\u05D0 Clear World \u05D0`,
+                id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tool0,
+                hoverStyles: _btn_hover_tool,
                 callback: del_world
-            }; addButton(btn_tool_01);
+            }; addButton(btn_tool_clearWorld);
 
             var btn_tool_curToCtr =
             {
                 text: "Get Object Center",
                 id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: setCursorToObjCenter
             }; addButton(btn_tool_curToCtr);
 
@@ -591,60 +649,68 @@ var div_root =
             {
                 text: "Cursor to Ground",
                 id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: returnCursorToGround
             }; addButton(btn_tool_curToGrnd);
 
             var btn_tool_createCircle =
             {
-                text: "Create Circle",
+                text: "Create Circle \u2299",
                 id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: createCircleAtCursor
             }; addButton(btn_tool_createCircle);
 
             var btn_tool_mirrorOverPlane =
             {
-                text: "Mirror over Plane",
+                text: "Mirror over Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: mirrorOverPlane
             }; addButton(btn_tool_mirrorOverPlane);
 
             var btn_tool_dupeObj =
             {
-                text: "Duplicate Object",
+                text: "Duplicate Object \u02AD",
                 id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: cloneObjSelected
             }; addButton(btn_tool_dupeObj);
 
             var btn_tool_objLink =
             {
-                text: "Link Obj",
+                text: "Link Obj \u046A",
                 id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: menuLinkObj
             }; addButton(btn_tool_objLink);
 
             var btn_tool_delObj =
             {
-                text: "Delete Object",
-                id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + darkBorder,
-                hoverStyles: _btn_hover + _btn_hover_tool,
+                text: "\u2421 Delete Object \u2421",
+                id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
                 callback: deleteObjectSelected
             }; addButton(btn_tool_delObj);
 
 
-//del_obj(obj_cyc);
-
-            //            visibility: hidden;
+        /*
+         ╔╗         ╔╗                      ╔╗
+        ╔╝╚╗        ║║                      ║║
+        ╚╗╔╝╔══╗╔══╗║║     ╔══╗╔══╗ ╔═╗ ╔══╗║║ ╔══╗
+         ║║ ║╔╗║║╔╗║║║     ║╔╗║╚ ╗║ ║╔╗╗║╔╗║║║ ║══╣
+         ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝╚╗║║║║║║═╣║╚╗╠══║
+         ╚═╝╚══╝╚══╝╚═╝    ║╔═╝╚═══╝╚╝╚╝╚══╝╚═╝╚══╝
+                           ║║
+                           ╚╝
+        #toolpanels
+        */
         var detail_menu =
          `
         box-sizing: border-box;
@@ -692,7 +758,7 @@ var div_root =
             var div_detail_circleSettings =
             {
                 id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detail_circleSettings);
 
                 var div_css =
@@ -737,7 +803,7 @@ var div_root =
                 var div_label =
                 {
                     id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
-                    text: `circle settings`,
+                    text: `circle settings \u2299`,
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_label);
 
@@ -804,13 +870,13 @@ var div_root =
             var div_detailMenuBox2 =
             {
                 id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox2);
 
                 var div_drawSettings =
                 {
                     id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
-                    text: 'draw settings',
+                    text: 'draw settings \u03BB',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_drawSettings);
 
@@ -911,13 +977,13 @@ var div_root =
             var div_detailMenuBox3 =
             {
                 id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox3);
 
                 var div_linkSettings =
                 {
                     id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
-                    text: 'link settings',
+                    text: 'link settings \u046A',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_linkSettings);
 
@@ -990,13 +1056,13 @@ var div_root =
             var div_detailMenuBox4 =
             {
                 id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox4);
 
                 var div_lockSettings =
                 {
                     id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
-                    text: 'lock settings',
+                    text: 'lock settings \u0466',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_lockSettings);
 
@@ -1086,13 +1152,13 @@ var div_root =
             var div_detailMenuBox5 =
             {
                 id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox5);
 
                 var div_paintSettings =
                 {
                     id: "div_paintSettings", cls: "", prnt: "detail_box_paintSettings",
-                    text: 'paint settings',
+                    text: 'paint settings \u06A9',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_paintSettings);
 
@@ -1161,13 +1227,13 @@ var div_root =
             var div_detailMenuBox6 =
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-                rootStyle: rootStyle + detail_menu_box + darkBorder
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox6);
 
                 var div_gridSettings =
                 {
                     id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
-                    text: 'grid settings',
+                    text: 'grid settings ::',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_gridSettings);
 

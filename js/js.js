@@ -1053,14 +1053,6 @@ function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe
 	}
 }
 
-function createCircleAtCursor()
-{
-	if (!isNaN(stn_cir_tool.divider) && !isNaN(stn_cir_tool.scale) && !isNaN(stn_cir_tool.off))
-	{
-		make_cir_obj(Math.floor(stn_cir_tool.divider), stn_cir_tool.scale, stn_cir_tool.off, pln_cyc);
-	}
-}
-
 function splitObj(ar) // Accepts linear : outputs array of 4d points
 {
     const r = [];
@@ -1131,7 +1123,7 @@ const m_map = new Float32Array([
 	*/
 	// #DATAFNS
 
-var m1 = GLSLfragmentShader.alloc(80000); // Everything
+var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
 for (i=0; i<m1.data.length; i++)
 {
 	m1.data[i] = 0.0;
@@ -1276,16 +1268,12 @@ m_objs_loadPoints(m_gun);        // 11
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
-
-
 setData();
 
-
-
 var canvas = document.getElementById("cv");
-var canvas_over = document.getElementById("cv_over");
 var ctx = canvas.getContext("2d");
 
+var canvas_over = document.getElementById("cv_over");
 var ctx_o = canvas_over.getContext("2d");
 
 
@@ -1294,6 +1282,8 @@ var ctx_o = canvas_over.getContext("2d");
 
 ctx.scale(1, 1); ctx_o.scale(1, 1);
 
+
+// Removing this for now. Clicks lock/unlock mouse.
 
 // canvas_over.addEventListener("click", async () => 
 // {
@@ -1318,6 +1308,9 @@ fileInput.addEventListener('change', event =>
 	loadFile(_fi[0]);
 });
 
+/*
+		FILE LOAD UNPACKS WRAPPED POINTS
+*/
 function loadFile(_fi)
 {
 	if (_fi)
@@ -1419,15 +1412,9 @@ function updateRayInters()
 			{
 				for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) // Y no +1 w/ world count work??
 				{
-						// Replace this part w/ fn
-						_oh = dot(player_pos,[0,1,0,1]);
 						updateLook();
 
-						f_dist = -_oh/dot([0,1,0],norm(f_look));
-						_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
-						_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
-
-						// n here
+						// n from cross map here
 						_cr = [obj_normalMaps[i][4*k+0], obj_normalMaps[i][4*k+1], obj_normalMaps[i][4*k+2]];
 
 						p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
@@ -1605,7 +1592,7 @@ function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
     return [_rq[1], _rq[2], _rq[3]];
 }
 
-function arHasC(ar, c)
+function arHasC(ar, c) // Useless?
 {
     var _r = false;
     for (var i = 0; i < ar.length; i++)
@@ -1663,10 +1650,11 @@ function del_obj(_i)
 {
 	if (_i > world_obj_count)
 	{
-		if (obj_cyc == m_objs.length-1)
+		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
-		} else {
+		} else // Delete specific
+		{
 			var _ts = mem_log[obj_cyc][1];
 			for (var i = obj_cyc+1; i<mem_log.length; i++)
 			{
@@ -1677,38 +1665,20 @@ function del_obj(_i)
 	}
 }
 
-function deleteObjectSelected()
-{
-	if (obj_cyc > world_obj_count)
-	{
-		if (obj_cyc == m_objs.length-1)
-		{
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
-		} else {
-			var _ts = mem_log[obj_cyc][1];
-			for (var i = obj_cyc+1; i<mem_log.length; i++)
-			{
-				mem_log[i][0] = mem_log[i][0]-_ts;
-			}
-			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1);
-		}
-	}
-}
 
-function del_world()
-{
-	m_objs.splice(world_obj_count+1);	mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
-	fileInput.value = '';
-}
-
-function updateLook()
+function updateLook() // Quat view rot
 {
 		_viewq = [makeQuaternion(-player_look_dir[1], norm([1,0.000001,0.000001])),
 				  makeQuaternion(-player_look_dir[0], norm([0.000001,1,0.000001]))];
 		f_look = quatRot( [0,0,1], _viewq );
+
+		_oh = dot(player_pos,[0,1,0,1]);
+		f_dist = -_oh/dot([0,1,0],norm(f_look));
+		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
+		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
 }
 
-function finishTrnsAnim(_i)
+function finishTrnsAnim(_i) // Maybe make this a system
 {
 	for (var i=0; i<mem_log[_i][2]; i++)
 	{
@@ -1718,7 +1688,7 @@ function finishTrnsAnim(_i)
 	}
 }
 
-function findbyctr_obj()
+function findbyctr_obj() // 2D find by encoded center point
 {
 	if (m_objs.length > world_obj_count+1)
 	{
@@ -1734,7 +1704,7 @@ function findbyctr_obj()
 	} else {return world_obj_count;}
 }
 
-function getctr_obj(_i)
+function getctr_obj(_i) // Get encoded 3D center point
 {
 	var _c = new Float32Array(4);
 	_c[0] = m_objs[_i][m_objs[_i].length-4];
@@ -2110,6 +2080,36 @@ function expand_obj(_i)
 	}
 }
 
+
+/*
+	╔═╗╔═╗╔═══╗╔═╗ ╔╗╔╗ ╔╗     ╔═══╗╔═╗ ╔╗╔═══╗
+	║║╚╝║║║╔══╝║║╚╗║║║║ ║║     ║╔══╝║║╚╗║║║╔═╗║
+	║╔╗╔╗║║╚══╗║╔╗╚╝║║║ ║║     ║╚══╗║╔╗╚╝║║╚══╗
+	║║║║║║║╔══╝║║╚╗║║║║ ║║     ║╔══╝║║╚╗║║╚══╗║
+	║║║║║║║╚══╗║║ ║║║║╚═╝║    ╔╝╚╗  ║║ ║║║║╚═╝║
+	╚╝╚╝╚╝╚═══╝╚╝ ╚═╝╚═══╝    ╚══╝  ╚╝ ╚═╝╚═══╝
+*/
+
+
+function deleteObjectSelected()
+{
+	del_obj(obj_cyc);
+}
+
+function del_world()
+{
+	m_objs.splice(world_obj_count+1);	mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
+	fileInput.value = '';
+}
+
+function createCircleAtCursor()
+{
+	if (!isNaN(stn_cir_tool.divider) && !isNaN(stn_cir_tool.scale) && !isNaN(stn_cir_tool.off))
+	{
+		make_cir_obj(Math.floor(stn_cir_tool.divider), stn_cir_tool.scale, stn_cir_tool.off, pln_cyc);
+	}
+}
+
 //if (key_map["5"] && mouseLock && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
 function mirrorOverPlane()
 {
@@ -2153,7 +2153,8 @@ function cloneObjSelected()
 
 function setCursorToObjCenter()
 {
-	var _t = meanctr_obj(m_objs[obj_cyc]);
+	var _t = getctr_obj(obj_cyc); // USE THIS??
+	//var _t = meanctr_obj(m_objs[obj_cyc]);
 	if (!stn_trns[0]) {_lp[0] = _t[0];}
 	if (!stn_trns[1]) {_lp[1] = _t[1];}
 	if (!stn_trns[2]) {_lp[2] = _t[2];}
@@ -2266,28 +2267,28 @@ function drawOverlay(init_dat)
 
 
 /*
-__/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\___________/\\\\\\\\\\\__/\\\\\_____/\\\__/\\\\\\\\\\\\\__/\\\\\\\\\\__________/\\\\\______/\\\\\\\\\\\\\\\_        
- _\///////\\\/////_/\\\///////\\\___\/////\\\///__\/\\\__________\/////\\\///__\/\\\\\\___\/\\\_\/\\\/////////__\/\\\//////\\\______/\\\///\\\___\///////\\\/////__       
-  _______\/\\\_____\/\\\_____\/\\\_______\/\\\_____\/\\\______________\/\\\_____\/\\\/\\\__\/\\\_\/\\\___________\/\\\____\//\\\___/\\\/__\///\\\_______\/\\\_______      
-   _______\/\\\_____\/\\\\\\\\\\\/________\/\\\_____\/\\\______________\/\\\_____\/\\\//\\\_\/\\\_\/\\\\\\\\\_____\/\\\_____\/\\\__/\\\______\//\\\______\/\\\_______     
-    _______\/\\\_____\/\\\//////\\\________\/\\\_____\/\\\______________\/\\\_____\/\\\\//\\\\/\\\_\/\\\/////______\/\\\_____\/\\\_\/\\\_______\/\\\______\/\\\_______    
-     _______\/\\\_____\/\\\____\//\\\_______\/\\\_____\/\\\______________\/\\\_____\/\\\_\//\\\/\\\_\/\\\___________\/\\\_____\/\\\_\//\\\______/\\\_______\/\\\_______   
-      _______\/\\\_____\/\\\_____\//\\\______\/\\\_____\/\\\______________\/\\\_____\/\\\__\//\\\\\\_\/\\\___________\/\\\_____/\\\___\///\\\__/\\\_________\/\\\_______  
-       _______\/\\\_____\/\\\______\//\\\__/\\\\\\\\\\\_\/\\\\\\\\\\\\__/\\\\\\\\\\\_\/\\\___\//\\\\\_\/\\\\\\\\\\\\\_\/\\\\\\\\\\/______\///\\\\\/__________\/\\\_______ 
-        _______\///______\///________\///__\///////////__\////////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
+__/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\\\\_____/\\\__/\\\\\\\\\\\\\__/\\\\\\\\\\__________/\\\\\______/\\\\\\\\\\\\\\\_        
+ _\///////\\\/////_/\\\///////\\\___\/////\\\///__\/\\\________\/////\\\///__\/\\\\\\___\/\\\_\/\\\/////////__\/\\\//////\\\______/\\\///\\\___\///////\\\/////__       
+  _______\/\\\_____\/\\\_____\/\\\_______\/\\\_____\/\\\____________\/\\\_____\/\\\/\\\__\/\\\_\/\\\___________\/\\\____\//\\\___/\\\/__\///\\\_______\/\\\_______      
+   _______\/\\\_____\/\\\\\\\\\\\/________\/\\\_____\/\\\____________\/\\\_____\/\\\//\\\_\/\\\_\/\\\\\\\\\_____\/\\\_____\/\\\__/\\\______\//\\\______\/\\\_______     
+    _______\/\\\_____\/\\\//////\\\________\/\\\_____\/\\\____________\/\\\_____\/\\\\//\\\\/\\\_\/\\\/////______\/\\\_____\/\\\_\/\\\_______\/\\\______\/\\\_______    
+     _______\/\\\_____\/\\\____\//\\\_______\/\\\_____\/\\\____________\/\\\_____\/\\\_\//\\\/\\\_\/\\\___________\/\\\_____\/\\\_\//\\\______/\\\_______\/\\\_______   
+      _______\/\\\_____\/\\\_____\//\\\______\/\\\_____\/\\\____________\/\\\_____\/\\\__\//\\\\\\_\/\\\___________\/\\\_____/\\\___\///\\\__/\\\_________\/\\\_______  
+       _______\/\\\_____\/\\\______\//\\\__/\\\\\\\\\\\_\/\\\\\\\\\\__/\\\\\\\\\\\_\/\\\___\//\\\\\_\/\\\\\\\\\\\\\_\/\\\\\\\\\\/______\///\\\\\/__________\/\\\_______ 
+        _______\///______\///________\///__\///////////__\//////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
 */ 
 // #trilinedot
 
-				// only draw when length > 2
-				// every second point draws a tri from ith to previous and ahead
-				// i is offset by len%2, so at 4th do -1. (len-1)%2
-				// if obj is static pat could be pregen
-				// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
+		// only draw when length > 2
+		// every second point draws a tri from ith to previous and ahead
+		// i is offset by len%2, so at 4th do -1. (len-1)%2
+		// if obj is static pat could be pregen
+		// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
 
 
-				// I could only do a 2d alg ig
-				// maybe clip objs entire inside?
-				// hardest of them all
+		// I could only do a 2d alg ig
+		// maybe clip objs entire inside?
+		// hardest of them all
 
 
 function drawTriangleF(ctx, i, k)
@@ -2302,7 +2303,6 @@ function drawTriangleF(ctx, i, k)
 	rgbas_tri_f[k%3]);
 }
 
-
 function drawLineF(ctx, i, j, c, lw)
 {
 	drawLine(ctx, c, lw,
@@ -2311,8 +2311,6 @@ function drawLineF(ctx, i, j, c, lw)
 	m1.data[4*(j+1)+mem_log[i][0]],
 	m1.data[4*(j+1)+mem_log[i][0]+1]);
 }
-
-
 
 function fillDotF(ctx, i, j, c, lw)
 {
@@ -2323,15 +2321,12 @@ function fillDotF(ctx, i, j, c, lw)
 }
 
 
-
 function drawIt()
 {
 	Compute(m1);
 	updateDrawMap([3,4,5]);
 
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
-
-
 
 
 	// Draw packed verts
@@ -2863,15 +2858,10 @@ function Compute(init_dat)
 
 	*/
 
-	if (key_map.lmb || key_map.f || key_map.y) // Remove one_time_fix by setting vars to [0,0,0,0]
+	if (key_map.lmb || key_map.f || key_map.y)
 	{
 		updateLook();
-		_oh = dot(player_pos,[0,1,0,1]);
-		f_dist = -_oh/dot([0,1,0],norm(f_look));
-		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
-		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
 		_inter = lpi(_plr_dtp, player_pos, _pp, _nplns);
-		one_time_fix = 0;
 	}
 
 	// if (m_objs.length > tse && tse!=0)
