@@ -550,6 +550,10 @@ var g_dtp, g_pop, g_pao, g_rp, g_fp;
 var obj_normalMaps = [];
 var rayInterMap = [];
 
+
+var _norm_x = norm([1,0.000001,0.000001]);
+var _norm_y = norm([0.000001,1,0.000001]);
+
 // Junk needs to be organized
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 
@@ -1701,8 +1705,8 @@ function del_obj(_i)
 
 function updateLook() // Quat view rot
 {
-		_viewq = [makeQuaternion(-player_look_dir[1], norm([1,0.000001,0.000001])),
-				  makeQuaternion(-player_look_dir[0], norm([0.000001,1,0.000001]))];
+		_viewq = [makeQuaternion(-player_look_dir[1], _norm_x),
+				  makeQuaternion(-player_look_dir[0], _norm_y)];
 		f_look = quatRot( [0,0,1], _viewq );
 
 		_oh = dot(player_pos,[0,1,0,1]);

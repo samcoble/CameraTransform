@@ -333,16 +333,22 @@ function linkSettingsUpdate(par)
     });
 }
 
+//var stn_test = {};
+
 function lockSettingsUpdate(par)
 {
     var cbxs = document.querySelectorAll("."+par.class);
     cbxs.forEach(function(e, i)
     {
         stn_trns[i] = getCheckedById(e.id); // set happens here !!! :)
+        // maybe this obj creation can happen in the constructor
+        // uncertain if bidirectional
+        // seriously crazy amount of work compared to arrays lol
+        //stn_test[e.id] = getCheckedById(e.id); // set happens here !!! :)
         if (e.id === par.id)
         {
-            console.log(e.id);
-            console.log(getCheckedById( e.id ));
+            //console.log(e.id);
+            //console.log(getCheckedById( e.id ));
         }
     });
 }
@@ -493,6 +499,7 @@ var div_root =
     top: 190px;
     user-select: none;
     background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+    border-radius: 3px;
     `;
     var div_q_menu =
     {
@@ -538,6 +545,7 @@ var div_root =
             width: 23%;
             height: 63%;
             padding: 0;
+            border-radius: 2px;
             `;
 
             var _btn_tab0 = 
@@ -637,6 +645,7 @@ var div_root =
             width: 94%;
             height: 26px;
             line-height: 2.06;
+            border-radius: 2px;
             `;
 
             var btn_tool_moveMode =
