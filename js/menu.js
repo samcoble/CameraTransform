@@ -646,7 +646,7 @@ var div_root =
             width: 94%;
             height: 26px;
             line-height: 2.06;
-            border-radius: 2px;
+            border-radius: 0px 2px 2px 2px;
             `;
 
             var btn_tool_moveMode =
@@ -705,7 +705,7 @@ var div_root =
 
             var btn_tool_editObj =
             {
-                text: "Edit Obj \u2188",
+                text: "Edit Object \u2188",
                 id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
@@ -715,7 +715,7 @@ var div_root =
 
             var btn_tool_objLink =
             {
-                text: "Link Obj \u2366",
+                text: "Link Object \u2366",
                 id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,

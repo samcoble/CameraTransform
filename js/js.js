@@ -41,6 +41,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 
+			-- need to demo preview
+			-- make 3d world points as reference object
+
 			--  setup 2d_findbyctr w/ coordinate options :: functionize
 			--  add functions
 				- edit obj
@@ -824,7 +827,7 @@ window.addEventListener("wheel", function(e)
 		{
 		    if ((fov_slide-e.deltaY/300) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/300};
 		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14}; // fix
-		} else if(runEvery(50))
+		} else if(runEvery(40))
 		{
 			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
 			if (obj_cyc>m_objs.length-1) {obj_cyc=0};
@@ -1702,7 +1705,6 @@ function del_obj(_i)
 	}
 }
 
-
 function updateLook() // Quat view rot
 {
 		_viewq = [makeQuaternion(-player_look_dir[1], _norm_x),
@@ -1725,7 +1727,7 @@ function finishTrnsAnim(_i) // Maybe make this a system
 	}
 }
 
-function findbyctr_obj(x, y) // 2D find by encoded center point
+function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
 	if (m_objs.length > world_obj_count+1)
 	{
@@ -1828,7 +1830,7 @@ function rotateArray(ar, n)
 	const l = ar.length;
 	if (l === 0 || n % l === 0) {return ar.slice();}
 	const nn = n % l;
-	const rotatedArray = array.slice(l - nn).concat(array.slice(0, l - nn));
+	const rotatedArray = ar.slice(l - nn).concat(ar.slice(0, l - nn));
 	return rotatedArray;
 }
 
@@ -1861,6 +1863,27 @@ function bond_obj(_i)
 			var _f = [];
 
 
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+			// take last one out -> rotate -> recreate last
+
+
+			// take last one out -> rotate until match x,y,z -> recreate last
+			/*
+				cut out last -> to var w/ splice
+				rotate until n: 
+				put end back into ar
+	
+			*/
 
 			_oi.push(_oi[_oi.length-1]); // ??
 
@@ -1875,6 +1898,9 @@ function bond_obj(_i)
 			// console.log(matchPoint);
 			// console.log(matchPoint2);
 
+			//var _oi_p = _oi.splice(-1);
+			//var _of_p = _of.splice(0, 1); // need bottom ?
+
 			// for (var i = 0; i<_oi.length; i++) // idk just use len for now
 			// {
 			// 	// if (_oi[_oi.length-1] != matchPoint) // checking if last point in array is not match point.
@@ -1887,6 +1913,8 @@ function bond_obj(_i)
 			// 	if (i == _oi.length-1) {console.log(itorLog);}
 			// }
 
+			// //_oi.push(_oi_p);
+
 
 			// for (var i = _of.length - 1; i >= 0; i--)
 			// {
@@ -1898,13 +1926,13 @@ function bond_obj(_i)
 
 			// }
 
-
+			//_of.unshift(_of_p);
 
 
 
 			// assume objs for now are closed loop with an overlapping end point.
 			// I hope this design wasn't a mistake. Maybe additional 3d data isn't too bad
-			// rendering must be redone from linear to one more layer. like a way to draw objs based on on new list.
+			// rendering must be redone from linear to one more layer. like a way to draw objs based on a new list.
 			// I could map obj by memory...
 			/*
 				obj in general by mem sections measured for mean ctr which could act as simple reorganize for z buffer
@@ -1936,8 +1964,8 @@ function bond_obj(_i)
 			//console.log("zzzzzzzzzzzzzzzzzzzzzz------");
 
 
-			//console.log(_oi);
-			//console.log(_of);
+			// console.log(_oi);
+			// console.log(_of);
 
 			_oi.forEach(e1 =>
 			{
