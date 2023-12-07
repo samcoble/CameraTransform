@@ -560,7 +560,7 @@ var div_root =
             border-left: 1px solid rgba(222, 222, 222, 0.1);
             outline: none;
             width: 23%;
-            height: 63%;
+            height: 65%;
             padding: 0;
             border-radius: 2px;
             `;
