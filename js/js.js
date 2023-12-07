@@ -44,6 +44,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-- need to demo preview
 			-- make 3d world points as reference object
 
+			-- convert lines into one long line as draw functions are structured.
+
 			--  setup 2d_findbyctr w/ coordinate options :: functionize
 			--  add functions
 				- edit obj
@@ -557,6 +559,8 @@ var rayInterMap = [];
 var _norm_x = norm([1,0.000001,0.000001]);
 var _norm_y = norm([0.000001,1,0.000001]);
 
+var _bg_default = [9,20,30];
+
 // Junk needs to be organized
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 
@@ -634,7 +638,7 @@ function updateMenuPos()
 {	
 	menu_obj_pos = [in_win_w-150, 10];
 	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*660]; //660 fix later
+	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*730]; //730 fix later
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
@@ -650,6 +654,11 @@ function updateMenuPos()
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 }
+
+function setBackgroundColor(_wc)
+{
+	document.body.style.backgroundColor = "rgb(" + _wc[0] + "," + _wc[1] + "," + _wc[2] + ")";
+};
 
 
 						/*-- Key & Mouse event capture --\
@@ -3375,6 +3384,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 	drawIt();
 
 	obj_cyc = 10; // Temp fix
+
+	setBackgroundColor(_bg_default);
 
 	setInterval(menuTime, menuTime_int); 
 	setInterval(setTitle, title_int); 

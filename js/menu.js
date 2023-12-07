@@ -361,7 +361,23 @@ function paintSettingsUpdate() // bad needs system
     stn_paint[2] = document.getElementById("cbx_paintInf").checked;
 }
 
+var world_color = {};
 
+function colorSettingsUpdate(par) // bad needs system
+{
+    var inputs = document.querySelectorAll("."+par.class);
+    inputs.forEach(function(e, i)
+    {
+        world_color[i] = getInputById(e.id); // set happens here !!! :)
+        if (e.id === par.id)
+        {
+            //console.log(e.id);
+            //console.log(getCheckedById( e.id ));
+        }
+    });
+
+    setBackgroundColor(world_color);
+}
 
 
 /*
@@ -495,7 +511,7 @@ var div_root =
     box-sizing: border-box;
     position: absolute;
     width: 610px;
-    height: 660px;
+    height: 730px;
     left: 30px;
     top: 190px;
     user-select: none;
@@ -751,6 +767,7 @@ var div_root =
                            ║║
                            ╚╝
         #toolpanels
+        overflow-y: auto;
         */
         var detail_menu =
          `
@@ -792,7 +809,7 @@ var div_root =
             float: left;
             width: 48.5%;
             margin: 5px 0 0 1%;
-            height: 26%;
+            height: 24%;
             background-color: rgb(17, 17, 18);
             z-index: -1;
             `;
@@ -1302,6 +1319,80 @@ var div_root =
 
 
 
+            /*
+
+            #colorsettings
+            */
+            var div_detailMenuBox7 =
+            {
+                id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+            }; addDiv(div_detailMenuBox7);
+
+                var div_colorSettings =
+                {
+                    id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
+                    text: 'color settings (0:255)',
+                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+                }; addDiv(div_colorSettings);
+
+                        var div_colorSettings_r =
+                        {
+                            id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
+                            text: `red`,
+                            rootStyle: rootStyle + div_css + darkBorder
+                        }; addDiv(div_colorSettings_r);
+
+                            var textIn_colorSettings_r =
+                            {
+                                id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
+                                rootStyle: rootStyle + textIn_css,
+                                value: _bg_default[0],
+                                callback: colorSettingsUpdate
+                            };
+                            textIn_colorSettings_r.params = {id: textIn_colorSettings_r.id, class: textIn_colorSettings_r.cls}
+                            addTextInput(textIn_colorSettings_r);
+
+                        var div_colorSettings_g =
+                        {
+                            id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
+                            text: `green`,
+                            rootStyle: rootStyle + div_css + darkBorder
+                        }; addDiv(div_colorSettings_g);
+
+                            var textIn_colorSettings_g =
+                            {
+                                id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
+                                rootStyle: rootStyle + textIn_css,
+                                value: _bg_default[1],
+                                callback: colorSettingsUpdate
+                            };
+                            textIn_colorSettings_g.params = {id: textIn_colorSettings_g.id, class: textIn_colorSettings_g.cls}
+                            addTextInput(textIn_colorSettings_g);
+
+
+                        var div_colorSettings_b =
+                        {
+                            id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
+                            text: `blue`,
+                            rootStyle: rootStyle + div_css + darkBorder
+                        }; addDiv(div_colorSettings_b);
+
+                            var textIn_colorSettings_b =
+                            {
+                                id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
+                                rootStyle: rootStyle + textIn_css,
+                                value: _bg_default[2],
+                                callback: colorSettingsUpdate
+                            };
+                            textIn_colorSettings_b.params = {id: textIn_colorSettings_b.id, class: textIn_colorSettings_b.cls}
+                            addTextInput(textIn_colorSettings_b);
+
+                            // automate this part
+                            world_color = {0:"20", 1:"20", 2:"20"};
+
+
+
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
     ║╔╗╔╗║║╔═╗║║╔╗║     ║╔═╗║
@@ -1365,10 +1456,6 @@ var div_root =
                 items: key_bind_info
             };
             addList(list_keyBindInfo);
-
-
-
-
 
 
 
