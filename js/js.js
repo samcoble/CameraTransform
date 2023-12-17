@@ -42,6 +42,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- make #incheck a function to filter out the menu
 
+			-- mouse to world ray trace from eye...
+				- point on near plane
+
 			-- rotations should also be relative to right click point find
 
 			-- unit vector line conversion method for arc len
@@ -70,7 +73,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 					if you can manipulate time you could use a copy tool to bring data into any other time frame
 						to reduce complexity this starts a new branch at current time end of stack.
 
-			-- mouse to world ray trace from eye...
+
 	@?@?@
 	@?@?@
 	@?@?@
@@ -446,7 +449,7 @@ var stn_paint =
 [
 	1, // length per node
 	8, // nodes per line
-	false // infinite nodes
+	true // infinite nodes
 ];
 
 var stn_cir_tool = 
@@ -465,7 +468,7 @@ var one_time_fix = 1;
 
 var menu_q_size = [610, 730];
 var menu_q_pos = [30, 240];
-var menu_obj_pos = [11, 10];
+var menu_obj_pos = [0, 0];
 var menu_keys_pos = [155, 10];
 var menu_wpn_pos = [155, 10];
 
@@ -644,6 +647,7 @@ function drawCircle(c, rgba, lw, x, y, r)
 function updateMenuPos()
 {	
 	menu_obj_pos = [in_win_w-158, 10];
+	menu_obj_size = [158, 500]; // default & modified to include margins
 	menu_keys_pos = [11, 10];
 	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
@@ -654,6 +658,7 @@ function updateMenuPos()
 
 	document.getElementById("menu_obj").style.top = menu_obj_pos[1]+"px";
 	document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px";
+	menu_obj_size[1] = document.getElementById("menu_obj").offsetHeight;
 
 	in_win_clip = in_win_w+_epsilon;
 
@@ -3091,6 +3096,14 @@ function Compute(init_dat)
 				if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+610)))
 				{
 					if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+660)))
+					{
+						_in = 1;
+					}
+				}
+
+				if ((mouseData[0] > menu_obj_pos[0]) && (mouseData[0] < (menu_obj_pos[0]+menu_obj_size[0])))
+				{
+					if ((mouseData[1] > menu_obj_pos[1]) && (mouseData[1] < (menu_obj_pos[1]+menu_obj_size[1])))
 					{
 						_in = 1;
 					}
