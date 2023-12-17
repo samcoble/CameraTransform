@@ -34,12 +34,19 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 
 /*
-
 	New priorities after menu.js
 
 	@?@?@
 	@?@?@
 	@?@?@
+
+			-- make #incheck a function to filter out the menu
+
+			-- rotations should also be relative to right click point find
+
+			-- unit vector line conversion method for arc len
+
+			-- distribute heights using 20% remainder to make hover to settings
 
 			-- need to demo preview
 			-- make 3d world points as reference object
@@ -117,13 +124,11 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	Event log box would help
 	Allow grid size to be changed by regenerating the grid to match round size.
 
-	Hey I noticed %3 ran faster. I could just multithread the draw loop and make it setting ...... 
-	..................man I did this 9 years ago in C# on MAC to image track csgo lmao never got banned never got past no cursor input but worked on simulated image data in js
-	- solution here is to pat gen something a head of time I do believe.
-			fill array with indice map pointing to an even 1/n stack
-			pickUp array basically takes the remaining fraction and draws it.
-				example: n=5 -> use 4 even stacks to compute 4 renders at once
-						 remainder here is 1 so I go through at original per second point sequence to finish w/ modulo even/odd offset
+
+	fill array with indice map pointing to an even 1/n stack
+	pickUp array basically takes the remaining fraction and draws it.
+		example: n=5 -> use 4 even stacks to compute 4 renders at once
+				 remainder here is 1 so I go through at original per second point sequence to finish w/ modulo even/odd offset
 
 
 I can make real physgun by compounding quaternions and ray trace AYYYYYYYYYYYYYYYYYYYYYYY
@@ -404,6 +409,7 @@ var hover_h = 11.5;
 var lock_vert_mov = false;
 var pln_cyc = 1;
 var obj_cyc = 0; // Selector
+var obj_cyc_i = 0;
 
 // So bad fix jesus
 var grid_scale = 3; var grid_scale_f = 8; var grid_scale_ar = [8, 8, 8];
@@ -457,6 +463,7 @@ var in_win_clip;
 var one_time_fix = 1;
 
 
+var menu_q_size = [610, 730];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [11, 10];
 var menu_keys_pos = [155, 10];
@@ -636,14 +643,17 @@ function drawCircle(c, rgba, lw, x, y, r)
 
 function updateMenuPos()
 {	
-	menu_obj_pos = [in_win_w-150, 10];
+	menu_obj_pos = [in_win_w-158, 10];
 	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*730]; //730 fix later
+	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
 	document.getElementById("menu_q").style.top = menu_q_pos[1]+"px";
 	document.getElementById("menu_q").style.left = menu_q_pos[0]+"px";
+
+	document.getElementById("menu_obj").style.top = menu_obj_pos[1]+"px";
+	document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px";
 
 	in_win_clip = in_win_w+_epsilon;
 
@@ -1206,6 +1216,8 @@ function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 	//obj_updateNormalMaps();
+	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
+
 }
 
 function m_t_objs_loadPoint(ar) // Adds point to stack
@@ -1461,28 +1473,28 @@ function updateRayInters()
 			{
 				for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) // Y no +1 w/ world count work??
 				{
-						updateLook();
+					updateLook();
 
-						// n from cross map here
-						_cr = [obj_normalMaps[i][4*k+0], obj_normalMaps[i][4*k+1], obj_normalMaps[i][4*k+2]];
+					// n from cross map here
+					_cr = [obj_normalMaps[i][4*k+0], obj_normalMaps[i][4*k+1], obj_normalMaps[i][4*k+2]];
 
-						p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
-						p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
-						p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
+					p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
+					p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
+					p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
 
-						v1 = sub3(p2,p1);
-						v2 = sub3(p3,p2);
-						v3 = sub3(p1,p3);
+					v1 = sub3(p2,p1);
+					v2 = sub3(p3,p2);
+					v3 = sub3(p1,p3);
 
-						_int = lpi(_plr_dtp, player_pos, p2, _cr);
+					_int = lpi(_plr_dtp, player_pos, p2, _cr);
 
-						//can use create point like I did before ez
-						if (isPointInsideTriangle(_int, p1, p2, p3))
-						{
-							//console.log("Point in TRI");
-							//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
-							rayInterMap.push(_int);
-						}
+					//can use create point like I did before ez
+					if (isPointInsideTriangle(_int, p1, p2, p3))
+					{
+						//console.log("Point in TRI");
+						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
+						rayInterMap.push(_int);
+					}
 				}
 			}
 		}
@@ -1624,7 +1636,8 @@ function makeQuaternion(_r, _a) // Radians, Axis
 function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
 {
     var _fq = [1, 0, 0, 0]; // Initial quaternion for rotation accumulation
-    for (var i = 0; i < _q_ar.length; i++) {
+    for (var i = 0; i < _q_ar.length; i++)
+    {
         _fq = multiplyQuaternions(_q_ar[i], _fq);
     }
 	// Normalize it. Makes sense when you are adding many together.
@@ -1711,6 +1724,7 @@ function del_obj(_i)
 			}
 			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1);
 		}
+		updateList(objListConst(), "list_objectSelect");
 	}
 }
 
@@ -1738,7 +1752,7 @@ function finishTrnsAnim(_i) // Maybe make this a system
 
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
-	if (m_objs.length > world_obj_count+1)
+	if (m_objs.length > world_obj_count+1) // remove exponent 2
 	{
 		var _lt;
 		var _i = world_obj_count+1;
@@ -2309,16 +2323,12 @@ function drawOverlay(init_dat)
 	/*================--------------------------==============*/
 	/*========================================================*/
 
-
-
 	document.getElementById("fileInput").style.position = "absolute";
 	document.getElementById("fileInput").style.left = (menu_keys_pos[0]+15)+"px";
 	document.getElementById("fileInput").style.top = (62)+"px"; // M keys menu expander
 
 
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_keys_pos[0], menu_keys_pos[1], 410, 88); // Open file mover
-
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_obj_pos[0], menu_obj_pos[1], 138, 25+m_objs.length*15);
 
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, -5, -5, 1, 1); // SUPER HOT FIX for panel 1px border. MAKES. ZERO. SENSE. I have tried everything this is actually globally broken right now.
 
@@ -2330,14 +2340,6 @@ function drawOverlay(init_dat)
 	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
 	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_.scale_f+"]", menu_keys_pos[0]+398, 49);
 
-
-	for (var i = 0; i < m_objs.length; i++)
-	{
-		//drawText(ctx_o, "objAddr[" + mem_log[i][0] + "]", 30, 34+i*15); //, 
-		if (i<=world_obj_count) {drawText(ctx_o, rgba_dtext, "left", "[" + i + "]", menu_obj_pos[0]+23, 34+i*15); drawText(ctx_o, rgba_dtext, "left", "[" + mem_log[i][2] + "]", menu_obj_pos[0]+79, 34+i*15);} 
-		if (i>world_obj_count)  {drawText(ctx_o, rgba_otext, "left", "[" + i + "]", menu_obj_pos[0]+23, 34+i*15); drawText(ctx_o, rgba_otext, "left", "[" + mem_log[i][2] + "]", menu_obj_pos[0]+79, 34+i*15);} 
-		if (i==obj_cyc) {drawText(ctx_o, rgba_otext, "left", "[", menu_obj_pos[0]+7, 34+i*15); drawText(ctx_o, rgba_otext, "left", "]", menu_obj_pos[0]+123, 34+i*15);} // drawText(ctx_o, rgba_otext, "left", "[B][C][V]", 124, 34+i*15);
-	}
 
 	//Wpn select text
 	drawText(ctx_o, rgba_otext, "left", "[1]", menu_wpn_pos[0]+9, menu_wpn_pos[1]+21);
@@ -2614,6 +2616,13 @@ function drawIt()
 function Compute(init_dat)
 {
 
+
+	if (obj_cyc != obj_cyc_i)
+	{
+		updateList(objListConst(), "list_objectSelect");
+		obj_cyc_i = obj_cyc;
+	}
+
 	// if (key_map["["] && runEvery(300))
 	// {
 	// 	console.log(yomane);
@@ -2813,8 +2822,8 @@ function Compute(init_dat)
 
 	if (key_map.x == false) {del_obj_lock = 0;}
 
-	if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
-	if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
+	//if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
+	//if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
 	if (key_map.e && runEvery(120)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 	
@@ -3077,6 +3086,7 @@ function Compute(init_dat)
 
 			if (key_map.lmb && !mouseLock && runEveryLong(75)) // Avoids menu changing your selection
 			{
+				// #incheck
 				var _in = 0;
 				if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+610)))
 				{
@@ -3377,6 +3387,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 	updateMenuPos();
 	obj_updateNormalMaps();
+	updateList(objListConst(), "list_objectSelect");
 
 	Compute(m1);
 

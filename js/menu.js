@@ -238,6 +238,63 @@ function addList(par)
     return ul;
 }
 
+var list_colors =
+{
+    c1:"rgb(13,13,13)",
+    c2:"rgb(17,17,17)",
+    c3:"rgb(33,33,33)",
+    c4:"rgb(188,188,188)",
+    tc:"rgb(195, 123, 0)"
+};
+
+function updateList(_item, _id) // pass data as an obj of items & ul id. li's got with +"_li"
+{
+    const li_cls = _id+"_li"; // !!!
+    const _ul = document.getElementById(_id);
+    document.getElementById(_id).innerHTML = "";
+    //console.log(_item);
+    _item.forEach(function(item, i)
+    {
+        const li = document.createElement("li");
+        li.className = li_cls; // !!!
+        li.textContent = String(item);
+
+        li.addEventListener("click", function ()
+        {
+            //console.log(i);
+            //par.callback(par.params);
+            obj_cyc = i;
+
+            // not very generic here tho. starting to get too specific.
+            // pls fix !! @?@?@?@
+            // pls fix !! @?@?@?@
+            // pls fix !! @?@?@?@
+            updateList(objListConst(), _id);
+        });
+
+        // Apply styles for alternating list items
+        if (i % 2) {li.style.backgroundColor = list_colors.c1;}
+        else {li.style.backgroundColor = list_colors.c2;}
+        if (i==obj_cyc) {li.style.backgroundColor = list_colors.c3;}
+        if (i<world_obj_count+1) {li.style.color = list_colors.c4;}
+        else {li.style.color = list_colors.tc;}
+
+        _ul.appendChild(li);
+    });
+
+}
+
+function objListConst()
+{
+    var _l = [];
+    // m_objs
+    for (var i = 0; i<m_objs.length; i++)
+    {
+        _l[i] = mem_log[i][2];
+    }
+    return _l;
+}
+
 // function fileInputCallback(files)
 // {
 //     console.log(files);
@@ -361,7 +418,7 @@ function paintSettingsUpdate() // bad needs system
     stn_paint[2] = document.getElementById("cbx_paintInf").checked;
 }
 
-var world_color = {};
+var world_color = [];
 
 function colorSettingsUpdate(par) // bad needs system
 {
@@ -392,6 +449,11 @@ function colorSettingsUpdate(par) // bad needs system
 //          -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
 //      
 //      
+
+
+
+
+
 
 var justOuter =
 `
@@ -500,11 +562,85 @@ var key_bind_info =
     "hey man my name is gym"
 ];
 
+var _error_info = 
+[
+    "DID",
+    "NOT",
+    "LOAD"
+];
+
+
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // Must add event listener to detect li clicks/hovers -> compare class/id
+
+    
+    var menu_obj_style =
+    `
+    box-sizing: border-box;
+    position: absolute;
+    width: 150px;
+    height: auto;
+    left: 600px;
+    top: 190px;
+    user-select: none;
+    background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+    border-radius: 3px;
+    `;
+    var menu_obj =
+    {
+        id: "menu_obj", cls: "", prnt: "",
+        rootStyle: rootStyle + menu_obj_style + justOuter
+    }; addDiv(menu_obj);
+
+
+            var listStyle2 =
+            `
+            background-color: rgba(0,0,0,0);
+            width: 96%;
+            padding: 0px;
+
+            max-height: 97%;
+            margin: 3px;
+
+            border: 1px solid rgba(255,255,255,0.1);
+            `;
+
+            var myLiStyle2 =
+             `
+            box-sizing: border-box;
+            width: 100%;
+            height: 20px;
+            padding: 0px; margin: 0px;
+            border-bottom: 1px solid rgb(12,12,12);
+            text-align: center;
+            line-height: 1.8;
+            `;
+
+            var list_objectSelect =
+            {
+                id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
+                color1: list_colors.c1, color2: list_colors.c2,
+                rootStyle: rootStyle + listStyle2,
+                liStyles: myLiStyle2,
+                items: _error_info
+            };
+            addList(list_objectSelect);
+
+
+            //overflow-y: auto;
+    
+    //////////////////////////////////////////////////////////////////////////////////////
+
+
+
 var div_root =
 {
     id: "menu_1", cls: "", prnt: "html",
     rootStyle: rootStyle
 }; addDiv(div_root);
+
+
 
     var q_menu_holder =
     `
@@ -525,7 +661,7 @@ var div_root =
     }; addDiv(div_q_menu);
 
         var tabs_menu =
-         `
+        `
         box-sizing: border-box;
         float: top;
         height: 7%;
@@ -550,7 +686,7 @@ var div_root =
             `;
 
             var _btn_tab =
-             `
+            `
             line-height: 2.4;
             background-color: rgb(27, 27, 30);
             text-align: center;
@@ -594,7 +730,7 @@ var div_root =
             }; addButton(btn_open_tab2);
 
         var tool_menu =
-         `
+        `
         box-sizing: border-box;
         float: right;
         width: 29.25%;
@@ -1389,7 +1525,7 @@ var div_root =
                             addTextInput(textIn_colorSettings_b);
 
                             // automate this part
-                            world_color = {0:"20", 1:"20", 2:"20"};
+                            world_color = ["20", "20", "20"];
 
 
 
@@ -1450,7 +1586,7 @@ var div_root =
             var list_keyBindInfo =
             {
                 id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
-                color1: "rgb(13,13,13)", color2: "rgb(17,17,17)",
+                color1: list_colors.c1, color2: list_colors.c2,
                 rootStyle: rootStyle + listStyle,
                 liStyles: myLiStyle,
                 items: key_bind_info
