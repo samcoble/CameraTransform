@@ -29,7 +29,7 @@ So far ray tracing is working but I noticed in one test instance a surface would
 Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally ~~simple sun light.~~ Maybe shaded slightly but I will eventually start over in a webgl environment. 
 
 ![badartexedllfree](https://github.com/samcoble/CameraTransform/assets/32228102/0edfd5dc-f69f-454c-80f5-ff29e8853b75)
-![xdd](https://github.com/samcoble/CameraTransform/assets/32228102/c9adf733-9aef-4fb6-af25-6ba93625b70f)
+![yoe](https://github.com/samcoble/CameraTransform/assets/32228102/760730cd-a992-4e48-82a0-a8af939b259a)
 ![opacity](https://github.com/samcoble/CameraTransform/assets/32228102/af285eac-080d-46c6-adc8-6358b8e845a2)
 ![boatpics](https://github.com/samcoble/CameraTransform/assets/32228102/3dae0e7a-140b-49b2-8d38-12be1603c392)
 ![zbuff](https://github.com/samcoble/CameraTransform/assets/32228102/c899384c-e2fe-4540-b015-0e5635a57e4e)
