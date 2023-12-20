@@ -488,6 +488,8 @@ background-color: rgb(17, 17, 18);
 
 var key_bind_info = 
 [
+    "Ctrl+F5 Update Game",
+    "...",
     "W(move forward), S(move backwards)",
     "A(move left), D(move right)",
     "Space(up), B(down)",

@@ -39,13 +39,18 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+			-- try making preview w/ i #trilinedot
 
-			-- make #incheck a function to filter out the menu
+			-- all my functions relative to the plane can be replaced with a general obj orient fn.
+
+			-- rotations are broken BREOKEKN
+			-- rotations should also be relative to right click point find
+
+			-- make #incheck a function
 
 			-- mouse to world ray trace from eye...
 				- point on near plane
 
-			-- rotations should also be relative to right click point find
 
 			-- unit vector line conversion method for arc len
 
@@ -195,7 +200,7 @@ Assault cube old code
 	v11 = c-b                 ->        sub(c,b)
 	v12 = (a-c)/2 - b         ->        sub(scale(sub(a,c),0.5),b)
 	v13 = b - (a-c)/2         ->        sub(b, scale(sub(a,c),0.5))
-	if     sign(a) == sign(b) && sign(b) == sign(c)   =>   push point to rayInterMap[] && rayIMap[]. wat
+	if     sign(a) == sign(b) || sign(b) == sign(c)   =>   push point to rayInterMap[] && rayIMap[]. wat
 
 */
 /*
@@ -2215,7 +2220,7 @@ function mirrorOverPlane()
 			switch(wpn_select)
 			{
 			case 0:
-				_to[i] = add3(_inter_rnd, mir_w_pln(sub(_to[i], _inter_rnd), pln_cyc));
+				_to[i] = add3(_lp_world, mir_w_pln(sub(_to[i], _lp_world), pln_cyc));
 				break;
 			case 1:
 				_to[i] = add3(_c, mir_w_pln(sub(_to[i], _c), pln_cyc));
@@ -2246,14 +2251,10 @@ function cloneObjSelected()
 
 function setCursorToObjCenter()
 {
-	var _t = getctr_obj(obj_cyc); // USE THIS??
-	//var _t = meanctr_obj(m_objs[obj_cyc]);
-	if (!stn_trns[0]) {_lp[0] = _t[0];}
-	if (!stn_trns[1]) {_lp[1] = _t[1];}
-	if (!stn_trns[2]) {_lp[2] = _t[2];}
-	if (!stn_trns[0]) {_lp_world[0] = _t[0];}
-	if (!stn_trns[1]) {_lp_world[1] = _t[1];}
-	if (!stn_trns[2]) {_lp_world[2] = _t[2];}	
+	var _t = getctr_obj(obj_cyc);
+	if (!stn_trns[0]) {_lp[0] = _lp_world[0] = _t[0];}
+	if (!stn_trns[1]) {_lp[1] = _lp_world[1] = _t[1];}
+	if (!stn_trns[2]) {_lp[2] = _lp_world[2] = _t[2];}	
 }
 
 function returnCursorToGround()
@@ -2690,7 +2691,7 @@ function Compute(init_dat)
 					switch(wpn_select)
 					{
 					case 0:
-						_to[i] = add3(_inter_rnd, rot_x_pln(sub(_to[i], _inter_rnd), pi/4));
+						_to[i] = add3(_lp_world, rot_x_pln(sub(_to[i], _lp_world), pi/4));
 						break;
 					case 1:
 						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), pi/4));
@@ -2701,7 +2702,7 @@ function Compute(init_dat)
 					switch(wpn_select)
 					{
 					case 0:
-						_to[i] = add3(_inter_rnd, rot_y_pln(sub(_to[i], _inter_rnd), pi/4));
+						_to[i] = add3(_lp_world, rot_y_pln(sub(_to[i], _lp_world), pi/4));
 						break;
 					case 1:
 						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), pi/4));
@@ -2712,7 +2713,7 @@ function Compute(init_dat)
 					switch(wpn_select)
 					{
 					case 0:
-						_to[i] = add3(_inter_rnd, rot_z_pln(sub(_to[i], _inter_rnd), pi/4));
+						_to[i] = add3(_lp_world, rot_z_pln(sub(_to[i], _lp_world), pi/4));
 						break;
 					case 1:
 						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), pi/4));
