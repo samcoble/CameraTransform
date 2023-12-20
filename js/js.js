@@ -43,14 +43,21 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- all my functions relative to the plane can be replaced with a general obj orient fn.
 
-			-- rotations are broken BREOKEKN
-			-- rotations should also be relative to right click point find
+			-- Overlapping point issues BREOKEKN
+				- fuqk
+					take circle size and make size a fn
+						fn sets rel to z AND index
+						goal here is to have circle size data that maps to the screen
+							use data to reveal bounding areas to hover over to select overlapping selection of objs
+								don't i already have a good z buffer.. wait
 
 			-- make #incheck a function
 
 			-- mouse to world ray trace from eye...
 				- point on near plane
 
+
+			-- need rotation settings
 
 			-- unit vector line conversion method for arc len
 
@@ -61,15 +68,14 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- convert lines into one long line as draw functions are structured.
 
-			--  setup 2d_findbyctr w/ coordinate options :: functionize
-			--  add functions
+			-- setup 2d_findbyctr w/ coordinate options :: functionize
+			-- add functions
 				- edit obj
 					: done but needs full mode
 
 			--	menu scrollbar hide ???
-			--	need rotation settings
 
-			-- THE MENU SCRIPT ISN"T FLUID ENOUGH
+			-- THE MENU SCRIPT IS BAD
 
 			-- So each action logs a copy of all objs for each operation
 				- not very efficient though right? probably not worth worrying about size yet
@@ -574,7 +580,7 @@ var rayInterMap = [];
 var _norm_x = norm([1,0.000001,0.000001]);
 var _norm_y = norm([0.000001,1,0.000001]);
 
-var _bg_default = [9,20,30];
+var _bg_default = [10,10,10]; // 9,20,30
 
 // Junk needs to be organized
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
@@ -2419,7 +2425,7 @@ function fillDotF(ctx, i, j, c, lw)
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap([3,4,5]);
+	updateDrawMap([3,4,5,obj_cyc]);
 
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
 
