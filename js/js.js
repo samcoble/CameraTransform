@@ -435,11 +435,10 @@ var grid_ =
 };
 
 var del_obj_lock = 0;
-var stn_trns = [false, false, false]; var trns_lock = 0; var trns_obj_i = 0; // replace w/ all lock
+
+var stn_trns = [false, false, false];
+var trns_lock = 0; var trns_obj_i = 0; // replace w/ all lock
 var world_obj_count = 0;
-var link_lock = 0; var link_obj_i = 0;
-var bond_lock = 0; var bond_obj_i = 0;
-var exp_lin_lock = 0; var exp_lin_obj_i = 0;
 
 var _all_lock = 0; // Pass through color
 var _all_lock_i = 0;
@@ -1728,6 +1727,8 @@ function del_obj(_i)
 {
 	if (_i > world_obj_count)
 	{
+		trns_lock = 0;
+		_all_lock = 0; _all_lock = 0;
 		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
@@ -1787,6 +1788,7 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0;
 	_f = Math.pow(Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
+
 	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 	{
 		_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
@@ -1796,6 +1798,7 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 			_n_sku = k;
 		}
 	}
+
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
 		for (var j = 0; j<mem_t_log[i][1]/4; j++)
@@ -1809,6 +1812,19 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 			}
 		}
 	}
+
+	// lmao fkkkkkkkkkkkkkkk
+	// for (let k = 0; k<mem_log[4][1]/4; k++)
+	// {
+	// 	_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2), 0.5);
+	// 	if (_t1 < _f)
+	// 	{
+	// 		_f = _t1;
+	// 		_n_sku = k;
+	// 		_d = 4;
+	// 	}
+	// }
+
 	switch(_d)
 	{
 		case 0:
@@ -1820,6 +1836,11 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+			break;
+		case 4:
+			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d][4*_n_sku];
+			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[_d][4*_n_sku+1];
+			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[_d][4*_n_sku+2];
 			break;
 	}
 }
@@ -2245,8 +2266,11 @@ function deleteObjectSelected()
 
 function del_world()
 {
-	m_objs.splice(world_obj_count+1);	mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
+	trns_lock = 0;
+	_all_lock = 0; _all_lock_i = 0;
+	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
 	fileInput.value = '';
+	obj_cyc = m_objs.length-1;
 }
 
 function createCircleAtCursor()
@@ -2836,47 +2860,6 @@ function Compute(init_dat)
 			}
 		}
 	}
-	
-	// if (key_map.rmb && runEveryLong(100))
-	// {
-	// 	var _f; var _n_sku = 0; var _t1; var _d = 0;
-	// 	_f = Math.pow(Math.pow(init_dat.data[mem_log[obj_cyc][0]]-in_win_wc, 2) + Math.pow(init_dat.data[mem_log[obj_cyc][0]+1]-in_win_hc, 2), 0.5);
-	// 	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
-	// 	{
-	// 		_t1 = Math.pow(Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]]-in_win_wc, 2) + Math.pow(init_dat.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc, 2), 0.5);
-	// 		if (_t1 < _f)
-	// 		{
-	// 			_f = _t1;
-	// 			_n_sku = k;
-	// 		}
-	// 	}
-	// 	for (var i = 0; i<m_t_objs.length; i++)
-	// 	{
-	// 		for (var j = 0; j<mem_t_log[i][1]/4; j++)
-	// 		{
-	// 			_t1 = Math.pow(Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum]-in_win_wc, 2) + Math.pow(init_dat.data[4*j+mem_t_log[i][0]+mem_sum+1]-in_win_hc, 2), 0.5);
-	// 			if (_t1 < _f)
-	// 			{
-	// 				_f = _t1;
-	// 				_n_sku = i;
-	// 				_d = 1;
-	// 			}
-	// 		}
-	// 	}
-	// 	switch(_d)
-	// 	{
-	// 		case 0:
-	// 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-	// 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-	// 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
-	// 			break;
-	// 		case 1:
-	// 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
-	// 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
-	// 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
-	// 			break;
-	// 	}
-	// }
 
 
 	if (key_map.h && runEvery(200))

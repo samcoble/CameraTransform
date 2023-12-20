@@ -489,12 +489,12 @@ background-color: rgb(17, 17, 18);
 var key_bind_info = 
 [
     "Ctrl+F5 Update Game",
+    "Q(toggle menu & unlock mouse)",
     "...",
     "W(move forward), S(move backwards)",
     "A(move left), D(move right)",
     "Space(up), B(down)",
     "Shift(speed up movement & deletion)",
-    "Q(toggle menu & unlock mouse)",
     "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
     "...",
     "[IN GAME] LMB(move 3D cursor to aim location)",
