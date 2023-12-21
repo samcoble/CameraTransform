@@ -499,7 +499,7 @@ var key_bind_info =
     "...",
     "[IN GAME] LMB(move 3D cursor to aim location)",
     "[IN GAME] TAB(select obj by aiming at 3D center)",
-    "[IN MENU] LMB(select points in obj & placed)",
+    "[IN MENU] LMB(select points in grid & obj & placed)",
     "[IN MENU] TAB(select by hovering over 3D center)",
     "[IN MENU] Click to select object from list",
     "[IN MENU] Scroll(object selection)",

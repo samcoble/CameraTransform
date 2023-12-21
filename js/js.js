@@ -39,6 +39,17 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+			-- just noticed save data corrupted by single point data
+				- fuqk
+
+			-- pointer lock swap function semi colon wtf?
+
+			-- make function to replace loops lol
+				- function select2dpoint
+				- fix hotfix
+
+			-- grid snapping back to rounded instead of correct pos w/ select2dpoint
+
 			-- try making preview w/ i #trilinedot
 
 			-- all my functions relative to the plane can be replaced with a general obj orient fn.
@@ -551,6 +562,7 @@ var rgba_w_trio1 = "rgba(130, 130, 130, 0.5)";
 var rgba_w_trio2 = "rgba(120, 120, 120, 0.5)";
 var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
 var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
+var rgba_invis = "rgba(0, 0, 0, 0)";
 
 
 // var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
@@ -875,6 +887,7 @@ window.addEventListener("wheel", function(e)
 			grid_.scale_f = Math.pow(2, grid_.scale);
 	}
 	s_fov = Math.pow(fov_slide, 2);
+	updateGrid();
 });
 
 
@@ -1086,6 +1099,28 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 	return _ob;
 }
 
+function updateGrid()
+{
+	g_over_x = setGrid(15, grid_.scale_f, 0, [0, 0, 0]);
+	g_over_y = setGrid(15, grid_.scale_f, 1, [0, 0, 0]);
+	g_over_z = setGrid(15, grid_.scale_f, 2, [0, 0, 0]);
+
+	// now write data to obj
+
+	for (var i = 0; i<mem_log[3][1]-4; i++) // the fuck
+	{
+		// m_objs[3][i] = g_over_x[i];
+		// m_objs[4][i] = g_over_y[i];
+		// m_objs[5][i] = g_over_z[i];
+		// = m_objs_ghost[3][i] g_over_x[i];
+		// = m_objs_ghost[4][i] g_over_y[i];
+		// = m_objs_ghost[5][i] g_over_z[i];
+		m_objs[3][i] = m_objs_ghost[3][i] = g_over_x[i];
+		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
+		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
+	}
+}
+
 
 function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe fix z later
 {
@@ -1221,7 +1256,7 @@ function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
 		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
 		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
-		//obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
+		// obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
 	} else {
 		m_objs[m_objs.length] = ar;
 		m_objs_ghost[m_objs_ghost.length] = ar;
@@ -1234,6 +1269,7 @@ function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
 	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
 
 }
+
 
 function m_t_objs_loadPoint(ar) // Adds point to stack
 {
@@ -1786,18 +1822,9 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 
 function select2dpoint(x, y) // 2D find by 3D encoded center point
 {
-	var _f; var _n_sku = 0; var _t1; var _d = 0;
+	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
 	_f = Math.pow(Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
 
-	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
-	{
-		_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
-		if (_t1 < _f)
-		{
-			_f = _t1;
-			_n_sku = k;
-		}
-	}
 
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
@@ -1813,17 +1840,64 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 		}
 	}
 
-	// lmao fkkkkkkkkkkkkkkk
-	// for (let k = 0; k<mem_log[4][1]/4; k++)
-	// {
-	// 	_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2), 0.5);
-	// 	if (_t1 < _f)
-	// 	{
-	// 		_f = _t1;
-	// 		_n_sku = k;
-	// 		_d = 4;
-	// 	}
-	// }
+	if (!mouseLock)
+	{
+		switch (pln_cyc)
+		{
+			case 0:
+				for (let k = 0; k<mem_log[3][1]/4; k++)
+				{
+					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[3][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3][0]+1]-in_win_hc+y, 2), 0.5);
+					if (_t1 < _f)
+					{
+						_f = _t1;
+						_n_sku = k;
+						_d = 2;
+						_d2 = 3;
+					}
+				}
+				break;
+			case 1:
+				for (let k = 0; k<mem_log[4][1]/4; k++)
+				{
+					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2), 0.5);
+					if (_t1 < _f)
+					{
+						_f = _t1;
+						_n_sku = k;
+						_d = 2;
+						_d2 = 4;
+					}
+				}
+				break;
+
+			case 2:
+				for (let k = 0; k<mem_log[5][1]/4; k++)
+				{
+					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[5][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[5][0]+1]-in_win_hc+y, 2), 0.5);
+					if (_t1 < _f)
+					{
+						_f = _t1;
+						_n_sku = k;
+						_d = 2;
+						_d2 = 5;
+					}
+				}
+				break;
+		}
+	}
+
+	// put at bottom :: hotfix
+	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
+	{
+		_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
+		if (_t1 < _f)
+		{
+			_f = _t1;
+			_n_sku = k;
+		}
+	}
+
 
 	switch(_d)
 	{
@@ -1837,10 +1911,10 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
 			break;
-		case 4:
-			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d][4*_n_sku];
-			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[_d][4*_n_sku+1];
-			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[_d][4*_n_sku+2];
+		case 2:
+			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d2][4*_n_sku];
+			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[_d2][4*_n_sku+1];
+			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[_d2][4*_n_sku+2];
 			break;
 	}
 }
@@ -1964,21 +2038,6 @@ function bond_obj(_i)
 			});
 
 			var _f = [];
-
-
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-			// take last one out -> rotate -> recreate last
-
 
 			// take last one out -> rotate until match x,y,z -> recreate last
 			/*
@@ -2402,6 +2461,7 @@ function drawOverlay(init_dat)
 	/*================--------------------------==============*/
 	/*========================================================*/
 
+
 	document.getElementById("fileInput").style.position = "absolute";
 	document.getElementById("fileInput").style.left = (menu_keys_pos[0]+15)+"px";
 	document.getElementById("fileInput").style.top = (62)+"px"; // M keys menu expander
@@ -2492,7 +2552,7 @@ function fillDotF(ctx, i, j, c, lw)
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap([3,4,5,obj_cyc]);
+	updateDrawMap([obj_cyc,3,4,5]);
 
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
 
@@ -2611,12 +2671,15 @@ function drawIt()
 							{
 								if (d_i<6)
 								{
-									if (m1.data[mem_log[d_i][0]+4*j+3] > 0)
+									if ((d_i-3) == pln_cyc) // ayy
 									{
-										drawDot(ctx, rgbas[pln_cyc], 1,
-										 m1.data[4*j+mem_log[d_i][0]],
-										  m1.data[4*j+mem_log[d_i][0]+1],
-										   m1.data[4*j+mem_log[d_i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
+										if (m1.data[mem_log[d_i][0]+4*j+3] > 0)
+										{
+											drawDot(ctx, rgbas[pln_cyc], 1,
+											 m1.data[4*j+mem_log[d_i][0]],
+											  m1.data[4*j+mem_log[d_i][0]+1],
+											   m1.data[4*j+mem_log[d_i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
+										}
 									}
 								}
 							}
@@ -2715,6 +2778,7 @@ function pointerOutsideWindow()
 // var yomane = [1,2,3,4,5,6,7];
 function Compute(init_dat)
 {
+
 
 	if (obj_cyc != obj_cyc_i)
 	{
@@ -3144,11 +3208,12 @@ function Compute(init_dat)
 				}
 			}
 
-			if (key_map.lmb && !mouseLock && runEveryLong(75))
+			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
 				if (pointerOutsideWindow())
 				{
 					select2dpoint(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+					updateGrid();
 				}
 			}
 
@@ -3307,26 +3372,54 @@ function Compute(init_dat)
 	}
 
 	
+/*
 
+	
+
+*/
 
 
 	_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
 	switch(pln_cyc)
 	{
 		case 0:
-			m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
-			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_.scale_f];
-			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_.scale_f];
+
+			// m_obj = ghost+_inter_rnd
+			// add on press or r. runtime fix pls.
+			for (var i = 0; i<=mem_log[3][2]; i++)
+			{
+				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _inter_rnd[0];
+				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _inter_rnd[1];
+				m_objs[3][4*i+2] = m_objs_ghost[3][4*i+2] + _inter_rnd[2];
+			}
+
+			// m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
+			// m_obj_offs[4] = [0.0, -500.0, 0.0, 1];
+			// m_obj_offs[5] = [0.0, -500.0, 0.0, 1];
 			break;
 		case 1:
-			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_.scale_f];
-			m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
-			m_obj_offs[5] = [0.0, -500.0, 0.0, grid_.scale_f];
+
+			for (var i = 0; i<=mem_log[4][2]; i++)
+			{
+				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _inter_rnd[0];
+				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _inter_rnd[1];
+				m_objs[4][4*i+2] = m_objs_ghost[4][4*i+2] + _inter_rnd[2];
+			}
+			// m_obj_offs[3] = [0.0, -500.0, 0.0, 1];
+			// m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
+			// m_obj_offs[5] = [0.0, -500.0, 0.0, 1];
 			break;
 		case 2:
-			m_obj_offs[3] = [0.0, -500.0, 0.0, grid_.scale_f];
-			m_obj_offs[4] = [0.0, -500.0, 0.0, grid_.scale_f];
-			m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], grid_.scale_f];
+
+			for (var i = 0; i<mem_log[5][2]+1; i++)
+			{
+				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _inter_rnd[0];
+				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _inter_rnd[1];
+				m_objs[5][4*i+2] = m_objs_ghost[5][4*i+2] + _inter_rnd[2];
+			}
+			// m_obj_offs[3] = [0.0, -500.0, 0.0, 1];
+			// m_obj_offs[4] = [0.0, -500.0, 0.0, 1];
+			// m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
 			break;
 	}
 
@@ -3452,6 +3545,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	updateList(objListConst(), "list_objectSelect");
 
 	Compute(m1);
+	updateGrid();
 
 	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
 	drawIt();
