@@ -1907,9 +1907,12 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
 			break;
 		case 1:
-			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
-			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
-			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+			if (typeof _n_sku == 'number')
+			{
+				_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
+				_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
+				_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+			}
 			break;
 		case 2:
 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d2][4*_n_sku];
