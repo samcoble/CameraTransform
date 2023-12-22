@@ -39,6 +39,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+
+			-- lp world passed for mouse causing problem with translation
 	
 			-- point lock not moving grid correctly 
 			-- wrap data
@@ -1824,6 +1826,19 @@ function select2dpoint(x, y) // 2D find
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
 	_f = Math.pow(Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
 
+	// put at bottom :: hotfix
+	if (obj_cyc != trns_obj_i)
+	{
+		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
+		{
+			_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
+			if (_t1 < _f)
+			{
+				_f = _t1;
+				_n_sku = k;
+			}
+		}
+	}
 
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
@@ -1886,16 +1901,7 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
-	// put at bottom :: hotfix
-	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
-	{
-		_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
-		if (_t1 < _f)
-		{
-			_f = _t1;
-			_n_sku = k;
-		}
-	}
+
 
 
 	switch(_d)
@@ -1908,7 +1914,7 @@ function select2dpoint(x, y) // 2D find
 		case 1:
 			if (typeof _n_sku == 'number')
 			{
-				if (m_t_objs.length != 0)
+				if (m_t_objs.length != 0 && typeof m_t_objs[_n_sku] != 'undefined')
 				{
 					_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
 					_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
@@ -1964,7 +1970,7 @@ function trans_obj(_i)
 				_lp[1] = _lp_world[1] = _inter_rnd[1];
 				_lp[2] = _lp_world[2] = _inter_rnd[2];
 
-			trns_lock = 0; obj_cyc = trns_obj_i;
+			trns_lock = 0; obj_cyc = trns_obj_i; trns_obj_i = 0;
 			break;
 	}
 }
