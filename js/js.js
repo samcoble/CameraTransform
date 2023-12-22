@@ -3396,38 +3396,28 @@ function Compute(init_dat)
 			// add on press or r. runtime fix pls.
 			for (var i = 0; i<=mem_log[3][2]; i++)
 			{
-				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _inter_rnd[0];
-				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _inter_rnd[1];
-				m_objs[3][4*i+2] = m_objs_ghost[3][4*i+2] + _inter_rnd[2];
+				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _lp_world[0];
+				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _lp_world[1];
+				m_objs[3][4*i+2] = m_objs_ghost[3][4*i+2] + _lp_world[2];
 			}
-
-			// m_obj_offs[3] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
-			// m_obj_offs[4] = [0.0, -500.0, 0.0, 1];
-			// m_obj_offs[5] = [0.0, -500.0, 0.0, 1];
 			break;
 		case 1:
 
 			for (var i = 0; i<=mem_log[4][2]; i++)
 			{
-				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _inter_rnd[0];
-				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _inter_rnd[1];
-				m_objs[4][4*i+2] = m_objs_ghost[4][4*i+2] + _inter_rnd[2];
+				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _lp_world[0];
+				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _lp_world[1];
+				m_objs[4][4*i+2] = m_objs_ghost[4][4*i+2] + _lp_world[2];
 			}
-			// m_obj_offs[3] = [0.0, -500.0, 0.0, 1];
-			// m_obj_offs[4] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
-			// m_obj_offs[5] = [0.0, -500.0, 0.0, 1];
 			break;
 		case 2:
 
 			for (var i = 0; i<mem_log[5][2]+1; i++)
 			{
-				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _inter_rnd[0];
-				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _inter_rnd[1];
-				m_objs[5][4*i+2] = m_objs_ghost[5][4*i+2] + _inter_rnd[2];
+				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _lp_world[0];
+				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _lp_world[1];
+				m_objs[5][4*i+2] = m_objs_ghost[5][4*i+2] + _lp_world[2];
 			}
-			// m_obj_offs[3] = [0.0, -500.0, 0.0, 1];
-			// m_obj_offs[4] = [0.0, -500.0, 0.0, 1];
-			// m_obj_offs[5] = [_inter_rnd[0], _inter_rnd[1], _inter_rnd[2], 1];
 			break;
 	}
 
