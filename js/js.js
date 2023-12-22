@@ -39,6 +39,11 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+	
+			-- point lock not moving grid correctly 
+			-- wrap data
+			-- multi select
+
 			-- just noticed save data corrupted by single point data
 				- fuqk
 
@@ -88,13 +93,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- THE MENU SCRIPT IS BAD
 
-			-- So each action logs a copy of all objs for each operation
-				- not very efficient though right? probably not worth worrying about size yet
-					just limit amount of save states..?
-				- this way the log box on screen has a goto & the time it was so you can jump around in time.
-					if you can manipulate time you could use a copy tool to bring data into any other time frame
-						to reduce complexity this starts a new branch at current time end of stack.
-
+			-- Correctly log changed information that can be applied to reverse.
 
 	@?@?@
 	@?@?@
@@ -1405,7 +1404,7 @@ ctx.scale(1, 1); ctx_o.scale(1, 1);
 
 
 function pointerLockSwap()
-{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;};}
+{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;}}
 
 
 window.addEventListener('resize', function()
@@ -1820,7 +1819,7 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 }
 
 
-function select2dpoint(x, y) // 2D find by 3D encoded center point
+function select2dpoint(x, y) // 2D find
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
 	_f = Math.pow(Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
@@ -1909,9 +1908,12 @@ function select2dpoint(x, y) // 2D find by 3D encoded center point
 		case 1:
 			if (typeof _n_sku == 'number')
 			{
-				_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
-				_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
-				_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+				if (m_t_objs.length != 0)
+				{
+					_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
+					_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
+					_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+				}
 			}
 			break;
 		case 2:
@@ -3080,10 +3082,13 @@ function Compute(init_dat)
 
 	*/
 
-	if (key_map.lmb || key_map.f || key_map.y)
+	if (mouseLock)
 	{
-		updateLook();
-		_inter = lpi(_plr_dtp, player_pos, _pp, _nplns);
+		if (key_map.lmb || key_map.f || key_map.y)
+		{
+			updateLook();
+			_inter = lpi(_plr_dtp, player_pos, _pp, _nplns);
+		}
 	}
 
 	// if (m_objs.length > tse && tse!=0)
