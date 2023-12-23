@@ -339,7 +339,10 @@ function menuLinkObj()
 {link_obj(obj_cyc, stn_link_tool);}
 
 function gridSettingsUpdate(par)
-{grid_.scale_f = getInputById(par.id);}
+{
+    grid_.scale_f = getInputById(par.id);
+    updateGrid();
+}
 
 function circleSettingsUpdate() // bad needs system
 {
