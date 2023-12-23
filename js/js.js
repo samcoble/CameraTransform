@@ -40,24 +40,25 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 
-			-- lp world passed for mouse causing problem with translation
-	
-			-- point lock not moving grid correctly 
+			-- ?
+
+			-- grid snapping back to rounded instead of correct pos w/ locked mode.
+
+			-- rewrite the select2dpoint function
+				- remove sqrt root not needed obv 
+				- make a sort function returning 
+					???, i, dist to i.
+
 			-- wrap data
 			-- multi select
 
 			-- just noticed save data corrupted by single point data
 				- fuqk
 
-			-- pointer lock swap function semi colon wtf?
+			-- string dat find sys or mem addr sys?
 
-			-- make function to replace loops lol
-				- function select2dpoint
-				- fix hotfix
-
-			-- grid snapping back to rounded instead of correct pos w/ select2dpoint
-
-			-- try making preview w/ i #trilinedot
+			-- try making preview obj w/ i #trilinedot
+				- make 3d world points as reference object
 
 			-- all my functions relative to the plane can be replaced with a general obj orient fn.
 
@@ -81,12 +82,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- distribute heights using 20% remainder to make hover to settings
 
-			-- need to demo preview
-			-- make 3d world points as reference object
 
 			-- convert lines into one long line as draw functions are structured.
 
-			-- setup 2d_findbyctr w/ coordinate options :: functionize
 			-- add functions
 				- edit obj
 					: done but needs full mode
@@ -421,6 +419,8 @@ var fov_slide = 8.0; var s_fov = Math.pow(fov_slide, 2);
 
 var crosshair_l = 5;
 var crosshair_w = 0.4;
+
+var cursor_helper = 0;
 
 var player_pos = [0.0,-14.0,0];
 var _inter_rnd = [0.0, 0.0, 0.0];
@@ -1910,6 +1910,7 @@ function select2dpoint(x, y) // 2D find
 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
+			cursor_helper = 1;
 			break;
 		case 1:
 			if (typeof _n_sku == 'number')
@@ -1919,6 +1920,7 @@ function select2dpoint(x, y) // 2D find
 					_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
 					_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
 					_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+					cursor_helper = 1;
 				}
 			}
 			break;
@@ -1926,6 +1928,7 @@ function select2dpoint(x, y) // 2D find
 			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d2][4*_n_sku];
 			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[_d2][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[_d2][4*_n_sku+2];
+			cursor_helper = 0;
 			break;
 	}
 }
@@ -2732,7 +2735,7 @@ function drawIt()
 	{
 		drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 8);
 	}
-	if (m1.data[mem_log[9][0]+3] > 0 && key_map.rmb)
+	if (m1.data[mem_log[9][0]+3] > 0 && cursor_helper)
 	{
 		drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 20); // goback
 	}
@@ -3244,8 +3247,11 @@ function Compute(init_dat)
 				select2dpoint(0, 0);
 			}
 
+			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
+
 			if (key_map.lmb && mouseLock)
 			{	
+				cursor_helper = 0;
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
 				_lp[2] = _inter[2];
