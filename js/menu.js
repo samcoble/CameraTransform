@@ -593,7 +593,7 @@ var _error_info =
     `;
     var menu_obj =
     {
-        id: "menu_obj", cls: "", prnt: "",
+        id: "menu_obj", cls: "", prnt: "html",
         rootStyle: rootStyle + menu_obj_style + justOuter
     }; addDiv(menu_obj);
 
