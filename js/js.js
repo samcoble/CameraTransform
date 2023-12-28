@@ -2446,6 +2446,7 @@ function editSelectedObject()
 	m_obj_explode(obj_cyc);
 }
 
+// Passing mem_t_mov w/ no menu function here for it.
 
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -2775,7 +2776,7 @@ function drawIt()
 	}
 	*/
 
-	
+
 	// #INDICATORS
 
 	// Last point of m_t_objs

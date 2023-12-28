@@ -868,6 +868,14 @@ var div_root =
                 callback: editSelectedObject
             }; addButton(btn_tool_editObj);
 
+            var btn_tool_finishObj =
+            {
+                text: "Finish Object \u07F7",
+                id: "tool_finishObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: mem_t_mov
+            }; addButton(btn_tool_finishObj);
 
             var btn_tool_objLink =
             {
