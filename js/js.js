@@ -20,17 +20,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 // If I could convert font data into 2d -> 3d/2d text gen!
 // I could also manually insert the alphabet as copied data from paint
 
-// New menu script almost finished.
-
-// Fix teleport flip to use quaternions
-
-//  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
-//				this raises the question: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
-//					maybe try reversing the process.
-//					if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
-//					if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
-//					the procedure of rotation around an arbitrary axis applies to many things,
-//						conclusion: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
 
 
 /*
@@ -40,9 +29,31 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 
-			-- ?
+			-- okok
+				- need way to update array of float32arrays
+
+				- make fn to set m_ref_objs array's by index to leave the one to be updated as new data?
+				- good time to reconstruct mem_log and mem_sum
+
+
+			-- unique ids
+
+			-- lmb in free mode is setting plane to inter_rnd for some reason..
+				- when point locked the lpi is not being calculated with the arbitrary offset essentially
+
+			-- try making preview obj w/ i #trilinedot
+				- make 3d world points as reference object
+				- so a hologram dataset
+
+			-- ? intersection reveal
+				- doesn't have to be run all the time if the purpose is to model
+				- line's checked for intersection within some range of it's len.
+
+			-- ray trace teleport
+				- fix teleport flip to use quaternions
 
 			-- grid snapping back to rounded instead of correct pos w/ locked mode.
+				- due to inter round ig?
 
 			-- rewrite the select2dpoint function
 				- remove sqrt root not needed obv 
@@ -56,9 +67,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 				- fuqk
 
 			-- string dat find sys or mem addr sys?
-
-			-- try making preview obj w/ i #trilinedot
-				- make 3d world points as reference object
 
 			-- all my functions relative to the plane can be replaced with a general obj orient fn.
 
@@ -74,6 +82,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- mouse to world ray trace from eye...
 				- point on near plane
+
 
 
 			-- need rotation settings
@@ -164,6 +173,15 @@ Assault cube old code
 .reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
  Use this to push to top stack? ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
 */
+
+//  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
+//				this raises the question: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
+//					maybe try reversing the process.
+//					if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
+//					if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
+//					the procedure of rotation around an arbitrary axis applies to many things,
+//						conclusion: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
+
 
 //  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
 //		for a lil extra travel just offset
@@ -397,7 +415,6 @@ var screen_width, screen_height;
 
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
-var pi4 = 0.7071067811; // My fav number
 var pi2 = 6.2831853071;
 
 var player_speed = 0.5;
@@ -592,7 +609,7 @@ var rayInterMap = [];
 var _norm_x = norm([1,0.000001,0.000001]);
 var _norm_y = norm([0.000001,1,0.000001]);
 
-var _bg_default = [10,10,10]; // 9,20,30
+var _bg_default = [15,15,15]; // 9,20,30
 
 // Junk needs to be organized
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
@@ -844,6 +861,16 @@ window.addEventListener('keyup', (event) =>
 	}
 });
 
+window.addEventListener('blur', () =>
+{
+    for (const key in key_map)
+    {
+        if (key_map.hasOwnProperty(key))
+        {
+            key_map[key] = false;
+        }
+    }
+});
 
 function setGridScale(par) // crack cojamane
 {
@@ -1042,9 +1069,9 @@ var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
-var m_pre_objs = []; // [[n,...,],[n,...,],...]
-var m_pre_log = []; // [start, size]
-var m_pre_sum = 0;
+var m_ref_objs = []; // [[n,...,],[n,...,],...]
+var m_ref_log = []; // [start, size, i ref]
+var m_ref_sum = 0;
 
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
@@ -1062,6 +1089,8 @@ const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10
 const m_x = new Float32Array([0,0,0,1, 8,0,0,1]);
 const m_y = new Float32Array([0,0,0,1, 0,8,0,1]);
 const m_z = new Float32Array([0,0,0,1, 0,0,8,1]);
+const m_map = new Float32Array([277.1638,-128.0000,114.8050,0,277.1638,0.0000,114.8050,0,114.8050,0.0000,277.1638,0,114.8050,-128.0000,277.1638,0,-114.8050,-128.0000,277.1638,0,-114.8050,0.0000,277.1638,0,-277.1638,0.0000,114.8050,0,-277.1638,-128.0000,114.8050,0,-277.1638,-128.0000,-114.8050,0,-277.1638,0.0000,-114.8050,0,-114.8050,0.0000,-277.1638,0,-114.8050,-128.0000,-277.1638,0,114.8050,-128.0000,-277.1638,0,114.8050,0.0000,-277.1638,0,277.1638,0.0000,-114.8050,0,277.1638,-128.0000,-114.8050,0,277.1638,-128.0000,114.8050,0,277.1638,0.0000,114.8050,0,277.1638,0.0000,-114.8050,0,277.1638,-128.0000,-114.8050,0,114.8050,-128.0000,-277.1638,0,114.8050,0.0000,-277.1638,0,-114.8050,0.0000,-277.1638,0,-114.8050,-128.0000,-277.1638,0,-277.1638,-128.0000,-114.8050,0,-277.1638,0.0000,-114.8050,0,-277.1638,0.0000,114.8050,0,-277.1638,-128.0000,114.8050,0,-114.8050,-128.0000,277.1638,0,-114.8050,0.0000,277.1638,0,114.8050,0.0000,277.1638,0,114.8050,-128.0000,277.1638,0,277.1638,-128.0000,114.8050,0]);
+const m_flr = new Float32Array([-256.0000,0.0000,112.0000,0,-256.0000,0.0000,80.0000,0,-256.0000,0.0000,48.0000,0,-256.0000,0.0000,16.0000,0,-256.0000,0.0000,-16.0000,0,-256.0000,0.0000,-48.0000,0,-256.0000,0.0000,-80.0000,0,-256.0000,0.0000,-112.0000,0,-224.0000,0.0000,144.0000,0,-224.0000,0.0000,112.0000,0,-224.0000,0.0000,80.0000,0,-224.0000,0.0000,48.0000,0,-224.0000,0.0000,16.0000,0,-224.0000,0.0000,-16.0000,0,-224.0000,0.0000,-48.0000,0,-224.0000,0.0000,-80.0000,0,-224.0000,0.0000,-112.0000,0,-224.0000,0.0000,-144.0000,0,-192.0000,0.0000,176.0000,0,-192.0000,0.0000,144.0000,0,-192.0000,0.0000,112.0000,0,-192.0000,0.0000,80.0000,0,-192.0000,0.0000,48.0000,0,-192.0000,0.0000,16.0000,0,-192.0000,0.0000,-16.0000,0,-192.0000,0.0000,-48.0000,0,-192.0000,0.0000,-80.0000,0,-192.0000,0.0000,-112.0000,0,-192.0000,0.0000,-144.0000,0,-192.0000,0.0000,-176.0000,0,-160.0000,0.0000,208.0000,0,-160.0000,0.0000,176.0000,0,-160.0000,0.0000,144.0000,0,-160.0000,0.0000,112.0000,0,-160.0000,0.0000,80.0000,0,-160.0000,0.0000,48.0000,0,-160.0000,0.0000,16.0000,0,-160.0000,0.0000,-16.0000,0,-160.0000,0.0000,-48.0000,0,-160.0000,0.0000,-80.0000,0,-160.0000,0.0000,-112.0000,0,-160.0000,0.0000,-144.0000,0,-160.0000,0.0000,-176.0000,0,-160.0000,0.0000,-208.0000,0,-128.0000,0.0000,240.0000,0,-128.0000,0.0000,208.0000,0,-128.0000,0.0000,176.0000,0,-128.0000,0.0000,144.0000,0,-128.0000,0.0000,112.0000,0,-128.0000,0.0000,80.0000,0,-128.0000,0.0000,48.0000,0,-128.0000,0.0000,16.0000,0,-128.0000,0.0000,-16.0000,0,-128.0000,0.0000,-48.0000,0,-128.0000,0.0000,-80.0000,0,-128.0000,0.0000,-112.0000,0,-128.0000,0.0000,-144.0000,0,-128.0000,0.0000,-176.0000,0,-128.0000,0.0000,-208.0000,0,-128.0000,0.0000,-240.0000,0,-96.0000,0.0000,240.0000,0,-96.0000,0.0000,208.0000,0,-96.0000,0.0000,176.0000,0,-96.0000,0.0000,144.0000,0,-96.0000,0.0000,112.0000,0,-96.0000,0.0000,80.0000,0,-96.0000,0.0000,48.0000,0,-96.0000,0.0000,16.0000,0,-96.0000,0.0000,-16.0000,0,-96.0000,0.0000,-48.0000,0,-96.0000,0.0000,-80.0000,0,-96.0000,0.0000,-112.0000,0,-96.0000,0.0000,-144.0000,0,-96.0000,0.0000,-176.0000,0,-96.0000,0.0000,-208.0000,0,-96.0000,0.0000,-240.0000,0,-64.0000,0.0000,240.0000,0,-64.0000,0.0000,208.0000,0,-64.0000,0.0000,176.0000,0,-64.0000,0.0000,144.0000,0,-64.0000,0.0000,112.0000,0,-64.0000,0.0000,80.0000,0,-64.0000,0.0000,48.0000,0,-64.0000,0.0000,16.0000,0,-64.0000,0.0000,-16.0000,0,-64.0000,0.0000,-48.0000,0,-64.0000,0.0000,-80.0000,0,-64.0000,0.0000,-112.0000,0,-64.0000,0.0000,-144.0000,0,-64.0000,0.0000,-176.0000,0,-64.0000,0.0000,-208.0000,0,-64.0000,0.0000,-240.0000,0,-32.0000,0.0000,240.0000,0,-32.0000,0.0000,208.0000,0,-32.0000,0.0000,176.0000,0,-32.0000,0.0000,144.0000,0,-32.0000,0.0000,112.0000,0,-32.0000,0.0000,80.0000,0,-32.0000,0.0000,48.0000,0,-32.0000,0.0000,16.0000,0,-32.0000,0.0000,-16.0000,0,-32.0000,0.0000,-48.0000,0,-32.0000,0.0000,-80.0000,0,-32.0000,0.0000,-112.0000,0,-32.0000,0.0000,-144.0000,0,-32.0000,0.0000,-176.0000,0,-32.0000,0.0000,-208.0000,0,-32.0000,0.0000,-240.0000,0,0.0000,0.0000,240.0000,0,0.0000,0.0000,208.0000,0,0.0000,0.0000,176.0000,0,0.0000,0.0000,144.0000,0,0.0000,0.0000,112.0000,0,0.0000,0.0000,80.0000,0,0.0000,0.0000,48.0000,0,0.0000,0.0000,16.0000,0,0.0000,0.0000,-16.0000,0,0.0000,0.0000,-48.0000,0,0.0000,0.0000,-80.0000,0,0.0000,0.0000,-112.0000,0,0.0000,0.0000,-144.0000,0,0.0000,0.0000,-176.0000,0,0.0000,0.0000,-208.0000,0,0.0000,0.0000,-240.0000,0,32.0000,0.0000,240.0000,0,32.0000,0.0000,208.0000,0,32.0000,0.0000,176.0000,0,32.0000,0.0000,144.0000,0,32.0000,0.0000,112.0000,0,32.0000,0.0000,80.0000,0,32.0000,0.0000,48.0000,0,32.0000,0.0000,16.0000,0,32.0000,0.0000,-16.0000,0,32.0000,0.0000,-48.0000,0,32.0000,0.0000,-80.0000,0,32.0000,0.0000,-112.0000,0,32.0000,0.0000,-144.0000,0,32.0000,0.0000,-176.0000,0,32.0000,0.0000,-208.0000,0,32.0000,0.0000,-240.0000,0,64.0000,0.0000,240.0000,0,64.0000,0.0000,208.0000,0,64.0000,0.0000,176.0000,0,64.0000,0.0000,144.0000,0,64.0000,0.0000,112.0000,0,64.0000,0.0000,80.0000,0,64.0000,0.0000,48.0000,0,64.0000,0.0000,16.0000,0,64.0000,0.0000,-16.0000,0,64.0000,0.0000,-48.0000,0,64.0000,0.0000,-80.0000,0,64.0000,0.0000,-112.0000,0,64.0000,0.0000,-144.0000,0,64.0000,0.0000,-176.0000,0,64.0000,0.0000,-208.0000,0,64.0000,0.0000,-240.0000,0,96.0000,0.0000,240.0000,0,96.0000,0.0000,208.0000,0,96.0000,0.0000,176.0000,0,96.0000,0.0000,144.0000,0,96.0000,0.0000,112.0000,0,96.0000,0.0000,80.0000,0,96.0000,0.0000,48.0000,0,96.0000,0.0000,16.0000,0,96.0000,0.0000,-16.0000,0,96.0000,0.0000,-48.0000,0,96.0000,0.0000,-80.0000,0,96.0000,0.0000,-112.0000,0,96.0000,0.0000,-144.0000,0,96.0000,0.0000,-176.0000,0,96.0000,0.0000,-208.0000,0,96.0000,0.0000,-240.0000,0,128.0000,0.0000,208.0000,0,128.0000,0.0000,176.0000,0,128.0000,0.0000,144.0000,0,128.0000,0.0000,112.0000,0,128.0000,0.0000,80.0000,0,128.0000,0.0000,48.0000,0,128.0000,0.0000,16.0000,0,128.0000,0.0000,-16.0000,0,128.0000,0.0000,-48.0000,0,128.0000,0.0000,-80.0000,0,128.0000,0.0000,-112.0000,0,128.0000,0.0000,-144.0000,0,128.0000,0.0000,-176.0000,0,128.0000,0.0000,-208.0000,0,160.0000,0.0000,176.0000,0,160.0000,0.0000,144.0000,0,160.0000,0.0000,112.0000,0,160.0000,0.0000,80.0000,0,160.0000,0.0000,48.0000,0,160.0000,0.0000,16.0000,0,160.0000,0.0000,-16.0000,0,160.0000,0.0000,-48.0000,0,160.0000,0.0000,-80.0000,0,160.0000,0.0000,-112.0000,0,160.0000,0.0000,-144.0000,0,160.0000,0.0000,-176.0000,0,192.0000,0.0000,144.0000,0,192.0000,0.0000,112.0000,0,192.0000,0.0000,80.0000,0,192.0000,0.0000,48.0000,0,192.0000,0.0000,16.0000,0,192.0000,0.0000,-16.0000,0,192.0000,0.0000,-48.0000,0,192.0000,0.0000,-80.0000,0,192.0000,0.0000,-112.0000,0,192.0000,0.0000,-144.0000,0,224.0000,0.0000,112.0000,0,224.0000,0.0000,80.0000,0,224.0000,0.0000,48.0000,0,224.0000,0.0000,16.0000,0,224.0000,0.0000,-16.0000,0,224.0000,0.0000,-48.0000,0,224.0000,0.0000,-80.0000,0,224.0000,0.0000,-112.0000,0,256.0000,0.0000,80.0000,0,256.0000,0.0000,48.0000,0,256.0000,0.0000,16.0000,0,256.0000,0.0000,-16.0000,0,256.0000,0.0000,-48.0000,0,256.0000,0.0000,-80.0000,0,256.0000,0.0000,-80.0000,0]);
 //const m_gun = new Float32Array([0.0000,-28.0000,4.0000,1.0000,0.0000,-28.0000,-8.0000,1.0000,0.0000,-32.0000,-8.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-28.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-22.0000,9.0000,1.0000,0.0000,-22.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-34.0000,10.0000,1.0000,0.0000,-33.0000,11.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-29.2222,3.8889,0.0000]);
 //const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
 var _flr = 6*8; // Side length of square
@@ -1190,34 +1219,12 @@ function splitObjS(ar) // special function for splitting obj w/ no center
 }
 
 // grid: side length, scale, plane, offset
-var m_flr = setGrid(8*4-2, 8, 1, [4, 0, 4]);
+//var m_flr = setGrid(8*4-2, 8, 1, [4, 0, 4]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
 var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
 var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
-
-var _ws = 5*_flr/2;
-const m_map = new Float32Array([
-		_ws,0,_ws,1,
-		_ws,-_ws,_ws,1,
-		-_ws,-_ws,_ws,1,
-		-_ws,0,_ws,1,
-		-_ws,0,-_ws,1,
-		-_ws,-_ws,-_ws,1,
-		_ws,-_ws,-_ws,1,
-		_ws,0,-_ws,1,
-		_ws,0,_ws,1,
-		-_ws,0,_ws,1,
-		-_ws,-_ws,_ws,1,
-		-_ws,-_ws,-_ws,1,
-		-_ws,0,-_ws,1,
-		-_ws,-_ws,-_ws,1,
-		-_ws,0,-_ws,1,
-		_ws,0,-_ws,1,
-		_ws,-_ws,-_ws,1,
-		_ws,-_ws,_ws,1,
-	]);
 
 
 	/*
@@ -1297,25 +1304,35 @@ function mem_t_mov() // Puts m_t_objs into m_objs as single array
 		var _tar = new Float32Array(mem_t_sum);
 		for (i=0; i<m_t_objs.length; i++)
 		{
-			_tar[i*4+0] = m_t_objs[i][0]
-			_tar[i*4+1] = m_t_objs[i][1]
-			_tar[i*4+2] = m_t_objs[i][2]
-			_tar[i*4+3] = m_t_objs[i][3]
+			_tar[i*4+0] = m_t_objs[i][0];
+			_tar[i*4+1] = m_t_objs[i][1];
+			_tar[i*4+2] = m_t_objs[i][2];
+			_tar[i*4+3] = m_t_objs[i][3];
 		}
 		m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
 		m_objs_loadPoints(_tar);
 	}
 }
 
+// first going to make preview obj at index 0
+function m_ref_objs_loadObj(ar, iref)
+{
+	m_ref_objs[m_ref_objs.length] = ar;
+	m_ref_log.push([m_ref_sum, ar.length, iref]);
+	m_ref_sum += ar.length;
+}
+
+
+
 function packObj(ar) // Puts m_t_objs into m_objs as single array 
 {
 	var _tar = new Float32Array(ar.length*4);
 	for (i=0; i<ar.length; i++)
 	{
-		_tar[i*4+0] = ar[i][0]
-		_tar[i*4+1] = ar[i][1]
-		_tar[i*4+2] = ar[i][2]
-		_tar[i*4+3] = ar[i][3]
+		_tar[i*4+0] = ar[i][0];
+		_tar[i*4+1] = ar[i][1];
+		_tar[i*4+2] = ar[i][2];
+		_tar[i*4+3] = ar[i][3];
 	}
 	return _tar;
 }
@@ -1331,7 +1348,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 {
 	for (var j = 0; j<(m_objs.length); j++)
 	{
-		for (var i = 0; i<m_objs[j].length/4; i++)
+		for (var i = 0; i<m_objs[j].length/4; i++) // fix
 		{
 			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
 			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
@@ -1341,12 +1358,22 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 	}
 	for (var j = 0; j<(m_t_objs.length); j++)
 	{
-		for (var i = 0; i<m_t_objs[j].length/4; i++)
+		for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
 		{
 			m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
 			m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
 			m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
 			m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
+		}
+	}
+	for (var j = 0; j<(m_ref_objs.length); j++)
+	{
+		for (var i = 0; i<m_ref_objs[j].length/4; i++)
+		{
+			m1.data[i*4+m_ref_log[j][0]+mem_sum+mem_t_sum]   = m_ref_objs[j][i*4+0];
+			m1.data[i*4+1+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+1];
+			m1.data[i*4+2+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+2];
+			m1.data[i*4+3+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+3];
 		}
 	}
 }
@@ -2562,6 +2589,18 @@ function fillDotF(ctx, i, j, c, lw)
 	m1.data[4*j+mem_log[i][0]+2]+0.5, lw)
 }
 
+// replace at some point?
+function drawLineF_preview(ctx, i, j, c, lw)
+{
+	drawLine(ctx, c, lw,
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1])
+}
+
+
+
 
 function drawIt()
 {
@@ -2706,7 +2745,7 @@ function drawIt()
 
 
 	// Draw unpacked verts
-	for (var i=0; i<m_t_objs.length; i++)
+	for (var i = 0; i<m_t_objs.length; i++)
 	{
 		if (m1.data[mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping, can even be optimized? js has no clue?
 		// if (1) // Clipping off
@@ -2722,6 +2761,21 @@ function drawIt()
 		}
 	}
 
+
+	//Draw preview obj
+	/*
+	for (var i = 0; i<m_ref_objs.length; i++)
+	{
+		for (var j = 0; j<m_ref_log[i][1]/4-2; j++)
+		{
+			//drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]], m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]+1], 15);
+			//drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j], m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1], 20);
+			drawLineF_preview(ctx, i, j, rgba_g, 5);
+		}
+	}
+	*/
+
+	
 	// #INDICATORS
 
 	// Last point of m_t_objs
@@ -2916,7 +2970,7 @@ function Compute(init_dat)
 
 	if (key_map.l && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
 
-	if ((key_map.q || key_map.enter) && runEvery(320)) {pointerLockSwap();}
+	if ((key_map.q || key_map.enter) && runEvery(220)) {pointerLockSwap();}
 
 
 	if (mouseLock && key_map["7"] && runEvery(300))
@@ -3104,18 +3158,25 @@ function Compute(init_dat)
 	// {
 		if (wpn_select==3)
 		{
-			_c = [m_objs_ghost[tse][mem_log[tse][1]-4],
-				 m_objs_ghost[tse][mem_log[tse][1]-3],
-				 m_objs_ghost[tse][mem_log[tse][1]-2]];
+			_c =
+			[
+				m_objs_ghost[tse][mem_log[tse][1]-4],
+				m_objs_ghost[tse][mem_log[tse][1]-3],
+				m_objs_ghost[tse][mem_log[tse][1]-2]
+			];
 
 			for (var i=0; i<mem_log[tse][2]-1; i++)
 			{
-				_gp = [m_objs_ghost[tse][i*4]+20+Date.now()%3/5*key_map.lmb-key_map.rmb*20,
-					  m_objs_ghost[tse][i*4+1]+30-key_map.rmb*20,
-					  m_objs_ghost[tse][i*4+2]+32+Date.now()%3*key_map.lmb+key_map.rmb*30
-					];
+				_gp =
+				[
+					m_objs_ghost[tse][i*4]+20+Date.now()%3/5*key_map.lmb-key_map.rmb*20,
+					m_objs_ghost[tse][i*4+1]+30-key_map.rmb*20,
+					m_objs_ghost[tse][i*4+2]+32+Date.now()%3*key_map.lmb+key_map.rmb*30
+				];
 
 				// New attempt w/ quaternions
+				// i tried using rotation around an arbitrary axis but this never works out
+				// i had some logic to fake the continuity but 1 frame events were unfixable.
 
 				_nps = add3(_c,quatRot( sub(_gp, _c), _viewq )); // lmao crack norm([0.001,1,0.001])
 
@@ -3141,7 +3202,80 @@ function Compute(init_dat)
 			}
 		}
 		*/
-	}
+		}
+
+		// here write fn to update preview object position to be in front of player
+		// i need 2 mem states so use m_obj/ghost -> my new single obj
+		//		- this requires i provide an i map to connect the duplicated data
+		//		- constructed data can be made relative by i (center) THEN
+		//				provided results of alg for bounding box operations
+		//				or just a single i ref for more complex operations
+
+
+		/*
+		m_ref_log.push([m_ref_sum, ar.length, iref]);
+
+		function m_ref_objs_loadObj(ar, iref)
+		{
+			m_ref_objs[m_ref_objs.length] = ar;
+			m_ref_log.push([m_ref_sum, ar.length, iref]);
+			m_ref_sum += ar.length;
+		}
+
+		*/
+
+		updatePreview();
+
+
+		// @?@?@?@? Later refactor to general function for more interactive tools
+		function updatePreview()
+		{
+			updateLook();
+			//m_ref_objs_loadObj()
+
+			// place updated data for preview
+
+			// var _nar = new Float32Array(m_objs[obj_cyc].length);
+			var _pre_ctr = meanctr_obj(m_objs[obj_cyc]);
+
+			// for (var i = 0; i<_nar.length; i++)
+			// {
+			// 	_nar[i] = m_objs[obj_cyc][i];
+			// 	//m_ref_objs[0] = m_objs[obj_cyc];
+			// }
+			// m_ref_objs[0] = _nar;
+
+			m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
+
+
+			// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
+			//m_ref_sum = 0;
+			
+
+			m_ref_log[0] = [0, m_ref_objs[0].length, obj_cyc];
+			m_ref_sum = m_ref_objs[0].length;
+
+
+			// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
+			//var _pre_ctr = getctr_obj(obj_cyc);
+
+
+			for (var i = 0; i<m_ref_log[0][1]/4-1; i++)
+			{
+				// obj points: f - i is 0
+				m_ref_objs[0][i*4] = m_objs[obj_cyc][i*4] + ( player_pos[0]-f_look[0]*55 ) - _pre_ctr[0];
+				m_ref_objs[0][i*4+1] = m_objs[obj_cyc][i*4+1] + ( player_pos[1]-f_look[1]*55 ) - _pre_ctr[1];
+				m_ref_objs[0][i*4+2] = m_objs[obj_cyc][i*4+2] + ( player_pos[2]-f_look[2]*55 ) - _pre_ctr[2];
+				m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
+			}
+
+			//console.log(_pre_ctr);
+			// obj must be scaled to a preview 2d width. This can be done w/ a bounding box fn returning 8 points 
+		}
+
+
+
+
 
 	/*
 			- get plane to use, for now grid planes, pln, and free _inter
@@ -3245,6 +3379,7 @@ function Compute(init_dat)
 			if (key_map.rmb && mouseLock && runEveryLong(75))
 			{
 				select2dpoint(0, 0);
+				updateGrid();
 			}
 
 			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
@@ -3383,12 +3518,14 @@ function Compute(init_dat)
 	{
 		var _d = m_objs[obj_cyc]; // String
 		var _f = "[";
-		for (var i=0; i<_d.length; i++)
+		var _v = 0;
+		for (var i=0; i<_d.length-4; i++)
 		{
-			_f = _f+_d[i].toFixed(4)+",";
-			if (i==_d.length-1) {_f = _f+"]";}
+			if ( (i+1)%4 == 0 ) {_v = 0;} else {_v = _d[i].toFixed(4);}
+			if (i!=_d.length-5) {_f = _f+_v+",";} else {_f = _f+_v;}
+			if (i==_d.length-5) {_f = _f+"]";}
 		}
-		console.log(_f); // Do not remove please fix: len - 4 & don't add , before when last?
+		console.log(_f); // Do not remove
 	}
 
 	
