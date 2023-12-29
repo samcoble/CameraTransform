@@ -35,6 +35,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 				- make fn to set m_ref_objs array's by index to leave the one to be updated as new data?
 				- good time to reconstruct mem_log and mem_sum
 
+			-- lock point offsets grid?
+
 
 			-- unique ids
 
@@ -507,7 +509,8 @@ var one_time_fix = 1;
 
 var menu_q_size = [610, 730];
 var menu_q_pos = [30, 240];
-var menu_obj_pos = [0, 0];
+var menu_obj_pos = [0, 0]; // fix me entire system wacked
+var menu_objpreview_pos = [0, 0]; // fix me
 var menu_keys_pos = [155, 10];
 var menu_wpn_pos = [155, 10];
 
@@ -684,9 +687,10 @@ function drawCircle(c, rgba, lw, x, y, r)
     c.lineWidth = lw; c.stroke();
 }
 
-function updateMenuPos()
+function updateMenuPos() // this stuff so bad jesus
 {	
-	menu_obj_pos = [in_win_w-158, 10];
+	menu_obj_pos = [in_win_w-158, 170];
+	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2];
 	menu_obj_size = [158, 500]; // default & modified to include margins
 	menu_keys_pos = [11, 10];
 	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*menu_q_size[1]];
@@ -870,6 +874,7 @@ window.addEventListener('blur', () =>
             key_map[key] = false;
         }
     }
+    mouseLock = 0;
 });
 
 function setGridScale(par) // crack cojamane
@@ -1139,12 +1144,6 @@ function updateGrid()
 
 	for (var i = 0; i<mem_log[3][1]-4; i++) // the fuck
 	{
-		// m_objs[3][i] = g_over_x[i];
-		// m_objs[4][i] = g_over_y[i];
-		// m_objs[5][i] = g_over_z[i];
-		// = m_objs_ghost[3][i] g_over_x[i];
-		// = m_objs_ghost[4][i] g_over_y[i];
-		// = m_objs_ghost[5][i] g_over_z[i];
 		m_objs[3][i] = m_objs_ghost[3][i] = g_over_x[i];
 		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
 		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
@@ -2594,10 +2593,10 @@ function fillDotF(ctx, i, j, c, lw)
 function drawLineF_preview(ctx, i, j, c, lw)
 {
 	drawLine(ctx, c, lw,
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1])
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j]+menu_objpreview_pos[0],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1]+menu_objpreview_pos[1],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)]+menu_objpreview_pos[0],
+	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]+menu_objpreview_pos[1])
 }
 
 
@@ -2764,17 +2763,17 @@ function drawIt()
 
 
 	//Draw preview obj
-	/*
+	
 	for (var i = 0; i<m_ref_objs.length; i++)
 	{
 		for (var j = 0; j<m_ref_log[i][1]/4-2; j++)
 		{
 			//drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]], m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]+1], 15);
 			//drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j], m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1], 20);
-			drawLineF_preview(ctx, i, j, rgba_g, 5);
+			drawLineF_preview(ctx, i, j, rgba_g, 1);
 		}
 	}
-	*/
+	
 
 
 	// #INDICATORS
@@ -2844,6 +2843,97 @@ function pointerOutsideWindow()
 }
 
 
+// scale a unit cube to the size of min/max
+
+// really 6 pieces of information
+// min & max of each axis so 3*2 querys
+
+// while itor over w/ 4*i take min/max as two loops or do both for each axis at the same time.
+
+		
+function getMinMaxPairs(ar)
+{
+	// set the initial values to the first point.
+	var ar_x_max = ar[0]; var ar_x_min = ar[0];
+	var ar_y_max = ar[1]; var ar_y_min = ar[1];
+	var ar_z_max = ar[2]; var ar_z_min = ar[2];
+
+	// loop through ar and max/min -logic-> update val
+	for (var i = 0; i<ar.length/4-1; i++) // divide by 4 to get point and remove encoded center
+	{
+		// if ar x > var max set var max to ar x, then do the min
+		if (ar[i*4] > ar_x_max) {ar_x_max = ar[i*4];} 
+		if (ar[i*4] < ar_x_min) {ar_x_min = ar[i*4];}
+
+		// same shiz for y & z vals
+		if (ar[i*4+1] > ar_y_max) {ar_y_max = ar[i*4+1];} 
+		if (ar[i*4+1] < ar_y_min) {ar_y_min = ar[i*4+1];}
+		
+		if (ar[i*4+2] > ar_z_max) {ar_z_max = ar[i*4+2];} 
+		if (ar[i*4+2] < ar_z_min) {ar_z_min = ar[i*4+2];}
+	}
+	return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
+}
+
+// @?@?@?@? Later refactor to general function for more interactive tools
+function updatePreview()
+{
+	updateLook();
+	//m_ref_objs_loadObj()
+
+	// place updated data for preview
+
+	// var _nar = new Float32Array(m_objs[obj_cyc].length);
+	var _pre_ctr = meanctr_obj(m_objs[obj_cyc]);
+
+	// for (var i = 0; i<_nar.length; i++)
+	// {
+	// 	_nar[i] = m_objs[obj_cyc][i];
+	// 	//m_ref_objs[0] = m_objs[obj_cyc];
+	// }
+	// m_ref_objs[0] = _nar;
+
+	m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
+
+	// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
+	//m_ref_sum = 0;
+	
+	m_ref_log[0] = [0, m_ref_objs[0].length, obj_cyc];
+	m_ref_sum = m_ref_objs[0].length;
+
+	// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
+	//var _pre_ctr = getctr_obj(obj_cyc);
+
+	var _pair = getMinMaxPairs(m_objs[obj_cyc]); 
+	var _scaler = 1/len3(_pair)*8;
+
+	//console.log(_scaler);
+
+	var _tp;
+	var _np;
+
+	for (var i = 0; i<m_ref_log[0][1]/4-1; i++)
+	{
+		_tp =
+		[
+			( m_objs[obj_cyc][i*4]   - _pre_ctr[0] )*_scaler,
+			( m_objs[obj_cyc][i*4+1] - _pre_ctr[1] )*_scaler,
+			( m_objs[obj_cyc][i*4+2] - _pre_ctr[2] )*_scaler
+		]
+
+		_tp = rot_x_pln(_tp, 1);
+		_tp = rot_y_pln(_tp, 0.001*Date.now()%10000); // holy joly
+
+		_np = quatRot( _tp, _viewq );
+
+		// obj points: f - i is 0
+		m_ref_objs[0][i*4]   = _np[0] + ( player_pos[0]-f_look[0]*33 );
+		m_ref_objs[0][i*4+1] = _np[1] + ( player_pos[1]-f_look[1]*33 );
+		m_ref_objs[0][i*4+2] = _np[2] + ( player_pos[2]-f_look[2]*33 );
+		m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
+	}
+}
+
 // var yomane = [1,2,3,4,5,6,7];
 function Compute(init_dat)
 {
@@ -2865,45 +2955,6 @@ function Compute(init_dat)
 	// 	 	console.log(yomane);
 	// 	 }
 	// }
-
-	// #COMPUTE
-
-	// merging center data is insane holy shit
-
-
-
-	// save before I do a diff usage. world anim here
-	// if (m_objs.length > tse)
-	// {
-
-	// 		_c = [m_objs[tse][mem_log[tse][1]-4],
-	// 			 m_objs[tse][mem_log[tse][1]-3],
-	// 			 m_objs[tse][mem_log[tse][1]-2]];
-
-	// 		//console.log(_c);
-
-	// 	for (var i=0; i<mem_log[tse][2]-1; i++)
-	// 	{
-	// 		_gp = [m_objs_ghost[tse][i*4],
-	// 			  m_objs_ghost[tse][i*4+1],
-	// 			  m_objs_ghost[tse][i*4+2]
-	// 			];
-
-	// 		//console.log(_gp);
-
-
-
-	// 		_nps = add3(_c,rot_aa(sub(_gp, _c), norm([0.001,1,0.001]), player_look_dir[0])); // lmao crack norm([0.001,1,0.001])
-
-	// 		//console.log(_nps);
-
-	// 		m_objs[tse][i*4] = _nps[0];
-	// 		m_objs[tse][i*4+1] = _nps[1];
-	// 		m_objs[tse][i*4+2] = _nps[2];
-	// 	}
-	// }
-
-
 
 	if (key_map.shift && key_map.r && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
 	{
@@ -3082,8 +3133,6 @@ function Compute(init_dat)
 	// Will need replace
 	if (key_map.z && runEvery(140-key_map.shift*100) && m_t_objs.length!=0) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1); paint_n--;}
 
-
-
 	/*
 		__/\\\\\\\\\\\\\\\__/\\\________/\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\_______/\\\\\\\\\_______/\\\\\\\\\______/\\\\\\\\\\\\\\\_        
 		 _\/\\\///////////__\/\\\_______\/\\\_\/\\\\\\___\/\\\___________\/\\\/////////\\\___/\\\\\\\\\\\\\___/\\\///////\\\___\///////\\\/////__       
@@ -3098,9 +3147,7 @@ function Compute(init_dat)
 	// #FUNPART
 	// Use gpu here w/ the right size array32. Or can I even?
 
-
 	/*
-
 	Define plane w/ [ n . (Q-P) = 0 ]
 
 	After given theta: [ n . (Q-P) = ||N|| ||Q-P|| cos(theta) ]
@@ -3109,7 +3156,6 @@ function Compute(init_dat)
 	Can obtain sign of cos(theta) w/o trig fn call only dot product *** !!!
 
 	Now to obtain intersection w/ plane.
-
 	Say: I = Q1 + t(Q2-Q1)
 
 	d1 = n . (Q1-P)
@@ -3130,19 +3176,16 @@ function Compute(init_dat)
 	[1 0 0] [-1 0 0] [0 1 0] [0 -1 0] are the clipping planes by normal vec
 	Can also clip near and far.
 
-
 	if n . (Q-P) > 0 then Q is "in" <=> z > 0
 	if n . (Q-P) < 0 then Q is "out" <=> z < 0
 	if n . (Q-P) = 0 then Q is "on" <=> z = 0
 
-	Another perspective : Rays?
-
+		Another perspective : Rays?
 	Given a poly w/ 3 points. Cross to find n. Say any point on poly is Q. Direction of ray r. Ray origin P.
 	If you set a distance from a plane equal to zero when using the dot product WITH the setup using a point from poly the equation can be equated to zero.
 	(P+tr) = Q the point on the poly is equal to an offset from P in the direction of r of distance t.
 	(P+tr).n = Q.n
 	(P+tr).n - Q.n = 0
-	
 
 	*/
 
@@ -3205,14 +3248,6 @@ function Compute(init_dat)
 		*/
 		}
 
-		// here write fn to update preview object position to be in front of player
-		// i need 2 mem states so use m_obj/ghost -> my new single obj
-		//		- this requires i provide an i map to connect the duplicated data
-		//		- constructed data can be made relative by i (center) THEN
-		//				provided results of alg for bounding box operations
-		//				or just a single i ref for more complex operations
-
-
 		/*
 		m_ref_log.push([m_ref_sum, ar.length, iref]);
 
@@ -3225,88 +3260,9 @@ function Compute(init_dat)
 
 		*/
 
-		updatePreview();
 
 
-		// @?@?@?@? Later refactor to general function for more interactive tools
-		function updatePreview()
-		{
-			updateLook();
-			//m_ref_objs_loadObj()
-
-			// place updated data for preview
-
-			// var _nar = new Float32Array(m_objs[obj_cyc].length);
-			var _pre_ctr = meanctr_obj(m_objs[obj_cyc]);
-
-			// for (var i = 0; i<_nar.length; i++)
-			// {
-			// 	_nar[i] = m_objs[obj_cyc][i];
-			// 	//m_ref_objs[0] = m_objs[obj_cyc];
-			// }
-			// m_ref_objs[0] = _nar;
-
-			m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
-
-
-			// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
-			//m_ref_sum = 0;
-			
-
-			m_ref_log[0] = [0, m_ref_objs[0].length, obj_cyc];
-			m_ref_sum = m_ref_objs[0].length;
-
-
-			// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
-			//var _pre_ctr = getctr_obj(obj_cyc);
-
-
-			for (var i = 0; i<m_ref_log[0][1]/4-1; i++)
-			{
-				// obj points: f - i is 0
-				m_ref_objs[0][i*4] = m_objs[obj_cyc][i*4] + ( player_pos[0]-f_look[0]*55 ) - _pre_ctr[0];
-				m_ref_objs[0][i*4+1] = m_objs[obj_cyc][i*4+1] + ( player_pos[1]-f_look[1]*55 ) - _pre_ctr[1];
-				m_ref_objs[0][i*4+2] = m_objs[obj_cyc][i*4+2] + ( player_pos[2]-f_look[2]*55 ) - _pre_ctr[2];
-				m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
-			}
-
-			//console.log(_pre_ctr);
-			// obj must be scaled to a preview 2d width. This can be done w/ a bounding box fn returning 8 points 
-		}
-
-
-
-
-
-	/*
-			- get plane to use, for now grid planes, pln, and free _inter
-			- get dist to plane w/ (_inter - player_pos) . pln = d
-			- move point to plane, point_on_pln = player_pos - d * pln (here's the returner 2 * d * pln) 
-			- move point to origin, get delta first, delta = point_at_o = point_on_pln - _inter
-			- make negative (double 180) point_opp_o = -1 * point_at_o
-			- reflected point is found moving back toward plane, and again in the same direction...
-
-		or go twice distance to _inter and return to plane instead? way easier. review all the linear algebra again.
-		There's probably a way to just do this with matrices and it'll be magic.
-	*/
-
-
-		//g_dtp = dot(sub(_inter, player_pos), _nplns); // Might have to swap sign?
-		//g_pop = add3(player_pos, scale(_nplns, -g_dtp));
-		//g_pao = scale(sub(g_pop, _inter), -1); // skipping step applying scale -1 here 
-		//g_rp = add3(g_pao, scale(_nplns,2*g_dtp));
-		// console.log(g_fp);
-
-		//if (key_map.h && runEvery(300))
-		//{
-
-			//g_dtp = dot(sub(_inter, player_pos), _nplns); // Might have to swap sign?
-			//g_fp = add3(scale(sub(_inter, player_pos) ,2), scale(_nplns,-2*g_dtp));
-			// 	console.log(g_fp);
-			//player_pos[0] = g_fp[0];
-			//player_pos[1] = g_fp[1];
-			//player_pos[2] = g_fp[2];
-		//}
+	updatePreview();
 
 
 	if (isNaN(m_objs[0][0])) {m_objs[0][0] = 0.0; m_objs[0][1] = 0.0; m_objs[0][2] = 0.0; m_objs[0][3] = 1.0;}
@@ -3698,7 +3654,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
 	drawIt();
 
-	obj_cyc = 10; // Temp fix
+	obj_cyc = 2; // Temp fix
 
 	setBackgroundColor(_bg_default);
 

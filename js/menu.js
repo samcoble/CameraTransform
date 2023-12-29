@@ -792,6 +792,11 @@ var div_root =
             margin: 2px 0% 0 3%;
             `;
 
+            var _btn_tooln_wspc =
+            `
+            margin: 12px 0% 0 3%;
+            `;
+
             var _btn =
              `
             color: rgb(195, 123, 0);
@@ -903,6 +908,15 @@ var div_root =
                 hoverStyles: _btn_hover_tool,
                 callback: del_world
             }; addButton(btn_tool_clearWorld);
+
+            // var btn_tool_mover =
+            // {
+            //     text: `Move Tool`,
+            //     id: "tool_moveTool", cls: "_btn", prnt: "menu_tools",
+            //     rootStyle: rootStyle + _btn + _btn_tooln_wspc,
+            //     hoverStyles: _btn_hover_tool,
+            //     callback: del_world
+            // }; addButton(btn_tool_mover);
 
 
         /*
