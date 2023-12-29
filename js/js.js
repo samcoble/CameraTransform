@@ -2906,11 +2906,7 @@ function updatePreview()
 
 	var _pair = getMinMaxPairs(m_objs[obj_cyc]); 
 	var _scaler = 1/len3(_pair)*8;
-
-	//console.log(_scaler);
-
-	var _tp;
-	var _np;
+	var _tp, _np;
 
 	for (var i = 0; i<m_ref_log[0][1]/4-1; i++)
 	{
@@ -2921,7 +2917,8 @@ function updatePreview()
 			( m_objs[obj_cyc][i*4+2] - _pre_ctr[2] )*_scaler
 		]
 
-		_tp = rot_x_pln(_tp, 1);
+		_tp = rot_x_pln(_tp, 0.2);
+		_tp = rot_z_pln(_tp, 0.2);
 		_tp = rot_y_pln(_tp, 0.001*Date.now()%10000); // holy joly
 
 		_np = quatRot( _tp, _viewq );
@@ -3247,19 +3244,6 @@ function Compute(init_dat)
 		}
 		*/
 		}
-
-		/*
-		m_ref_log.push([m_ref_sum, ar.length, iref]);
-
-		function m_ref_objs_loadObj(ar, iref)
-		{
-			m_ref_objs[m_ref_objs.length] = ar;
-			m_ref_log.push([m_ref_sum, ar.length, iref]);
-			m_ref_sum += ar.length;
-		}
-
-		*/
-
 
 
 	updatePreview();
