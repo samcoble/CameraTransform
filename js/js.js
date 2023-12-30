@@ -1907,14 +1907,13 @@ function select2dpoint(x, y) // 2D find
 	switch(_d)
 	{
 		case 0:
-			// if (obj_cyc != trns_obj_i)
-			// {
+			if (obj_cyc>world_obj_count)
+			{
 				_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
 				_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
 				_lp[2] = _lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
-			// }
-
-			cursor_helper = 1;
+				cursor_helper = 1;
+			}
 			break;
 		case 1:
 			if (typeof _n_sku == 'number')
