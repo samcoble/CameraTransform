@@ -3328,6 +3328,7 @@ function Compute(init_dat)
 							moveObject();
 							cloneObjSelected();
 							trans_obj(m_objs.length-1);
+							break;
 					}
 				}
 				if (!key_map.shift && !trns_lock)
