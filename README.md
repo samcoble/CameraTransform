@@ -23,7 +23,6 @@ Save & Load FIXED. So far handling any large amount of junk!
 
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate mouldable/moldable meshes and maybe explore the use of procedural noise at some point. https://youtu.be/9kaIXkImCAM
-![lol](https://github.com/samcoble/CameraTransform/assets/32228102/8109328a-0e92-4895-83e7-deb916607f0e)
 
 So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save. Also I noticed when saving with Chrome the file was empty (0KB) despite having been labeled with the correct size upon creation.
 
