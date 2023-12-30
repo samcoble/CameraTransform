@@ -1824,7 +1824,7 @@ function select2dpoint(x, y) // 2D find
 	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 	{
 		_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
-		if (_t1 < _f && obj_cyc != trns_obj_i)
+		if (_t1 < _f && obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
 		{
 			_f = _t1;
 			_n_sku = k;
