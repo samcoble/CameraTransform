@@ -518,7 +518,7 @@ var rgba_otext = "rgba(194, 122, 52, 1.0)";
 var rgba_dtext = "rgba(155, 155, 155, 1.0)";
 var rgba_cindi = "rgb(183, 167, 101)";
 var rgba_cindig = "rgb(152, 106, 179)";
-var rgba_cindiglite = "rgba(0, 0, 0, 0.2)";
+var rgba_cindiglite = "rgba(0, 0, 0, 0.3)";
 var rgba_cindiga = "rgba(152, 106, 179, 0.9)";
 
 var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
