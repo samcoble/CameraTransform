@@ -3274,6 +3274,15 @@ function Compute(init_dat)
 				}
 			}
 
+			if (key_map.rmb && runEvery(75))
+			{
+				if (!mouseLock)
+				{
+					// mouseLock
+					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+				}
+			}
+
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
 				if (pointerOutsideWindow())
