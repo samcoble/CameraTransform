@@ -2,13 +2,26 @@
 
 // this one really helped me understand objects in javascript that's for sure.
 // very noob level implementation here though. I just wan't absolute freedom.
+
 /*
+                    -- check number on getInput function
+
+                    -- js so funny man
+                        - 1*"2" = 2
+                        - 2+"" = "2"
+
                     -- i can't tell if i'm on the right track.
-                        : maybe i can design it such that
-                        :
-                        :      [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
+                        - maybe i can design it such that
+                            [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
 
                         i'll learn how if I properly create a windowDraggable feature that's automatic per section.
+                        or use table with string id's to make one update function convert menu code to a settings array.
+
+         log box needs to be reloadable 
+         basically make push fn also perform js text load
+             -- super key here to put that fn inside the listener assigned to text boxes.
+             -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
+
 */
 
 
@@ -295,16 +308,6 @@ function objListConst()
     return _l;
 }
 
-// function fileInputCallback(files)
-// {
-//     console.log(files);
-// }
-
-// function textInputCallback(par)
-// {
-//     if (par != null) {console.log(`Text input changed! Parameter: ${par.text}`);}
-// }
-
 function hideElementById(elementId)
 {
     element = document.getElementById(elementId);
@@ -371,8 +374,6 @@ function drawSettingsUpdate(par)
     } else {
         rgbas_tri_f = rgbas_tri_opacity;
     }
-    
-
 }
 
 function linkSettingsUpdate(par)
@@ -413,7 +414,6 @@ function lockSettingsUpdate(par)
     });
 }
 
-
 function paintSettingsUpdate() // bad needs system
 {
     stn_paint[0] = checkNumber(document.getElementById("textIn_paintSettings_dist").value) != false ? parseFloat(document.getElementById("textIn_paintSettings_dist").value) : stn_paint[0];
@@ -440,23 +440,24 @@ function colorSettingsUpdate(par) // bad needs system
 }
 
 
+function rotationSettingsUpdate(par) // bad needs system
+{
+    var inputs = document.querySelectorAll("."+par.class);
+    inputs.forEach(function(e, i)
+    {
+        stn_rotation[i] = getInputById(e.id)*1; // set happens here !!! :)
+        if (e.id === par.id)
+        {
+            //console.log(e.id);
+            //console.log(getCheckedById( e.id ));
+        }
+    });
+}
+
 /*
 
 
 */
-
-
-//      log box needs to be reloadable 
-//      basically make push fn also perform js text load
-//          -- super key here to put that fn inside the listener assigned to text boxes.
-//          -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
-//      
-//      
-
-
-
-
-
 
 var justOuter =
 `
@@ -631,7 +632,6 @@ var _error_info =
             };
             addList(list_objectSelect);
 
-
             //overflow-y: auto;
     
     //////////////////////////////////////////////////////////////////////////////////////
@@ -643,7 +643,6 @@ var div_root =
     id: "menu_1", cls: "", prnt: "html",
     rootStyle: rootStyle
 }; addDiv(div_root);
-
 
 
     var q_menu_holder =
@@ -700,7 +699,7 @@ var div_root =
             border-left: 1px solid rgba(222, 222, 222, 0.1);
             outline: none;
             width: 23%;
-            height: 65%;
+            height: 66%;
             padding: 0;
             border-radius: 2px;
             `;
@@ -776,12 +775,6 @@ var div_root =
             */
 
 
-
-            // var _btn_tool_border
-            // `
-
-            // `;
-
             var _btn_tool0 =
             `
             margin: 5px 0% 0 3%;
@@ -855,6 +848,24 @@ var div_root =
                 callback: mirrorOverPlane
             }; addButton(btn_tool_mirrorOverPlane);
 
+            var btn_tool_applyRotation =
+            {
+                text: "Apply Rotation \u2B6E",
+                id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: applyRotation
+            }; addButton(btn_tool_applyRotation);
+
+            var btn_tool_moveObj =
+            {
+                text: "Move Object \u2933",
+                id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: moveObject
+            }; addButton(btn_tool_moveObj);
+
             var btn_tool_dupeObj =
             {
                 text: "Duplicate Object \u26FC",
@@ -909,14 +920,6 @@ var div_root =
                 callback: del_world
             }; addButton(btn_tool_clearWorld);
 
-            // var btn_tool_mover =
-            // {
-            //     text: `Move Tool`,
-            //     id: "tool_moveTool", cls: "_btn", prnt: "menu_tools",
-            //     rootStyle: rootStyle + _btn + _btn_tooln_wspc,
-            //     hoverStyles: _btn_hover_tool,
-            //     callback: del_world
-            // }; addButton(btn_tool_mover);
 
 
         /*
@@ -1482,9 +1485,17 @@ var div_root =
 
 
             /*
-
+            ╔╗                  ╔╗                 ╔╗
+            ║║                  ║║                ╔╝╚╗
+            ║╚═╗╔══╗    ╔══╗╔══╗║║ ╔══╗╔═╗    ╔══╗╚╗╔╝╔═╗
+            ║╔╗║║╔╗║    ║╔═╝║╔╗║║║ ║╔╗║║╔╝    ║══╣ ║║ ║╔╗╗
+            ║╚╝║║╚╝║    ║╚═╗║╚╝║║╚╗║╚╝║║║     ╠══║ ║╚╗║║║║
+            ╚══╝╚═╗║    ╚══╝╚══╝╚═╝╚══╝╚╝     ╚══╝ ╚═╝╚╝╚╝
+                ╔═╝║
+                ╚══╝
             #colorsettings
             */
+
             var div_detailMenuBox7 =
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
@@ -1553,7 +1564,45 @@ var div_root =
                             // automate this part
                             world_color = ["20", "20", "20"];
 
+            /*
+                    ╔╗      ╔╗                    ╔╗
+                   ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
+            ╔═╗╔══╗╚╗╔╝╔══╗╚╗╔╝╔╗╔══╗╔═╗     ╔══╗╚╗╔╝╔═╗ 
+            ║╔╝║╔╗║ ║║ ╚ ╗║ ║║ ╠╣║╔╗║║╔╗╗    ║══╣ ║║ ║╔╗╗
+            ║║ ║╚╝║ ║╚╗║╚╝╚╗║╚╗║║║╚╝║║║║║    ╠══║ ║╚╗║║║║
+            ╚╝ ╚══╝ ╚═╝╚═══╝╚═╝╚╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
+            #rotationsettings
+            */
+                            
+            var div_detailMenuBox8 =
+            {
+                id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
+                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+            }; addDiv(div_detailMenuBox8);
 
+                var div_rotationSettings =
+                {
+                    id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
+                    text: 'rotation settings \u2B6E',
+                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+                }; addDiv(div_rotationSettings);
+
+                        var div_rotationSettings_r =
+                        {
+                            id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
+                            text: `deg`,
+                            rootStyle: rootStyle + div_css + darkBorder
+                        }; addDiv(div_rotationSettings_r);
+
+                            var textIn_rotationSettings_r =
+                            {
+                                id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
+                                rootStyle: rootStyle + textIn_css,
+                                value: stn_rotation[0],
+                                callback: rotationSettingsUpdate
+                            };
+                            textIn_rotationSettings_r.params = {id: textIn_rotationSettings_r.id, class: textIn_rotationSettings_r.cls}
+                            addTextInput(textIn_rotationSettings_r);
 
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
@@ -1624,6 +1673,16 @@ var div_root =
 
 // Example usage code for future use
 
+
+// function fileInputCallback(files)
+// {
+//     console.log(files);
+// }
+
+// function textInputCallback(par)
+// {
+//     if (par != null) {console.log(`Text input changed! Parameter: ${par.text}`);}
+// }
 
 // var chkBx =
 //  `

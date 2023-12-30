@@ -28,24 +28,28 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+			-- generate dir vec curves
 
-			-- okok
-				- need way to update array of float32arrays
+			-- js typeof implies overloaded fn w/ type
 
-				- make fn to set m_ref_objs array's by index to leave the one to be updated as new data?
-				- good time to reconstruct mem_log and mem_sum
+			-- nested point sequences at overlap point should be fairly easy. take note of logic
 
-			-- lock point offsets grid?
+			-- back to the real world ig
+
+				- i will have to encode typically such that first struct explains sizes of following structs (type may be implicit as defined in reader)
+				- first number is number of chunks
+					- chunks are sizes (unique data structs) (2 for now)
+
+					[ n=2 ] [c1 size] [c2 size] [group tree dat] [ x y z x y z x y z ...]
+
+			-- finish mem log rebuild to add bounding box ? system ? what am i doing
 
 
-			-- unique ids
+			-- unique ids for objs will help w/ identical objs in future?
 
+			-- lock point offsets grid? could fix a lot of things w/ rmb select
 			-- lmb in free mode is setting plane to inter_rnd for some reason..
 				- when point locked the lpi is not being calculated with the arbitrary offset essentially
-
-			-- try making preview obj w/ i #trilinedot
-				- make 3d world points as reference object
-				- so a hologram dataset
 
 			-- ? intersection reveal
 				- doesn't have to be run all the time if the purpose is to model
@@ -54,11 +58,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-- ray trace teleport
 				- fix teleport flip to use quaternions
 
-			-- grid snapping back to rounded instead of correct pos w/ locked mode.
-				- due to inter round ig?
-
 			-- rewrite the select2dpoint function
-				- remove sqrt root not needed obv 
 				- make a sort function returning 
 					???, i, dist to i.
 
@@ -85,14 +85,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-- mouse to world ray trace from eye...
 				- point on near plane
 
-
-
-			-- need rotation settings
-
 			-- unit vector line conversion method for arc len
 
 			-- distribute heights using 20% remainder to make hover to settings
-
 
 			-- convert lines into one long line as draw functions are structured.
 
@@ -187,7 +182,7 @@ Assault cube old code
 
 //  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
 //		for a lil extra travel just offset
-//		next step is using 2d data to clip away even more draw calls.  
+
 
 
 // modulo distributes with switch with for loop ez wow
@@ -254,7 +249,6 @@ Assault cube old code
 	?@?@?@?@ mouse slow down for draw !!!!
 	?@?@?@?@ END # is broken
 
-
 	= Cut obj in half by plane!
 		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
 
@@ -265,14 +259,6 @@ Assault cube old code
 
 	= For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
 	= Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
-
-	= Menu creation should be automated. Make system and slowly move existing into struct. Never update the html again.
-		- a system can be styled like css in the end.
-
-	= Make tab lock(show verts) a center and tab unlock but when unlocked it only querys for centers
-	
-	= m_obj_rot contains p,y,r and 0/1 if applied
-		split obj query into 0/1
 
 	= setData may be only needed to be set per other timing or only on data modification. Help lower cpu?
 
@@ -303,10 +289,6 @@ Assault cube old code
 - research k-d tree / octree
 - ken joy probably made a lecture about it?
 
-- make phys gun
-	- okay gonna settle for 2d physgun
-	- what if I pat gen for each 3d object so that I can loop through time to display a mimic of 3d but it's actually 2d and could be modified on the fly to something new.
-
 - Make obj spawn list !!!!
 - Need two tabs
 - Need square tool
@@ -318,16 +300,11 @@ Assault cube old code
 - I realize now I actually need two patterns. And patterns of offsets can actually be very fast as they're not computed when running.
 - premake a list w/ the right number pattern to use as index offset
 
-- odd even switch with modulo
-- can be used to gen a pat
-- remember to try using loops of half duration that set twice as many things per op
-
 */
 
 // Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
 
 // the tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
-
 
 /*
 	Badly need to implement a struct system for tools generally such that every tool overrides some keys.
@@ -337,8 +314,6 @@ Assault cube old code
 		Dynamic Expand (Applies compression/expansion with 3 input numbers)
 		Rotate around Axis (For now input into box with deg. Use point and plane line)
 		Stacker tool (Accepts distance and stacks) (Two input boxes)
-
-		I'm starting to notice animated effects require a temporary duplicate object to perform interpolation.
 */
 
 /*
@@ -361,9 +336,6 @@ Assault cube old code
 	-	Surface generation
 	-	Shift + Tab for multi selection. Also make mouse selector
 
-	-	Merge function: should already have the functions. Need to make a sequenced event (colorized). 3 keys. Start(finish). Abort. Select all non world.
-
-
 	// [[ PROBABLY NOT SO SOON ]]
 
 	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&&&!!!! the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
@@ -377,7 +349,6 @@ Assault cube old code
 	-	CLIPPING
 	-	Add dancing stick figures to every vertex immediately. I will do this. Don't fuck with me.
 
-
 	add clipping sides & what happens if 3 points where 1 is out ?
 		total points goes from 3 to 4. This can happen n times per poly. How deal w/ data??????
 
@@ -390,9 +361,7 @@ Assault cube old code
 
 	Use bounding boxes on objs 4 physics
 
-
 */
-
 
 
 
@@ -414,7 +383,6 @@ var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win
 const fileInput = document.getElementById('fileInput');
 
 var screen_width, screen_height;
-
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi2 = 6.2831853071;
@@ -481,7 +449,6 @@ var stn_draw = [true, true, false];
 //var stn_cir
 var stn_link_tool = 1; // Default link pat :: set by menu.js
 
-
 // var stn_paint_l = 1;
 // var stn_paint_line_l = 8;
 // var stn_paint_inf = false;
@@ -499,6 +466,8 @@ var stn_cir_tool =
 	divider: 24,
 	off: 0
 };
+
+var stn_rotation = [45];
 
 var paint_d = 0; var paint_n = 0;
 
@@ -527,11 +496,9 @@ var newIndex = {};
 var modIndex = [];
 var d_i = 0;
 
-
-
 // Premade color strings and color arrays
-
 // #COLORS
+
 var rgba_r = "rgba(200, 50, 50, 0.6)";
 var rgba_g = "rgba(50, 200, 50, 0.6)";
 var rgba_b = "rgba(50, 50, 200, 1.0)";
@@ -541,18 +508,9 @@ var rgba_y = "rgba(240, 240, 50, 1.0)";
 var rgba_o = "rgba(245, 213, 63, 1.0)";
 var rgba_ch = "rgba(50, 200, 50, 0.9)";
 var rgba_lp = "rgba(40, 40, 40, 0.75)";
-//var rgba_dgray = "rgba(8, 10, 12, 1.0)"; o
-
-// var rgba_dgray = "rgba(10, 12, 14, 1.0)";
 
 var rgba_dgray = "rgb(12, 12, 12)";
-//var rgba_dgray = "rgba(11, 12, 15, 1.0)";
-//var rgba_gray = "rgba(11, 13, 15, 1.0)"; o
-
-//var rgba_gray = "rgba(15, 16, 18, 1.0)"; g
-//var rgba_gray = "rgb(17, 18, 21)";
 var rgba_gray = "rgb(17, 17, 18)";
-//var rgba_mgray = "rgba(10, 12, 14, 1.0)"; o
 
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_ldgray = "rgba(85, 85, 85, 0.3)";
@@ -568,12 +526,6 @@ var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // 
 var rgbas_trans = [rgba_lgray, rgba_g];
 
 
-// var rgba_w_tri1 = "rgba(255, 255, 255, 0.2)";
-// var rgba_w_tri2 = "rgba(225, 225, 225, 0.2)";
-// var rgba_w_tri3 = "rgba(195, 195, 195, 0.2)";
-// var rgba_w_tri4 = "rgba(165, 165, 165, 0.2)";
-
-
 var rgba_w_tri1 = "rgba(130, 130, 130, 1)";
 var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
 var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
@@ -585,15 +537,8 @@ var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
 var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
 var rgba_invis = "rgba(0, 0, 0, 0)";
 
-
-// var rgba_w_tri1 = "rgba(255, 0, 0, 1)";
-// var rgba_w_tri2 = "rgba(0, 225, 0, 1)";
-// var rgba_w_tri3 = "rgba(0, 0, 195, 1)";
-// var rgba_w_tri4 = "rgba(165, 0, 165, 1)";
-
 var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
 var rgbas_tri_opacity = [rgba_w_trio1, rgba_w_trio2, rgba_w_trio3, rgba_w_trio4];
-
 var rgbas_tri_f = rgbas_tri;
 
 var _oh = [0,0,0,0];
@@ -603,11 +548,8 @@ var _inter = [0,0,0,0];
 var _nplns = [0,1,0];
 var _plr_dtp = [0,0,0];
 
-var g_dtp, g_pop, g_pao, g_rp, g_fp;
-
 var obj_normalMaps = [];
 var rayInterMap = [];
-
 
 var _norm_x = norm([1,0.000001,0.000001]);
 var _norm_y = norm([0.000001,1,0.000001]);
@@ -720,8 +662,8 @@ function setBackgroundColor(_wc)
 };
 
 
-						/*-- Key & Mouse event capture --\
-						\-------------------------------*/
+				/*-- Key & Mouse event capture --\
+				\-------------------------------*/
 
 //#KEYMAP
 var key_map =
@@ -758,7 +700,6 @@ var key_map =
 	"7": false,
 	" ": false,
 	"/": false,
-	"[": false,
 	control: false,
 	shift: false,
 	enter: false,
@@ -778,6 +719,7 @@ var key_map_prevent =
 {
 	shift: false,
 	tab: false,
+	control: false,
 	q: false
 };
 
@@ -875,6 +817,31 @@ window.addEventListener('blur', () =>
         }
     }
     mouseLock = 0;
+});
+
+
+// Removing this for now. Clicks lock/unlock mouse.
+
+// canvas_over.addEventListener("click", async () => 
+// {
+// 	await canvas_over.requestPointerLock();
+// 	mouseLock = 1;
+// });
+
+
+function pointerLockSwap()
+{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;}}
+
+
+window.addEventListener('resize', function()
+{
+	updateMenuPos();
+});
+
+
+document.addEventListener('contextmenu', function (e)
+{
+	e.preventDefault();
 });
 
 function setGridScale(par) // crack cojamane
@@ -1422,24 +1389,6 @@ var ctx_o = canvas_over.getContext("2d");
 ctx.scale(1, 1); ctx_o.scale(1, 1);
 
 
-// Removing this for now. Clicks lock/unlock mouse.
-
-// canvas_over.addEventListener("click", async () => 
-// {
-// 	await canvas_over.requestPointerLock();
-// 	mouseLock = 1;
-// });
-
-
-function pointerLockSwap()
-{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;}}
-
-
-window.addEventListener('resize', function()
-{
-	updateMenuPos();
-});
-
 // Obj load & unpack
 fileInput.addEventListener('change', event => 
 {
@@ -1593,7 +1542,7 @@ function teleport_plr()
 		case true:
 			player_pos[0] = _inter[0];
 			player_pos[2] = _inter[2];
-			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero
+			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero broken.
 			break;
 	}
 }
@@ -1743,6 +1692,26 @@ function arHasC(ar, c) // Useless?
     return _r;
 }
 
+/*
+	assume objs for now are closed loop with an overlapping end point.
+	I hope this design wasn't a mistake. Maybe additional 3d data isn't too bad
+	rendering must be redone from linear to one more layer. like a way to draw objs based on a new list.
+	I could map obj by memory...
+
+		obj in general by mem sections measured for mean ctr which could act as simple reorganize for z buffer
+			so draw obj rel to dist using 3d ctr??
+			mem redirect would say..
+			table:
+				[i][0][dist..]
+				[i][1][dist...]
+				[i][2][dist..]
+				[i][3][dist...]
+				[i][4][dist..]
+
+				so put i map into reorganize list by dist
+				generate a draw -> nvm ref table from 0 to n and access table[1]
+*/
+
 function updateDrawMap(priorityObjects)
 {
 	for (var i=0; i<m_objs.length; i++)
@@ -1832,7 +1801,7 @@ function finishTrnsAnim(_i) // Maybe make this a system
 
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
-	if (m_objs.length > world_obj_count+1) // remove exponent 2
+	if (m_objs.length > world_obj_count+1) // fix len2 ??????????????????????
 	{
 		var _lt;
 		var _i = world_obj_count+1;
@@ -1846,23 +1815,19 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 	} else {return world_obj_count;}
 }
 
-
+// use 2d lense alg to make crispy
 function select2dpoint(x, y) // 2D find
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
-	_f = Math.pow(Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
+	_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
 
-	// put at bottom :: hotfix
-	if (obj_cyc != trns_obj_i)
+	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 	{
-		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
+		_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+		if (_t1 < _f && obj_cyc != trns_obj_i)
 		{
-			_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2), 0.5);
-			if (_t1 < _f)
-			{
-				_f = _t1;
-				_n_sku = k;
-			}
+			_f = _t1;
+			_n_sku = k;
 		}
 	}
 
@@ -1870,7 +1835,7 @@ function select2dpoint(x, y) // 2D find
 	{
 		for (var j = 0; j<mem_t_log[i][1]/4; j++)
 		{
-			_t1 = Math.pow(Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum+1]-in_win_hc+y, 2), 0.5);
+			_t1 = Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum+1]-in_win_hc+y, 2);
 			if (_t1 < _f)
 			{
 				_f = _t1;
@@ -1887,7 +1852,7 @@ function select2dpoint(x, y) // 2D find
 			case 0:
 				for (let k = 0; k<mem_log[3][1]/4; k++)
 				{
-					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[3][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3][0]+1]-in_win_hc+y, 2), 0.5);
+					_t1 = Math.pow(m1.data[4*k+mem_log[3][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3][0]+1]-in_win_hc+y, 2);
 					if (_t1 < _f)
 					{
 						_f = _t1;
@@ -1900,7 +1865,7 @@ function select2dpoint(x, y) // 2D find
 			case 1:
 				for (let k = 0; k<mem_log[4][1]/4; k++)
 				{
-					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2), 0.5);
+					_t1 = Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2);
 					if (_t1 < _f)
 					{
 						_f = _t1;
@@ -1910,11 +1875,10 @@ function select2dpoint(x, y) // 2D find
 					}
 				}
 				break;
-
 			case 2:
 				for (let k = 0; k<mem_log[5][1]/4; k++)
 				{
-					_t1 = Math.pow(Math.pow(m1.data[4*k+mem_log[5][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[5][0]+1]-in_win_hc+y, 2), 0.5);
+					_t1 = Math.pow(m1.data[4*k+mem_log[5][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[5][0]+1]-in_win_hc+y, 2);
 					if (_t1 < _f)
 					{
 						_f = _t1;
@@ -1928,14 +1892,28 @@ function select2dpoint(x, y) // 2D find
 	}
 
 
+// = _inter_rnd[0]
+// = _inter_rnd[1]
+// = _inter_rnd[2]
 
+// = _inter_rnd[0]
+// = _inter_rnd[1]
+// = _inter_rnd[2]
+
+// = _inter_rnd[0]
+// = _inter_rnd[1]
+// = _inter_rnd[2]
 
 	switch(_d)
 	{
 		case 0:
-			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[obj_cyc][4*_n_sku];
-			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[obj_cyc][4*_n_sku+1];
-			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[obj_cyc][4*_n_sku+2];
+			// if (obj_cyc != trns_obj_i)
+			// {
+				_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
+				_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
+				_lp[2] = _lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
+			// }
+
 			cursor_helper = 1;
 			break;
 		case 1:
@@ -1943,17 +1921,17 @@ function select2dpoint(x, y) // 2D find
 			{
 				if (m_t_objs.length != 0 && typeof m_t_objs[_n_sku] != 'undefined')
 				{
-					_lp[0] = _lp_world[0] = _inter_rnd[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
-					_lp[1] = _lp_world[1] = _inter_rnd[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
-					_lp[2] = _lp_world[2] = _inter_rnd[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+					_lp[0] = _lp_world[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
+					_lp[1] = _lp_world[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
+					_lp[2] = _lp_world[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
 					cursor_helper = 1;
 				}
 			}
 			break;
 		case 2:
-			_lp[0] = _lp_world[0] = _inter_rnd[0] = m_objs[_d2][4*_n_sku];
-			_lp[1] = _lp_world[1] = _inter_rnd[1] = m_objs[_d2][4*_n_sku+1];
-			_lp[2] = _lp_world[2] = _inter_rnd[2] = m_objs[_d2][4*_n_sku+2];
+			_lp[0] = _lp_world[0] = m_objs[_d2][4*_n_sku];
+			_lp[1] = _lp_world[1] = m_objs[_d2][4*_n_sku+1];
+			_lp[2] = _lp_world[2] = m_objs[_d2][4*_n_sku+2];
 			cursor_helper = 0;
 			break;
 	}
@@ -1995,9 +1973,12 @@ function trans_obj(_i)
 				m_obj_offs[trns_obj_i][1] = 0;
 				m_obj_offs[trns_obj_i][2] =	0;
 
-				_lp[0] = _lp_world[0] = _inter_rnd[0];
-				_lp[1] = _lp_world[1] = _inter_rnd[1];
-				_lp[2] = _lp_world[2] = _inter_rnd[2];
+				// _lp[0] = _lp_world[0];
+				// _lp[1] = _lp_world[1];
+				// _lp[2] = _lp_world[2];
+				// _lp[0] = _lp_world[0] = _inter_rnd[0];
+				// _lp[1] = _lp_world[1] = _inter_rnd[1];
+				// _lp[2] = _lp_world[2] = _inter_rnd[2];
 
 			trns_lock = 0; obj_cyc = trns_obj_i; trns_obj_i = 0;
 			break;
@@ -2132,26 +2113,6 @@ function bond_obj(_i)
 
 
 
-			// assume objs for now are closed loop with an overlapping end point.
-			// I hope this design wasn't a mistake. Maybe additional 3d data isn't too bad
-			// rendering must be redone from linear to one more layer. like a way to draw objs based on a new list.
-			// I could map obj by memory...
-			/*
-				obj in general by mem sections measured for mean ctr which could act as simple reorganize for z buffer
-					so draw obj rel to dist using 3d ctr??
-					mem redirect would say..
-					table:
-						[i][0][dist..]
-						[i][1][dist...]
-						[i][2][dist..]
-						[i][3][dist...]
-						[i][4][dist..]
-
-						so put i map into reorganize list by dist
-						generate a draw -> nvm ref table from 0 to n and access table[1]
-
-			*/
-			// take last one out -> rotate -> recreate last
 
 
 			//_oi.splice(-1);
@@ -2347,6 +2308,71 @@ function expand_obj(_i)
 	}
 }
 
+// Remove center option? nah keeps cursor in right place.
+// @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
+function rotateObject(_op, _r) // _op determines if rotation uses point or center, _r radians.
+{
+	if (obj_cyc>world_obj_count && runEvery(150))
+	{
+		var _to = splitObjS(m_objs[obj_cyc]);
+		var _c = getctr_obj(obj_cyc);
+		var _rf = _r * pi/180;
+
+		// for now I use this. code is getting skrambled
+		if (wpn_select == 1) {_op = 1;}
+		if (!mouseLock) {_op = 0;}
+
+		for (var i=0; i<_to.length; i++)
+		{
+			switch(pln_cyc)
+			{
+				case 0:
+					switch(_op)
+					{
+					case 0:
+						_to[i] = add3(_lp_world, rot_x_pln(sub(_to[i], _lp_world), _rf));
+						break;
+					case 1:
+						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
+						break;
+					}
+					break;
+				case 1:
+					switch(_op)
+					{
+					case 0:
+						_to[i] = add3(_lp_world, rot_y_pln(sub(_to[i], _lp_world), _rf));
+						break;
+					case 1:
+						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), _rf));
+						break;
+					}
+					break;
+				case 2:
+					switch(_op)
+					{
+					case 0:
+						_to[i] = add3(_lp_world, rot_z_pln(sub(_to[i], _lp_world), _rf));
+						break;
+					case 1:
+						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), _rf));
+						break;
+					}
+					break;
+			}
+			if (i==_to.length-1)
+			{
+				for (var j=0; j<mem_log[obj_cyc][2]; j++)
+				{
+					m_objs[obj_cyc][j*4+0] = _to[j][0];
+					m_objs[obj_cyc][j*4+1] = _to[j][1];
+					m_objs[obj_cyc][j*4+2] = _to[j][2];
+
+				}
+			}
+		}
+	}
+}
 
 /*
 	╔═╗╔═╗╔═══╗╔═╗ ╔╗╔╗ ╔╗     ╔═══╗╔═╗ ╔╗╔═══╗
@@ -2355,6 +2381,7 @@ function expand_obj(_i)
 	║║║║║║║╔══╝║║╚╗║║║║ ║║     ║╔══╝║║╚╗║║╚══╗║
 	║║║║║║║╚══╗║║ ║║║║╚═╝║    ╔╝╚╗  ║║ ║║║║╚═╝║
 	╚╝╚╝╚╝╚═══╝╚╝ ╚═╝╚═══╝    ╚══╝  ╚╝ ╚═╝╚═══╝
+	#MENUFNS
 */
 
 
@@ -2446,6 +2473,17 @@ function editSelectedObject()
 }
 
 // Passing mem_t_mov w/ no menu function here for it.
+
+function applyRotation()
+{
+	rotateObject(0, stn_rotation[0]);
+}
+
+function moveObject()
+{
+	trans_obj(obj_cyc);
+}
+
 
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -2593,10 +2631,10 @@ function fillDotF(ctx, i, j, c, lw)
 function drawLineF_preview(ctx, i, j, c, lw)
 {
 	drawLine(ctx, c, lw,
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j]+menu_objpreview_pos[0],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1]+menu_objpreview_pos[1],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)]+menu_objpreview_pos[0],
-	m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]+menu_objpreview_pos[1])
+	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
+	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1],
+	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
+	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1])
 }
 
 
@@ -2731,7 +2769,7 @@ function drawIt()
 											drawDot(ctx, rgbas[pln_cyc], 1,
 											 m1.data[4*j+mem_log[d_i][0]],
 											  m1.data[4*j+mem_log[d_i][0]+1],
-											   m1.data[4*j+mem_log[d_i][0]+2]+1); ///////////////////// Dot planes rgba(102, 79, 185, 0.8)
+											   m1.data[4*j+mem_log[d_i][0]+2]+1); // dot planes rgba(102, 79, 185, 0.8)
 										}
 									}
 								}
@@ -2762,14 +2800,12 @@ function drawIt()
 	}
 
 
-	//Draw preview obj
+	// Draw preview obj
 	
 	for (var i = 0; i<m_ref_objs.length; i++)
 	{
 		for (var j = 0; j<m_ref_log[i][1]/4-2; j++)
 		{
-			//drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]], m1.data[mem_sum+m_ref_sum+m_ref_log[m_ref_log.length-1][0]+1], 15);
-			//drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j], m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1], 20);
 			drawLineF_preview(ctx, i, j, rgba_g, 1);
 		}
 	}
@@ -2931,10 +2967,8 @@ function updatePreview()
 	}
 }
 
-// var yomane = [1,2,3,4,5,6,7];
 function Compute(init_dat)
 {
-
 
 	if (obj_cyc != obj_cyc_i)
 	{
@@ -2942,72 +2976,10 @@ function Compute(init_dat)
 		obj_cyc_i = obj_cyc;
 	}
 
-	// if (key_map["["] && runEvery(300))
-	// {
-	// 	console.log(yomane);
-	// 	console.log("----------");
-	// 	for (var i = yomane.length - 1; i >= 0; i--)
-	// 	{
-	// 	 	yomane = rotateArray(yomane, 1);
-	// 	 	console.log(yomane);
-	// 	 }
-	// }
-
-	if (key_map.shift && key_map.r && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
+	if (key_map.shift && key_map.r) // Move to fn later
 	{
-		var _to = splitObjS(m_objs[obj_cyc]);
-		var _c = getctr_obj(obj_cyc);
-		for (var i=0; i<_to.length; i++)
-		{
-			switch(pln_cyc)
-			{
-				case 0:
-					switch(wpn_select)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_x_pln(sub(_to[i], _lp_world), pi/4));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), pi/4));
-						break;
-					}
-					break;
-				case 1:
-					switch(wpn_select)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_y_pln(sub(_to[i], _lp_world), pi/4));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), pi/4));
-						break;
-					}
-					break;
-				case 2:
-					switch(wpn_select)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_z_pln(sub(_to[i], _lp_world), pi/4));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), pi/4));
-						break;
-					}
-					break;
-			}
-			if (i==_to.length-1)
-			{
-				for (var j=0; j<mem_log[obj_cyc][2]; j++)
-				{
-					m_objs[obj_cyc][j*4+0] = _to[j][0];
-					m_objs[obj_cyc][j*4+1] = _to[j][1];
-					m_objs[obj_cyc][j*4+2] = _to[j][2];
-
-				}
-			}
-		}
+		rotateObject(0, stn_rotation[0]);
 	}
-
 
 	if (mouseLock && key_map["5"] && runEvery(150)) // Move to fn later
 	{
@@ -3278,7 +3250,10 @@ function Compute(init_dat)
 
 
  	// check nan other place? like lpi?
-	if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_.scale_ar[0]), roundTo(_lp[1], grid_.scale_ar[1]), roundTo(_lp[2], grid_.scale_ar[2])];}
+ 	if (mouseLock == 1)
+ 	{
+		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_.scale_ar[0]), roundTo(_lp[1], grid_.scale_ar[1]), roundTo(_lp[2], grid_.scale_ar[2])];}
+ 	}
 
 
 
@@ -3348,16 +3323,13 @@ function Compute(init_dat)
 					{
 						case 0:
 							cloneObjSelected();
-							obj_cyc = m_objs.length-1;
 							trans_obj(m_objs.length-1);
 							break;
 						case 1:
-							trans_obj(m_objs.length-1); // Finish needn't require index pls fix
+							moveObject();
 							cloneObjSelected();
-							obj_cyc = m_objs.length-1;
 							trans_obj(m_objs.length-1);
 					}
-
 				}
 				if (!key_map.shift && !trns_lock)
 				{
