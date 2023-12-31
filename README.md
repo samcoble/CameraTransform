@@ -49,16 +49,9 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 ![botman](https://github.com/samcoble/CameraTransform/assets/32228102/308ae207-8c05-45d7-9f6e-3375862dda42)
 ![genderneutraldesktheythem](https://github.com/samcoble/CameraTransform/assets/32228102/8b5651b2-5644-41a9-815e-ab1863b02a4e)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
-![fileload](https://github.com/samcoble/CameraTransform/assets/32228102/b84daf1d-51e0-4ee2-b153-21d5fddbe8b6)
 Finally I can make simple 3d models =)
 ![great](https://github.com/samcoble/CameraTransform/assets/32228102/6fae7623-2369-4245-98fd-bbb6a218ba52)
-Painting vertices with a line plane intersection. The beginning of object creation. At some point curvature will be a wide syntax.
-![mobetter](https://github.com/samcoble/CameraTransform/assets/32228102/dca1fa37-da05-4b5e-8b8d-ebd529c90355)
 ![ye](https://github.com/samcoble/CameraTransform/assets/32228102/f0179d0f-3c6d-4fe8-be1c-3a7a191da6cc)
-
-
-Example of a new object being created at the aim location. Center screen currently does not align with the floor plane intersection :D
-![g](https://github.com/samcoble/CameraTransform/assets/32228102/0bbd117e-f5ca-4d56-8144-c33f8c18b458)
 
 
 New wallpaper ayyo
