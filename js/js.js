@@ -25,6 +25,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- add file name setting
 
+			-- translate ghost lol
+
 			-- must revert code to prefer visual fidelity
 
 			-- time to start porting to glsl shaders
@@ -34,6 +36,12 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-- js typeof implies overloaded fn w/ type
 
 			-- nested point sequences at overlap point should be fairly easy. take note of logic
+				- think i got it here
+
+					- placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
+					- len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
+					- logic diagram could provide more direct code struct
+
 
 			-- back to the real world ig
 
@@ -128,25 +136,18 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		move groups after
 
 	Push to top of stack function
+
 	Try making a list in real time of anything entirely behind another obj's triangles?
 		try in 2d w/ triangle intersector later
 	Obj cut hole { i could try using the link script on to the hole... }
 		i keep reusing my linear link. need to learn poly fill alg
 		i need to implement geometric obj creation.
 			with more layers of encoded data i can keep logs of what obj's are fundamentally
-				for ex:   points,	point-chain,	surface,	circle,	??????????
-	3D Obj preview on screen below highlighted obj in mem
-		Make new model view mem region
-	Condense code structure / move fns
-		Setup fn to perform a series of operations.
-		Use where I have link_obj_i and pass fn color -> set index
+
+
 	Mover should show bounding box w/ corners to drag size
 	All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
-	Outside of this I'm making a menu constructor. Starting to feel like TeX o_0
-		All of the menu will be replaced with html because that makes sense.
-			Eventually I will make a 3d hud type menu that's a bit more ridiculous.
-	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet.
-
+	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet. Do I really need to interp packed data??
 
 	fill array with indice map pointing to an even 1/n stack
 	pickUp array basically takes the remaining fraction and draws it.
@@ -234,6 +235,7 @@ Assault cube old code
 	= Make ray trace fn use inputs so I can call it to get data anywhere.
 
 	= Strange some polys not detected by rays..?? may come from zigzag gen? should be considering it's visually parallel w/ data
+		- probably caused by ghost obj
 
 	?@?@?@?@ mouse slow down for draw !!!!
 	?@?@?@?@ END # is broken
@@ -247,16 +249,6 @@ Assault cube old code
 
 	= For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
 	= Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
-
-	= setData may be only needed to be set per other timing or only on data modification. Help lower cpu?
-
-	= I need to push to the top of the stack instead of bottom so that rendering displays overlap properly
-		- maybe make a second layer of m_objs that gets sorted by distance to fake clipping?
-		- could just change a pat that mirrors m_objs and goes by centers. Update pat every 300ms.
-
-	= To continue adding groupings I'll just make the data format [x y z w TYPE g1 g2 gn...] [x y z w TYPE g1 g2 gn...] [x y z w TYPE g1 g2 gn...] ...
-		- objs can be marked by type.
-			obj type logged on created and wrapped into download encode. Type will mark each point but after unwrapping each group's type will be all the same.
 
 	= Enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
 		- and "link.k=l" rebinds link(); activator key to l. And if already bound swap. Block some keys maybe.
@@ -1367,6 +1359,7 @@ setData();
 var canvas = document.getElementById("cv");
 var ctx = canvas.getContext("2d");
 
+
 var canvas_over = document.getElementById("cv_over");
 var ctx_o = canvas_over.getContext("2d");
 
@@ -1781,9 +1774,9 @@ function finishTrnsAnim(_i) // Maybe make this a system
 {
 	for (var i=0; i<mem_log[_i][2]; i++)
 	{
-		m_objs[_i][i*4+0] = m_objs[_i][i*4+0]+roundTo(m_obj_offs[_i][0], grid_.scale_f);
-		m_objs[_i][i*4+1] = m_objs[_i][i*4+1]+roundTo(m_obj_offs[_i][1], grid_.scale_f);
-		m_objs[_i][i*4+2] = m_objs[_i][i*4+2]+roundTo(m_obj_offs[_i][2], grid_.scale_f);
+		m_objs[_i][i*4+0] = m_objs_ghost[_i][i*4+0] = m_objs[_i][i*4+0]+roundTo(m_obj_offs[_i][0], grid_.scale_f);
+		m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] = m_objs[_i][i*4+1]+roundTo(m_obj_offs[_i][1], grid_.scale_f);
+		m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] = m_objs[_i][i*4+2]+roundTo(m_obj_offs[_i][2], grid_.scale_f);
 	}
 }
 
@@ -1807,17 +1800,55 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 function select2dpoint(x, y) // 2D find
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
-	_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+
+	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+
+	
+
+	var _mode = -1;
+
+	if (obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
+	{
+		_mode = 1;
+		_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+		//console.log("TEST");
+	}
+
+	if (_mode == -1)
+	{
+		if (m_t_objs.length == 0)
+		{
+			// no obj no points
+			if (!mouseLock)
+			{
+				_f = Math.pow(m1.data[mem_log[3+pln_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[3+pln_cyc][0]+1]-in_win_hc+y, 2);
+				_mode = 3;
+				//console.log("mode 3");
+			}
+		} else
+		{
+			_f = Math.pow(m1.data[mem_t_log[0][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[mem_t_log[0][0]+mem_sum+1]-in_win_hc+y, 2);
+			_d = 1;
+			_mode = 2;
+			//console.log("mode 2");
+		}
+	}
+
+
+
+	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
 
 	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 	{
 		_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
-		if (_t1 < _f && obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
+		if (_t1 < _f)
 		{
 			_f = _t1;
 			_n_sku = k;
 		}
 	}
+
+	//_f = Math.pow(m1.data[mem_t_log[0][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[mem_t_log[0][0]+mem_sum+1]-in_win_hc+y, 2);
 
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
@@ -1835,67 +1866,24 @@ function select2dpoint(x, y) // 2D find
 
 	if (!mouseLock)
 	{
-		switch (pln_cyc)
+		for (let k = 0; k<mem_log[3+pln_cyc][1]/4; k++)
 		{
-			case 0:
-				for (let k = 0; k<mem_log[3][1]/4; k++)
-				{
-					_t1 = Math.pow(m1.data[4*k+mem_log[3][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3][0]+1]-in_win_hc+y, 2);
-					if (_t1 < _f)
-					{
-						_f = _t1;
-						_n_sku = k;
-						_d = 2;
-						_d2 = 3;
-					}
-				}
-				break;
-			case 1:
-				for (let k = 0; k<mem_log[4][1]/4; k++)
-				{
-					_t1 = Math.pow(m1.data[4*k+mem_log[4][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[4][0]+1]-in_win_hc+y, 2);
-					if (_t1 < _f)
-					{
-						_f = _t1;
-						_n_sku = k;
-						_d = 2;
-						_d2 = 4;
-					}
-				}
-				break;
-			case 2:
-				for (let k = 0; k<mem_log[5][1]/4; k++)
-				{
-					_t1 = Math.pow(m1.data[4*k+mem_log[5][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[5][0]+1]-in_win_hc+y, 2);
-					if (_t1 < _f)
-					{
-						_f = _t1;
-						_n_sku = k;
-						_d = 2;
-						_d2 = 5;
-					}
-				}
-				break;
+			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]-in_win_hc+y, 2);
+			if (_t1 < _f)
+			{
+				_f = _t1;
+				_n_sku = k;
+				_d = 2;
+				_d2 = 3+pln_cyc;
+			}
 		}
 	}
 
 
-// = _inter_rnd[0]
-// = _inter_rnd[1]
-// = _inter_rnd[2]
-
-// = _inter_rnd[0]
-// = _inter_rnd[1]
-// = _inter_rnd[2]
-
-// = _inter_rnd[0]
-// = _inter_rnd[1]
-// = _inter_rnd[2]
-
 	switch(_d)
 	{
 		case 0:
-			if (obj_cyc>world_obj_count)
+			if (obj_cyc>world_obj_count && _mode != 3)
 			{
 				_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
 				_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
@@ -1916,6 +1904,7 @@ function select2dpoint(x, y) // 2D find
 			}
 			break;
 		case 2:
+
 			_lp[0] = _lp_world[0] = m_objs[_d2][4*_n_sku];
 			_lp[1] = _lp_world[1] = m_objs[_d2][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = m_objs[_d2][4*_n_sku+2];
@@ -1923,7 +1912,6 @@ function select2dpoint(x, y) // 2D find
 			break;
 	}
 }
-
 
 function getctr_obj(_i) // Get encoded 3D center point
 {
@@ -2606,12 +2594,13 @@ function drawLineF(ctx, i, j, c, lw)
 	m1.data[4*(j+1)+mem_log[i][0]+1]);
 }
 
-function fillDotF(ctx, i, j, c, lw)
+function fillDotF(ctx, i, j, c)
 {
 	fillDot(ctx, c,
 	m1.data[4*j+mem_log[i][0]],
 	m1.data[4*j+mem_log[i][0]+1],
-	m1.data[4*j+mem_log[i][0]+2]+0.5, lw)
+	Math.round(m1.data[4*j+mem_log[i][0]+2]*2+0.5),
+	Math.round(m1.data[4*j+mem_log[i][0]+3]*2+0.5));
 }
 
 // replace at some point?
@@ -2621,7 +2610,7 @@ function drawLineF_preview(ctx, i, j, c, lw)
 	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
 	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1],
 	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
-	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1])
+	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1]);
 }
 
 
@@ -2693,9 +2682,9 @@ function drawIt()
 								{
 									if (d_i==obj_cyc || d_i==_all_lock_i)
 									{
-										drawLineF(ctx, d_i, j, rgbas_link[_all_lock], 1);
+										drawLineF(ctx, d_i, j, rgbas_link[_all_lock], 0.8);
 									} else {
-										drawLineF(ctx, d_i, j, rgba_w, 1);
+										drawLineF(ctx, d_i, j, rgba_w, 0.8);
 									}
 								}
 							}
@@ -2721,7 +2710,7 @@ function drawIt()
 
 							if (d_i==1)
 							{
-								fillDotF(ctx, d_i, j, rgba_w_flr, 0.7);
+								fillDotF(ctx, d_i, j, rgba_w_flr);
 							};
 
 							// Center point
@@ -2956,6 +2945,9 @@ function updatePreview()
 
 function Compute(init_dat)
 {
+
+	ctx.imageSmoothingEnabled = false;
+	ctx.lineCap = "butt";
 
 	if (obj_cyc != obj_cyc_i)
 	{
