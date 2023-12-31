@@ -363,6 +363,7 @@ var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win
 const fileInput = document.getElementById('fileInput');
 
 var screen_width, screen_height;
+var fileName = "";
 
 var pi = 3.1415926538; // High definition PI makes a visible difference
 var pi2 = 6.2831853071;
@@ -750,7 +751,12 @@ function downloadSaveFile()
     // temp anchor
     const anchor = document.createElement('a');
     anchor.href = _url;
-    anchor.download = "data" + _tar.length + ".bin";
+    if (fileName == "")
+    {
+    	anchor.download = "data_" + _tar.length + ".bin";
+    } else {
+    	anchor.download = fileName + _tar.length + ".bin";
+    }
 
     // use .click() to trigger the download
     anchor.click();
@@ -1385,7 +1391,8 @@ function loadFile(_fi)
 	if (_fi)
 	{
 		const _r = new FileReader();
-		_r.onload = event => {
+		_r.onload = event =>
+		{
 			const _ab = event.target.result;
 			const _fa = new Float32Array(_ab);
 			var _gs = [0]; // indice map
@@ -1399,6 +1406,17 @@ function loadFile(_fi)
 				if (n!=_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[n], _gs[n+1])); m_objs_loadPoints(new Float32Array(_tar));}
 				if (n==_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[_gs.length-1], _gs[_fa.length-1])); m_objs_loadPoints(new Float32Array(_tar));}
 			}
+			var _fn = _fi.name.slice(0, _fi.name.length-4);
+			var _si = _fn.length;
+			for (var i = _fn.length - 1; i >= 0; i--)
+			{
+				if (!checkNumber(_fn[i]))
+				{
+					_si = i;
+					break;
+				}
+			}
+			fileName = _fn.slice(0, _si+1);
 		};
 		_r.readAsArrayBuffer(_fi);
 	}
