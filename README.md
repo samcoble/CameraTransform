@@ -48,7 +48,6 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 ![musho](https://github.com/samcoble/CameraTransform/assets/32228102/2835a077-84fd-4285-b048-fdc2f344729c)
 ![cirsets](https://github.com/samcoble/CameraTransform/assets/32228102/d3bb6839-7c86-48b3-aea0-10174655bfce)
 ![newdrip](https://github.com/samcoble/CameraTransform/assets/32228102/4b9fff77-ec46-4c0f-b8be-aa4498910fed)
-![guuuder](https://github.com/samcoble/CameraTransform/assets/32228102/e0315b20-5aa3-407f-83ba-0ae2eec1db55)
 ![botman](https://github.com/samcoble/CameraTransform/assets/32228102/308ae207-8c05-45d7-9f6e-3375862dda42)
 ![genderneutraldesktheythem](https://github.com/samcoble/CameraTransform/assets/32228102/8b5651b2-5644-41a9-815e-ab1863b02a4e)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
