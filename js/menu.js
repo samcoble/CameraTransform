@@ -494,6 +494,7 @@ var key_bind_info =
 [
     "Ctrl+F5 Update Game",
     "Q(toggle menu & unlock mouse)",
+    "R(switch plane)",
     "...",
     "W(move forward), S(move backwards)",
     "A(move left), D(move right)",

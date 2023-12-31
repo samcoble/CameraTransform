@@ -23,7 +23,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 
-			-- add file name setting
+			-- add file name setting & input trickery?
 
 			-- translate ghost lol
 
@@ -50,6 +50,14 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 					- chunks are sizes (unique data structs) (2 for now)
 
 					[ n=2 ] [c1 size] [c2 size] [group tree dat] [ x y z x y z x y z ...]
+
+					so [group tree dat] looks like [ n=groups ] [ n1 size ] [nn size ] [ dat ]
+
+					so [ dat ] = size implies amount of indices per group and provides offset to find subsequent groups
+
+					m_objs is kept the same but an overseeing manager populates a new html structure for navigation.
+
+					i don't feel like going the xtra mile to convert text into blocks and giving them size lmao.
 
 			-- finish mem log rebuild to add bounding box ? system ? what am i doing
 
@@ -763,8 +771,6 @@ function downloadSaveFile()
     URL.revokeObjectURL(_url);
     key_map.p = false;
 }
-
-
 
 window.addEventListener('keydown', (event) =>
 {
