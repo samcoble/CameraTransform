@@ -2775,6 +2775,7 @@ function drawIt()
 		}
 	}
 
+	drawPanel(ctx, rgba_dgray, rgba_lgray, in_win_w-157, 10, 148, 150);
 
 	// Draw preview obj
 	
