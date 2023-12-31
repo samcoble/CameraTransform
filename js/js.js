@@ -3255,12 +3255,15 @@ function Compute(init_dat)
 				}
 			}
 
-			if (key_map.rmb && runEvery(75))
+			if (key_map.rmb && runEveryLong(75))
 			{
 				if (!mouseLock)
 				{
 					// mouseLock
 					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+				} else {
+					select2dpoint(0, 0);
+					updateGrid();
 				}
 			}
 
@@ -3281,11 +3284,6 @@ function Compute(init_dat)
 				}
 			}
 
-			if (key_map.rmb && mouseLock && runEveryLong(75))
-			{
-				select2dpoint(0, 0);
-				updateGrid();
-			}
 
 			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
 
