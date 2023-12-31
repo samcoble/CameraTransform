@@ -14,12 +14,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 // Make a pistol that shoots green lasers that bounce!
 // Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections. This would look cool inside a sphere! w/ no limit it'd probably crash lmao.
-// I should make it a more general function to provide some interesting new functions.
-// I have a feeling I can do a lot of what i'm doing here with glsl c. I'm only using it for the perspective transform. Silly but I can just port my js to c.
-// I will make a second version of this game/app that accepts data from this one in the future ! I could even embed this game in another game lol.
-// If I could convert font data into 2d -> 3d/2d text gen!
-// I could also manually insert the alphabet as copied data from paint
-
 
 
 /*
@@ -28,6 +22,13 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 	@?@?@
+
+			-- add file name setting
+
+			-- must revert code to prefer visual fidelity
+
+			-- time to start porting to glsl shaders
+
 			-- generate dir vec curves
 
 			-- js typeof implies overloaded fn w/ type
@@ -119,16 +120,14 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		there must be a way to do the damn poly clip this way.
 		some super fast painter's algorithm + spotting manual clip locations
 		could do the mild shadow map eventually
-		will determine if I can make this a useable engine
+		will determine if I can make this useable
 
 
 	Wrap data increase to hold more layers
 		r g b a comes first
 		move groups after
-	Z-buffer algorithm
-	Grid normalization and offset with rmb
-	Make a new obj bond algorithm.
-	Push to top of stack function OR draw with reverse loop same thing
+
+	Push to top of stack function
 	Try making a list in real time of anything entirely behind another obj's triangles?
 		try in 2d w/ triangle intersector later
 	Obj cut hole { i could try using the link script on to the hole... }
@@ -147,12 +146,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		All of the menu will be replaced with html because that makes sense.
 			Eventually I will make a 3d hud type menu that's a bit more ridiculous.
 	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet.
-
-	QUICK TASK
-
-	RMB + Shift T duping causes loop due to call rate changing pos at full rmb speed
-	Event log box would help
-	Allow grid size to be changed by regenerating the grid to match round size.
 
 
 	fill array with indice map pointing to an even 1/n stack
@@ -183,10 +176,7 @@ Assault cube old code
 //  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
 //		for a lil extra travel just offset
 
-
-
-// modulo distributes with switch with for loop ez wow
-/* for ex:
+/* modulo distributes with switch with for loop ez wow for ex:
 
 	for (i)
 	{
@@ -207,7 +197,6 @@ Assault cube old code
 	3 sides 3 vec a b c omni order thus equally in sign implies within poly
 
 	sign is a/|a| , a/Math.abs(a) , Math.sign will be fastest? least ops w/ js calc sign
-
 	for every entry, later refine to shorten loop. for ex: dot all [largest obj point from center (lrgp-ctr) premapped] w/ look_f (look dir)
 
 		tri in order a b c (points) 
@@ -254,7 +243,6 @@ Assault cube old code
 
 	= Bezier tool!!!!!!!!!!!!!!!!!!! ASAP.
 
-	= add file name setting
 	= interpolation framework for anim -> prerender
 
 	= For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
