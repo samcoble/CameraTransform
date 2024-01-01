@@ -1835,13 +1835,9 @@ function select2dpoint(x, y) // 2D find
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
 
-	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
 	_f = Number.MAX_VALUE;
 
-	
-	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
-
-	if (obj_cyc>world_obj_count) // && _mode != 3
+	if (obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
 	{
 		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 		{
@@ -1853,8 +1849,6 @@ function select2dpoint(x, y) // 2D find
 			}
 		}
 	}
-
-	//_f = Math.pow(m1.data[mem_t_log[0][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[mem_t_log[0][0]+mem_sum+1]-in_win_hc+y, 2);
 
 	for (var i = 0; i<m_t_objs.length; i++)
 	{
@@ -1887,7 +1881,6 @@ function select2dpoint(x, y) // 2D find
 				}
 			}
 		}
-		
 	}
 
 	switch(_d)
