@@ -23,6 +23,20 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 	@?@?@
 
+			-- rewrite the select2dpoint function
+	
+				- function( ? )
+
+				- ez2use for working with hologram objects
+					- preview and holograms need to be separated.
+
+				- make a sort function returning 
+					???, i, dist to i.
+
+			-- engine space
+
+			-- manual method for scroll boxes
+
 			-- add file name setting & input trickery?
 
 			-- translate ghost lol
@@ -74,10 +88,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- ray trace teleport
 				- fix teleport flip to use quaternions
-
-			-- rewrite the select2dpoint function
-				- make a sort function returning 
-					???, i, dist to i.
 
 			-- wrap data
 			-- multi select
@@ -1826,49 +1836,21 @@ function select2dpoint(x, y) // 2D find
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
 
 	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+	_f = Number.MAX_VALUE;
 
 	
-
-	var _mode = -1;
-
-	if (obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
-	{
-		_mode = 1;
-		_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
-		//console.log("TEST");
-	}
-
-	if (_mode == -1)
-	{
-		if (m_t_objs.length == 0)
-		{
-			// no obj no points
-			if (!mouseLock)
-			{
-				_f = Math.pow(m1.data[mem_log[3+pln_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[3+pln_cyc][0]+1]-in_win_hc+y, 2);
-				_mode = 3;
-				//console.log("mode 3");
-			}
-		} else
-		{
-			_f = Math.pow(m1.data[mem_t_log[0][0]+mem_sum]-in_win_wc+x, 2) + Math.pow(m1.data[mem_t_log[0][0]+mem_sum+1]-in_win_hc+y, 2);
-			_d = 1;
-			_mode = 2;
-			//console.log("mode 2");
-		}
-	}
-
-
-
 	//_f = Math.pow(m1.data[mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
 
-	for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
+	if (obj_cyc>world_obj_count) // && _mode != 3
 	{
-		_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
-		if (_t1 < _f)
+		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 		{
-			_f = _t1;
-			_n_sku = k;
+			_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]-in_win_hc+y, 2);
+			if (_t1 < _f)
+			{
+				_f = _t1;
+				_n_sku = k;
+			}
 		}
 	}
 
@@ -1893,27 +1875,28 @@ function select2dpoint(x, y) // 2D find
 		for (let k = 0; k<mem_log[3+pln_cyc][1]/4; k++)
 		{
 			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]-in_win_wc+x, 2) + Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]-in_win_hc+y, 2);
-			if (_t1 < _f)
+
+			if (!isNaN(_t1) && !isNaN(_f))
 			{
-				_f = _t1;
-				_n_sku = k;
-				_d = 2;
-				_d2 = 3+pln_cyc;
+				if (_t1 < _f)
+				{
+					_f = _t1;
+					_n_sku = k;
+					_d = 2;
+					_d2 = 3+pln_cyc;
+				}
 			}
 		}
+		
 	}
-
 
 	switch(_d)
 	{
 		case 0:
-			if (obj_cyc>world_obj_count && _mode != 3)
-			{
-				_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
-				_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
-				_lp[2] = _lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
+			_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
+			_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
+			_lp[2] = _lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
 				cursor_helper = 1;
-			}
 			break;
 		case 1:
 			if (typeof _n_sku == 'number')
