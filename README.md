@@ -11,10 +11,10 @@ Give it a go! Ctrl+F5 to clear cache and load the updated version.
 
 So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
 
-~~This project will need to be refactored before I continue adding features.~~ I'm going to continue to add new features and work on building structures that carry over to a better engine in the future. WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. So far this app uses about 3% of my GPU... For this application the back end webGL will be very small as it's only job will be to provide allocation and manipulation of Float32Arrays made accessible to javascript. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I would prefer to write this in C++ as the pointer system is very good for this type of project but html&javascript provide tremendous accessibility.
+WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility. This project has been a lot of fun.
 
-This project is meant to be an endless exercise of mathematics with the goal of developing intuition for the camera transform and the corresponding pipeline. 
-It will be very interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space. Spatial memory opposed to ?
+This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline. 
+It will be interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space.
 
 Save & Load FIXED. So far handling any large amount of junk!
 - Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V)
