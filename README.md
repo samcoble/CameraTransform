@@ -11,7 +11,7 @@ Give it a go! Ctrl+F5 to clear cache and load the updated version.
 
 So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
 
-WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility. This project has been a lot of fun.
+WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility allowing all platforms to be supported.
 
 This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline. 
 It will be interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space.
