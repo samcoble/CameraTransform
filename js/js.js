@@ -25,6 +25,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- rewrite the select2dpoint function
 
+			-- try scale down and change perspective 
+
 			-- if encoded center is within plane of poly's captures some overlap
 	
 				- function( ? )
@@ -600,7 +602,7 @@ function drawDot(c, rgba, lw, x, y, s)
 {
 	c.beginPath(); 
 	c.strokeStyle = rgba;
-	c.rect(x-s/2, y-s/2, s, s);
+	c.rect(x-s/2, y-s/2, s+0.1, s);
 	c.lineWidth = lw; c.stroke();
 }
 
@@ -2744,7 +2746,7 @@ function drawIt()
 									{
 										if (m1.data[mem_log[d_i][0]+4*j+3] > 0)
 										{
-											drawDot(ctx, rgbas[pln_cyc], 1,
+											drawDot(ctx, rgbas[pln_cyc], 0.9,
 											 m1.data[4*j+mem_log[d_i][0]],
 											  m1.data[4*j+mem_log[d_i][0]+1],
 											   m1.data[4*j+mem_log[d_i][0]+2]+1); // dot planes rgba(102, 79, 185, 0.8)
