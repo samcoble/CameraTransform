@@ -24,6 +24,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 	@?@?@
 
 			-- rewrite the select2dpoint function
+
+			-- if encoded center is within plane of poly's captures some overlap
 	
 				- function( ? )
 
@@ -536,7 +538,7 @@ var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
 var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
 var rgba_invis = "rgba(0, 0, 0, 0)";
 
-var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3, rgba_w_tri4];
+var rgbas_tri = [rgba_w_tri1, rgba_w_tri1, rgba_w_tri2, rgba_w_tri2, rgba_w_tri3, rgba_w_tri3];
 var rgbas_tri_opacity = [rgba_w_trio1, rgba_w_trio2, rgba_w_trio3, rgba_w_trio4];
 var rgbas_tri_f = rgbas_tri;
 
@@ -2582,7 +2584,7 @@ function drawTriangleF(ctx, i, k)
 	m1.data[8*k+mem_log[i][0]+5],
 	m1.data[8*k+mem_log[i][0]+8],
 	m1.data[8*k+mem_log[i][0]+9],
-	rgbas_tri_f[k%3]);
+	rgbas_tri_f[k%6]);
 }
 
 function drawLineF(ctx, i, j, c, lw)
@@ -2783,7 +2785,7 @@ function drawIt()
 	{
 		for (var j = 0; j<m_ref_log[i][1]/4-2; j++)
 		{
-			drawLineF_preview(ctx, i, j, rgba_g, 1);
+			drawLineF_preview(ctx, i, j, rgba_g, 0.8);
 		}
 	}
 	
