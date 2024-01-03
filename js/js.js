@@ -3434,6 +3434,16 @@ function Compute(init_dat)
 		}
 		console.log(_f); // Do not remove
 	}
+	
+	if (key_map.m && runEvery(200))
+	{
+		var _t_obj = splitObj(m_objs[obj_cyc]);
+		var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
+		console.log(_t_d);
+		grid_.scale_f = _t_d;
+		updateGrid();
+	}
+	
 
 	
 /*
