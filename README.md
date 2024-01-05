@@ -9,6 +9,8 @@ Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.
 Give it a go! Ctrl+F5 to clear cache and load the updated version.
 [memspc.xyz](https://memspc.xyz/)
 
+Experimental WebGL version: [memspc.xyz/webgl](https://memspc.xyz/webgl/)
+
 So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
 
 WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility allowing all platforms to be supported.
