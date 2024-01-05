@@ -2964,6 +2964,11 @@ function drawLines()
         // Extract x and y coordinates for the current chunk
         for (let j = start; j < end - 4; j += 4)
         {
+
+        	// ratio that branches capping like /\
+        	// always apply ratio relative to what is smallest largest such that 
+        	// largest/smallest * shortest dimension. keeping it square.
+
             // vertices.push(m1.data[j]*(in_win_w/in_win_h)/s_fov+0.9, -m1.data[j + 1]/s_fov+0.8);
            vertices.push(m1.data[j]/s_fov, -m1.data[j + 1]/s_fov);
 
@@ -3019,7 +3024,7 @@ function drawLines()
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap([obj_cyc,3,4,5]);
+	updateDrawMap([obj_cyc,12,3,4,5]);
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
