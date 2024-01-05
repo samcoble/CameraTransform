@@ -3333,7 +3333,7 @@ function updatePreview()
 	var _scaler = 1/len3(_pair)*0.7;
 	var _tp, _np;
 
-	for (var i = 0; i<m_ref_log[0][1]/4-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d
+	for (var i = 0; i<m_ref_log[0][1]/4-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d => most insane work around I have ever done
 	{
 		_tp =
 		[
@@ -3341,6 +3341,8 @@ function updatePreview()
 			( m_objs[obj_cyc][i*4+1] - _pre_ctr[1] )*_scaler,
 			( m_objs[obj_cyc][i*4+2] - _pre_ctr[2] )*_scaler
 		]
+
+    // Okay so this is batshit insane I need to go back to moving 2d correctly??? fuck i'm missing something simple
 
 		_tp = rot_x_pln(_tp, 0.2);
 		_tp = rot_z_pln(_tp, 0.2);
