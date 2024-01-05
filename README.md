@@ -29,6 +29,7 @@ So far ray tracing is working but I noticed in one test instance a surface would
 Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally ~~simple sun light.~~ Maybe shaded slightly but I will eventually start over in a webgl environment.
 
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
+
 I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I am hoping this will open doors to textures and maybe some simulation of physics. It's hard for me to grasp creating a physics event/interpolation that immediately is cut short by a second event.
 
 This first .gif here shows having a duplicated object 2118 (points) several times. My fps is consistently maxed at 240. With the 2D canvas only 3 of the 2118 point objects would create lag. Now I have here around 12x as many with no lag.
