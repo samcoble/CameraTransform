@@ -28,6 +28,13 @@ So far ray tracing is working but I noticed in one test instance a surface would
 
 Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally ~~simple sun light.~~ Maybe shaded slightly but I will eventually start over in a webgl environment.
 
+[ 2D CANVAS ] -> [ WEBGL-CANVAS ]
+
+I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I am hoping this will open doors to textures and maybe some simulation of physics. It's hard for me to grasp creating a physics event/interpolation that immediately is cut short by a second event.
+
+This first .gif here shows having a duplicated object 2118 (points) several times. My fps is consistently maxed at 240. With the 2D canvas only 3 of the 2118 point objects would create lag. Now I have here around 12x as many with no lag.
+
+![webgl](https://github.com/samcoble/CameraTransform/assets/32228102/d6daf04d-05c5-4484-a0c9-5047fe041b75)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
 ![badartexedllfree](https://github.com/samcoble/CameraTransform/assets/32228102/0edfd5dc-f69f-454c-80f5-ff29e8853b75)
 ![opacity](https://github.com/samcoble/CameraTransform/assets/32228102/af285eac-080d-46c6-adc8-6358b8e845a2)
