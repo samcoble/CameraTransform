@@ -43,7 +43,6 @@ This first .gif here shows having a duplicated object 2118 (points) several time
 ![boatpics](https://github.com/samcoble/CameraTransform/assets/32228102/3dae0e7a-140b-49b2-8d38-12be1603c392)
 ![firefox_mBzhPUKkHC](https://github.com/samcoble/CameraTransform/assets/32228102/147a573c-0c6a-49e2-9633-28e1f5fdc402)
 ![sight](https://github.com/samcoble/CameraTransform/assets/32228102/7596d805-3844-4424-a671-e18a67cb1fbc)
-![goyin](https://github.com/samcoble/CameraTransform/assets/32228102/6e67584c-79a8-4406-8b77-01cad1497af6)
 ![newz](https://github.com/samcoble/CameraTransform/assets/32228102/19106736-ec6f-49ff-a570-44e8f76adb4d)
 ![RAYTRACE](https://github.com/samcoble/CameraTransform/assets/32228102/3e2c9a87-9128-42e7-bc4f-6aee4cc0fc76)
 ![STAIRGEN](https://github.com/samcoble/CameraTransform/assets/32228102/499964bd-483b-417d-8ea1-74b46ccec4f1)
