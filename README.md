@@ -32,9 +32,9 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
 
-I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I am hoping this will open doors to textures and maybe some simulation of physics. It's hard for me to grasp creating a physics event/interpolation that immediately is cut short by a second event.
+I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I am hoping this will open doors to textures and maybe some simulation of physics.
 
-This first .gif here shows having a duplicated object 2118 (points) several times. My fps is consistently maxed at 240. With the 2D canvas only 3 of the 2118 point objects would create lag. Now I have here around 12x as many with no lag.
+This first .gif here shows having a duplicated object 2118 (points) several times. The performance is at least 10x compared to the previous 2D canvas draw sequence.
 
 ![webgl](https://github.com/samcoble/CameraTransform/assets/32228102/d6daf04d-05c5-4484-a0c9-5047fe041b75)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
