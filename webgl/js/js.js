@@ -380,6 +380,11 @@ var title_int = 350;
 var date_now = 0;
 var date_now_after = 0;
 
+// FPS
+var _frames = 0;
+var _date_now_fps = 0;
+var _fps = 0;
+
 // Maybe move this into DOM LOAD event instead and keep var init.
 var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
@@ -1018,6 +1023,22 @@ function runEveryLong(_ms)
 	var d_t = Date.now() - date_now_after; var _r = 0;
 	if (d_t > _ms) {_r = 1; date_now_after = Date.now();} else {_r = 0;}
 	return (_r);
+}
+
+
+function updateFPS()
+{
+
+  let _dt = Date.now() - _date_now_fps;
+  if (_dt > 1000)
+  {
+    _fps = _frames;
+    _frames = 0;
+    _date_now_fps = Date.now();
+  } else
+  {
+    _frames++;
+  }
 }
 
 
@@ -2618,7 +2639,8 @@ function drawOverlay(init_dat)
 
 	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", menu_keys_pos[0]+15, 34);
 	//drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
-	drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
+	// drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
+  drawText(ctx_o, rgba_otext, "right", "fps[" + _fps + "]",  menu_keys_pos[0]+398, 34);
 	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
 	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + grid_.scale_f+"]", menu_keys_pos[0]+398, 49);
 
@@ -3061,8 +3083,9 @@ function drawIt()
 
 	drawLines();
 
-
+  updateFPS();
 	
+
 	/*
 
 	ctx.clearRect(0, 0, in_win_w, in_win_h);
