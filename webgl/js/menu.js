@@ -922,6 +922,14 @@ var div_root =
                 callback: del_world
             }; addButton(btn_tool_clearWorld);
 
+            var btn_tool_closeMenu =
+            {
+                text: `Close Menu`,
+                id: "tool_closeMenu", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: pointerLockSwap 
+            }; addButton(btn_tool_closeMenu);
 
 
         /*
