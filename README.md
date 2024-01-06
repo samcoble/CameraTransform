@@ -9,7 +9,7 @@ Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.
 Give it a go! Ctrl+F5 to clear cache and load the updated version.
 [memspc.xyz](https://memspc.xyz/)
 
-Experimental WebGL version: [memspc.xyz/webgl](https://memspc.xyz/webgl/)
+Experimental WebGL version: [memspc.xyz/webgl](https://memspc.xyz/webgl)
 
 So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
 
