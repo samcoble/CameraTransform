@@ -972,7 +972,6 @@ function norm4(_p) // Quaternion
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
 }
 
-
 function lpi(p1,p2,pp,n)
 {
 	var d1 = dot(n,sub(p1,pp));
@@ -1083,11 +1082,9 @@ var exp_f = new Float32Array([0.0,0.0,0.0,1]);
 
 //const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
 //const m_cube = new Float32Array([-0.4,-0.4,-0.4,1, -0.4,-0.4,0.4,1, 0.4,-0.4,-0.4,1, 0.4,-0.4,0.4,1, 0.4,0.4,-0.4,1, 0.4,0.4,0.4,1, -0.4,0.4,-0.4,1, -0.4,0.4,0.4,1]);
-const m_recty = new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
-const m_rectx = new Float32Array([0,-1,-1, 0, 0,-1, 1, 0, 0, 1, 1, 0, 0, 1,-1, 0, 0,-1,-1, 0]);
-const m_rectz = new Float32Array([1,-1, 0, 0,-1,-1, 0, 0,-1, 1, 0, 0, 1, 1, 0, 0, 1,-1, 0, 0]);
 
-var m_rect = m_recty;
+var m_rect =  new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
+
 
 //const m_cube = new Float32Array([-1.0000,1.0000,-1.0000,0,-1.0000,-1.0000,-1.0000,0,1.0000,-1.0000,-1.0000,0,1.0000,1.0000,-1.0000,0,1.0000,1.0000,1.0000,0,1.0000,-1.0000,1.0000,0,-1.0000,-1.0000,1.0000,0,-1.0000,1.0000,1.0000,0,-1.0000,1.0000,-1.0000,0,-1.0000,-1.0000,-1.0000,0,-1.0000,-1.0000,1.0000,0,-1.0000,1.0000,1.0000,0,1.0000,1.0000,1.0000,0,1.0000,-1.0000,1.0000,0,1.0000,-1.0000,-1.0000,0,1.0000,1.0000,-1.0000,0,-1.0000,1.0000,-1.0000,0]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
@@ -1401,7 +1398,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 		      _\/\\\______________\///\\\__/\\\____\/\\\_______\/\\\_\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
 		       _\/\\\\\\\\\\\\\\\____\///\\\\\/_____\/\\\_______\/\\\_\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
 		        _\///////////////_______\/////_______\///________\///__\////////////_______________\////////////_____\///________\///________\///________\///________\///__
-	*/
+	*/ // #loaddata
 
 
 m_objs_loadPoints(plr_aim);      // 0
@@ -1416,8 +1413,8 @@ m_objs_loadPoints(m_z);          // 8
 m_objs_loadPoints(_lp_world);    // 9
 m_objs_loadPoints(_lop_world);   // 10
 m_objs_loadPoints(m_gun);        // 11
-m_objs_loadPoints(m_recty);       // 12
-
+m_objs_loadPoints(m_rect);      // 12
+m_objs_loadPoints(m_rect);      // 13
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -2398,11 +2395,10 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 
 function writeToObjI(_ob, i)
 {
-
   if (_ob.length == mem_log[i][1])
   {
-    var start = 0;
-    var end = mem_log[i][2]*4;
+    let start = 0;
+    const end = mem_log[i][2]*4;
     while (start < end)
     {
       m_objs[i][start] = _ob[start];
@@ -2612,8 +2608,7 @@ function drawOverlay(init_dat)
 
 	document.getElementById("fileInput").style.position = "absolute";
 	document.getElementById("fileInput").style.left = (menu_keys_pos[0]+15)+"px";
-	document.getElementById("fileInput").style.top = (62)+"px"; // M keys menu expander
-
+	document.getElementById("fileInput").style.top = (62)+"px";
 
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_keys_pos[0], menu_keys_pos[1], 410, 88); // Open file mover
 
@@ -2761,7 +2756,7 @@ var rgba_invis = "rgba(0, 0, 0, 0)";*/
 
 const vertexBuffer = gl.createBuffer();
 
-var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0] ];
+var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
 
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi)
@@ -2773,7 +2768,7 @@ function drawSegment(vertices, mi)
 	    	gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 1.0]);
 	    } else
 	    {
-	    	gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1.0]);
+	    	gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 1.0]);
 	    }
     	if (mi == 12) {gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);}
 	} else
@@ -2835,8 +2830,18 @@ function drawSegment(vertices, mi)
 function drawTriangles(tris)
 {
   // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
-  gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]);
 
+  switch(stn_draw[2])
+  {
+    case true:
+      
+      gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
+      break;
+    case false:
+      gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
+      break;
+  }
+  
   // Draw the triangles
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, tris, gl.STATIC_DRAW);
@@ -2893,7 +2898,9 @@ function drawLines()
   var start, size, end;
   for (var i = m_objs.length-1; i >= 0; i--)
   {
-    if (modIndex[i] > world_obj_count)
+    // Tris, lines, dots?
+
+    if (stn_draw[1] && modIndex[i] > world_obj_count)
     {
       _si = (Math.floor((mem_log[modIndex[i]][2] - 1) / 2) - mem_log[modIndex[i]][2] % 2) - 1;
 
@@ -2927,7 +2934,14 @@ function drawLines()
 
     }
 
-    if ( (modIndex[i] < 3 && modIndex[i] != 1) || (modIndex[i] > 5 && modIndex[i] != 1) )
+    let skipDat = 1;
+
+    if ( !stn_draw[0] || (modIndex[i] == 13 && mem_t_sum == 0) )
+    {
+      skipDat = 0;
+    }
+
+    if ( (modIndex[i] < 3 && modIndex[i] != 1 && skipDat) || (modIndex[i] > 5 && modIndex[i] != 1 && skipDat) )
     {
       vertices = [];
 
@@ -2956,7 +2970,6 @@ function drawLines()
           drawSegment(vertices, modIndex[i]);
       }
     }
-
     _si2 = mem_log[modIndex[i]][2];
     _pts = new Float32Array(_si2 * 2);
 
@@ -3042,8 +3055,10 @@ function drawIt()
 	Compute(m1);
 	updateDrawMap([obj_cyc,12,3,4,5]);
 
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	
+	// gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clearColor(0.0, 0.0, 0.0, 0.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);	
+
 	drawLines();
 
 
@@ -3389,6 +3404,14 @@ function Compute(init_dat)
 	m_obj_offs[12][1] = _lp_world[1];
 	m_obj_offs[12][2] = _lp_world[2];
 	m_obj_offs[12][3] = grid_.scale_f/2.0;
+
+  if (mem_t_sum != 0)
+  {
+    m_obj_offs[13][0] = m_t_objs[m_t_objs.length-1][0];
+    m_obj_offs[13][1] = m_t_objs[m_t_objs.length-1][1];
+    m_obj_offs[13][2] = m_t_objs[m_t_objs.length-1][2];
+    m_obj_offs[13][3] = grid_.scale_f/8.0;
+  }
 
 	ctx.imageSmoothingEnabled = false;
 	ctx.lineCap = "butt";
