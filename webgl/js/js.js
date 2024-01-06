@@ -2396,6 +2396,48 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 	}
 }
 
+function writeToObjI(_ob, i)
+{
+
+  if (_ob.length == mem_log[i][1])
+  {
+    var start = 0;
+    var end = mem_log[i][2]*4;
+    while (start < end)
+    {
+      m_objs[i][start] = _ob[start];
+      start++;
+    }
+  }
+}
+
+function planeCycle()
+{
+
+  if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}
+
+  var _ob = splitObjS(m_objs_ghost[12]);
+
+  for (var i = 0; i<=_ob[i].length; i++)
+  {
+    switch(pln_cyc)
+    {
+      case 0:
+        _ob[i] = rot_z_pln(_ob[i], pi/2);  
+        break;
+      case 1:
+        // _ob[i] = rot_z_pln(_ob[i], pi/2);  
+        break;
+      case 2:
+        _ob[i] = rot_x_pln(_ob[i], pi/2);
+        break;
+    }
+  }
+
+  // write to obj data
+  writeToObjI(packObj(_ob), 12);
+}
+
 
 
 
@@ -2754,6 +2796,23 @@ function drawSegment(vertices, mi)
 			gl.uniform4fv(colorUniformLocation, _all_lock_colors[_all_lock]);
 		}
 	}
+
+  if (mi == 12)
+  {
+    switch(pln_cyc)
+    {
+      case 0:
+        gl.uniform4fv(colorUniformLocation, [0.5, 0.2, 0.2, 1.0]);
+        break;
+      case 1:
+        gl.uniform4fv(colorUniformLocation, [0.2, 0.5, 0.2, 1.0]); 
+        break;
+      case 2:
+        gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 1.0, 1.0]);
+        break;
+    }
+  }
+
   gl.lineWidth = 1;
 
   // Set the single color as a uniform variable
@@ -2848,7 +2907,8 @@ function drawLines()
       {
           if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] < 0 ||
               m1.data[8 * k + mem_log[modIndex[i]][0] + 7] < 0 ||
-              m1.data[8 * k + mem_log[modIndex[i]][0] + 11] < 0) {
+              m1.data[8 * k + mem_log[modIndex[i]][0] + 11] < 0)
+          {
               continue; // skip
           }
           if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
@@ -2874,17 +2934,15 @@ function drawLines()
       start = mem_log[modIndex[i]][0];
       size = mem_log[modIndex[i]][1];
       end = start + size;
-      // for (var j = mem_log[d_i][2]-2; j >= 0; j--) 
-      // for (let j = end - 8; j >= start; j -= 4)
+      
       for (let j = start; j < end - 4; j += 4)
       {
           if (m1.data[j + 3] < 0)
           {
               if (vertices.length > 0)
               {
-                  // Draw the lines for the current segment
                   drawSegment(vertices, modIndex[i]);
-                  vertices.length = 0; // Clear the vertices array
+                  vertices.length = 0;
               }
           } else
           {
@@ -2892,7 +2950,7 @@ function drawLines()
               vertices.push(m1.data[j], -m1.data[j + 1]);
           }
       }
-      // Draw the lines for the last segment
+      // last segment
       if (vertices.length > 0)
       {
           drawSegment(vertices, modIndex[i]);
@@ -2932,13 +2990,11 @@ function drawLines()
       
       for (let j = start; j < end; j += 4)
       {
-          // Check if z is less than 0
           if (m1.data[j + 3] < 0) {
               if (vertices.length > 0)
               {
-                  // Draw the lines for the current segment
                   drawSegment(vertices, -1);
-                  vertices.length = 0; // Clear the vertices array
+                  vertices.length = 0;
               }
           } else
           {
@@ -2946,7 +3002,7 @@ function drawLines()
               vertices.push(m1.data[j], -m1.data[j + 1]);
           }
       }
-      // Draw the lines for the last segment
+      // last segment
       if (vertices.length > 0)
       {
           drawSegment(vertices, -1);
@@ -2980,46 +3036,6 @@ function drawLines()
         }
     }
 }
-
-// var lineVertices;
-// function drawSegment(vertices)
-
-//     // Set the single color as a uniform variable
-//     gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]);
-
-//     // Create and bind a buffer to hold the vertex data
-//     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-//     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-//     // Set the attribute pointer for position
-//     gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-
-//     // Enable the position attribute
-//     gl.enableVertexAttribArray(positionAttrib);
-
-//     // Draw each line segment individually using triangles with a diagonal offset
-//     for (let i = 0; i < vertices.length / 2 - 1; i++) {
-//         const lineWidth = 2.0 / canvas.width + 0.001; // Adjust based on canvas size
-//         const offset = lineWidth / 2; // Diagonal offset
-//         const _r = (in_win_h/in_win_w);
-
-//         lineVertices = new Float32Array([
-//             vertices[i * 2] - offset*_r, vertices[i * 2 + 1] - offset,
-//             vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
-//             vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
-//             vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
-//             vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
-//             vertices[i * 2 + 2] + offset*_r, vertices[i * 2 + 3] + offset,
-//         ]);
-
-//         gl.bufferData(gl.ARRAY_BUFFER, lineVertices, gl.STATIC_DRAW);
-//         gl.drawArrays(gl.TRIANGLES, 0, 6);
-//     }
-
-//     // Disable the attributes after drawing
-//     gl.disableVertexAttribArray(positionAttrib);
-// }
-
 
 function drawIt()
 {
@@ -3450,8 +3466,10 @@ function Compute(init_dat)
 
 	if (key_map.n && runEvery(500)) {playerChangeMovementMode();}
 	if (lock_vert_mov) {player_pos[1] = -hover_h;}
-
-	if (key_map.r && !key_map.shift && runEvery(150)) {if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}}
+	if (key_map.r && !key_map.shift && runEvery(150))
+  {
+    planeCycle();
+  }
 
 
 
