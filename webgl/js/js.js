@@ -764,18 +764,19 @@ const handleTouchStart = (event) =>
     _touch_i[1] = event.touches[0].clientY;
     player_look_dir_i = player_look_dir;
 
-};
+
+}
 
 const handleTouchMove = (event) =>
 {
     event.preventDefault();
 
     _touch_f[0] = event.touches[0].clientX;
-    _touch_i[1] = event.touches[0].clientY;
+    _touch_f[1] = event.touches[0].clientY;
 
     _touch_delta = sub2(_touch_f, _touch_i);
-    player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]+(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
-
+    player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
+    console.log(_touch_delta);
 };
 
 const handleTouchEnd = () =>
@@ -785,9 +786,9 @@ const handleTouchEnd = () =>
 
 if (isMobile)
 {
-  dragElement.addEventListener('touchstart', handleTouchStart);
-  dragElement.addEventListener('touchmove', handleTouchMove);
-  dragElement.addEventListener('touchend', handleTouchEnd);
+  document.addEventListener('touchstart', handleTouchStart);
+  document.addEventListener('touchmove', handleTouchMove);
+  document.addEventListener('touchend', handleTouchEnd);
 }
 
 onmousemove = function(e)
