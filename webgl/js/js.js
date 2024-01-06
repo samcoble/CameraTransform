@@ -573,6 +573,10 @@ var _bg_default = [15,15,15]; // 9,20,30
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 
 
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+var _touch_i = [0,0];
+
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
 
@@ -751,6 +755,40 @@ var key_map_prevent =
 };
 
 
+var _touch_f = [0,0];
+var _touch_delta = [0,0];
+
+const handleTouchStart = (event) =>
+{
+    _touch_i[0] = event.touches[0].clientX;
+    _touch_i[1] = event.touches[0].clientY;
+    player_look_dir_i = player_look_dir;
+
+};
+
+const handleTouchMove = (event) =>
+{
+    event.preventDefault();
+
+    _touch_f[0] = event.touches[0].clientX;
+    _touch_i[1] = event.touches[0].clientY;
+
+    _touch_delta = sub2(_touch_f, _touch_i);
+    player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]+(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
+
+};
+
+const handleTouchEnd = () =>
+{
+  lookToggle = 0;
+}
+
+if (isMobile)
+{
+  dragElement.addEventListener('touchstart', handleTouchStart);
+  dragElement.addEventListener('touchmove', handleTouchMove);
+  dragElement.addEventListener('touchend', handleTouchEnd);
+}
 
 onmousemove = function(e)
 {
@@ -954,6 +992,7 @@ function add2(a,b) {return [a[0]+b[0], a[1]+b[1]];}
 function add3(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];}
 function add(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], 1];}
 
+function sub2(a,b) {return [a[0]-b[0], a[1]-b[1]];}
 function sub3(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];}
 function sub(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];} // Must keep last 1 to make it easy to push. Keep in mind..
 
@@ -1030,9 +1069,9 @@ function updateFPS()
 {
 
   let _dt = Date.now() - _date_now_fps;
-  if (_dt > 1000)
+  if (_dt > 250)
   {
-    _fps = _frames;
+    _fps = _frames*4;
     _frames = 0;
     _date_now_fps = Date.now();
   } else
