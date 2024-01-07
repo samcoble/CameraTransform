@@ -8,7 +8,9 @@ var positionAttrib;
 var colorUniformLocation;
 
 var vertices, _pts, _si, _si2, colorBuffer, colorAttrib;
-var _triverts = new Float32Array(160000);
+
+// var _triverts = new Float32Array(160000);
+var _triverts;
 
 function resizeCanvas(w, h)
 {

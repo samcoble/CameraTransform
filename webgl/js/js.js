@@ -2459,6 +2459,14 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 	}
 }
 
+function arClone(a, b, c, s)
+{
+  for (let i = a.length-1; i>=0; i--)
+  {
+    a[i] = (b[i] - c[i%4])*s;
+  }
+}
+
 function writeToObjI(_ob, i)
 {
   if (_ob.length == mem_log[i][1])
@@ -2833,6 +2841,38 @@ var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi)
 {
+
+  // Set the single color as a uniform variable
+  //gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]);
+
+  // Create and bind a buffer to hold the vertex data
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+  // gl.enableVertexAttribArray(positionAttrib);
+
+
+  gl.lineWidth = 1;
+
+  if (stn_draw[1] && mi > world_obj_count && m1.data[mem_log[mi][0]+mem_log[mi][1]-1] > 0)
+  {
+
+    switch(stn_draw[2])
+    {
+      case true:
+        gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
+        break;
+      case false:
+        gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
+        break;
+    }
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 2);
+
+  }
+
 	if (mi >= 0)
 	{
 	    if (mi == obj_cyc && mi > world_obj_count) //
@@ -2840,7 +2880,17 @@ function drawSegment(vertices, mi)
 	    	gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 1.0]);
 	    } else
 	    {
-	    	gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 1.0]);
+	    	// gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 0.2]);
+          switch(stn_draw[2])
+          {
+            case true:
+              gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 0.2]);
+              break;
+            case false:
+              gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 0.5]);
+              break;
+          }
+  
 	    }
     	if (mi == 12) {gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);}
 	} else
@@ -2860,6 +2910,7 @@ function drawSegment(vertices, mi)
 	{
 		if (mi == obj_cyc || mi == _all_lock_i)
 		{
+      gl.lineWidth = 2.0;
 			gl.uniform4fv(colorUniformLocation, _all_lock_colors[_all_lock]);
 		}
 	}
@@ -2880,20 +2931,16 @@ function drawSegment(vertices, mi)
     }
   }
 
-  gl.lineWidth = 1;
-
-  // Set the single color as a uniform variable
-  //gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]);
-
-  // Create and bind a buffer to hold the vertex data
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-
-  // gl.enableVertexAttribArray(positionAttrib);
+  if (mi == -2)
+  {
+    gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+  }
 
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
+
+  
+
+
 
   // gl.disableVertexAttribArray(positionAttrib);
   
@@ -2901,50 +2948,56 @@ function drawSegment(vertices, mi)
 
 /*
 
- - so now I think the best path forward would be to make sure not to disrupt
-   the order of draw calls.
-
-   - assuming draw calls are now in order. ?
-     write tri's to 
-
-
+// So it's more efficient now but less so generally basically need to fix the stupid memory function in 
+  // the triangle function to generate a new Float32Array instead of using the trim shit
 
 
 
  */
 
-
-
-function drawTriangles(tris, s)
-{
-  // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
-// console.log(s);
-  switch(stn_draw[2])
-  {
-    case true:
-      gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
-      break;
-    case false:
-      gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
-      break;
-  }
-  
-  // Draw the triangles
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, tris.subarray(0, s), gl.STATIC_DRAW);
-
-  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-
-  // gl.enableVertexAttribArray(positionAttrib);
-
-  gl.drawArrays(gl.TRIANGLES, 0, s / 2);
-
-  // gl.disableVertexAttribArray(positionAttrib);
-}
-
+// just pregen a fking table it should work 100
+// the flickering shit when you look around might be unfixable lemaow
+// make the preview obj not even use the fking perspective transform
+//
+// function drawTriangles(tris, s)
+// {
+//   // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
+// // console.log(s);
+//   switch(stn_draw[2])
+//   {
+//     case true:
+//       gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
+//       break;
+//     case false:
+//       gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
+//       break;
+//   }
+//   
+//   // Draw the triangles
+//   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+//
+//   // gl.bufferData(gl.ARRAY_BUFFER, tris.subarray(0, s), gl.STATIC_DRAW);
+//   gl.bufferData(gl.ARRAY_BUFFER, tris, gl.STATIC_DRAW);
+//
+//   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+//
+//   // gl.enableVertexAttribArray(positionAttrib);
+//
+//   gl.drawArrays(gl.TRIANGLES, 0, s);
+//
+//   // gl.disableVertexAttribArray(positionAttrib);
+// }
+//
 function drawPoints(_pnts, mi)
 {
   
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+  // gl.enableVertexAttribArray(positionAttrib);
+
+
     if (mi > 2 && mi < 6)
     {
 
@@ -2963,16 +3016,6 @@ function drawPoints(_pnts, mi)
           break;
       }
     } else {gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 0.3]);}
-
-  // Create and bind a buffer to hold the vertex data
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
-
-  // Set the attribute pointer
-  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-  // gl.enableVertexAttribArray(positionAttrib);
-
-  // Draw the points
   // gl.enable(gl.POINT_SPRITE);
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
   // gl.disableVertexAttribArray(positionAttrib);
@@ -2987,13 +3030,33 @@ function drawLines()
   {
     // Tris, lines, dots?
 
-    if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
-    {
+    // if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
+    // {
 
-      _si = (Math.floor((mem_log[modIndex[i]][2] - 1) / 2) - mem_log[modIndex[i]][2] % 2) - 1;
+    // for (var k = mem_log.length-1; k >= 0; k--) {
+/*
+    _si = 
+
+        
+    for (let i = 0, j = 0; i < _si * 4; i += 4, j += 2) {
+         if (m1.data[i + mem_log[modIndex[k]][0] + 3] < 0) {
+             continue; // skip
+         }
+         vertices[j] = m1.data[i + mem_log[modIndex[k]][0]]; // x
+         vertices[j + 1] = -m1.data[i + mem_log[modIndex[k]][0] + 1]; // y
+     }
+*/
+
+/*
       let _si_f = 0; 
       let _km = 0;
-      
+ 
+      _si = (Math.floor((mem_log[modIndex[i]][2] - 1) / 2) - mem_log[modIndex[i]][2] % 2) - 1;
+      _triverts = new Float32Array(_si_f * 6 + 6);
+
+      // Okay so fix this krap using the strange line join triangle thing I found
+      // obj polys could retain z buffer by separating into shaded layers by dist then fake bend for side?
+     
       // if (_si > 0)
       if (mem_log[modIndex[i]][2]>2)
       {
@@ -3022,14 +3085,14 @@ function drawLines()
           }
           else
           {
-            _km--;
+            // _km--;
           }
         }
 
           drawTriangles(_triverts, _si_f * 6 + 6);
       }
-
-    }
+*/
+    // }
 
     let skipDat = 1;
 
@@ -3119,6 +3182,35 @@ function drawLines()
       }
   }
 
+  // so to fix: change in height abs(win_height - fixed value say 1000) * 0.5 half right? squish is double * (conversion to )
+  vertices = [];
+  
+  for (let j = 0; j<_preview_obj.length/4; j++)
+  {
+    
+    _tp =
+      [
+        0.2*_preview_obj[j*4],
+        0.2*_preview_obj[j*4+1],
+        0.2*_preview_obj[j*4+2]
+      ]
+
+    _np = rot_x_pln(_tp, 0.2);
+    _np = rot_z_pln(_np, 0.2);
+    _np = rot_y_pln(_np, 0.001*Date.now()%10000);
+
+    _np[0] = _np[0]+0.9;
+    _np[1] = _np[1]+0.45;
+    
+    vertices.push(_np[0], _np[1]*(in_win_w/in_win_h));
+  }
+  // Draw the lines for the last segment
+  if (vertices.length > 0)
+  {
+      drawSegment(vertices, -2);
+  }
+
+/*
     for (var i = 0; i < m_ref_log.length; i++)
     {
         vertices = [];
@@ -3148,6 +3240,8 @@ function drawLines()
             drawSegment(vertices, -2);
         }
     }
+*/
+
 }
 
 function drawIt()
@@ -3440,13 +3534,18 @@ function getMinMaxPairs(ar)
 
 var _tp, _np;
 var _preview_ctr = [];
+var _preview_obj;
+var _preview_2dscaler;
 
 function updateRefLog()
 {
   // let _pair = getMinMaxPairs(m_objs[obj_cyc]); 
 
-	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]))*0.7;
+	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]));
 	_preview_ctr = meanctr_obj(m_objs[obj_cyc]);
+	_preview_obj = new Float32Array(m_objs[obj_cyc].length);
+  arClone(_preview_obj, m_objs[obj_cyc], _preview_ctr, _preview_scaler);
+  _preview_2dscaler = 1/len2(getMinMaxPairs(_preview_obj));
 
 	m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
 	m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
