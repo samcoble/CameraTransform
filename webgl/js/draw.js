@@ -8,7 +8,7 @@ var positionAttrib;
 var colorUniformLocation;
 
 var vertices, _pts, _si, _si2, colorBuffer, colorAttrib;
-var _triverts = new Float32Array(130000);
+var _triverts = new Float32Array(160000);
 
 function resizeCanvas(w, h)
 {
@@ -75,7 +75,15 @@ function initWebGL()
 }
 
 initWebGL();
-
+          /*          
+          let d;
+          if (in_win_h > in_win_w)
+          {
+            d = in_win_w/in_win_h;
+          } else {
+            d = in_win_h/in_win_w;
+          }
+          */
 
 
 function createShader(gl, source, type)

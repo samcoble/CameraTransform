@@ -374,6 +374,7 @@ function drawSettingsUpdate(par)
     } else {
         rgbas_tri_f = rgbas_tri_opacity;
     }
+
 }
 
 function linkSettingsUpdate(par)

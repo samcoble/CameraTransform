@@ -373,6 +373,7 @@ var title_int = 350;
 // Timer
 var date_now = 0;
 var date_now_after = 0;
+var date_now_preview = 0;
 
 // FPS
 var _frames = 0;
@@ -480,6 +481,8 @@ var _epsilon = 300;
 var in_win_clip;
 var one_time_fix = 1;
 
+
+var _preview_scaler;
 
 var menu_q_size = [610, 730];
 var menu_q_pos = [30, 240];
@@ -648,18 +651,19 @@ function updateMenuPos() // this stuff so bad jesus
 
   menu_obj_size = [150, 500, 166]; // default & modified to include margins	
 	
-  // menu_obj_pos = [in_win_w-158, 170];
-  if (m_ref_log.length != 0)
-  {
-
-    // menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-8]*in_win_hc/(in_win_h/in_win_w), in_win_hc-m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-7]*in_win_hc ];
-    menu_obj_pos =
-      [
-        in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-4]/s_fov*in_win_wc-menu_obj_size[0]*0.5,
-        in_win_hc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-3]/s_fov*in_win_hc+menu_obj_size[2]*0.5
-      ];
-  }
-
+  menu_obj_pos = [in_win_w-158, 170];
+  
+  // if (m_ref_log.length != 0)
+  // {
+  //
+  //   // menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-8]*in_win_hc/(in_win_h/in_win_w), in_win_hc-m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-7]*in_win_hc ];
+  //   menu_obj_pos =
+  //     [
+  //       in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-4]/s_fov*in_win_wc-menu_obj_size[0]*0.5,
+  //       in_win_hc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-3]/s_fov*in_win_hc+menu_obj_size[2]*0.5
+  //     ];
+  // }
+  //
   // _t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]+y/in_win_hc, 2);
 
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2];
@@ -1060,6 +1064,12 @@ function runEveryLong(_ms)
 	return (_r);
 }
 
+function runEveryPreview(_ms)
+{
+	var d_t = Date.now() - date_now_preview; var _r = 0;
+	if (d_t > _ms) {_r = 1; date_now_preview = Date.now();} else {_r = 0;}
+	return (_r);
+}
 
 function updateFPS()
 {
@@ -3126,8 +3136,11 @@ function drawLines()
         	// largest/smallest * shortest dimension. keeping it square.
 
             // vertices.push(m1.data[j]*(in_win_w/in_win_h)/s_fov+0.9, -m1.data[j + 1]/s_fov+0.8);
-           vertices.push(m1.data[j]/s_fov, -m1.data[j + 1]/s_fov);
 
+          // so the correct fix I think is to use mixmax on the 2d obj one upon click to find value to apply here!
+           // vertices.push(m1.data[j]/s_fov, -m1.data[j + 1]/s_fov);
+
+            vertices.push(m1.data[j]/s_fov+0.9, -m1.data[j + 1]/s_fov+0.8);
         }
         // Draw the lines for the last segment
         if (vertices.length > 0)
@@ -3423,16 +3436,41 @@ function getMinMaxPairs(ar)
 	return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
 }
 
+
+
+var _tp, _np;
+var _preview_ctr = [];
+
+function updateRefLog()
+{
+  // let _pair = getMinMaxPairs(m_objs[obj_cyc]); 
+
+	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]))*0.7;
+	_preview_ctr = meanctr_obj(m_objs[obj_cyc]);
+
+	m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
+	m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
+}
+
+
+var _preview_inc = 0;
+
 // @?@?@?@? Later refactor to general function for more interactive tools
 function updatePreview()
 {
 	updateLook();
+
+
+	m_ref_log[0] = [0, m_objs[obj_cyc].length, obj_cyc];
+
+
+
+
+// updateRefLog();
 	//m_ref_objs_loadObj()
 
 	// place updated data for preview
-
 	// var _nar = new Float32Array(m_objs[obj_cyc].length);
-	var _pre_ctr = meanctr_obj(m_objs[obj_cyc]);
 
 	// for (var i = 0; i<_nar.length; i++)
 	// {
@@ -3441,46 +3479,47 @@ function updatePreview()
 	// }
 	// m_ref_objs[0] = _nar;
 
-	m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
 
 	// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
 	//m_ref_sum = 0;
 	
-	m_ref_log[0] = [0, m_ref_objs[0].length, obj_cyc];
-	m_ref_sum = m_ref_objs[0].length;
-
 	// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
-	//var _pre_ctr = getctr_obj(obj_cyc);
 
-	var _pair = getMinMaxPairs(m_objs[obj_cyc]); 
-	var _scaler = 1/len3(_pair)*0.7;
-	var _tp, _np;
 
-	for (var i = 0; i<m_ref_log[0][1]/4-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d => most insane work around I have ever done
+  // Holy shit okay i'm going nuts
+  // this should just modify itself and write the obj data with update preview lmao wtf am i doing
+ 
+ 
+ 
+ 
+
+	for (var i = 0; i<m_ref_objs[0].length-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d => most insane work around I have ever done
 	{
 		_tp =
 		[
-			( m_objs[obj_cyc][i*4]   - _pre_ctr[0] )*_scaler,
-			( m_objs[obj_cyc][i*4+1] - _pre_ctr[1] )*_scaler,
-			( m_objs[obj_cyc][i*4+2] - _pre_ctr[2] )*_scaler
+			( m_objs[obj_cyc][i*4]   - _preview_ctr[0] )*_preview_scaler,
+			( m_objs[obj_cyc][i*4+1] - _preview_ctr[1] )*_preview_scaler,
+			( m_objs[obj_cyc][i*4+2] - _preview_ctr[2] )*_preview_scaler
 		]
 
     // Okay so this is batshit insane I need to go back to moving 2d correctly??? fuck i'm missing something simple
+    // if (runEveryPreview(300))
+    // {
+    //   _tp = rot_x_pln(_tp, 0.2);
+    //   _tp = rot_z_pln(_tp, 0.2);
+    //   _tp = rot_y_pln(_tp, 0.001*Date.now()%10000); // holy joly
+    // }
 
-		_tp = rot_x_pln(_tp, 0.2);
-		_tp = rot_z_pln(_tp, 0.2);
-		_tp = rot_y_pln(_tp, 0.001*Date.now()%10000); // holy joly
+    // _tp[0] = _tp[0]+3.1;
+    // _tp[1] = _tp[1]-1.1;
+    //
 
-    _tp[0] = _tp[0]+3.1;
-    _tp[1] = _tp[1]-1.1;
-
-
-		_np = quatRot( _tp, _viewq );
+		// _np = quatRot( _tp, _viewq );
 
 		// obj points: f - i is 0
-		m_ref_objs[0][i*4]   = _np[0] + ( player_pos[0]-f_look[0]*33 );
-		m_ref_objs[0][i*4+1] = _np[1] + ( player_pos[1]-f_look[1]*33 );
-		m_ref_objs[0][i*4+2] = _np[2] + ( player_pos[2]-f_look[2]*33 );
+		m_ref_objs[0][i*4]   = _tp[0] + ( player_pos[0]-f_look[0]*33 );
+		m_ref_objs[0][i*4+1] = _tp[1] + ( player_pos[1]-f_look[1]*33 );
+		m_ref_objs[0][i*4+2] = _tp[2] + ( player_pos[2]-f_look[2]*33 );
 		m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
 	}
 }
@@ -3506,6 +3545,7 @@ function Compute(init_dat)
 	if (obj_cyc != obj_cyc_i)
 	{
 		updateList(objListConst(), "list_objectSelect");
+    updateRefLog();
 		obj_cyc_i = obj_cyc;
 	}
 
@@ -4153,16 +4193,24 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
-	updateMenuPos();
+
 	obj_updateNormalMaps();
+
 	updateList(objListConst(), "list_objectSelect");
+
+  updateRefLog();
+  updatePreview();
+	updateMenuPos();
 
 	Compute(m1);
 	updateGrid();
 
+
 	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
 	drawIt();
+  _preview_scaler = 1/len3(getMinMaxPairs(m_objs[2]))*0.7;
 
+	m_ref_objs[0] = new Float32Array(m_map.length);
 	obj_cyc = 2; // Temp fix
 
 	setBackgroundColor(_bg_default);
