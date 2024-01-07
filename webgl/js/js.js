@@ -17,16 +17,18 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 
 /*
+  
+  #todolist
+  
 	New priorities after menu.js
 
 	@?@?@
 	@?@?@
 	@?@?@
-			-- try webgl box and load stuff into it
+
+      -- fix preview image to offset w/ 2d forced square w/ check
 
 			-- rewrite the select2dpoint function
-
-			-- try scale down and change perspective 
 
 			-- if encoded center is within plane of poly's captures some overlap
 	
@@ -320,14 +322,6 @@ Assault cube old code
 */
 
 /*
-	I'm using javascript to do glsl things totally wrong. Some of this was for fun. I have to rewrite the entire thing with proper glsl from the start.
-	With proper glsl I will be able to use an octree to efficiently link screen coordinates with image space.
-
-	Pretty bad using setInterval (only for druggies). or worse javascript eval(); you can go to jail for this.
-	Badly need to give lpi and other obj algs a go in glsl. Even worth doing until I redo api????
-
-	Octree is a mem struct !? rewrite data or use new file type ig
-
 
 	// [[ PROBABLY GOING TO DO SOON ]]:
 
@@ -576,6 +570,9 @@ var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 var _touch_i = [0,0];
+var _touch_f = [0,0];
+var _touch_delta = [0,0];
+
 
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
@@ -654,9 +651,13 @@ function updateMenuPos() // this stuff so bad jesus
   // menu_obj_pos = [in_win_w-158, 170];
   if (m_ref_log.length != 0)
   {
-     // menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-8]*in_win_hc/(in_win_h/in_win_w), in_win_hc-m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-7]*in_win_hc ];
-    menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-4]/s_fov*in_win_wc-menu_obj_size[0]*0.5, in_win_hc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-3]/s_fov*in_win_hc+menu_obj_size[2]*0.5 ];
 
+    // menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-8]*in_win_hc/(in_win_h/in_win_w), in_win_hc-m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-7]*in_win_hc ];
+    menu_obj_pos =
+      [
+        in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-4]/s_fov*in_win_wc-menu_obj_size[0]*0.5,
+        in_win_hc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-3]/s_fov*in_win_hc+menu_obj_size[2]*0.5
+      ];
   }
 
   // _t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]+y/in_win_hc, 2);
@@ -754,17 +755,11 @@ var key_map_prevent =
 	q: false
 };
 
-
-var _touch_f = [0,0];
-var _touch_delta = [0,0];
-
 const handleTouchStart = (event) =>
 {
     _touch_i[0] = event.touches[0].clientX;
     _touch_i[1] = event.touches[0].clientY;
     player_look_dir_i = player_look_dir;
-
-
 }
 
 const handleTouchMove = (event) =>
@@ -2468,11 +2463,8 @@ function writeToObjI(_ob, i)
   }
 }
 
-function planeCycle()
+function updateCursor()
 {
-
-  if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}
-
   var _ob = splitObjS(m_objs_ghost[12]);
 
   for (var i = 0; i<=_ob[i].length; i++)
@@ -2493,6 +2485,13 @@ function planeCycle()
 
   // write to obj data
   writeToObjI(packObj(_ob), 12);
+}
+
+function planeCycle()
+{
+
+  if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}
+  updateCursor();
 }
 
 
@@ -2584,6 +2583,7 @@ function returnCursorToGround()
 {
 	_lp[1] = 0; _lp_world[1] = 0;
 	pln_cyc=1;
+  updateCursor();
 }
 
 function playerChangeMovementMode()
@@ -2889,14 +2889,29 @@ function drawSegment(vertices, mi)
   
 }
 
-function drawTriangles(tris)
+/*
+
+ - so now I think the best path forward would be to make sure not to disrupt
+   the order of draw calls.
+
+   - assuming draw calls are now in order. ?
+     write tri's to 
+
+
+
+
+
+ */
+
+
+
+function drawTriangles(tris, s)
 {
   // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
-
+// console.log(s);
   switch(stn_draw[2])
   {
     case true:
-      
       gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
       break;
     case false:
@@ -2906,13 +2921,13 @@ function drawTriangles(tris)
   
   // Draw the triangles
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, tris, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, tris.subarray(0, s), gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
 
   // gl.enableVertexAttribArray(positionAttrib);
 
-  gl.drawArrays(gl.TRIANGLES, 0, tris.length / 2);
+  gl.drawArrays(gl.TRIANGLES, 0, s / 2);
 
   // gl.disableVertexAttribArray(positionAttrib);
 }
@@ -2948,7 +2963,7 @@ function drawPoints(_pnts, mi)
   // gl.enableVertexAttribArray(positionAttrib);
 
   // Draw the points
-  gl.enable(gl.POINT_SPRITE);
+  // gl.enable(gl.POINT_SPRITE);
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
   // gl.disableVertexAttribArray(positionAttrib);
   
@@ -2958,41 +2973,51 @@ function drawLines()
 {
 
   var start, size, end;
-  for (var i = m_objs.length-1; i >= 0; i--)
+  for (let i = m_objs.length-1; i >= 0; i--)
   {
     // Tris, lines, dots?
 
-    if (stn_draw[1] && modIndex[i] > world_obj_count)
+    if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
     {
+
       _si = (Math.floor((mem_log[modIndex[i]][2] - 1) / 2) - mem_log[modIndex[i]][2] % 2) - 1;
-
-      if (_si > 0) {
-          _triverts = new Float32Array(_si * 6 + 6);
-      } else {
-          _triverts = new Float32Array(6);
-      }
-
-      for (var k = _si; k >= 0; k--)
+      let _si_f = 0; 
+      let _km = 0;
+      
+      // if (_si > 0)
+      if (mem_log[modIndex[i]][2]>2)
       {
-          if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] < 0 ||
-              m1.data[8 * k + mem_log[modIndex[i]][0] + 7] < 0 ||
-              m1.data[8 * k + mem_log[modIndex[i]][0] + 11] < 0)
+        // for (let k = _si; k >= 0; k--)
+        for (let k = 0; k <= _si; k++)
+        {
+
+          if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] > 0 && 
+              m1.data[8 * k + mem_log[modIndex[i]][0] + 7] > 0 &&
+              m1.data[8 * k + mem_log[modIndex[i]][0] + 11] > 0)
           {
-              continue; // skip
+
+            // if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
+
+            _triverts[(k+_km) * 6] = m1.data[8 * k + mem_log[modIndex[i]][0]];
+            _triverts[(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 1];
+
+            _triverts[(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[modIndex[i]][0] + 4];
+            _triverts[(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 5];
+
+            _triverts[(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[modIndex[i]][0] + 8];
+            _triverts[(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 9];
+
+            _si_f++;
+
           }
-          if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
+          else
+          {
+            _km--;
+          }
+        }
 
-          _triverts[k * 6] = m1.data[8 * k + mem_log[modIndex[i]][0]];
-          _triverts[k * 6 + 1] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 1];
-
-          _triverts[k * 6 + 2] = m1.data[8 * k + mem_log[modIndex[i]][0] + 4];
-          _triverts[k * 6 + 3] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 5];
-
-          _triverts[k * 6 + 4] = m1.data[8 * k + mem_log[modIndex[i]][0] + 8];
-          _triverts[k * 6 + 5] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 9];
+          drawTriangles(_triverts, _si_f * 6 + 6);
       }
-
-      drawTriangles(_triverts);
 
     }
 
@@ -3117,7 +3142,6 @@ function drawIt()
 	Compute(m1);
 	updateDrawMap([obj_cyc,12,3,4,5]);
 
-	// gl.clear(gl.COLOR_BUFFER_BIT);
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT);	
 
