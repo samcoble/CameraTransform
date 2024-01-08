@@ -1304,10 +1304,10 @@ for (i=0; i<m1.data.length; i++)
 // wait no just use the exact same system basically
 var obj_folders = [];
 
+var m_draw = [];
 
 
-
-function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
+function m_objs_loadPoints(ar) // Adds objects
 {
 	if (ar.length > 4)
 	{
@@ -1319,24 +1319,45 @@ function m_objs_loadPoints(ar) // Adds objects, make add to stop stack fn
 		m_objs_ghost[m_objs_ghost.length] = ar_g;
 		mem_log.push([mem_sum, ar_f.length, Math.floor(ar_f.length/4), Math.floor(ar_f.length/12)]);
 		mem_sum += ar_f.length;
+
 		obj_normalMaps.push(new Float32Array(ar.length + 4)); // Idk this works for now??
 
 		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
 		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
 		// obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
-	} else {
+	} else
+  {
 		m_objs[m_objs.length] = ar;
 		m_objs_ghost[m_objs_ghost.length] = ar;
 		mem_log.push([mem_sum, ar.length, Math.floor(ar.length/4), Math.floor(ar.length/12)]);
 		mem_sum += ar.length;
 		obj_normalMaps.push(new Float32Array([0.0, 0.0, 0.0, 0.0]));
+
+
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 	//obj_updateNormalMaps();
 	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
 
+  let _count = Math.floor( (ar.length + 4)/4 ); 
+  _si = (Math.floor((_count - 1) / 2) - _count%2) - 1;
+
+  if (ar.length > (3*4))
+  {
+    var ar_r = new Float32Array( _si * 6 + 6 );
+    m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
+
+  } else
+  {
+    var ar_r = new Float32Array( 6 );
+    m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
+
+  }
+
 }
+
+
 
 
 function m_t_objs_loadPoint(ar) // Adds point to stack
@@ -1403,6 +1424,7 @@ function cloneObj(ar) // Removes ctr pt from linear array
 	return _tn;
 }
 
+// Replace with a loop allocating and setting each?
 function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification. m_obj_offs creates temporary modification! animations!
 {
 	for (var j = 0; j<(m_objs.length); j++)
@@ -1874,7 +1896,7 @@ function del_obj(_i)
 		_all_lock = 0; _all_lock = 0;
 		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1;
+			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
 		} else // Delete specific
 		{
 			var _ts = mem_log[obj_cyc][1];
@@ -1882,7 +1904,7 @@ function del_obj(_i)
 			{
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
-			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1);
+			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
 		}
 		updateList(objListConst(), "list_objectSelect");
 	}
@@ -2799,12 +2821,7 @@ var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
 var rgba_invis = "rgba(0, 0, 0, 0)";*/
 
 /*
-    Now I think the last thing to fix is to move tri's out of lines and put into a different location that does not segment.
-    This should help quite a bit damn. Gotta go back and fix.
-
-    there's probably a way to use c to create the data from the m1.data
-    it's more efficient now but less so generally basically need to fix the stupid memory function in 
-    the triangle function to generate a new Float32Array instead of using the trim shit
+    
 
  */
 
@@ -2827,6 +2844,7 @@ function drawSegment(vertices, mi)
 
   gl.lineWidth = 1;
 
+  /*
   if (stn_draw[1] && mi > world_obj_count && m1.data[mem_log[mi][0]+mem_log[mi][1]-1] > 0)
   {
 
@@ -2840,9 +2858,10 @@ function drawSegment(vertices, mi)
         break;
     }
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 2);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 2);
 
   }
+  */
 
 	if (mi >= 0)
 	{
@@ -2957,10 +2976,63 @@ function drawLines()
 
   // First start with lines & tri data pack
   // This entire thing is sus.
-
-  var start, size, end;
+  let start, size, end;
   for (let i = m_objs.length-1; i >= 0; i--)
   {
+    if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
+    {
+      let _km = 0;
+      let _si_f = 0;
+
+      for (let k = 0; k <= m_draw[modIndex[i]][1]; k++)
+      {
+        if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] > 0 && 
+            m1.data[8 * k + mem_log[modIndex[i]][0] + 7] > 0 &&
+            m1.data[8 * k + mem_log[modIndex[i]][0] + 11] > 0)
+        {
+          // if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
+
+          m_draw[modIndex[i]][0][(k+_km) * 6] = m1.data[8 * k + mem_log[modIndex[i]][0]];
+          m_draw[modIndex[i]][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 1];
+
+          m_draw[modIndex[i]][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[modIndex[i]][0] + 4];
+          m_draw[modIndex[i]][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 5];
+
+          m_draw[modIndex[i]][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[modIndex[i]][0] + 8];
+          m_draw[modIndex[i]][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 9];
+
+          _si_f++;
+
+        }
+        else
+        {
+          _km--;
+        }
+      }
+    
+      // Set a random color for each triangle
+      // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
+      switch(stn_draw[2])
+      {
+        case true:
+          gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
+          break;
+        case false:
+          gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
+          break;
+      }
+
+      // Draw the triangles after setting the color
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, m_draw[modIndex[i]][0], gl.STATIC_DRAW);
+
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      // gl.enableVertexAttribArray(positionAttrib);
+
+      gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+
+    }
+
 
     let skipDat = 1;
 
@@ -3710,9 +3782,7 @@ function Compute(init_dat)
 		*/
 		}
 
-
 	updatePreview();
-
 
 	if (isNaN(m_objs[0][0])) {m_objs[0][0] = 0.0; m_objs[0][1] = 0.0; m_objs[0][2] = 0.0; m_objs[0][3] = 1.0;}
 
@@ -3723,7 +3793,6 @@ function Compute(init_dat)
 		if (key_map["3"] && runEvery(100)) {wpn_select = 2;}
 		if (key_map["4"] && runEvery(100)) {wpn_select = 3;}
 	}
-
 
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
@@ -3747,8 +3816,6 @@ function Compute(init_dat)
  	{
 		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_.scale_ar[0]), roundTo(_lp[1], grid_.scale_ar[1]), roundTo(_lp[2], grid_.scale_ar[2])];}
  	}
-
-
 
 	switch(wpn_select) //#WEAPONSCRIPT
 	{
@@ -3951,14 +4018,8 @@ function Compute(init_dat)
 		console.log(_f); // Do not remove
 	}
 
-
-	
 /*
-
-	
-
 */
-
 
 	_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
 	switch(pln_cyc)
@@ -4025,11 +4086,11 @@ GLSLfragmentShader.run(init_dat,
 
 	`void main(void) {
 
-    float _yaw = float(${player_look_dir[0]});
-    float _pit = float(${player_look_dir[1]});
-    float _wc = float(${in_win_wc});
-    float _hc = float(${in_win_hc});
-    float _fov = float(${s_fov});
+  float _yaw = float(${player_look_dir[0]});
+  float _pit = float(${player_look_dir[1]});
+  float _wc = float(${in_win_wc});
+  float _hc = float(${in_win_hc});
+  float _fov = float(${s_fov});
 
 	#define _S1 1.0000600006
 	#define _S2 7.55682619647
@@ -4042,21 +4103,21 @@ GLSLfragmentShader.run(init_dat,
 		read().w
 	);
 
-    // Rotate around y-axis (yaw)
-    vec4 after_yaw = vec4(
-        cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
-        after_tran.y,
-        cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
-        after_tran.w
-    );
+  // // Rotate around y-axis (yaw)
+  // vec4 after_yaw = vec4(
+  //     cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
+  //     after_tran.y,
+  //     cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
+  //     after_tran.w
+  // );
 
-    // Rotate around x-axis (pitch)
-    vec4 after_pit = vec4(
-        after_yaw.x,
-        cos(_pit) * after_yaw.y - sin(_pit) * after_yaw.z,
-        sin(_pit) * after_yaw.y + cos(_pit) * after_yaw.z,
-        after_yaw.w
-    );
+  // Rotate around x-axis (pitch)
+  vec4 after_pit = vec4(
+      cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
+      cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
+      sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
+      after_tran.w
+  );
 
     // Perspective
 	vec4 after_per = vec4(
