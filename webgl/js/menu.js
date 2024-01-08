@@ -596,6 +596,7 @@ var _error_info =
     background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
     border-radius: 3px;
     overflow-y: auto;
+    overflow-x: hidden;
     `;
     var menu_obj =
     {
