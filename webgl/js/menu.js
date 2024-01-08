@@ -582,18 +582,20 @@ var _error_info =
 
     // Must add event listener to detect li clicks/hovers -> compare class/id
 
-    
+    let _fixthis = 730-158;
     var menu_obj_style =
     `
     box-sizing: border-box;
     position: absolute;
     width: 150px;
     height: auto;
+    max-height: `+_fixthis+`px;
     left: 600px;
     top: 190px;
     user-select: none;
     background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
     border-radius: 3px;
+    overflow-y: auto;
     `;
     var menu_obj =
     {

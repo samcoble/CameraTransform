@@ -650,26 +650,11 @@ function updateMenuPos() // this stuff so bad jesus
 {
 
   menu_obj_size = [150, 500, 166]; // default & modified to include margins	
-	
-  menu_obj_pos = [in_win_w-158, 170];
-  
-  // if (m_ref_log.length != 0)
-  // {
-  //
-  //   // menu_obj_pos = [in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-8]*in_win_hc/(in_win_h/in_win_w), in_win_hc-m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-7]*in_win_hc ];
-  //   menu_obj_pos =
-  //     [
-  //       in_win_wc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-4]/s_fov*in_win_wc-menu_obj_size[0]*0.5,
-  //       in_win_hc+m1.data[mem_sum+mem_t_sum+m_ref_log[0][1]-3]/s_fov*in_win_hc+menu_obj_size[2]*0.5
-  //     ];
-  // }
-  //
-  // _t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]+y/in_win_hc, 2);
-
+  menu_obj_pos = [in_win_w-150-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]+158];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2];
 
 	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w/100*2, in_win_h/100*50 - 0.5*menu_q_size[1]];
+	menu_q_pos = [in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
@@ -941,7 +926,7 @@ window.addEventListener("wheel", function(e)
 		{
 		    if ((fov_slide-e.deltaY/2000) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/2000};
 		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14}; // fix
-		} else if(runEvery(40))
+		} else if(runEvery(40) && pointerOutsideWindow()[2])
 		{
 			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
 			if (obj_cyc>m_objs.length-1) {obj_cyc=0};
@@ -1132,9 +1117,9 @@ var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
-var m_ref_objs = []; // [[n,...,],[n,...,],...]
-var m_ref_log = []; // [start, size, i ref]
-var m_ref_sum = 0;
+// var m_ref_objs = []; // [[n,...,],[n,...,],...]
+// var m_ref_log = []; // [start, size, i ref]
+// var m_ref_sum = 0;
 
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
@@ -1389,15 +1374,14 @@ function mem_t_mov() // Puts m_t_objs into m_objs as single array
 	}
 }
 
-// first going to make preview obj at index 0
+/* garbage
 function m_ref_objs_loadObj(ar, iref)
 {
 	m_ref_objs[m_ref_objs.length] = ar;
 	m_ref_log.push([m_ref_sum, ar.length, iref]);
 	m_ref_sum += ar.length;
 }
-
-
+*/
 
 function packObj(ar) // Puts m_t_objs into m_objs as single array 
 {
@@ -1431,6 +1415,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3]*m_obj_offs[j][3];
 		}
 	}
+
 	for (var j = 0; j<(m_t_objs.length); j++)
 	{
 		for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
@@ -1441,6 +1426,8 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 			m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
 		}
 	}
+
+  /*
 	for (var j = 0; j<(m_ref_objs.length); j++)
 	{
 		for (var i = 0; i<m_ref_objs[j].length/4; i++)
@@ -1451,6 +1438,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 			m1.data[i*4+3+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+3];
 		}
 	}
+  */
 }
 
 
@@ -1924,7 +1912,7 @@ function finishTrnsAnim(_i) // Maybe make this a system
 
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
-	if (m_objs.length > world_obj_count+1) // fix len2 ??????????????????????
+	if (m_objs.length > world_obj_count+1) // I can try doing len2 as exp 4
 	{
 		var _lt;
 		var _i = world_obj_count+1;
@@ -1940,7 +1928,6 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 	} else {return world_obj_count;}
 }
 
-// use 2d lense alg to make crispy
 function select2dpoint(x, y) // 2D find
 {
 	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
@@ -2772,15 +2759,6 @@ function fillDotF(ctx, i, j, c)
 	Math.round(m1.data[4*j+mem_log[i][0]+3]*2+0.5));
 }
 
-// replace at some point?
-function drawLineF_preview(ctx, i, j, c, lw)
-{
-	drawLine(ctx, c, lw,
-	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
-	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*j+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1],
-	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)]-in_win_wc)/s_fov*64+in_win_wc+menu_objpreview_pos[0],
-	(m1.data[mem_sum+mem_t_sum+m_ref_log[i][0]+4*(j+1)+1]-in_win_hc)/s_fov*64+in_win_hc+menu_objpreview_pos[1]);
-}
 
 /*var rgba_r = "rgba(220, 73, 73, 1)";
 var rgba_g = "rgba(24, 122, 24, 1)";
@@ -2821,17 +2799,13 @@ var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
 var rgba_invis = "rgba(0, 0, 0, 0)";*/
 
 /*
- *
-    so now all I have to do is make basic functions for tri's, lines, dots
-    when looping through m1 data make sure to do everything possible per 1 loop
-    make separate data to be drawn last.
-
-    move drawSegment up here
-
-    i need to start writing the code in my vertex shader now !!!
+    Now I think the last thing to fix is to move tri's out of lines and put into a different location that does not segment.
+    This should help quite a bit damn. Gotta go back and fix.
 
     there's probably a way to use c to create the data from the m1.data
- *
+    it's more efficient now but less so generally basically need to fix the stupid memory function in 
+    the triangle function to generate a new Float32Array instead of using the trim shit
+
  */
 
 const vertexBuffer = gl.createBuffer();
@@ -2842,17 +2816,14 @@ var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0
 function drawSegment(vertices, mi)
 {
 
-  // Set the single color as a uniform variable
   //gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]);
 
-  // Create and bind a buffer to hold the vertex data
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
 
   // gl.enableVertexAttribArray(positionAttrib);
-
 
   gl.lineWidth = 1;
 
@@ -2938,56 +2909,15 @@ function drawSegment(vertices, mi)
 
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
 
-  
-
-
-
   // gl.disableVertexAttribArray(positionAttrib);
   
 }
 
 /*
 
-// So it's more efficient now but less so generally basically need to fix the stupid memory function in 
-  // the triangle function to generate a new Float32Array instead of using the trim shit
-
-
 
  */
 
-// just pregen a fking table it should work 100
-// the flickering shit when you look around might be unfixable lemaow
-// make the preview obj not even use the fking perspective transform
-//
-// function drawTriangles(tris, s)
-// {
-//   // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
-// // console.log(s);
-//   switch(stn_draw[2])
-//   {
-//     case true:
-//       gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
-//       break;
-//     case false:
-//       gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
-//       break;
-//   }
-//   
-//   // Draw the triangles
-//   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-//
-//   // gl.bufferData(gl.ARRAY_BUFFER, tris.subarray(0, s), gl.STATIC_DRAW);
-//   gl.bufferData(gl.ARRAY_BUFFER, tris, gl.STATIC_DRAW);
-//
-//   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-//
-//   // gl.enableVertexAttribArray(positionAttrib);
-//
-//   gl.drawArrays(gl.TRIANGLES, 0, s);
-//
-//   // gl.disableVertexAttribArray(positionAttrib);
-// }
-//
 function drawPoints(_pnts, mi)
 {
   
@@ -2996,7 +2926,6 @@ function drawPoints(_pnts, mi)
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
   // gl.enableVertexAttribArray(positionAttrib);
-
 
     if (mi > 2 && mi < 6)
     {
@@ -3016,7 +2945,8 @@ function drawPoints(_pnts, mi)
           break;
       }
     } else {gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 0.3]);}
-  // gl.enable(gl.POINT_SPRITE);
+
+  // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
   // gl.disableVertexAttribArray(positionAttrib);
   
@@ -3025,74 +2955,12 @@ function drawPoints(_pnts, mi)
 function drawLines()
 {
 
+  // First start with lines & tri data pack
+  // This entire thing is sus.
+
   var start, size, end;
   for (let i = m_objs.length-1; i >= 0; i--)
   {
-    // Tris, lines, dots?
-
-    // if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
-    // {
-
-    // for (var k = mem_log.length-1; k >= 0; k--) {
-/*
-    _si = 
-
-        
-    for (let i = 0, j = 0; i < _si * 4; i += 4, j += 2) {
-         if (m1.data[i + mem_log[modIndex[k]][0] + 3] < 0) {
-             continue; // skip
-         }
-         vertices[j] = m1.data[i + mem_log[modIndex[k]][0]]; // x
-         vertices[j + 1] = -m1.data[i + mem_log[modIndex[k]][0] + 1]; // y
-     }
-*/
-
-/*
-      let _si_f = 0; 
-      let _km = 0;
- 
-      _si = (Math.floor((mem_log[modIndex[i]][2] - 1) / 2) - mem_log[modIndex[i]][2] % 2) - 1;
-      _triverts = new Float32Array(_si_f * 6 + 6);
-
-      // Okay so fix this krap using the strange line join triangle thing I found
-      // obj polys could retain z buffer by separating into shaded layers by dist then fake bend for side?
-     
-      // if (_si > 0)
-      if (mem_log[modIndex[i]][2]>2)
-      {
-        // for (let k = _si; k >= 0; k--)
-        for (let k = 0; k <= _si; k++)
-        {
-
-          if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] > 0 && 
-              m1.data[8 * k + mem_log[modIndex[i]][0] + 7] > 0 &&
-              m1.data[8 * k + mem_log[modIndex[i]][0] + 11] > 0)
-          {
-
-            // if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
-
-            _triverts[(k+_km) * 6] = m1.data[8 * k + mem_log[modIndex[i]][0]];
-            _triverts[(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 1];
-
-            _triverts[(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[modIndex[i]][0] + 4];
-            _triverts[(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 5];
-
-            _triverts[(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[modIndex[i]][0] + 8];
-            _triverts[(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 9];
-
-            _si_f++;
-
-          }
-          else
-          {
-            // _km--;
-          }
-        }
-
-          drawTriangles(_triverts, _si_f * 6 + 6);
-      }
-*/
-    // }
 
     let skipDat = 1;
 
@@ -3133,6 +3001,7 @@ function drawLines()
     _si2 = mem_log[modIndex[i]][2];
     _pts = new Float32Array(_si2 * 2);
 
+    // Experiment using while instead of for. Irrelevant performance difference?
     let i0 = 0;
     let j0 = 0;
     let dataIndex = mem_log[modIndex[i]][0];
@@ -3153,96 +3022,72 @@ function drawLines()
 
   }
 
+  // Working object being drawn
   for (var i = 0; i < mem_t_log.length; i++)
   {
-      vertices = [];
-      
-      start = mem_sum;
-      size = mem_t_sum;
-      end = start + size;
-      
-      for (let j = start; j < end; j += 4)
-      {
-          if (m1.data[j + 3] < 0) {
-              if (vertices.length > 0)
-              {
-                  drawSegment(vertices, -1);
-                  vertices.length = 0;
-              }
-          } else
-          {
-              // x y
-              vertices.push(m1.data[j], -m1.data[j + 1]);
-          }
-      }
-      // last segment
-      if (vertices.length > 0)
-      {
-          drawSegment(vertices, -1);
-      }
+    vertices = [];
+    
+    start = mem_sum;
+    size = mem_t_sum;
+    end = start + size;
+    
+    for (let j = start; j < end; j += 4)
+    {
+        if (m1.data[j + 3] < 0) {
+            if (vertices.length > 0)
+            {
+                drawSegment(vertices, -1);
+                vertices.length = 0;
+            }
+        } else
+        {
+            // x y
+            vertices.push(m1.data[j], -m1.data[j + 1]);
+        }
+    }
+    // last segment
+    if (vertices.length > 0)
+    {
+        drawSegment(vertices, -1);
+    }
   }
 
-  // so to fix: change in height abs(win_height - fixed value say 1000) * 0.5 half right? squish is double * (conversion to )
+  // Preview object
   vertices = [];
-  
-  for (let j = 0; j<_preview_obj.length/4; j++)
+  for (let j = 0; j<_preview_obj.length/4 - 1; j++) // Removing center
   {
     
+    // Already normalized this earlier with minMax so theoretically it's only necessary to scale it.
     _tp =
-      [
-        0.2*_preview_obj[j*4],
-        0.2*_preview_obj[j*4+1],
-        0.2*_preview_obj[j*4+2]
-      ]
+    [
+      1.9*_preview_obj[j*4],
+      1.9*_preview_obj[j*4+1],
+      1.9*_preview_obj[j*4+2]
+    ]
 
     _np = rot_x_pln(_tp, 0.2);
     _np = rot_z_pln(_np, 0.2);
     _np = rot_y_pln(_np, 0.001*Date.now()%10000);
 
-    _np[0] = _np[0]+0.9;
-    _np[1] = _np[1]+0.45;
-    
-    vertices.push(_np[0], _np[1]*(in_win_w/in_win_h));
+    _np[0] = _np[0];
+    _np[1] = (in_win_w/in_win_h) * _np[1];
+
+    vertices.push(
+    _np[0]*150/in_win_w+(menu_obj_pos[0]-in_win_w*0.02)/in_win_w,
+    _np[1]*150/in_win_h*(in_win_h/in_win_w)+0.5-(menu_obj_pos[1]+10-menu_q_size[1]/2)/in_win_h
+    );
+
   }
+
   // Draw the lines for the last segment
   if (vertices.length > 0)
   {
       drawSegment(vertices, -2);
   }
 
-/*
-    for (var i = 0; i < m_ref_log.length; i++)
-    {
-        vertices = [];
-        
-        start = mem_sum+mem_t_sum;
-        size = m_ref_log[0][1];
-        end = start + size;
-
-        // Extract x and y coordinates for the current chunk
-        for (let j = start; j < end - 4; j += 4)
-        {
-
-        	// ratio that branches capping like /\
-        	// always apply ratio relative to what is smallest largest such that 
-        	// largest/smallest * shortest dimension. keeping it square.
-
-            // vertices.push(m1.data[j]*(in_win_w/in_win_h)/s_fov+0.9, -m1.data[j + 1]/s_fov+0.8);
-
-          // so the correct fix I think is to use mixmax on the 2d obj one upon click to find value to apply here!
-           // vertices.push(m1.data[j]/s_fov, -m1.data[j + 1]/s_fov);
-
-            vertices.push(m1.data[j]/s_fov+0.9, -m1.data[j + 1]/s_fov+0.8);
-        }
-        // Draw the lines for the last segment
-        if (vertices.length > 0)
-        {
-            drawSegment(vertices, -2);
-        }
-    }
-*/
-
 }
+
+
 
 function drawIt()
 {
@@ -3478,12 +3323,13 @@ menu_obj_pos
 function pointerOutsideWindow()
 {
 	// #incheck
-	var _in = false;
+	var _in = [0,1,1];
+
 	if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+610)))
 	{
 		if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+660)))
 		{
-			_in = true;
+			_in[1] = 0;
 		}
 	}
 
@@ -3491,20 +3337,20 @@ function pointerOutsideWindow()
 	{
 		if ((mouseData[1] > menu_obj_pos[1]) && (mouseData[1] < (menu_obj_pos[1]+menu_obj_size[1])))
 		{
-			_in = true;
+			_in[2] = 0;
 		}
 	}
-	return !_in;
+
+  if (_in[1] && _in[2]) {_in[0] = 1;}
+
+	return _in;
 }
 
 
 // scale a unit cube to the size of min/max
-
 // really 6 pieces of information
 // min & max of each axis so 3*2 querys
-
 // while itor over w/ 4*i take min/max as two loops or do both for each axis at the same time.
-
 		
 function getMinMaxPairs(ar)
 {
@@ -3530,67 +3376,39 @@ function getMinMaxPairs(ar)
 	return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
 }
 
-
-
 var _tp, _np;
 var _preview_ctr = [];
 var _preview_obj;
-var _preview_2dscaler;
 
 function updateRefLog()
 {
-  // let _pair = getMinMaxPairs(m_objs[obj_cyc]); 
 
 	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]));
 	_preview_ctr = meanctr_obj(m_objs[obj_cyc]);
 	_preview_obj = new Float32Array(m_objs[obj_cyc].length);
   arClone(_preview_obj, m_objs[obj_cyc], _preview_ctr, _preview_scaler);
-  _preview_2dscaler = 1/len2(getMinMaxPairs(_preview_obj));
 
-	m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
-	m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
+	// m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
+	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
-
-
-var _preview_inc = 0;
 
 // @?@?@?@? Later refactor to general function for more interactive tools
 function updatePreview()
 {
+/*
 	updateLook();
-
 
 	m_ref_log[0] = [0, m_objs[obj_cyc].length, obj_cyc];
 
-
-
-
-// updateRefLog();
+  // updateRefLog();
 	//m_ref_objs_loadObj()
 
 	// place updated data for preview
 	// var _nar = new Float32Array(m_objs[obj_cyc].length);
-
-	// for (var i = 0; i<_nar.length; i++)
-	// {
-	// 	_nar[i] = m_objs[obj_cyc][i];
-	// 	//m_ref_objs[0] = m_objs[obj_cyc];
-	// }
-	// m_ref_objs[0] = _nar;
-
-
 	// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
 	//m_ref_sum = 0;
 	
 	// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
-
-
-  // Holy shit okay i'm going nuts
-  // this should just modify itself and write the obj data with update preview lmao wtf am i doing
- 
- 
- 
- 
 
 	for (var i = 0; i<m_ref_objs[0].length-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d => most insane work around I have ever done
 	{
@@ -3621,6 +3439,7 @@ function updatePreview()
 		m_ref_objs[0][i*4+2] = _tp[2] + ( player_pos[2]-f_look[2]*33 );
 		m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
 	}
+  */
 }
 
 function Compute(init_dat)
@@ -3963,7 +3782,7 @@ function Compute(init_dat)
 
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
-				if (pointerOutsideWindow())
+				if (pointerOutsideWindow()[0])
 				{
 					select2dpoint(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 					updateGrid();
@@ -3972,7 +3791,7 @@ function Compute(init_dat)
 
 			if (key_map.tab && !mouseLock && runEveryLong(75))
 			{
-				if (pointerOutsideWindow())
+				if (pointerOutsideWindow()[0])
 				{
 					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 				}
@@ -4306,16 +4125,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 
 	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
-	drawIt();
-  _preview_scaler = 1/len3(getMinMaxPairs(m_objs[2]))*0.7;
 
-	m_ref_objs[0] = new Float32Array(m_map.length);
+	drawIt();
+
+  _preview_scaler = 1/len3(getMinMaxPairs(m_objs[2]));
 	obj_cyc = 2; // Temp fix
 
+	// m_ref_objs[0] = new Float32Array(m_map.length);
+  
 	setBackgroundColor(_bg_default);
 
 	setInterval(menuTime, menuTime_int); 
 	setInterval(setTitle, title_int); 
+
 });
 
 
