@@ -3061,7 +3061,7 @@ function drawLines()
     _tp =
     [
       1.9*_preview_obj[j*4],
-      1.9*_preview_obj[j*4+1],
+      -1.9*_preview_obj[j*4+1],
       1.9*_preview_obj[j*4+2]
     ]
 
