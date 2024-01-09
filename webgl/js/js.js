@@ -1302,7 +1302,7 @@ for (i=0; i<m1.data.length; i++)
 // array 2 contains indices w/ first giving the number of indicies.
 
 // wait no just use the exact same system basically
-var obj_folders = [];
+// var obj_folders = [];
 
 var m_draw = [];
 
@@ -1427,9 +1427,36 @@ function cloneObj(ar) // Removes ctr pt from linear array
 // Replace with a loop allocating and setting each?
 function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification. m_obj_offs creates temporary modification! animations!
 {
-	for (var j = 0; j<(m_objs.length); j++)
+
+  /*
+    Okay this needs replace w/ the reverse loop using .set properly
+    
+    .set is like linear float32array into end of array w/ array's own size offset w/ prealloc two added
+
+
+function arClone(a, b, c, s)
+{
+  for (let i = a.length-1; i>=0; i--)
+  {
+    a[i] = (b[i] - c[i%4])*s;
+  }
+}
+
+
+  */
+
+  // for (let j = m_objs.length-1; j>=0; j--)
+  // {
+  //   m1.data.set(m_objs[j], mem_log[j][0]);
+  // }
+
+  // Wow .set is very slow holy shit.
+  
+	// for (var j = 0; j<(m_objs.length); j++)
+	for (let j = m_objs.length-1; j>=0; j--)
 	{
-		for (var i = 0; i<m_objs[j].length/4; i++) // fix
+		// for (var i = 0; i<m_objs[j].length/4; i++) // fix
+		for (let i = m_objs[j].length/4-1; i>=0; i--) // fix
 		{
 			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
 			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
@@ -1438,9 +1465,11 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 		}
 	}
 
-	for (var j = 0; j<(m_t_objs.length); j++)
+	// for (var j = 0; j<(m_t_objs.length); j++)
+  for (let j = m_t_objs.length-1; j>=0; j--)
 	{
-		for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
+		// for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
+    for (let i = m_t_objs[j].length/4-1; i>=0; i--) // fix
 		{
 			m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
 			m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
@@ -1507,8 +1536,8 @@ var ctx_o = canvas_over.getContext("2d");
 // WTF IS THIS YO. Fix for mac users at some point if this doesn't already.
 // const ratio = window.devicePixelRatio || 1;
 
-ctx.scale(1, 1); ctx_o.scale(1, 1);
-
+ctx_o.scale(1, 1);
+// ctx.scale(1, 1); 
 
 // Obj load & unpack
 fileInput.addEventListener('change', event => 
@@ -2971,18 +3000,26 @@ function drawPoints(_pnts, mi)
   
 }
 
+var _km = 0;
+var _si_f = 0;
+var start, size, end;
+var skipDat = 1;
+var i0 = 0;
+var j0 = 0;
+var dataIndex = 0;
+
 function drawLines()
 {
 
   // First start with lines & tri data pack
   // This entire thing is sus.
-  let start, size, end;
+  start = size = end = 0;
+
   for (let i = m_objs.length-1; i >= 0; i--)
   {
     if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
     {
-      let _km = 0;
-      let _si_f = 0;
+      _km = _si_f = 0;
 
       for (let k = 0; k <= m_draw[modIndex[i]][1]; k++)
       {
@@ -3010,8 +3047,6 @@ function drawLines()
         }
       }
     
-      // Set a random color for each triangle
-      // var colorLocation = gl.getUniformLocation(shaderProgram, "uColor");
       switch(stn_draw[2])
       {
         case true:
@@ -3034,7 +3069,7 @@ function drawLines()
     }
 
 
-    let skipDat = 1;
+    skipDat = 1;
 
     if ( !stn_draw[0] || (modIndex[i] == 13 && mem_t_sum == 0) )
     {
@@ -3074,9 +3109,9 @@ function drawLines()
     _pts = new Float32Array(_si2 * 2);
 
     // Experiment using while instead of for. Irrelevant performance difference?
-    let i0 = 0;
-    let j0 = 0;
-    let dataIndex = mem_log[modIndex[i]][0];
+    i0 = 0;
+    j0 = 0;
+    dataIndex = mem_log[modIndex[i]][0];
 
     while (i0 < _si2 * 4)
     {
