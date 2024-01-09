@@ -33,7 +33,7 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
 
 I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better.
-![NVIDI](https://github.com/samcoble/CameraTransform/assets/32228102/2e2accb7-414c-4039-8979-58a2db8f221a)
+
 ![NVIDIA](https://github.com/samcoble/CameraTransform/assets/32228102/5796f7f6-e08a-4e15-a02f-085735bfa242)
 ![webgl](https://github.com/samcoble/CameraTransform/assets/32228102/d6daf04d-05c5-4484-a0c9-5047fe041b75)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
