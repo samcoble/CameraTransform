@@ -3024,8 +3024,18 @@ var j0 = 0;
 var dataIndex = 0;
 var _2dis = [];
 _2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1, -1, -1]));
-
+_2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1]));
 // I should instead prealloc second regeion instead of new spam.
+
+function ar2Dmod_static(a, c, s)
+{
+  var nar = new Float32Array(a.length);
+  for (let i = a.length-1; i>=0; i--)
+  {
+    nar[i] = a[i]*s[i%2]*_s_ratio[i%2] - c[i%2];
+  }
+  return nar;
+}
 
 function ar2Dmod(a, c, s)
 {
@@ -3192,6 +3202,17 @@ function drawLines()
   // Add static triangle preview obj background box here just before preview obj draw
 
 
+  let tempDis = ar2Dmod_static(_2dis[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+152)/in_win_h], [150/in_win_w, 150/in_win_h*in_win_hw]);
+
+  // Draw the triangles after setting the color
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, tempDis, gl.STATIC_DRAW);
+
+  gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+  gl.uniform4fv(colorUniformLocation, [0.05, 0.05, 0.05, 1.0]); 
+  gl.drawArrays(gl.TRIANGLES, 0, tempDis.length / 2);
+
   // Preview object
   vertices = [];
   // for (let j = 0; j<_preview_obj.length/4 - 1; j++) // Removing center
@@ -3199,7 +3220,9 @@ function drawLines()
   {
     
     // Already normalized this earlier with minMax so theoretically it's only necessary to scale it.
-    // Still needs to be fixed or wide things.
+    // Still needs to be fixed where I have minmax. pick dimension as maximum to scale everything.
+    // scale 2 other smaller dims by same scaler and don't use 3d len
+    
     _tp =
     [
       1.9*_preview_obj[j*4],
