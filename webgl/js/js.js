@@ -1306,7 +1306,8 @@ for (i=0; i<m1.data.length; i++)
 // var obj_folders = [];
 
 var m_draw = [];
-
+var m_center2d = [];
+var m_center2d_buffer = [];
 
 function m_objs_loadPoints(ar) // Adds objects
 {
@@ -1344,7 +1345,7 @@ function m_objs_loadPoints(ar) // Adds objects
   let _count = Math.floor( (ar.length + 4)/4 ); 
   _si = (Math.floor((_count - 1) / 2) - _count%2) - 1;
 
-  if (ar.length > (3*4))
+  if (ar.length >= (3*4))
   {
     var ar_r = new Float32Array( _si * 6 + 6 );
     m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
@@ -1355,6 +1356,9 @@ function m_objs_loadPoints(ar) // Adds objects
     m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
 
   }
+
+  m_center2d_buffer.push(new Float32Array(33*2));
+  m_center2d.push(new Float32Array(2));
 
 }
 
@@ -1928,6 +1932,8 @@ function del_obj(_i)
 		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1);
+
 		} else // Delete specific
 		{
 			var _ts = mem_log[obj_cyc][1];
@@ -1936,6 +1942,7 @@ function del_obj(_i)
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
 			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1);
 		}
 		updateList(objListConst(), "list_objectSelect");
 	}
@@ -2577,6 +2584,7 @@ function del_world()
 	trns_lock = 0;
 	_all_lock = 0; _all_lock_i = 0;
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
+  m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1);
 	fileInput.value = '';
 	obj_cyc = m_objs.length-1;
 }
@@ -2967,6 +2975,11 @@ function drawSegment(vertices, mi)
       gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
       gl.uniform4fv(colorUniformLocation, [0.2, 0.8, 0.2, 1.0]);
       break;
+
+    case -5:
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform4fv(colorUniformLocation, _all_lock_colors[0]);
+      break;
   }
 
 
@@ -3022,33 +3035,59 @@ var skipDat = 1;
 var i0 = 0;
 var j0 = 0;
 var dataIndex = 0;
+
 var _2dis = [];
+var _2dis_buffers = [];
+
 _2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1, -1, -1]));
+_2dis_buffers.push(new Float32Array(10));
 _2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1]));
+_2dis_buffers.push(new Float32Array(12));
+
+_2dis.push(new Float32Array([1.0000,0.0000,0.9810,0.1950,0.9240,0.3830,0.8310,0.5560,0.7070,0.7070,0.5560,0.8310,0.3830,0.9240,0.1950,0.9810,0.0000,1.0000,-0.1950,0.9810,-0.3830,0.9240,-0.5560,0.8310,-0.7070,0.7070,-0.8310,0.5560,-0.9240,0.3830,-0.9810,0.1950,-1.0000,0.0000,-0.9810,-0.1950,-0.9240,-0.3830,-0.8310,-0.5560,-0.7070,-0.7070,-0.5560,-0.8310,-0.3830,-0.9240,-0.1950,-0.9810,0.0000,-1.0000,0.1950,-0.9810,0.3830,-0.9240,0.5560,-0.8310,0.7070,-0.7070,0.8310,-0.5560,0.9240,-0.3830,0.9810,-0.1950,1.0000,0.0000]));
+
+// This one is temp but must setup center buffer dat
+// _2dis_buffers.push(new Float32Array(33*2));
+
+// Also add circle object made in game for on point indication
 // I should instead prealloc second regeion instead of new spam.
 
-function ar2Dmod_static(a, c, s)
+function ar2Dmod_static_single(a, b, c, s)
 {
-  var nar = new Float32Array(a.length);
+  // var nar = new Float32Array(a.length);
   for (let i = a.length-1; i>=0; i--)
   {
-    nar[i] = a[i]*s[i%2]*_s_ratio[i%2] - c[i%2];
+    b[i] = a[i]*s*_s_ratio[i%2] - c[i%2];
   }
-  return nar;
+  return b;
 }
 
-function ar2Dmod(a, c, s)
+function ar2Dmod_static(a, b, c, s)
 {
-  var nar = new Float32Array(a.length);
+  // var nar = new Float32Array(a.length);
   for (let i = a.length-1; i>=0; i--)
   {
-    nar[i] = a[i]*_s_ratio[i%2]*s - c[i%2];
+    b[i] = a[i]*s[i%2]*_s_ratio[i%2] - c[i%2];
   }
-  return nar;
+  return b;
+}
+
+function ar2Dmod(a, b, c, s)
+{
+  // var nar = new Float32Array(a.length);
+  for (let i = a.length-1; i>=0; i--)
+  {
+    b[i] = a[i]*_s_ratio[i%2]*s - c[i%2];
+  }
+  return b;
 }
 
 function drawLines()
 {
+
+  // Now make a set of data of 2d center points to feed this and scale w/ z from shader
+  // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
+
 
   // First start with lines & tri data pack
   // This entire thing is sus.
@@ -3056,29 +3095,32 @@ function drawLines()
 
   for (let i = m_objs.length-1; i >= 0; i--)
   {
-    if (stn_draw[1] && modIndex[i] > world_obj_count && m1.data[mem_log[modIndex[i]][0]+mem_log[modIndex[i]][1]-1] > 0)
+
+   d_i = modIndex[i];
+
+
+    if (stn_draw[1] && d_i > world_obj_count && m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
     {
       _km = _si_f = 0;
 
-      for (let k = 0; k <= m_draw[modIndex[i]][1]; k++)
+      for (let k = 0; k <= m_draw[d_i][1]; k++)
       {
-        if (m1.data[8 * k + mem_log[modIndex[i]][0] + 3] > 0 && 
-            m1.data[8 * k + mem_log[modIndex[i]][0] + 7] > 0 &&
-            m1.data[8 * k + mem_log[modIndex[i]][0] + 11] > 0)
+        if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
+            m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
+            m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
         {
-          // if (Math.abs(m1.data[8 * k + mem_log[modIndex[i]][0]]) > 1.0) { continue; }
+          // if (Math.abs(m1.data[8 * k + mem_log[d_i][0]]) > 1.0) { continue; }
 
-          m_draw[modIndex[i]][0][(k+_km) * 6] = m1.data[8 * k + mem_log[modIndex[i]][0]];
-          m_draw[modIndex[i]][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 1];
+          m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+          m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
-          m_draw[modIndex[i]][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[modIndex[i]][0] + 4];
-          m_draw[modIndex[i]][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 5];
+          m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+          m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
 
-          m_draw[modIndex[i]][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[modIndex[i]][0] + 8];
-          m_draw[modIndex[i]][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[modIndex[i]][0] + 9];
+          m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+          m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
 
           _si_f++;
-
         }
         else
         {
@@ -3098,7 +3140,7 @@ function drawLines()
 
       // Draw the triangles after setting the color
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, m_draw[modIndex[i]][0], gl.STATIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
       gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
       // gl.enableVertexAttribArray(positionAttrib);
@@ -3110,17 +3152,17 @@ function drawLines()
 
     skipDat = 1;
 
-    if ( !stn_draw[0] || (modIndex[i] == 13 && mem_t_sum == 0) )
+    if ( !stn_draw[0] || (d_i == 13 && mem_t_sum == 0) )
     {
       skipDat = 0;
     }
 
-    if ( (modIndex[i] < 3 && modIndex[i] != 1 && skipDat) || (modIndex[i] > 5 && modIndex[i] != 1 && skipDat) )
+    if ( (d_i < 3 && d_i != 1 && skipDat) || (d_i > 5 && d_i != 1 && skipDat) )
     {
       vertices = [];
 
-      start = mem_log[modIndex[i]][0];
-      size = mem_log[modIndex[i]][1];
+      start = mem_log[d_i][0];
+      size = mem_log[d_i][1];
       end = start + size;
       
       for (let j = start; j < end - 4; j += 4)
@@ -3129,7 +3171,7 @@ function drawLines()
           {
               if (vertices.length > 0)
               {
-                  drawSegment(vertices, modIndex[i]);
+                  drawSegment(vertices, d_i);
                   vertices.length = 0;
               }
           } else
@@ -3141,16 +3183,16 @@ function drawLines()
       // last segment
       if (vertices.length > 0)
       {
-          drawSegment(vertices, modIndex[i]);
+          drawSegment(vertices, d_i);
       }
     }
-    _si2 = mem_log[modIndex[i]][2];
+    _si2 = mem_log[d_i][2];
     _pts = new Float32Array(_si2 * 2);
 
     // Experiment using while instead of for. Irrelevant performance difference?
     i0 = 0;
     j0 = 0;
-    dataIndex = mem_log[modIndex[i]][0];
+    dataIndex = mem_log[d_i][0];
 
     while (i0 < _si2 * 4)
     {
@@ -3164,9 +3206,11 @@ function drawLines()
        i0 += 4;
     }
 
-    drawPoints(_pts, modIndex[i]);
+    drawPoints(_pts, d_i);
 
-  }
+
+  
+  } // End of first obj loop
 
   // Working object being drawn
   // for (var i = 0; i < mem_t_log.length; i++)
@@ -3199,10 +3243,9 @@ function drawLines()
     }
   }
 
-  // Add static triangle preview obj background box here just before preview obj draw
 
-
-  let tempDis = ar2Dmod_static(_2dis[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+152)/in_win_h], [150/in_win_w, 150/in_win_h*in_win_hw]);
+  // move all this back into fn to make good reverse fn
+  let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+152)/in_win_h], [150/in_win_w, 150/in_win_h*in_win_hw]);
 
   // Draw the triangles after setting the color
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -3220,7 +3263,7 @@ function drawLines()
   {
     
     // Already normalized this earlier with minMax so theoretically it's only necessary to scale it.
-    // Still needs to be fixed where I have minmax. pick dimension as maximum to scale everything.
+    // Still needs to be fixed where I have minmax. pick dimension maximum to scale everything.
     // scale 2 other smaller dims by same scaler and don't use 3d len
     
     _tp =
@@ -3255,30 +3298,41 @@ function drawLines()
 
   _np = [ -m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1] ];
   _tp = [ -m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1] ];
-  vertices = [];
 
-  for (let j=_2dis.length-1; j>=0; j--)
+  // Use this: by dist scale to setup the centers.
+  // drawSegment(ar2Dmod(_2dis[j], _np, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.01 ), -2);
+  // drawSegment(ar2Dmod(_2dis[j], _tp, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.005 ), -2);
+  
+  if (trns_lock)
   {
-    
-    // Use this: by dist scale to setup the centers.
-
-    // drawSegment(ar2Dmod(_2dis[j], _np, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.01 ), -2);
-    // drawSegment(ar2Dmod(_2dis[j], _tp, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.005 ), -2);
-    
-    if (trns_lock)
-    {
-      if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _tp, 0.018 ), -3);}
-      if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _np, 0.009 ), -3);}
-    }
-    else
-    {
-      if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _np, 0.009 ), -4);}
-    }
-
+    if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _tp, 0.018 ), -3);}
+    if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -3);}
+  }
+  else
+  {
+    if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
   }
 
-}
+  if (!mouseLock || wpn_select == 1)
+  {
+    for (let i = m_objs.length-1; i>=0; i--)
+    {
+      d_i = modIndex[i];
+      if (d_i > world_obj_count)
+      {
+      // set 2d centers here
+      m_center2d[d_i][0] = -m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 4 ];
+      m_center2d[d_i][1] =  m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 3 ];
 
+      // Now make a set of data of 2d center points to feed this and scale w/ z from shader
+      drawSegment(ar2Dmod_static_single(_2dis[2], m_center2d_buffer[d_i], m_center2d[d_i], m1.data[mem_log[d_i][0]+mem_log[d_i][1]-2]*0.01 ), -5);
+     }
+    }
+  }
+
+  // Last thing to add will be the cursor helper!
+
+} // End of drawLines()
 
 
 function drawIt()
@@ -3511,6 +3565,32 @@ menu_obj_pos
 	        _\///________\///__\///////////////__\///////////////__\///////////////____________\///////////////__
 */
 // #HELL2
+
+/*
+function vertFixMeF(a)
+{
+  let f = new Float32Array(a.length/2);
+  for (let i = 0; i<a.length/4; i++) {
+  f[i*2] = (a[i*4]).toFixed(3);
+  f[i*2+1] = (a[i*4+2]).toFixed(3);
+  }
+  return f;
+}
+
+function fixme2(a)
+{
+  var _d = a; // String
+  var _f = "[";
+  var _v = 0;
+  for (var i=0; i<_d.length; i++)
+  {
+    _v = _d[i].toFixed(4);
+    if (i!=_d.length-1) {_f = _f+_v+",";} else {_f = _f+_v;}
+    if (i==_d.length-1) {_f = _f+"]";}
+  }
+  console.log(_f);
+}
+*/
 
 function pointerOutsideWindow()
 {
