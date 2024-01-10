@@ -582,6 +582,8 @@ var _error_info =
 
     // Must add event listener to detect li clicks/hovers -> compare class/id
 
+    // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+
     let _fixthis = 730-158;
     var menu_obj_style =
     `
@@ -589,21 +591,36 @@ var _error_info =
     position: absolute;
     width: 150px;
     height: auto;
-    max-height: `+_fixthis+`px;
     left: 600px;
     top: 190px;
     user-select: none;
-    background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+    background: rgba(0,0,0,0);
     border-radius: 3px;
-    overflow-y: auto;
-    overflow-x: hidden;
+   `;
+
+    var menu_objPreview_style =
+    `
+    visibility: hidden;
+    box-sizing: border-box;
+    border: 0px rgba(0,0,0,1);
+    margin: 0px;
+    width: 150px;
+    height: 150px;
+    user-select: none;
+    background: rgba(0,0,0,0);
     `;
+
     var menu_obj =
     {
         id: "menu_obj", cls: "", prnt: "html",
         rootStyle: rootStyle + menu_obj_style + justOuter
     }; addDiv(menu_obj);
 
+            var menu_objPreview =
+            {
+                id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
+                rootStyle: rootStyle + menu_objPreview_style + justOuter
+            }; addDiv(menu_objPreview);
 
             var listStyle2 =
             `
@@ -611,10 +628,13 @@ var _error_info =
             width: 96%;
             padding: 0px;
 
-            max-height: 97%;
             margin: 3px;
 
             border: 1px solid rgba(255,255,255,0.1);
+
+            max-height: `+_fixthis+`px;
+            overflow-y: auto;
+            overflow-x: hidden;
             `;
 
             var myLiStyle2 =
@@ -626,6 +646,7 @@ var _error_info =
             border-bottom: 1px solid rgb(12,12,12);
             text-align: center;
             line-height: 1.8;
+
             `;
 
             var list_objectSelect =

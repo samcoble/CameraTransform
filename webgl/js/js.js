@@ -383,6 +383,9 @@ var _fps = 0;
 // Maybe move this into DOM LOAD event instead and keep var init.
 var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
+var in_win_wh, in_win_hw;
+var _s_ratio;
+
 const fileInput = document.getElementById('fileInput');
 
 var screen_width, screen_height;
@@ -418,7 +421,6 @@ var cursor_helper = 0;
 var player_pos = [0.0,-14.0,0];
 var _inter_rnd = [0.0, 0.0, 0.0];
 var _paint_track = [0.0, 0.0, 0.0];
-
 
 var wpn_select = 0; 
 var wpn_1, wpn_1_d;
@@ -481,7 +483,6 @@ var _epsilon = 300;
 var in_win_clip;
 var one_time_fix = 1;
 
-
 var _preview_scaler;
 
 var menu_q_size = [610, 730];
@@ -533,7 +534,6 @@ var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
 var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // main for loop
 var rgbas_trans = [rgba_lgray, rgba_g];
 
-
 var rgba_w_tri1 = "rgba(130, 130, 130, 1)";
 var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
 var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
@@ -580,7 +580,6 @@ var _touch_delta = [0,0];
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
 
-
 function drawText(c, rgba, ta, txt, x0, y0)
 {
 	c.textAlign = ta;
@@ -598,7 +597,6 @@ function drawRect(c, rgba, x, y, w, h)
 
 function drawPanel(c, rgba1, rgba2, x, y, w, h)
 {
-
 	c.fillStyle = rgba1;
 	c.strokeStyle = rgba2; 
 	c.lineWidth = 1; 
@@ -650,7 +648,7 @@ function updateMenuPos() // this stuff so bad jesus
 {
 
   menu_obj_size = [150, 500, 166]; // default & modified to include margins	
-  menu_obj_pos = [in_win_w-150-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]+158];
+  menu_obj_pos = [in_win_w-150-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2];
 
 	menu_keys_pos = [11, 10];
@@ -669,7 +667,12 @@ function updateMenuPos() // this stuff so bad jesus
 
 	in_win_w = document.getElementsByTagName("html")[0].clientWidth; in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
 	in_win_h = document.getElementsByTagName("html")[0].clientHeight; in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
-	document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
+  in_win_wh = in_win_w/in_win_h;
+  in_win_hw = in_win_h/in_win_w;
+
+  _s_ratio = [1, in_win_wh];
+	
+  document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
 	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
@@ -785,7 +788,6 @@ onmousemove = function(e)
 	if (player_look_dir[0] > pi) [player_look_dir[0] = -pi]; // This is kinda wack need to refactor entire system for this
 	if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
 }
-
 
 // Generic js
 
@@ -942,7 +944,6 @@ window.addEventListener("wheel", function(e)
 	s_fov = fov_slide*fov_slide*fov_slide/20;
 	updateGrid();
 });
-
 
 
 
@@ -1432,6 +1433,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
     Okay this needs replace w/ the reverse loop using .set properly
     
     .set is like linear float32array into end of array w/ array's own size offset w/ prealloc two added
+
 
 
 function arClone(a, b, c, s)
@@ -2497,6 +2499,7 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 	}
 }
 
+// oo yuh
 function arClone(a, b, c, s)
 {
   for (let i = a.length-1; i>=0; i--)
@@ -2695,9 +2698,7 @@ function drawOverlay(init_dat)
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
 
-	drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_obj_pos[0]+1, menu_obj_pos[1]-menu_obj_size[0], 148, 150);
-
-
+	// drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_obj_pos[0]+1, menu_obj_pos[1]-menu_obj_size[0], 148, 150);
 
 
 	//Crosshair
@@ -2779,7 +2780,7 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 		// maybe clip objs entire inside?
 		// hardest of them all
 
-
+/*
 function drawTriangleF(ctx, i, k)
 {
 	drawTriangle(ctx,
@@ -2809,7 +2810,7 @@ function fillDotF(ctx, i, j, c)
 	Math.round(m1.data[4*j+mem_log[i][0]+2]*2+0.5),
 	Math.round(m1.data[4*j+mem_log[i][0]+3]*2+0.5));
 }
-
+*/
 
 /*var rgba_r = "rgba(220, 73, 73, 1)";
 var rgba_g = "rgba(24, 122, 24, 1)";
@@ -2950,10 +2951,24 @@ function drawSegment(vertices, mi)
     }
   }
 
-  if (mi == -2)
+  switch(mi)
   {
-    gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+    case -2:
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      // gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 1.0, 1.0]);
+      break;
+
+    case -3:
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform4fv(colorUniformLocation, [0.5, (Date.now()%500)/500, 0.5, 1.0]);
+      break;
+
+    case -4:
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform4fv(colorUniformLocation, [0.2, 0.8, 0.2, 1.0]);
+      break;
   }
+
 
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
 
@@ -3007,6 +3022,20 @@ var skipDat = 1;
 var i0 = 0;
 var j0 = 0;
 var dataIndex = 0;
+var _2dis = [];
+_2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1, -1, -1]));
+
+// I should instead prealloc second regeion instead of new spam.
+
+function ar2Dmod(a, c, s)
+{
+  var nar = new Float32Array(a.length);
+  for (let i = a.length-1; i>=0; i--)
+  {
+    nar[i] = a[i]*_s_ratio[i%2]*s - c[i%2];
+  }
+  return nar;
+}
 
 function drawLines()
 {
@@ -3130,7 +3159,8 @@ function drawLines()
   }
 
   // Working object being drawn
-  for (var i = 0; i < mem_t_log.length; i++)
+  // for (var i = 0; i < mem_t_log.length; i++)
+  for (var i = mem_t_log.length - 1; i>=0 ; i--)
   {
     vertices = [];
     
@@ -3159,12 +3189,17 @@ function drawLines()
     }
   }
 
+  // Add static triangle preview obj background box here just before preview obj draw
+
+
   // Preview object
   vertices = [];
-  for (let j = 0; j<_preview_obj.length/4 - 1; j++) // Removing center
+  // for (let j = 0; j<_preview_obj.length/4 - 1; j++) // Removing center
+  for (let j = _preview_obj.length/4 - 2; j>=0; j--) // Removing center
   {
     
     // Already normalized this earlier with minMax so theoretically it's only necessary to scale it.
+    // Still needs to be fixed or wide things.
     _tp =
     [
       1.9*_preview_obj[j*4],
@@ -3177,11 +3212,11 @@ function drawLines()
     _np = rot_y_pln(_np, 0.001*Date.now()%10000);
 
     _np[0] = _np[0];
-    _np[1] = (in_win_w/in_win_h) * _np[1];
+    _np[1] = in_win_wh * _np[1];
 
     vertices.push(
     _np[0]*150/in_win_w+(menu_obj_pos[0]-in_win_w*0.02)/in_win_w,
-    _np[1]*150/in_win_h*(in_win_h/in_win_w)+0.5-(menu_obj_pos[1]+10-menu_q_size[1]/2)/in_win_h
+    _np[1]*150/in_win_h*in_win_hw+0.5-(menu_obj_pos[1]-0-menu_q_size[1]/2+158)/in_win_h
     );
 
   }
@@ -3190,6 +3225,33 @@ function drawLines()
   if (vertices.length > 0)
   {
       drawSegment(vertices, -2);
+  }
+
+
+  // 2D indicators
+
+  _np = [ -m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1] ];
+  _tp = [ -m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1] ];
+  vertices = [];
+
+  for (let j=_2dis.length-1; j>=0; j--)
+  {
+    
+    // Use this: by dist scale to setup the centers.
+
+    // drawSegment(ar2Dmod(_2dis[j], _np, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.01 ), -2);
+    // drawSegment(ar2Dmod(_2dis[j], _tp, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.005 ), -2);
+    
+    if (trns_lock)
+    {
+      if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _tp, 0.018 ), -3);}
+      if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _np, 0.009 ), -3);}
+    }
+    else
+    {
+      if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[j], _np, 0.009 ), -4);}
+    }
+
   }
 
 }
@@ -4029,6 +4091,7 @@ function Compute(init_dat)
 	// Teleport
 	if (key_map.y && runEvery(350)) {teleport_plr();}
 
+  // Measure line length
 	if (key_map.m && runEvery(200))
 	{
 		var _t_obj = splitObj(m_objs[obj_cyc]);
