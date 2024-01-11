@@ -2973,7 +2973,15 @@ function drawSegment(vertices, mi)
 
     case -4:
       gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform4fv(colorUniformLocation, [0.2, 0.8, 0.2, 1.0]);
+      switch(cursor_helper)
+      {
+        case 0:
+            gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 1.0]);
+          break;
+        case 1:
+            gl.uniform4fv(colorUniformLocation, _all_lock_colors[0]);
+          break;
+      }
       break;
 
     case -5:
@@ -3084,6 +3092,9 @@ function ar2Dmod(a, b, c, s)
 
 function drawLines()
 {
+  
+  // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
+  // would it be worth it even chunk draw last draw remainder?
 
   // Now make a set of data of 2d center points to feed this and scale w/ z from shader
   // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
@@ -3134,7 +3145,7 @@ function drawLines()
           gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
           break;
         case false:
-          gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
+          gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
           break;
       }
 
