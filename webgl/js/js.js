@@ -22,9 +22,14 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
   
 	New priorities after menu.js
 
-	@?@?@
-	@?@?@
-	@?@?@
+@?@?@
+?@?@?
+@?@?@
+     -- my tab alg lagging like mofo now wtf happening try threading it or sum shit
+
+      -- Float32Array already contains byteLength and byteOffset.
+
+      -- Match all of my data structure to use Float32Array to remove all type conversions
 
       -- fix preview image to offset w/ 2d forced square w/ check
 
@@ -135,11 +140,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- Correctly log changed information that can be applied to reverse.
 
-	@?@?@
-	@?@?@
-	@?@?@
-
-	LONG TASK
+@?@?@
+?@?@?
+@?@?@
 
 	Random idea ::
 		if I can clip a region of polygon's in 2d space creating two sets
@@ -647,9 +650,10 @@ function drawCircle(c, rgba, lw, x, y, r)
 function updateMenuPos() // this stuff so bad jesus
 {
 
-  menu_obj_size = [150, 500, 166]; // default & modified to include margins	
-  menu_obj_pos = [in_win_w-150-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
- 	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2];
+  menu_obj_size = [200, 500, 216]; // default & modified to include margins	
+  menu_obj_pos = [in_win_w-200-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
+ 	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
+
 
 	menu_keys_pos = [11, 10];
 	menu_q_pos = [in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
@@ -789,7 +793,285 @@ onmousemove = function(e)
 	if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
 }
 
-// Generic js
+function isAlphaNumeric(c)
+{
+  return /^[a-zA-Z0-9\s]$/.test(c);
+}
+
+// make fn to convert string to Float32Array
+function stringToFloat32Array(s)
+{
+  let _r = [];
+  for (let i = 0; i<s.length; i++)
+  {
+    if (isAlphaNumeric(s[i]))
+    {
+      _r.push(s.charCodeAt(i));
+    }
+  }
+  return new Float32Array(_r);
+}
+
+// make fn to return array of char arrays
+function namesToArrays(n)
+{
+  let _r = [];
+  for (let i = 0; i<n.length; i++)
+  {
+    _r.push(stringToFloat32Array(n[i]));
+  }
+  return _r;
+}
+
+var obj_folders = [];
+var folder_names = [];
+var folder_parents = new Float32Array([-1,0,0,-1]); // -1 is no parent
+var folder_toggle = new Float32Array([1,0,0,1]);
+
+folder_names.push("World Objects");
+folder_names.push("Planes");
+folder_names.push("Indicator");
+folder_names.push("New Objects");
+
+// obj_folders.push(packArray( namesToArrays(folder_names) ));
+
+// obj_folders.push(new Float32Array([-1,0,-1,2,2,4])); // parent tree here. -1 is no parent.
+
+obj_folders.push([]);
+obj_folders.push([]);
+obj_folders.push([]);
+obj_folders.push([]);
+
+
+// now I need to make functions for del ? move k
+
+// if indice after deleted indice _di
+// sub 1
+
+function foldersDel(_i)
+{
+  let _s = obj_folders.length;
+  for (let i=0; i<_s; i++)
+  {
+    let _s0 = obj_folders[i].length;
+    for (let j=0; j<_s0; j++)
+    {
+      if (obj_folders[i][j] == _i)
+      {
+        obj_folders[i].splice(j, 1);
+      }
+      if (obj_folders[i][j] > _i)
+      {
+        obj_folders[i][j] = obj_folders[i][j] - 1;
+      }
+    }
+  }
+}
+
+// move k
+function moveK(_f, _k, _f2)
+{
+  let _nk = obj_folders[_f].splice(_k, 1)[0]; // [0] is the way 
+  obj_folders[_f2].push(_nk);
+}
+
+// find how many refs to index and their index
+function searchFolder(_f, _k)
+{
+  let _s = _f.length;
+  let _r = [];
+
+  for (let i = 0; i<_s; i++)
+  {
+    if (_f[i] == _k)
+    {
+      _r.push(i);
+    }
+  }
+  return _r;
+}
+
+/*
+may need data alignment function 
+
+also del function
+ - del must also adjust array parents w/ slice?
+
+unpack tree function
+
+sort box space
+
+*/
+
+function getFolders(_i, _d) // folder _i -> every subfolder's index, _d -> return linear|array 
+{
+  let _r = [];
+  let _b = [];
+  let _z = [];
+
+  _r.push(searchFolder(folder_parents, _i)); // root query
+
+  _b = _r[0];
+  while (_b.length != 0)
+  {
+    let _s = _b.length;
+    let _r0 = [];
+
+    // this becomes what it outputs
+    for (let i = 0; i<_s; i++)
+    {
+      let _w = searchFolder(folder_parents, _b[i]);
+      for (let j = 0; j<_w.length; j++)
+      {
+        _r0.push( _w[j] ); // maintain single array
+      }
+    }
+    if (_r0.length != 0) {_r.push( _r0 )}; // log query
+    _b = _r0; // set for next itor
+  }
+
+  // make linear for future search
+  for (let i = 0; i<_r.length; i++)
+  {
+    for (let j = 0; j<_r[i].length; j++)
+    {
+      _z.push(_r[i][j]);
+    }
+  }
+
+  return (_d>0) ? new Float32Array(_z) : _r;
+}
+
+function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
+{
+  let _r = false;
+  let _f = getFolders(_i, 1);
+  let _s = _f.length;
+
+  for (let i = 0; i<_s; i++)
+  {
+    if (_f[i] == _k) {_r = true; break;}
+  }
+  return _r;
+}
+
+// set parent function attach to drag and drop.
+function folderSetParent(_i, _k) // folder _i parent -> folder _k
+{
+  if (!inFolder(_k, _i) && _k != _i)
+  {
+    folder_parents[_i] = _k;
+  } // else here to log error to future log box
+}
+
+// make fn to accept m_obj and return same obj w/ w=i and remove center
+function getObjData(_i)
+{
+  let _r = [];
+  let _s = m_objs[_i].length;
+  for (let i = 0; i<_s-4; i++)
+  {
+    if (i%4<3)
+    {
+      _r.push(m_objs[_i][i]);
+    } else
+    {
+      _r.push(_i-world_obj_count-1);
+    }
+  }
+  return new Float32Array(_r);
+}
+
+// Unitization of array containing arrays w/ packer function
+function packArray(ar)
+{
+
+  let _r = [];
+  let _l = ar.length;
+  _r.push(_l); // store num of sections
+
+  for (let i = 0; i<_l; i++)
+  {
+    _r.push(ar[i].length); // store sizes of sections
+  }
+
+  for (let i = 0; i<_l; i++)
+  {
+    let _lj = ar[i].length;
+    for (let j = 0; j<_lj; j++)
+    {
+      _r.push(ar[i][j]); // store all data in order end to end
+    }
+  }
+  return _r;
+}
+
+function unpackArray(ar)
+{
+
+  let _s = [];
+  let _r = [];
+  let _off = ar[0] + 1; // + 1
+
+  for (let i = 0; i<ar[0]; i++) // get offsets
+  {
+    if (i==0)
+    {
+      _s.push(ar[i+1] + _off);
+    }
+    else
+    {
+      _s.push( ar[i] + ar[i+1] + _off );
+    }
+  }
+
+  // loop through regions
+  for (let i = 0; i<_s.length; i++)
+  {
+    if (i==0) // handle start w/ if -> not a run time function.
+    {
+      let _t = [];
+      for (let j = _off; j<_s[i]; j++)
+      {
+        _t.push(ar[j]);
+      }
+     _r.push(new Float32Array(_t));
+    }
+    else
+    {
+      let _t = [];
+      for (let j = _s[i-1]; j<_s[i]; j++)
+      {
+        _t.push(ar[j]);
+      }
+      _r.push(new Float32Array(_t));
+    }
+  }
+  return _r;
+}
+  
+function makeSave()
+{
+
+  let _r = [];
+  let _o = [];
+
+  // place folders w/ parent map
+  _r.push( packArray(obj_folders) );
+
+  // now prep _o w/ objs
+  let _s = m_objs.length;
+  for (let i = world_obj_count+1; i<_s; i++) // using world count here
+  {
+    _o.push(getObjData(i))
+  }
+
+  // place _o
+  _r.push( packArray(_o) );
+
+  return packArray(_r); 
+}
+
 
 function downloadSaveFile()
 {
@@ -1308,6 +1590,7 @@ for (i=0; i<m1.data.length; i++)
 var m_draw = [];
 var m_center2d = [];
 var m_center2d_buffer = [];
+var z_map = []; // contains float32array
 
 function m_objs_loadPoints(ar) // Adds objects
 {
@@ -1328,6 +1611,8 @@ function m_objs_loadPoints(ar) // Adds objects
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
 		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
 		// obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
+
+
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -1348,18 +1633,30 @@ function m_objs_loadPoints(ar) // Adds objects
   if (ar.length >= (3*4))
   {
     var ar_r = new Float32Array( _si * 6 + 6 );
+    var ar_z = new Float32Array( _si + 1 );
+    var ar_k = new Float32Array( _si + 1 );
     m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
+    z_map.push([ar_z, ar_k, _si + 1]);
 
   } else
   {
     var ar_r = new Float32Array( 6 );
+    var ar_z = new Float32Array( 1 );
+    var ar_k = new Float32Array( 1 );
     m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
-
+    z_map.push([ar_z, ar_k, 1]);
   }
 
   m_center2d_buffer.push(new Float32Array(33*2));
   m_center2d.push(new Float32Array(2));
 
+  let _fp = 0;
+  if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
+  if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
+  if (m_objs.length > 14) {_fp = 3;} // redirect can be set by changing later _fp to _global_folder_direct
+  obj_folders[_fp].push(m_objs.length-1);
+ 	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 }
 
 
@@ -1459,30 +1756,38 @@ function arClone(a, b, c, s)
   // Wow .set is very slow holy shit.
   
 	// for (var j = 0; j<(m_objs.length); j++)
-	for (let j = m_objs.length-1; j>=0; j--)
-	{
-		// for (var i = 0; i<m_objs[j].length/4; i++) // fix
-		for (let i = m_objs[j].length/4-1; i>=0; i--) // fix
-		{
-			m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
-			m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
-			m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
-			m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3]*m_obj_offs[j][3];
-		}
-	}
+  //
+  
+  // if (stn_paint[2])
+  // {
+    for (let j = m_objs.length-1; j>=0; j--)
+    {
+      let _next = m_objs[j].length/4-1;
+      // for (var i = 0; i<m_objs[j].length/4; i++) // fix
+      for (let i = _next; i>=0; i--) // fix
+      {
+        m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
+        m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
+        m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
+        m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3]*m_obj_offs[j][3];
+      }
+    }
 
-	// for (var j = 0; j<(m_t_objs.length); j++)
-  for (let j = m_t_objs.length-1; j>=0; j--)
-	{
-		// for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
-    for (let i = m_t_objs[j].length/4-1; i>=0; i--) // fix
-		{
-			m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
-			m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
-			m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
-			m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
-		}
-	}
+    // for (var j = 0; j<(m_t_objs.length); j++)
+    for (let j = m_t_objs.length-1; j>=0; j--)
+    {
+      let _next = m_t_objs[j].length/4-1;
+      // for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
+      for (let i = _next; i>=0; i--) // fix
+      {
+        m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
+        m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
+        m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
+        m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
+      }
+    }
+  // }
+
 
   /*
 	for (var j = 0; j<(m_ref_objs.length); j++)
@@ -1882,7 +2187,10 @@ function arHasC(ar, c) // Useless?
 
 function updateDrawMap(priorityObjects)
 {
-	for (var i=0; i<m_objs.length; i++)
+
+  let _t_i = m_objs.length;
+	for (var i=0; i<_t_i; i++)
+	// for (let i = m_objs.length-1; i>=0; i--)
 	{
 		indices.push(i);
 		//distances.push(len3(sub(getctr_obj(i), player_pos)));
@@ -1893,6 +2201,7 @@ function updateDrawMap(priorityObjects)
 
 	indices.sort((a, b) => distances[a] - distances[b]);
 	//indices.sort((a, b) => distances[b] - distances[a]);
+  // if (stn_link_tool == 0) {console.log(indices);}
 
 	indexMapping = originalIndices.map((originalIndex, sortedIndex) => ({
 	  originalIndex: originalIndex,
@@ -1932,7 +2241,7 @@ function del_obj(_i)
 		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
 
 		} else // Delete specific
 		{
@@ -1942,9 +2251,11 @@ function del_obj(_i)
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
 			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
 		}
 		updateList(objListConst(), "list_objectSelect");
+    foldersDel(_i);
+    updateTree(tree_allObjects);
 	}
 }
 
@@ -2571,6 +2882,37 @@ function planeCycle()
 	║║║║║║║╚══╗║║ ║║║║╚═╝║    ╔╝╚╗  ║║ ║║║║╚═╝║
 	╚╝╚╝╚╝╚═══╝╚╝ ╚═╝╚═══╝    ╚══╝  ╚╝ ╚═╝╚═══╝
 	#MENUFNS
+
+
+function del_obj(_i)
+{
+	if (_i > world_obj_count)
+	{
+		trns_lock = 0;
+		_all_lock = 0; _all_lock = 0;
+		if (obj_cyc == m_objs.length-1) // If last delete last
+		{
+			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
+
+		} else // Delete specific
+		{
+			var _ts = mem_log[obj_cyc][1];
+			for (var i = obj_cyc+1; i<mem_log.length; i++)
+			{
+				mem_log[i][0] = mem_log[i][0]-_ts;
+			}
+			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
+      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
+		}
+		updateList(objListConst(), "list_objectSelect");
+    foldersDel(_i);
+    updateTree(tree_allObjects);
+	}
+}
+
+
+
 */
 
 
@@ -2581,12 +2923,24 @@ function deleteObjectSelected()
 
 function del_world()
 {
+  /*
+  let _s = m_objs.length-(world_obj_count+1);
+  for (let i=0; i<_s; i++)
+  {
+    foldersDel(world_obj_count+1+i);
+  }
+  */
+  obj_folders[3].length = 0;
+
 	trns_lock = 0;
 	_all_lock = 0; _all_lock_i = 0;
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
-  m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1);
+  m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
+
 	fileInput.value = '';
 	obj_cyc = m_objs.length-1;
+
+  updateTree(tree_allObjects);
 }
 
 function createCircleAtCursor()
@@ -2700,6 +3054,8 @@ function drawOverlay(init_dat)
 	{setVisibility({hide:"menu_1", show:""});
 	} else
 	{setVisibility({hide:"", show:"menu_1"});}
+
+  setVisibility({hide:"list_objectSelect", show:""});
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 	//obj_updateNormalMaps();
@@ -2860,6 +3216,31 @@ var rgba_invis = "rgba(0, 0, 0, 0)";*/
 
 /*
     
+  I need to parallel the write lines and tris at same time
+    - maybe write a new way to get tri's from the loop for lines?
+    - lines are also needed to be segmented??
+
+  Look for any non float32array data structs and condense pipeline
+
+  Lines must be separate from tri's implying I need only upper surface lines.
+  I can try near far sort and using ray trace?
+
+  I just need to make a real 2d clip procedure to reduce draw calls.
+  Rotations can be computed in c. Only useful for pregenerated animations.
+  Not sure how many 
+
+wait parallel means if I pass any data like
+
+x y z r
+
+and in this instance r can represent a unique rotation per point of data.
+anything can actually be done in parallel then.
+
+so if clipping in 2d can be done with matrices can it be done in parallel?
+
+
+
+  Not sure if interp map is possible w/ large data format unless provided a spine?
 
  */
 
@@ -2993,6 +3374,7 @@ function drawSegment(vertices, mi)
 
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
 
+
   // gl.disableVertexAttribArray(positionAttrib);
   
 }
@@ -3090,16 +3472,129 @@ function ar2Dmod(a, b, c, s)
   return b;
 }
 
-function drawLines()
+/*
+function z_buffer()
+{
+
+  // Going to add a float32array 0 to len list first
+  for (let i = m_objs.length-1; i>=0; i--)
+  {
+    if (z_map[i] != 0)
+    {
+     z_map[i][1].sort((a, b) => z_map[i][0][b] - z_map[i][0][a]);
+    }
+  } // End of i:obj
+
+
+  // if (stn_link_tool == 0) {console.log(z_map[i][1]);}
+}
+*/
+
+
+/*
+function updateDrawMap(priorityObjects)
+{
+	// for (var i=0; i<m_objs.length; i++)
+	for (let i = m_objs.length-1; i>=0; i--)
+	{
+		indices.push(i);
+		//distances.push(len3(sub(getctr_obj(i), player_pos)));
+		distances.push(Math.abs(m1.data[mem_log[i][0]+mem_log[i][1]-1]));
+	}
+
+	originalIndices = indices.slice();
+
+	indices.sort((a, b) => distances[a] - distances[b]);
+	//indices.sort((a, b) => distances[b] - distances[a]);
+  if (stn_link_tool == 0) {console.log(indices);}
+
+	indexMapping = originalIndices.map((originalIndex, sortedIndex) => ({
+	  originalIndex: originalIndex,
+	  sortedIndex: indices[sortedIndex],
+	  distance: distances[indices[sortedIndex]],
+	}));
+
+	indices.length = 0;
+	distances.length = 0;
+
+	indexMapping.forEach(item => {
+	  newIndex[item.originalIndex] = item.sortedIndex;
+	});
+
+	modIndex = Object.values(newIndex);
+
+	for (var i = 0; i < priorityObjects.length; i++)
+	{
+	    let priorityIndex = modIndex.indexOf(priorityObjects[i]);
+	    if (priorityIndex !== -1)
+	    {
+	        let entry = modIndex.splice(priorityIndex, 1)[0];
+	        modIndex.unshift(entry);
+	    }
+	}
+
+	//console.log(init_dat.data[mem_log[i][0]+mem_log[i][1]-1]); // Z dist test
+	return indexMapping;
+}
+*/
+
+
+function updateZMap()
 {
   
+  // in each array of len ( # of tris ) store list of k's
+
+  // for (let i = m_objs.length-1; i>=0; i--)
+
+  let _t_i = m_objs.length;
+	for (var i=0; i<_t_i; i++)
+  {
+    if (mem_log[i][2] > 2)
+    {
+      let _sk = m_draw[i][1];
+      for (let k = _sk; k>=0; k--)
+      {
+        z_map[i][0][k] = m1.data[8 * k + mem_log[i][0] + 6];
+        z_map[i][1][k] = k;
+      }
+       z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]);
+    } else
+    {
+      z_map[i] = 0; // Later check if not zero. Or doesn't matter.
+    }
+  }
+
+}
+
+
+function drawLines()
+{
+  updateZMap();
+  
+  // can get more frames if I parallel everything and use shorter pipe
+  // worker clipper would be insane frames
+  // need to experiment with textured polys
+
   // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
   // would it be worth it even chunk draw last draw remainder?
 
+  // [] + [] [] [] | []
+  //      [] [] [] |
+
+  // can try compare each 2d surface near to far and stop pushing tri to draw when overlap occurs
+  // maybe because if already sorted the first to create overlap indicates end of top of surface
+  // this may only work with the average z dist.
+
+  // Now I have z's ready in z_map by object i and [0]
+  // so far sorting tri's within objs. forgot has to be all tris at once.
+  
+  // !!! maybe try packing line segments ? nah maybe this can't work.
+
+  // !!! can try drawing line between last two points of per tri?
+
   // Now make a set of data of 2d center points to feed this and scale w/ z from shader
   // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
-
-
+  
   // First start with lines & tri data pack
   // This entire thing is sus.
   start = size = end = 0;
@@ -3108,58 +3603,88 @@ function drawLines()
   {
 
    d_i = modIndex[i];
+   vertices = [];
+   // d_i = i;
 
+    // If I sort obj tri's by dist w/ fast set table reorganize
+    // not really that bad it's 1 check per tri.
+    // i can disable by center.
+    // the order I pack them will be the pipe
 
-    if (stn_draw[1] && d_i > world_obj_count && m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
+    if (stn_draw[1]) //&& d_i > world_obj_count && mem_log[d_i][2]>3 && m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0
     {
-      _km = _si_f = 0;
-
-      for (let k = 0; k <= m_draw[d_i][1]; k++)
+      if (d_i > world_obj_count)
       {
-        if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
-            m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
-            m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
+        if (mem_log[d_i][2]>3)
         {
-          // if (Math.abs(m1.data[8 * k + mem_log[d_i][0]]) > 1.0) { continue; }
+          if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
+          {
+            _km = _si_f = 0;
+            vertices = [];
 
-          m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * k + mem_log[d_i][0]];
-          m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
+            // I can try mod 2 to also save tri?
 
-          m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
-          m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
+            // for (let k = 0; k <= m_draw[d_i][1]; k++)
+            for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
+            {
+              if (1) // && z_map[d_i][1][k]>2
+              {
+                if (m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
+                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 7] > 0 &&
+                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 11] > 0)
+                {
+                  // if (Math.abs(m1.data[8 * k + mem_log[d_i][0]]) > 1.0) { continue; }
+                  // z_map[d_i][1][k]
+                  m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
+                  m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
 
-          m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
-          m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                  m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
+                  m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
 
-          _si_f++;
+                  m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
+                  m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+
+                  vertices.push(m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]], -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1]);
+
+                  _si_f++;
+                }
+                else
+                {
+                  _km--;
+                }
+              }
+             }
+
+          
+            switch(stn_draw[2])
+            {
+              case true:
+                gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
+                break;
+              case false:
+                gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
+                break;
+            }
+
+            // Draw the triangles after setting the color
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
+
+            gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+            // gl.enableVertexAttribArray(positionAttrib);
+
+            gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+
+            // drawSegment(m_draw[d_i][0], (_si_f * 6) / 2);
+            // drawSegment(vertices, vertices.length/2);
+          }
         }
-        else
-        {
-          _km--;
-        }
-      }
-    
-      switch(stn_draw[2])
-      {
-        case true:
-          gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
-          break;
-        case false:
-          gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
-          break;
-      }
-
-      // Draw the triangles after setting the color
-      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
-
-      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-      // gl.enableVertexAttribArray(positionAttrib);
-
-      gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
-
+      }       
     }
 
+    /*
+
+    */
 
     skipDat = 1;
 
@@ -3197,6 +3722,8 @@ function drawLines()
           drawSegment(vertices, d_i);
       }
     }
+
+
     _si2 = mem_log[d_i][2];
     _pts = new Float32Array(_si2 * 2);
 
@@ -3256,7 +3783,7 @@ function drawLines()
 
 
   // move all this back into fn to make good reverse fn
-  let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+152)/in_win_h], [150/in_win_w, 150/in_win_h*in_win_hw]);
+  let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
 
   // Draw the triangles after setting the color
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -3292,8 +3819,8 @@ function drawLines()
     _np[1] = in_win_wh * _np[1];
 
     vertices.push(
-    _np[0]*150/in_win_w+(menu_obj_pos[0]-in_win_w*0.02)/in_win_w,
-    _np[1]*150/in_win_h*in_win_hw+0.5-(menu_obj_pos[1]-0-menu_q_size[1]/2+158)/in_win_h
+    _np[0]*menu_obj_size[0]/in_win_w+(menu_obj_pos[0]-in_win_w*0.02)/in_win_w,
+    _np[1]*menu_obj_size[0]/in_win_h*in_win_hw+0.5-(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+8)/in_win_h
     );
 
   }
@@ -3746,6 +4273,7 @@ function Compute(init_dat)
 	if (obj_cyc != obj_cyc_i)
 	{
 		updateList(objListConst(), "list_objectSelect");
+    updateTree(tree_allObjects);
     updateRefLog();
 		obj_cyc_i = obj_cyc;
 	}
@@ -4388,6 +4916,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	obj_updateNormalMaps();
 
 	updateList(objListConst(), "list_objectSelect");
+  updateTree(tree_allObjects);
 
   updateRefLog();
   updatePreview();
