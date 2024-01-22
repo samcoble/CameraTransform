@@ -25,7 +25,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 @?@?@
 ?@?@?
 @?@?@
-     -- my tab alg lagging like mofo now wtf happening try threading it or sum shit
+
+      -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
 
       -- Float32Array already contains byteLength and byteOffset.
 
@@ -825,13 +826,15 @@ function namesToArrays(n)
 
 var obj_folders = [];
 var folder_names = [];
-var folder_parents = new Float32Array([-1,0,0,-1]); // -1 is no parent
-var folder_toggle = new Float32Array([1,0,0,1]);
+var folder_parents = [-1,0,0,-1]; // -1 is no parent
+var folder_toggle =[1,0,0,1];
+
+var folder_selected = 0;
 
 folder_names.push("World Objects");
 folder_names.push("Planes");
 folder_names.push("Indicator");
-folder_names.push("New Objects");
+folder_names.push("Objects");
 
 // obj_folders.push(packArray( namesToArrays(folder_names) ));
 
@@ -842,12 +845,25 @@ obj_folders.push([]);
 obj_folders.push([]);
 obj_folders.push([]);
 
+// i realize now to draw wire frame you can ray trace each vertex and when veretex shows behind remove connected lines.
+// faces seem to be efficient. 
+// maybe try texture and color again
 
-// now I need to make functions for del ? move k
+// 58 & 1:28:00
+// tau 9
 
-// if indice after deleted indice _di
-// sub 1
+// limit function on world things & correct save data and load new/default data differentiation
 
+// going to need a function maybe later auto reorganize internal data structure
+// and folders get essentially reset to 0 1 2 3 4 5 in folder order in obj ref order linearized again.
+// useless but a clean up essentially.
+
+// text bar update to cur folder name
+// edit text changes name
+// toggle visibility
+
+
+// delete object ref and remove from parallel arrays
 function foldersDel(_i)
 {
   let _s = obj_folders.length;
@@ -871,8 +887,20 @@ function foldersDel(_i)
 // move k
 function moveK(_f, _k, _f2)
 {
-  let _nk = obj_folders[_f].splice(_k, 1)[0]; // [0] is the way 
-  obj_folders[_f2].push(_nk);
+  if (obj_folders[_f][_k] > world_obj_count)
+  {
+    let _nk = obj_folders[_f].splice(_k, 1)[0]; // [0] is the way 
+    obj_folders[_f2].push(_nk);
+  }
+}
+
+function moveKAbove(_f, _k, _f2, _i)
+{
+  if (_k != _i && obj_folders[_f][_k] > world_obj_count)
+  {
+    let _nk = obj_folders[_f].splice(_k, 1)[0]; // [0] is the way 
+    obj_folders[_f2].splice(_i, 0, _nk);
+  }
 }
 
 // find how many refs to index and their index
@@ -942,6 +970,75 @@ function getFolders(_i, _d) // folder _i -> every subfolder's index, _d -> retur
   return (_d>0) ? new Float32Array(_z) : _r;
 }
 
+// folder delete function will have to empty it's content into it's parent folder pointer
+// maybe have to check if parent -1
+// points are moved and then folder pointers changed
+// folder ar deleted and folder pointer list size change and sub 1 like usual
+
+// folder delete can have option to delete obj inside as well
+
+function delFolder(_i)
+{
+  if (_i<4) {return false;}
+
+  // get folders at ring 0
+  let _f = getFolders(_i, 0)[0];
+  let _s = _f.length;
+
+  // move folders to root
+  for (let i=0; i<_s; i++)
+  {
+    folder_parents[_f[i]] = -1;
+  }
+
+  // move folder content to user working dir obj_folders[3]
+  _s = obj_folders[_i].length;
+  for (let i=0; i<_s; i++)
+  {
+    obj_folders[3].push(obj_folders[_i][i]);
+  }
+
+  folder_parents.splice(_i, 1);
+
+  // shift all folder pointers
+  _s = folder_parents.length;
+  for (let i=0; i<_s; i++)
+  {
+    if (folder_parents[i] >= _i)
+    {
+      folder_parents[i] = folder_parents[i]-1;
+    }
+  }
+
+  // remove folder & parallel arrays
+  obj_folders.splice(_i, 1);
+  folder_names.splice(_i, 1);
+  folder_toggle.splice(_i, 1);
+
+  updateTree(tree_allObjects);
+}
+
+
+// new folder function finally!
+function treeModify(par)
+{
+  switch(par.func)
+  {
+    case 2:
+      delFolder(folder_selected);
+      break;
+
+    case 1:
+      folder_parents.push(-1); // set to root
+      folder_toggle.push(1); // set open
+      folder_names.push("New Folder"); // store name
+      obj_folders.push([]); // assign array for indices
+      updateTree(tree_allObjects);
+      break;
+  }
+}
+
+
 function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
 {
   let _r = false;
@@ -958,6 +1055,10 @@ function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
 // set parent function attach to drag and drop.
 function folderSetParent(_i, _k) // folder _i parent -> folder _k
 {
+  // allowing use of default folders to store folders
+  // prevent change of parent of default folders here
+  if (_i<4) {return false;}
+
   if (!inFolder(_k, _i) && _k != _i)
   {
     folder_parents[_i] = _k;
@@ -2882,39 +2983,7 @@ function planeCycle()
 	║║║║║║║╚══╗║║ ║║║║╚═╝║    ╔╝╚╗  ║║ ║║║║╚═╝║
 	╚╝╚╝╚╝╚═══╝╚╝ ╚═╝╚═══╝    ╚══╝  ╚╝ ╚═╝╚═══╝
 	#MENUFNS
-
-
-function del_obj(_i)
-{
-	if (_i > world_obj_count)
-	{
-		trns_lock = 0;
-		_all_lock = 0; _all_lock = 0;
-		if (obj_cyc == m_objs.length-1) // If last delete last
-		{
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
-
-		} else // Delete specific
-		{
-			var _ts = mem_log[obj_cyc][1];
-			for (var i = obj_cyc+1; i<mem_log.length; i++)
-			{
-				mem_log[i][0] = mem_log[i][0]-_ts;
-			}
-			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
-		}
-		updateList(objListConst(), "list_objectSelect");
-    foldersDel(_i);
-    updateTree(tree_allObjects);
-	}
-}
-
-
-
 */
-
 
 function deleteObjectSelected()
 {
@@ -2931,6 +3000,12 @@ function del_world()
   }
   */
   obj_folders[3].length = 0;
+
+  let _c = 4;
+  folder_parents.splice(_c);
+  folder_toggle.splice(_c);
+  folder_names.splice(_c);
+  obj_folders.splice(_c);
 
 	trns_lock = 0;
 	_all_lock = 0; _all_lock_i = 0;
@@ -3376,12 +3451,9 @@ function drawSegment(vertices, mi)
 
 
   // gl.disableVertexAttribArray(positionAttrib);
-  
 }
 
 /*
-
-
  */
 
 function drawPoints(_pnts, mi)
@@ -3410,7 +3482,7 @@ function drawPoints(_pnts, mi)
           gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 1.0, 1.0]);
           break;
       }
-    } else {gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 0.3]);}
+    } else {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.3]);}
 
   // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
@@ -4291,7 +4363,8 @@ function Compute(init_dat)
 
 	if (mouseLock && key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
 
-	if (key_map.l && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
+  // added mouseLock. should just be while inside input box check function
+	if (key_map.l && mouseLock && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
 
 	if ((key_map.q || key_map.enter) && runEvery(220)) {pointerLockSwap();}
 
@@ -4351,8 +4424,7 @@ function Compute(init_dat)
   }
 
 
-
-	if (key_map.i && runEvery(350)) {bond_obj(obj_cyc);}
+	if (key_map.i && mouseLock && runEvery(350)) {bond_obj(obj_cyc);}
 
 
 	keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];

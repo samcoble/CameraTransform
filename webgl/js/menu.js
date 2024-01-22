@@ -288,25 +288,17 @@ function updateTree(par)
   // innerHTML is like text = text. not same.
   // must query to be able to append
 
-  // _t.remove();
-  // addTree(par);
-
-  // later use inner loop to remove listeners
-  // let _r = makeTree(par);
-  // let _m = makeTree(par);
-
-  // _t.innerHTML = "";
-  // _t.innerHTML = makeTree(tree_allObjects).innerHTML;
-
-  // console.log(_m.innerHTML);
 }
 
 var draggedElement;
 
+var _attr_fi = 'data-folderIndex';
+var _attr_t = 'data-type';
+var _attr_k = 'data-k';
+
+// the key here is query selector using direct parent ! lmao
 function makeTree(par) // output my tree in form of total html structure
 {
-  // the key here is query selector using direct parent ! lmao
-
   // for now use length of itself. not entirely synced yet.
   const _r = document.createElement("div");
   _r.id = par.id;
@@ -317,7 +309,7 @@ function makeTree(par) // output my tree in form of total html structure
   let _root = getFolders(-1, 0);
   let _s_radius = 3;
   let _s_fld_li_h = 22;
-  let _s_fld_li_ex = 8;
+  let _s_fld_li_ex = 4;
 
   let _s = _root.length;
   for (let i=0; i<_s; i++)
@@ -335,19 +327,14 @@ function makeTree(par) // output my tree in form of total html structure
       // _ul.textContent = _n +": "+ _root[i][j];
 
       let _pxl = (_s-i+1)*2+3;
-      // let _c = _pxl+'px solid ' + tree_colors_d[(i+1)%tree_colors_d.length];
       let _c = _pxl+'px solid ' + tree_colors_d[(_root[i][j]+1)%tree_colors_d.length];
 
       _ul.style.borderRight = _c;
 
       if (i==0)
-      {
-        _ul.style.borderRadius = '0px '+_s_radius+'px '+_s_radius+'px 0px';
-      }
+      {_ul.style.borderRadius = '0px '+_s_radius+'px '+_s_radius+'px 0px';}
       else
-      {
-        _ul.style.borderRadius = '0px '+_s_radius+'px 0px 0px';
-      }
+      {_ul.style.borderRadius = '0px '+_s_radius+'px 0px 0px';}
 
       // _n is assigned string name given w/ default if undefined
       let _n = (typeof folder_names[_root[i][j]] == "undefined") ? "Folder" : folder_names[_root[i][j]];
@@ -358,26 +345,42 @@ function makeTree(par) // output my tree in form of total html structure
       _li_fld.textContent = _n +": "+ _root[i][j] + " : " + obj_folders[_root[i][j]].length;
       // _li_fld.textContent = _n;
       _li_fld.style.backgroundColor = tree_colors[(_root[i][j]+1)%tree_colors.length];
-      _li_fld.style.borderRadius = _s_radius+'px 0px 0px 0px';
+
       _li_fld.style.height = (_s_fld_li_h+_s_fld_li_ex)+'px';
       _li_fld.style.paddingTop = _s_fld_li_ex/2+'px';
       _li_fld.style.borderBottom = '0px solid #000'; // remove bottom border for last
 
       _li_fld.style.cursor = "grab";
       _li_fld.draggable = true;
-      _li_fld.setAttribute('data-folderIndex', _root[i][j]);
-      _li_fld.setAttribute('data-type', 1); // identify type at drop
+      _li_fld.setAttribute(_attr_fi, _root[i][j]);
+      _li_fld.setAttribute(_attr_t, 1); // identify type at drop
       // console.log(_li_fld.getAttribute('data-folderIndex'));
-    
+
+      // when disabled or empty use radius
+      if (obj_folders[_root[i][j]].length == 0 || !folder_toggle[_root[i][j]])
+      {
+        _li_fld.style.borderRadius = _s_radius+'px 0px 0px '+_s_radius+'px';
+      } else {
+        _li_fld.style.borderRadius = _s_radius+'px 0px 0px 0px';
+      }
+
       /* @?@?@
          ?@?@?
          @?@?@ */
 
       _li_fld.addEventListener('click', function(event)
       {
-        folder_toggle[_root[i][j]] = !folder_toggle[_root[i][j]];
-        updateTree(par);
-        console.log('test');
+        if (folder_selected == _root[i][j])
+        {
+          folder_toggle[_root[i][j]] = !folder_toggle[_root[i][j]];
+          updateTree(par);
+        }
+        else
+        {
+          document.getElementById("tree_textIn").value = folder_names[_root[i][j]];
+          folder_selected = _root[i][j];
+          updateTree(par);
+        }
       });
 
       _li_fld.addEventListener('dragstart', function(event)
@@ -385,14 +388,10 @@ function makeTree(par) // output my tree in form of total html structure
         draggedElement = event.target;
       });
 
-      // Prevent the default behavior to enable drop
       _li_fld.addEventListener('dragover', function(event)
       {
         event.preventDefault();
-
-        // console.log(event.target.getAttribute('data-type'));
-
-        if (draggedElement.getAttribute('data-type') == 1) // of type folder
+        if (draggedElement.getAttribute(_attr_t) == 1) // of type folder
         {
           if (event.target != draggedElement) // not dropping on self
           {
@@ -410,35 +409,33 @@ function makeTree(par) // output my tree in form of total html structure
 
       });
 
-
       // reset on leave
       _li_fld.addEventListener('dragleave', function()
       {
         _li_fld.style.border = '0px solid rgba(0,0,0,0)'; // reset border style
       });
 
-      // Handle the drop event
+      // handle the drop event
       _li_fld.addEventListener('drop', function(event)
       {
         event.preventDefault();
         _li_fld.style.border = '0px solid rgba(0,0,0,0)'; // reset border style
 
-        if (draggedElement.getAttribute('data-type') == 1) // of type folder
+        if (draggedElement.getAttribute(_attr_t) == 1) // of type folder
         {
           if (event.target != draggedElement) // not dropping on self
           {
-            let _a = 'data-folderIndex';
-            console.log(event.target.getAttribute(_a) + " : " + draggedElement.getAttribute(_a));
-            folderSetParent(draggedElement.getAttribute(_a), event.target.getAttribute(_a));
+            // console.log(event.target.getAttribute(_attr_fi) + " : " + draggedElement.getAttribute(_attr_fi));
+            folderSetParent(draggedElement.getAttribute(_attr_fi), event.target.getAttribute(_attr_fi));
             updateTree(par);
           }
         }
 
-        if (draggedElement.getAttribute('data-type') == 2) // of type obj
+        if (draggedElement.getAttribute(_attr_t) == 2) // of type obj
         {
           if (event.target != draggedElement) // not dropping on self
           {
-            moveK(draggedElement.getAttribute('data-folderIndex'), draggedElement.getAttribute('data-k'), event.target.getAttribute('data-folderIndex'));
+            moveK(draggedElement.getAttribute(_attr_fi), draggedElement.getAttribute(_attr_k), event.target.getAttribute(_attr_fi));
             updateTree(par);
           }
         }
@@ -452,21 +449,21 @@ function makeTree(par) // output my tree in form of total html structure
          ?@?@?
          @?@?@ */
 
-      _ul.appendChild(_li_fld); // load folder li into folder
+       _ul.appendChild(_li_fld); // load folder li into folder
 
       let _s1 = obj_folders[_root[i][j]].length;
       for (let k=0; k<_s1; k++) // load folder k's
       {
-        if (!folder_toggle[_root[i][j]]) {continue;}
+        if (!folder_toggle[_root[i][j]] || !folder_toggle[folder_parents[_root[i][j]]] && folder_parents[_root[i][j]] != -1) {continue;}
         // honestly losing track of what is going on but _root[i][j] seems to return folder native ith
 
         _li_obj = document.createElement("li");
 
         _li_obj.style.cursor = "grab";
         _li_obj.draggable = true;
-        _li_obj.setAttribute('data-folderIndex', _root[i][j]);
-        _li_obj.setAttribute('data-k', k); // where in each list of obj's tag exists
-        _li_obj.setAttribute('data-type', 2); // identify type at drop
+        _li_obj.setAttribute(_attr_fi, _root[i][j]);
+        _li_obj.setAttribute(_attr_t, 2); // identify type at drop
+        _li_obj.setAttribute(_attr_k, k); // where in each list of obj's tag exists
 
         let _obj_id = obj_folders[_root[i][j]][k];
         // _li_obj.id = (par.id+"_li");
@@ -507,7 +504,14 @@ function makeTree(par) // output my tree in form of total html structure
          ?@?@?
          @?@?@ */
 
-        // so now I can capture obj dragged onto obj here to place on top of one being dragged onto
+        // must be above other listeners or else errors sometimes
+        _li_obj.addEventListener('dragleave', function(event)
+        {
+          if (event.target != "undefined")
+          {
+            event.target.style.border = '0px solid rgba(0,0,0,0)';
+          }
+        });
 
         // obj li's need to update themself on drag start
         _li_obj.addEventListener('dragstart', function(event)
@@ -517,21 +521,34 @@ function makeTree(par) // output my tree in form of total html structure
 
         _li_obj.addEventListener('dragover', function(event)
         {
-          // console.log(event.target);
-          // if (draggedElement.getAttribute('data-type') == 2)
-          // {
-          //   console.log("yes");
-          //   // if (event.target != draggedElement && event.target.getAttribute('data-type') != "undefined")
-          //   if (1==1)
-          //   {
-          //     event.target.style.border = '2px dashed #3aa';
-          //   }
-          // }
+          event.preventDefault();
+
+          if (draggedElement.getAttribute(_attr_t) == 2)
+          {
+            if (event.target != draggedElement && event.target.getAttribute(_attr_t) != "undefined")
+            {
+              event.target.style.border = '2px dashed #333';
+            }
+
+          }
         });
 
-        _li_obj.addEventListener('dragleave', function(event)
+
+
+        // handle the drop event
+        _li_obj.addEventListener('drop', function(event)
         {
-          event.target.style.border = '0px solid rgba(0,0,0,0)';
+          event.preventDefault();
+          _li_obj.style.border = '0px solid rgba(0,0,0,0)'; // reset border style
+
+           moveKAbove(
+             draggedElement.getAttribute(_attr_fi),
+             draggedElement.getAttribute(_attr_k),
+             event.target.getAttribute(_attr_fi),
+             event.target.getAttribute(_attr_k)
+           );
+
+          updateTree(par);
         });
 
       /* @?@?@
@@ -548,12 +565,13 @@ function makeTree(par) // output my tree in form of total html structure
         
         _ul.appendChild(_li_obj); // put li in parent ul folder
       }
-
+      
+      
       // If first itor/root push to container directly
       if (i==0)
       {
         _r.appendChild(_ul);
-      } else
+      } else if (folder_toggle[folder_parents[_root[i][j]]] || folder_parents[_root[i][j]] == -1) // spooky check first
       {
         // place directly in parent without looping
         let _p = _r.querySelector("#"+par.id+"_ul_"+(i-1)+"_"+folder_parents[_root[i][j]]);
@@ -570,14 +588,21 @@ function makeTree(par) // output my tree in form of total html structure
 function addTree(par)
 {
   let _r = makeTree(par);
-
-  var _t = document.getElementById(par.prnt);
+  let _t = document.getElementById(par.prnt);
   if (_t == null) { document.body.appendChild(_r); }
   else { _t.appendChild(_r); }
   applyStyles(_r, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles, par.liStyles, par.myUlStyle);
 }
 
+function treeTextInUpdate(par)
+{
+  const _e = document.getElementById(par.id);
+  folder_names[folder_selected] = _e.value;
+  updateTree(tree_allObjects);
+}
 
+
+// treetextinupdate
 function addList(par)
 {
     const ul = document.createElement("ul");
@@ -607,7 +632,7 @@ function addList(par)
     if (_t == null) { document.body.appendChild(ul); }
     else { _t.appendChild(ul); }
     applyStyles(ul, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles, par.liStyles);
-    //console.log(par.liStyles);
+
     return ul;
 }
 
@@ -961,7 +986,6 @@ var _error_info =
 
     var menu_objPreview_style =
     `
-    visibility: hidden;
     box-sizing: border-box;
     border: 0px rgba(0,0,0,1);
     margin: 0px;
@@ -969,12 +993,13 @@ var _error_info =
     height: 200px;
     user-select: none;
     background: rgba(0,0,0,0);
+    border-radius: 3px;
     `;
 
     var menu_obj =
     {
         id: "menu_obj", cls: "", prnt: "html",
-        rootStyle: rootStyle + menu_obj_style + justOuter
+        rootStyle: rootStyle + menu_obj_style
     }; addDiv(menu_obj);
 
             var menu_objPreview =
@@ -988,11 +1013,8 @@ var _error_info =
             background-color: rgba(0,0,0,0);
             width: 96%;
             padding: 0px;
-
             margin: 3px;
-
             border: 1px solid rgba(255,255,255,0.1);
-
             max-height: `+_fixthis+`px;
             overflow-y: auto;
             overflow-x: hidden;
@@ -1007,7 +1029,6 @@ var _error_info =
             border-bottom: 1px solid rgb(12,12,12);
             text-align: center;
             line-height: 1.8;
-
             `;
 
             var list_objectSelect =
@@ -1023,6 +1044,7 @@ var _error_info =
             //overflow-y: auto;
     
     //////////////////////////////////////////////////////////////////////////////////////
+
 /*
 left: 700px;
 top: 190px;
@@ -1082,9 +1104,76 @@ var menu_tree =
         rootStyle: rootStyle + menu_tree_style,
         liStyles: menu_tree_liStyle,
         myUlStyle: menu_tree_ulStyle
-    };
+    }; addTree(tree_allObjects);
 
-    addTree(tree_allObjects);
+    var tree_btn_l =
+    `
+        border-radius: 3px 0px 0px 3px;
+    `;
+
+    var tree_btn_r =
+    `
+        border-radius: 0px 3px 3px 0px;
+        border-left: 0px solid black;
+    `;
+
+    // color: rgb(195, 123, 0);
+    var tree_btn =
+    `
+    color: #DDD;
+    background-color: rgb(17, 17, 18);
+    margin: 10px 0px 0px 0px;
+    width: 15%;
+    height: 26px;
+    text-align: center;
+    border: 1px solid rgba(200, 200, 200, 0.1);
+    line-height: 2.06;
+    float: right;
+    outline: none;
+    `;
+
+    var tree_btn_addFolder =
+    {
+        text: ` + `,
+        id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
+        rootStyle: rootStyle + tree_btn + tree_btn_r,
+        // hoverStyles: tree_btn_addFolder,
+        callback: treeModify,
+        params: {func:1}
+    }; addButton(tree_btn_addFolder);
+
+    var tree_btn_delFolder=
+    {
+        text: ` - `,
+        id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
+        rootStyle: rootStyle + tree_btn + tree_btn_l,
+        // hoverStyles: tree_btn_addFolder,
+        callback: treeModify,
+        params: {func:2}
+    }; addButton(tree_btn_delFolder);
+
+    var treeTextInStyle =
+    `
+    color: #DDD;
+    margin: 10px 0px 0px 1%;
+    padding: 4px 0px 0px 10px;
+    width: 68%;
+    height: 26px;
+    outline: none;
+    border-radius: 3px;
+    border: 1px solid rgba(200, 200, 200, 0.1);
+    `;
+
+    var tree_textIn =
+    {
+        id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
+        rootStyle: rootStyle + treeTextInStyle,
+        // hoverStyles: textIn_hover,
+        value: "",
+        callback: treeTextInUpdate
+    };
+    tree_textIn.params = {id: tree_textIn.id, class: tree_textIn.cls};
+    addTextInput(tree_textIn);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
