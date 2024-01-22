@@ -571,8 +571,16 @@ function makeTree(par) // output my tree in form of total html structure
       if (i==0)
       {
         _r.appendChild(_ul);
-      } else if (folder_toggle[folder_parents[_root[i][j]]] || folder_parents[_root[i][j]] == -1) // spooky check first
+      } else 
       {
+        if (!folder_toggle[folder_parents[_root[i][j]]]) // spooky check
+        {
+          _ul.style.visibility = "hidden";
+          _ul.style.height = "0px";
+          _ul.style.margin = "0px";
+          _ul.style.padding = "0px";
+        }
+
         // place directly in parent without looping
         let _p = _r.querySelector("#"+par.id+"_ul_"+(i-1)+"_"+folder_parents[_root[i][j]]);
         _p.appendChild(_ul);
