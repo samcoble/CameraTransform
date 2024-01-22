@@ -234,7 +234,6 @@ function addFileInput(par)
     return fileInput;
 }
 
-
 // need to make new addTree function. parse my arbitrary data
 // construct by looping through trees.
 // not sure how data aligns
@@ -242,8 +241,6 @@ function addFileInput(par)
 
 // replacing entire works for lists so far but maybe not the best long term not sure
 // deletion updates and aligns but may also provide the data's delta for any updates...?
-
-// use make tree for add and 'update'
 
 const tree_colors_a = 1.0;
 const tree_colors = [
@@ -262,7 +259,6 @@ const tree_colors_d = [
   "rgba(36, 63, 77, 1)"
 ];
 
-// function updateTree()
 function updateTree(par)
 {
   const _t = document.getElementById(par.id);
@@ -287,11 +283,10 @@ function updateTree(par)
   // i realized append allows event listener creation
   // innerHTML is like text = text. not same.
   // must query to be able to append
-
 }
 
+// move to better place eventually
 var draggedElement;
-
 var _attr_fi = 'data-folderIndex';
 var _attr_t = 'data-type';
 var _attr_k = 'data-k';
@@ -306,29 +301,28 @@ function makeTree(par) // output my tree in form of total html structure
   _r.scrollTop = 100;
 
   // can set these with par any time later
-  let _root = getFolders(-1, 0);
+  let _root = getFolders(-1, 0); // return all folders in root, layered array format !!!!
   let _s_radius = 3;
+  // bad variable names important
   let _s_fld_li_h = 22;
   let _s_fld_li_ex = 4;
 
+  // loop through tree
   let _s = _root.length;
   for (let i=0; i<_s; i++)
   {
     let _s0 = _root[i].length;
     for (let j=0; j<_s0; j++)
     {
-      /* @?@?@*/
       const _ul = document.createElement("ul");
       _ul.id = par.id+"_ul_"+i+"_"+_root[i][j];
       _ul.className = par.id+"_ul"+" "+par.id+"_ul_"+i;
       _ul.style.listStyleType = 'none';
       _ul.style.textShadow = '0px 0px 2px #222';
-      
-      // _ul.textContent = _n +": "+ _root[i][j];
 
+      // simple math to generate folder border width
       let _pxl = (_s-i+1)*2+3;
       let _c = _pxl+'px solid ' + tree_colors_d[(_root[i][j]+1)%tree_colors_d.length];
-
       _ul.style.borderRight = _c;
 
       if (i==0)
@@ -343,9 +337,10 @@ function makeTree(par) // output my tree in form of total html structure
       const _li_fld = document.createElement("li");
       _li_fld.className = (par.id+"_li");
       _li_fld.textContent = _n +": "+ _root[i][j] + " : " + obj_folders[_root[i][j]].length;
-      // _li_fld.textContent = _n;
-      _li_fld.style.backgroundColor = tree_colors[(_root[i][j]+1)%tree_colors.length];
 
+      // _li_fld.textContent = _n; // Enable after tree works correctly or show size in new element
+      
+      _li_fld.style.backgroundColor = tree_colors[(_root[i][j]+1)%tree_colors.length];
       _li_fld.style.height = (_s_fld_li_h+_s_fld_li_ex)+'px';
       _li_fld.style.paddingTop = _s_fld_li_ex/2+'px';
       _li_fld.style.borderBottom = '0px solid #000'; // remove bottom border for last
@@ -354,7 +349,6 @@ function makeTree(par) // output my tree in form of total html structure
       _li_fld.draggable = true;
       _li_fld.setAttribute(_attr_fi, _root[i][j]);
       _li_fld.setAttribute(_attr_t, 1); // identify type at drop
-      // console.log(_li_fld.getAttribute('data-folderIndex'));
 
       // when disabled or empty use radius
       if (obj_folders[_root[i][j]].length == 0 || !folder_toggle[_root[i][j]])
@@ -364,9 +358,9 @@ function makeTree(par) // output my tree in form of total html structure
         _li_fld.style.borderRadius = _s_radius+'px 0px 0px 0px';
       }
 
-      /* @?@?@
-         ?@?@?
-         @?@?@ */
+           /*@?@
+           ?@?@?
+           @?@*/
 
       _li_fld.addEventListener('click', function(event)
       {
@@ -399,14 +393,13 @@ function makeTree(par) // output my tree in form of total html structure
           }
         }
 
-        if (draggedElement.getAttribute('data-type') == 2) // of type obj 
+        if (draggedElement.getAttribute(_attr_t) == 2) // of type obj 
         {
           if (event.target != draggedElement) // not dropping on self
           {
             _li_fld.style.border = '2px dashed #866';
           }
         }
-
       });
 
       // reset on leave
@@ -439,15 +432,14 @@ function makeTree(par) // output my tree in form of total html structure
             updateTree(par);
           }
         }
-
       });
 
       // nvim
       // :set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50\,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor\,sm:block-blinkwait175-blinkoff150-blinkon175
 
-      /* @?@?@
-         ?@?@?
-         @?@?@ */
+           /*@?@
+           ?@?@?
+           @?@*/
 
        _ul.appendChild(_li_fld); // load folder li into folder
 
@@ -466,30 +458,16 @@ function makeTree(par) // output my tree in form of total html structure
         _li_obj.setAttribute(_attr_k, k); // where in each list of obj's tag exists
 
         let _obj_id = obj_folders[_root[i][j]][k];
-        // _li_obj.id = (par.id+"_li");
-        // _li_obj.id = (par.id+"_li_"+ ????? ); // does not direct style
+        // _li_obj.id = (par.id+"_li"); // not needed ig
         _li_obj.className = (par.id+"_li");
 
-        // problem here
-        // having issue clearing to zero;
-
-        /*
-        console.log(_obj_id);
-        if (_obj_id < m_objs.length)
-        {
-          if (typeof mem_log[_obj_id][2] != "undefined")
-          {
-            _li_obj.textContent = mem_log[_obj_id][2];
-          }
-        }
-        */
-
+        // use mem_log for user info
         _li_obj.textContent = mem_log[_obj_id][2];
 
         // apply color for selected obj
         if (_obj_id == obj_cyc) {_li_obj.style.backgroundColor = par.color3;} else
         {
-          // Apply styles for alternating list items
+          // Apply styles for alternating list items pasta
           if (k % 2) {_li_obj.style.backgroundColor = par.color1;} else {_li_obj.style.backgroundColor = par.color2;}
         }
 
@@ -500,9 +478,9 @@ function makeTree(par) // output my tree in form of total html structure
           _li_obj.style.borderBottom = '0px solid #000'; // remove bottom border for last
         }
 
-      /* @?@?@
-         ?@?@?
-         @?@?@ */
+           /*@?@
+           ?@?@?
+           @?@*/
 
         // must be above other listeners or else errors sometimes
         _li_obj.addEventListener('dragleave', function(event)
@@ -529,42 +507,37 @@ function makeTree(par) // output my tree in form of total html structure
             {
               event.target.style.border = '2px dashed #333';
             }
-
           }
         });
 
-
-
-        // handle the drop event
         _li_obj.addEventListener('drop', function(event)
         {
           event.preventDefault();
           _li_obj.style.border = '0px solid rgba(0,0,0,0)'; // reset border style
 
-           moveKAbove(
-             draggedElement.getAttribute(_attr_fi),
-             draggedElement.getAttribute(_attr_k),
-             event.target.getAttribute(_attr_fi),
-             event.target.getAttribute(_attr_k)
-           );
+          moveKAbove(
+           draggedElement.getAttribute(_attr_fi),
+           draggedElement.getAttribute(_attr_k),
+           event.target.getAttribute(_attr_fi),
+           event.target.getAttribute(_attr_k)
+          );
 
           updateTree(par);
         });
 
-      /* @?@?@
-         ?@?@?
-         @?@?@ */
-
-        // Li's get listeners
         _li_obj.addEventListener("click", function ()
         {
-          //par.callback(par.params);
           obj_cyc = _obj_id;
           updateTree(par);
         });
         
-        _ul.appendChild(_li_obj); // put li in parent ul folder
-      }
+        _ul.appendChild(_li_obj); // important ! put li in parent ul folder
+
+           /*@?@
+           ?@?@?
+           @?@*/
+
+      } // end of folder k's
       
       
       // If first itor/root push to container directly
@@ -589,7 +562,6 @@ function makeTree(par) // output my tree in form of total html structure
     }
  }
 
-  // document.body.appendChild(_r);
   return _r;
 }
 
@@ -610,7 +582,6 @@ function treeTextInUpdate(par)
 }
 
 
-// treetextinupdate
 function addList(par)
 {
     const ul = document.createElement("ul");

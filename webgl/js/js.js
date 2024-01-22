@@ -920,14 +920,6 @@ function searchFolder(_f, _k)
 }
 
 /*
-may need data alignment function 
-
-also del function
- - del must also adjust array parents w/ slice?
-
-unpack tree function
-
-sort box space
 
 */
 
@@ -1086,7 +1078,6 @@ function getObjData(_i)
 // Unitization of array containing arrays w/ packer function
 function packArray(ar)
 {
-
   let _r = [];
   let _l = ar.length;
   _r.push(_l); // store num of sections
@@ -1109,7 +1100,6 @@ function packArray(ar)
 
 function unpackArray(ar)
 {
-
   let _s = [];
   let _r = [];
   let _off = ar[0] + 1; // + 1
@@ -1153,7 +1143,6 @@ function unpackArray(ar)
   
 function makeSave()
 {
-
   let _r = [];
   let _o = [];
 
@@ -2992,13 +2981,6 @@ function deleteObjectSelected()
 
 function del_world()
 {
-  /*
-  let _s = m_objs.length-(world_obj_count+1);
-  for (let i=0; i<_s; i++)
-  {
-    foldersDel(world_obj_count+1+i);
-  }
-  */
   obj_folders[3].length = 0;
 
   let _c = 4;
