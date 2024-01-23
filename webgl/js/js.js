@@ -25,6 +25,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 @?@?@
 ?@?@?
 @?@?@
+      -- Multi select can be done by tracking change in obj_cyc and log kept such that any number referenced twice get's removed
+
+      -- Scrap overlay and redo menu
 
       -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
 
@@ -84,10 +87,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 					m_objs is kept the same but an overseeing manager populates a new html structure for navigation.
 
-					i don't feel like going the xtra mile to convert text into blocks and giving them size lmao.
-
 			-- finish mem log rebuild to add bounding box ? system ? what am i doing
-
 
 			-- unique ids for objs will help w/ identical objs in future?
 
@@ -849,13 +849,6 @@ folder_names.push("Planes");
 folder_names.push("Indicator");
 folder_names.push("Objects");
 
-// obj_folders.push(packArray( namesToArrays(folder_names) ));
-
-// obj_folders.push(new Float32Array([-1,0,-1,2,2,4])); // parent tree here. -1 is no parent.
-
-// obj_folders.push([1,2,11]);
-// obj_folders.push([3,4,5]);
-// obj_folders.push([6,7,8,9,10,12,13]);
 obj_folders.push([]);
 obj_folders.push([]);
 obj_folders.push([]);
@@ -869,8 +862,6 @@ obj_folders.push([]);
 // 58 & 1:28:00
 // tau 9
 
-// limit function on world things & correct save data and load new/default data differentiation
-
 // going to need a function maybe later auto reorganize internal data structure
 // and folders get essentially reset to 0 1 2 3 4 5 in folder order in obj ref order linearized again.
 // useless but a clean up essentially.
@@ -879,17 +870,7 @@ obj_folders.push([]);
 // edit text changes name
 // toggle visibility
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// was going to remove flag but flag direct new
-// i should just setup manager fn for this that checks flag
 // new should go to folder folder_selected anyway
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // delete object ref and remove from parallel arrays
 function foldersDel(_i)
@@ -913,7 +894,7 @@ function foldersDel(_i)
 }
 
 // move k
-function moveK(_f, _k, _f2)
+function moveK(_f, _k, _f2) // folder _f's _k -> bottom of folder _f2
 {
   if (obj_folders[_f][_k] > world_obj_count)
   {
@@ -922,7 +903,7 @@ function moveK(_f, _k, _f2)
   }
 }
 
-function moveKAbove(_f, _k, _f2, _i)
+function moveKAbove(_f, _k, _f2, _i) // folder _f's _k -> above -> _i in folder _f2
 {
   if (_k != _i && obj_folders[_f][_k] > world_obj_count)
   {
@@ -946,10 +927,6 @@ function searchFolder(_f, _k)
   }
   return _r;
 }
-
-/*
-
-*/
 
 function getFolders(_i, _d) // folder _i -> every subfolder's index, _d -> return linear|array 
 {
@@ -990,12 +967,12 @@ function getFolders(_i, _d) // folder _i -> every subfolder's index, _d -> retur
   return (_d>0) ? new Float32Array(_z) : _r;
 }
 
-// folder delete function will have to empty it's content into it's parent folder pointer
 // maybe have to check if parent -1
 // points are moved and then folder pointers changed
 // folder ar deleted and folder pointer list size change and sub 1 like usual
 
 // folder delete can have option to delete obj inside as well
+// folder delete function will have to empty it's content into it's parent folder pointer
 
 function delFolder(_i)
 {
@@ -1038,7 +1015,6 @@ function delFolder(_i)
   updateTree(tree_allObjects);
 }
 
-
 // new folder function finally!
 function treeModify(par)
 {
@@ -1057,7 +1033,6 @@ function treeModify(par)
       break;
   }
 }
-
 
 function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
 {
@@ -1103,7 +1078,7 @@ function getObjData(_i)
   return _r;
 }
 
-// Unitization of array containing arrays w/ packer function
+// unitization of array containing arrays
 function packArray(ar)
 {
   let _r = [];
@@ -1847,22 +1822,12 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 	*/
 	// #DATAFNS
 
+
 var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
 for (i=0; i<m1.data.length; i++)
 {
 	m1.data[i] = 0.0;
 }
-
-
-// stores arrays containing indices and arrays allowing for nested folders
-// consider unique id's? same problem anyway?
-// so stores blocks that fit into blocks.
-// a single block contains two arrays
-// array 1 contains blocks.
-// array 2 contains indices w/ first giving the number of indicies.
-
-// wait no just use the exact same system basically
-// var obj_folders = [];
 
 var m_draw = [];
 var m_center2d = [];
@@ -1889,7 +1854,6 @@ function m_objs_loadPoints(ar) // Adds objects
 		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
 		// obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
 
-
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -1897,7 +1861,6 @@ function m_objs_loadPoints(ar) // Adds objects
 		mem_log.push([mem_sum, ar.length, Math.floor(ar.length/4), Math.floor(ar.length/12)]);
 		mem_sum += ar.length;
 		obj_normalMaps.push(new Float32Array([0.0, 0.0, 0.0, 0.0]));
-
 
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
@@ -1931,15 +1894,7 @@ function m_objs_loadPoints(ar) // Adds objects
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
   if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
-  if (m_objs.length > 14) {_fp = 3;} // redirect can be set by changing later _fp to _global_folder_direct
-
-  // obj_folders[_fp].push(m_objs.length-1);
-  
-  // temp fix while fixing save/load
-  // if (key_map.shift)
-  // {
-  //   obj_folders[_fp].push(m_objs.length-1);
-  // }
+  if (m_objs.length > 14) {_fp = 3;} // redirect can be set global
 
   if (flag_loadingObject == 0)
   {
@@ -4058,7 +4013,7 @@ function drawLines()
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
   }
 
-  if (!mouseLock || wpn_select == 1)
+  if (!mouseLock || wpn_select == 1 || key_map.tab)
   {
     for (let i = m_objs.length-1; i>=0; i--)
     {
@@ -4363,7 +4318,6 @@ function pointerOutsideWindow()
 	return _in;
 }
 
-
 // scale a unit cube to the size of min/max
 // really 6 pieces of information
 // min & max of each axis so 3*2 querys
@@ -4579,8 +4533,6 @@ function Compute(init_dat)
 	if (key_map[" "]) {player_pos[1] -= player_speed_vert * (1+key_map.shift*player_speed_mult);}  // r u 4? srs mane key_map[" "]
 	if (key_map.b) {player_pos[1] += player_speed_vert * (1+key_map.shift*player_speed_mult);}
 	
-
-
 	if (key_map.control || key_map.alt || key_map.meta)
 	{
 		mouseLock = 0;
