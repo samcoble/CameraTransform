@@ -580,6 +580,7 @@ var _touch_i = [0,0];
 var _touch_f = [0,0];
 var _touch_delta = [0,0];
 
+var flag_loadingObject = 0;
 
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
@@ -813,6 +814,18 @@ function stringToFloat32Array(s)
   return new Float32Array(_r);
 }
 
+function float32ArrayToString(ar)
+{
+  let _s = ar.length;
+  let _r = "";
+  
+  for (let i=0; i<_s; i++)
+  {
+    _r = _r + String.fromCharCode(ar[i]);
+  }
+  return _r;
+}
+
 // make fn to return array of char arrays
 function namesToArrays(n)
 {
@@ -840,10 +853,14 @@ folder_names.push("Objects");
 
 // obj_folders.push(new Float32Array([-1,0,-1,2,2,4])); // parent tree here. -1 is no parent.
 
+// obj_folders.push([1,2,11]);
+// obj_folders.push([3,4,5]);
+// obj_folders.push([6,7,8,9,10,12,13]);
 obj_folders.push([]);
 obj_folders.push([]);
 obj_folders.push([]);
 obj_folders.push([]);
+
 
 // i realize now to draw wire frame you can ray trace each vertex and when veretex shows behind remove connected lines.
 // faces seem to be efficient. 
@@ -862,6 +879,17 @@ obj_folders.push([]);
 // edit text changes name
 // toggle visibility
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// was going to remove flag but flag direct new
+// i should just setup manager fn for this that checks flag
+// new should go to folder folder_selected anyway
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // delete object ref and remove from parallel arrays
 function foldersDel(_i)
@@ -1049,7 +1077,7 @@ function folderSetParent(_i, _k) // folder _i parent -> folder _k
 {
   // allowing use of default folders to store folders
   // prevent change of parent of default folders here
-  if (_i<4) {return false;}
+  if (_i<4 || _k<4) {return false;}
 
   if (!inFolder(_k, _i) && _k != _i)
   {
@@ -1072,7 +1100,7 @@ function getObjData(_i)
       _r.push(_i-world_obj_count-1);
     }
   }
-  return new Float32Array(_r);
+  return _r;
 }
 
 // Unitization of array containing arrays w/ packer function
@@ -1100,92 +1128,251 @@ function packArray(ar)
 
 function unpackArray(ar)
 {
-  let _s = [];
   let _r = [];
-  let _off = ar[0] + 1; // + 1
+  let _ad = ar[0] + 1;
 
-  for (let i = 0; i<ar[0]; i++) // get offsets
+  for (let i = 0; i<ar[0]; i++) //
   {
-    if (i==0)
-    {
-      _s.push(ar[i+1] + _off);
-    }
-    else
-    {
-      _s.push( ar[i] + ar[i+1] + _off );
-    }
+    _r.push(ar.slice(_ad, _ad+ar[1+i]));
+    _ad += ar[1+i];
   }
 
-  // loop through regions
-  for (let i = 0; i<_s.length; i++)
-  {
-    if (i==0) // handle start w/ if -> not a run time function.
-    {
-      let _t = [];
-      for (let j = _off; j<_s[i]; j++)
-      {
-        _t.push(ar[j]);
-      }
-     _r.push(new Float32Array(_t));
-    }
-    else
-    {
-      let _t = [];
-      for (let j = _s[i-1]; j<_s[i]; j++)
-      {
-        _t.push(ar[j]);
-      }
-      _r.push(new Float32Array(_t));
-    }
-  }
   return _r;
 }
   
 function makeSave()
 {
   let _r = [];
+  let _t = [];
   let _o = [];
+  let _s;
 
-  // place folders w/ parent map
-  _r.push( packArray(obj_folders) );
+  // folder toggle
+  _s = folder_toggle.length;
+  _t.push( folder_toggle.splice(4, _s-3) );
+  
+  // folder parents
+  _s = folder_parents.length;
+  _t.push( folder_parents.splice(4, _s-3) );
+
+  // folders
+  _s = obj_folders.length;
+  _t.push( packArray(obj_folders.splice(3, _s-3)) );
+
+  // folder names
+  _s = folder_names.length;
+  _t.push( packArray(namesToArrays(folder_names.splice(4, _s-3))) );
 
   // now prep _o w/ objs
-  let _s = m_objs.length;
+  _s = m_objs.length;
   for (let i = world_obj_count+1; i<_s; i++) // using world count here
   {
-    _o.push(getObjData(i))
+    _o.push(getObjData(i));
   }
 
   // place _o
   _r.push( packArray(_o) );
 
-  return packArray(_r); 
+  // place _t
+  _r.push ( packArray(_t) );
+
+  return new Float32Array(packArray(_r));
+}
+// obj_folders.push(packArray( namesToArrays(folder_names) ));
+
+
+// Obj load & unpack
+fileInput.addEventListener('change', event => 
+{
+	const _fi = event.target.files;
+  if (key_map.shift)
+  {
+    // flag_loadingObject = 1;
+    loadFile(_fi[0]);
+  } else {
+    // flag_loadingObject = 1;
+    loadFile0(_fi[0]);
+  }
+  // console.log(_fi[0]);
+});
+
+
+function offsetArray(ar, b)
+{
+  let _s = ar.length;
+  let _n = [];
+  for (let i=0; i<_s; i++)
+  {
+    _n[i] = ar[i] + b;
+  }
+  return _n;
+}
+
+
+function loadFile0(_fi)
+{
+  if (_fi)
+  {
+    flag_loadingObject = 1;
+    let _r = [];
+
+    const _fr = new FileReader();
+    _fr.onload = event =>
+    {
+      const _d = new Float32Array(event.target.result);
+      _r.push(unpackArray( _d ));
+      _r.push(unpackArray( _r[0][0] ));
+
+      // unpack folder tree
+      _r.push( unpackArray(_r[0][1]) ); // this [0]->toggle [1]->parent
+      _r.push( unpackArray(_r[2][2]) ); // obj folders
+      _r.push( unpackArray(_r[2][3]) ); // names
+
+      // console.log(_r);
+      
+      // folder toggles
+      let _s = _r[2][0].length;
+      for (let i=0; i<_s; i++)
+      {
+        folder_toggle.push(_r[2][0][i]);
+      }
+
+      // parents
+      _s = _r[2][1].length;
+      let _s0 = folder_parents.length;
+      for (let i=0; i<_s; i++)
+      {
+        if (_r[2][1][i] == -1)
+        {
+          folder_parents.push(-1);
+        } else {
+          folder_parents.push(_r[2][1][i]+_s0);
+        }
+      }
+      
+      // folder names
+      _s = _r[4].length;
+      for (let i=0; i<_s; i++)
+      {
+        folder_names.push(float32ArrayToString(_r[4][i]));
+      }
+      
+      // load folder arrays
+      _s = _r[3].length; // array containing folder arrays : now 0 is folder 3
+      let _s1 = m_objs.length;
+      for (let i=0; i<_s; i++)
+      {
+        if (i==0)
+        {
+          let _s3 = offsetArray(_r[3][i], -(world_obj_count+1)+_s1);
+          let _s4 = _s3.length;
+          for (let j=0; j<_s4; j++)
+          {
+            obj_folders[3].push( _s3[j] );
+          }
+        } else
+        {
+          obj_folders.push(offsetArray(_r[3][i], -(world_obj_count+1)+_s1));
+        }
+      }
+      
+      // load objs
+      for (let i=0; i<_r[1].length; i++)
+      {
+        // console.log(flag_loadingObject);
+        m_objs_loadPoints( _r[1][i] );
+        if (i==_r[1].length-1)
+        {
+          flag_loadingObject = 0;
+        }
+      }
+    };
+
+		_fr.readAsArrayBuffer(_fi);
+
+    // setup name to splice w/ size
+    var _fn = _fi.name.slice(0, _fi.name.length-4);
+    var _si = _fn.length;
+    for (var i = _fn.length - 1; i >= 0; i--)
+    {
+      if (!checkNumber(_fn[i]))
+      {
+        _si = i;
+        break;
+      }
+    }
+    fileName = _fn.slice(0, _si+1);
+  }
+  // flag_loadingObject = 0;
+  updateTree(tree_allObjects);
+}
+
+function loadFile(_fi)
+{
+	if (_fi)
+	{
+		const _r = new FileReader();
+		_r.onload = event =>
+		{
+			const _ab = event.target.result;
+			const _fa = new Float32Array(_ab);
+			var _gs = [0]; // indice map
+			var _s = 1; // start
+			for (var i=0; i<_fa.length/4; i++)
+			{
+				if (_fa[i*4+3] != _s) {_s++; _gs.push(i*4);}
+			}
+			for (var n=0; n<_gs.length; n++)
+			{
+				if (n!=_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[n], _gs[n+1])); m_objs_loadPoints(new Float32Array(_tar));}
+				if (n==_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[_gs.length-1], _gs[_fa.length-1])); m_objs_loadPoints(new Float32Array(_tar));}
+			}
+			var _fn = _fi.name.slice(0, _fi.name.length-4);
+			var _si = _fn.length;
+			for (var i = _fn.length - 1; i >= 0; i--)
+			{
+				if (!checkNumber(_fn[i]))
+				{
+					_si = i;
+					break;
+				}
+			}
+			fileName = _fn.slice(0, _si+1);
+		};
+		_r.readAsArrayBuffer(_fi);
+	}
+  // flag_loadingObject = 0;
 }
 
 
 function downloadSaveFile()
 {
-    var t_sum = 0;
-    for (var i = world_obj_count + 1; i < mem_log.length; i++) {t_sum += (mem_log[i][1]-4);} // Remove center from size
+    // var t_sum = 0;
+    // for (var i = world_obj_count + 1; i < mem_log.length; i++) {t_sum += (mem_log[i][1]-4);} // Remove center from size
+    //
+    // var _tar = new Float32Array(t_sum);
+    // var _ti = 0;  // Track total index in _tar
+    //
+    // for (var i = world_obj_count + 1; i < m_objs.length; i++)
+    // {
+    //     for (var j = 0; j < mem_log[i][2]-1; j++) // Remove center
+    //     {
+    //         var _bi = _ti; var _i = _bi * 4;
+    //         _tar[_i] = m_objs[i][j * 4];
+    //         _tar[_i + 1] = m_objs[i][j * 4 + 1];
+    //         _tar[_i + 2] = m_objs[i][j * 4 + 2];
+    //         _tar[_i + 3] = i - world_obj_count; // The magic
+    //         _ti++;
+    //     }
+    // }
 
-    var _tar = new Float32Array(t_sum);
-    var _ti = 0;  // Track total index in _tar
+    // convert Float32Array to ArrayBuffer
+  
+    // var arrayBuffer = _tar.buffer;
 
-    for (var i = world_obj_count + 1; i < m_objs.length; i++)
-    {
-        for (var j = 0; j < mem_log[i][2]-1; j++) // Remove center
-        {
-            var _bi = _ti; var _i = _bi * 4;
-            _tar[_i] = m_objs[i][j * 4];
-            _tar[_i + 1] = m_objs[i][j * 4 + 1];
-            _tar[_i + 2] = m_objs[i][j * 4 + 2];
-            _tar[_i + 3] = i - world_obj_count; // The magic
-            _ti++;
-        }
-    }
+    let arrayBuffer = makeSave();
+    let _l = arrayBuffer.length;
 
-    // Convert Float32Array to ArrayBuffer
-    var arrayBuffer = _tar.buffer;
 
     // blob binary large object
     const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
@@ -1196,12 +1383,12 @@ function downloadSaveFile()
     anchor.href = _url;
     if (fileName == "")
     {
-    	anchor.download = "data_" + _tar.length + ".bin";
+    	anchor.download = "data_" + _l + ".bin";
     } else {
-    	anchor.download = fileName + _tar.length + ".bin";
+    	anchor.download = fileName + _l + ".bin";
     }
 
-    // use .click() to trigger the download
+    // use .click() to trigger download
     anchor.click();
     URL.revokeObjectURL(_url);
     key_map.p = false;
@@ -1745,10 +1932,22 @@ function m_objs_loadPoints(ar) // Adds objects
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
   if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
   if (m_objs.length > 14) {_fp = 3;} // redirect can be set by changing later _fp to _global_folder_direct
-  obj_folders[_fp].push(m_objs.length-1);
+
+  // obj_folders[_fp].push(m_objs.length-1);
+  
+  // temp fix while fixing save/load
+  // if (key_map.shift)
+  // {
+  //   obj_folders[_fp].push(m_objs.length-1);
+  // }
+
+  if (flag_loadingObject == 0)
+  {
+    obj_folders[_fp].push(m_objs.length-1);
+  }
+
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 }
-
 
 
 
@@ -1939,52 +2138,6 @@ var ctx_o = canvas_over.getContext("2d");
 
 ctx_o.scale(1, 1);
 // ctx.scale(1, 1); 
-
-// Obj load & unpack
-fileInput.addEventListener('change', event => 
-{
-	const _fi = event.target.files;
-	loadFile(_fi[0]);
-});
-
-/*
-		FILE LOAD UNPACKS WRAPPED POINTS
-*/
-function loadFile(_fi)
-{
-	if (_fi)
-	{
-		const _r = new FileReader();
-		_r.onload = event =>
-		{
-			const _ab = event.target.result;
-			const _fa = new Float32Array(_ab);
-			var _gs = [0]; // indice map
-			var _s = 1; // start
-			for (var i=0; i<_fa.length/4; i++)
-			{
-				if (_fa[i*4+3] != _s) {_s++; _gs.push(i*4);}
-			}
-			for (var n=0; n<_gs.length; n++)
-			{
-				if (n!=_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[n], _gs[n+1])); m_objs_loadPoints(new Float32Array(_tar));}
-				if (n==_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[_gs.length-1], _gs[_fa.length-1])); m_objs_loadPoints(new Float32Array(_tar));}
-			}
-			var _fn = _fi.name.slice(0, _fi.name.length-4);
-			var _si = _fn.length;
-			for (var i = _fn.length - 1; i >= 0; i--)
-			{
-				if (!checkNumber(_fn[i]))
-				{
-					_si = i;
-					break;
-				}
-			}
-			fileName = _fn.slice(0, _si+1);
-		};
-		_r.readAsArrayBuffer(_fi);
-	}
-}
 
 function obj_updateNormalMaps()
 {

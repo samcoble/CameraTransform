@@ -462,7 +462,11 @@ function makeTree(par) // output my tree in form of total html structure
         _li_obj.className = (par.id+"_li");
 
         // use mem_log for user info
-        _li_obj.textContent = mem_log[_obj_id][2];
+        // console.log(_obj_id);
+        if (_obj_id <= m_objs.length-1)
+        {
+          _li_obj.textContent = mem_log[_obj_id][2];
+        }
 
         // apply color for selected obj
         if (_obj_id == obj_cyc) {_li_obj.style.backgroundColor = par.color3;} else
@@ -558,7 +562,6 @@ function makeTree(par) // output my tree in form of total html structure
         let _p = _r.querySelector("#"+par.id+"_ul_"+(i-1)+"_"+folder_parents[_root[i][j]]);
         _p.appendChild(_ul);
       }
-
     }
  }
 
@@ -580,7 +583,6 @@ function treeTextInUpdate(par)
   folder_names[folder_selected] = _e.value;
   updateTree(tree_allObjects);
 }
-
 
 function addList(par)
 {
