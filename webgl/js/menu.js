@@ -199,12 +199,23 @@ function addTextInput(par)
     input.className = par.cls;
     input.value = par.value;
 
-    // Event listener for the "input" event
     input.addEventListener("input", function ()
     {
-        par.value = input.value;
-        par.callback(par.params);
+      par.value = input.value;
+      par.callback(par.params);
+      flag_inText = 1;
     });
+
+    input.addEventListener('click', function()
+    {
+      flag_inText = 1;
+    });
+
+    input.addEventListener('blur', function()
+    {
+      flag_inText = 0;
+    });
+
 
     var _t = document.getElementById(par.prnt);
     if (_t == null)
@@ -543,7 +554,7 @@ function makeTree(par) // output my tree in form of total html structure
 
       } // end of folder k's
       
-      
+
       // If first itor/root push to container directly
       if (i==0)
       {

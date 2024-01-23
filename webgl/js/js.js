@@ -581,6 +581,7 @@ var _touch_f = [0,0];
 var _touch_delta = [0,0];
 
 var flag_loadingObject = 0;
+var flag_inText = 0;
 
 						/*-- 2D Canvas Draw Functions --\
 						\------------------------------*/
@@ -1153,10 +1154,8 @@ function makeSave()
 
   return new Float32Array(packArray(_r));
 }
-// obj_folders.push(packArray( namesToArrays(folder_names) ));
 
-
-// Obj load & unpack
+// obj load & unpack
 fileInput.addEventListener('change', event => 
 {
 	const _fi = event.target.files;
@@ -1168,8 +1167,9 @@ fileInput.addEventListener('change', event =>
     // flag_loadingObject = 1;
     loadFile0(_fi[0]);
   }
-  // console.log(_fi[0]);
 });
+
+
 
 
 function offsetArray(ar, b)
@@ -1348,7 +1348,6 @@ function downloadSaveFile()
     let arrayBuffer = makeSave();
     let _l = arrayBuffer.length;
 
-
     // blob binary large object
     const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
     const _url = URL.createObjectURL(blob);
@@ -1374,7 +1373,7 @@ window.addEventListener('keydown', (event) =>
 	const key = event.key.toLowerCase();
 	if (key_map.hasOwnProperty(key))
 	{
-		key_map[key] = true;
+		if (flag_inText == 0) {key_map[key] = true;} // new change w/ flag for text input
 		if (key_map_prevent.hasOwnProperty(key))
 		{
 			event.preventDefault();
@@ -4444,21 +4443,20 @@ function Compute(init_dat)
 		rotateObject(0, stn_rotation[0]);
 	}
 
-	if (mouseLock && key_map["5"] && runEvery(150)) // Move to fn later
+	if (key_map["5"] && runEvery(150)) // Move to fn later
 	{
 		mirrorOverPlane();
 	}
 
 
-	if (mouseLock && key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
+	if (key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
 
-  // added mouseLock. should just be while inside input box check function
-	if (key_map.l && mouseLock && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
+	if (key_map.l && runEvery(300)) {link_obj(obj_cyc, stn_link_tool);}
 
 	if ((key_map.q || key_map.enter) && runEvery(220)) {pointerLockSwap();}
 
 
-	if (mouseLock && key_map["7"] && runEvery(300))
+	if (key_map["7"] && runEvery(300))
 	{
 		createCircleAtCursor();
 	}
@@ -4513,7 +4511,7 @@ function Compute(init_dat)
   }
 
 
-	if (key_map.i && mouseLock && runEvery(350)) {bond_obj(obj_cyc);}
+	if (key_map.i && runEvery(350)) {bond_obj(obj_cyc);}
 
 
 	keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
