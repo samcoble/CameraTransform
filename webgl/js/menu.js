@@ -24,6 +24,8 @@
 
 */
 
+var _this; // ez pointer for params
+var _settings = [];
 
 function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles, liStyle, myUlStyle)
 {
@@ -130,24 +132,28 @@ function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles
 
 function addDiv(par)
 {
-    const div = document.createElement("div");
-    // stuff
-    div.id = par.id;
-    div.className = par.cls;
+  const div = document.createElement("div");
+  div.id = par.id;
+  div.className = par.cls;
 
-    if (par.text != null)
-    {
-        div.innerHTML = par.text;
-    }
+  if (par.text != null)
+  {
+      div.innerHTML = par.text;
+  }
 
-    var _t = document.getElementById(par.prnt);
+  if (typeof par.settings != "undefined")
+  {
+    _settings.push(par);
+  }
 
-    if (_t == null)
-    {document.body.appendChild(div);}
-    else {_t.appendChild(div);}
+  var _t = document.getElementById(par.prnt);
 
-    applyStyles(div, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles);
-    return div;
+  if (_t == null)
+  {document.body.appendChild(div);}
+  else {_t.appendChild(div);}
+
+  applyStyles(div, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles);
+  return div;
 }
 
 function addButton(par)
@@ -216,6 +222,13 @@ function addTextInput(par)
       flag_inText = 0;
     });
 
+    input.addEventListener('keydown', function(event)
+    {
+      if (event.key === 'Enter' && flag_inText == 1)
+      {
+        input.blur();
+      }
+    });
 
     var _t = document.getElementById(par.prnt);
     if (_t == null)
@@ -252,6 +265,12 @@ function addFileInput(par)
 
 // replacing entire works for lists so far but maybe not the best long term not sure
 // deletion updates and aligns but may also provide the data's delta for any updates...?
+// move to better place eventually
+
+var draggedElement;
+var _attr_fi = 'data-folderIndex';
+var _attr_t = 'data-type';
+var _attr_k = 'data-k';
 
 const tree_colors_a = 1.0;
 const tree_colors = [
@@ -276,8 +295,9 @@ function updateTree(par)
   document.getElementById(par.id).innerHTML = "";
 
 
-  _m = makeTree(tree_allObjects);
-  // _m = makeTree(par);
+  // should use par?
+  // _m = makeTree(tree_allObjects);
+  _m = makeTree(par);
 
   // console.log(_m);
   // tree_allObjects_ul_0
@@ -295,12 +315,6 @@ function updateTree(par)
   // innerHTML is like text = text. not same.
   // must query to be able to append
 }
-
-// move to better place eventually
-var draggedElement;
-var _attr_fi = 'data-folderIndex';
-var _attr_t = 'data-type';
-var _attr_k = 'data-k';
 
 // the key here is query selector using direct parent ! lmao
 function makeTree(par) // output my tree in form of total html structure
@@ -347,9 +361,10 @@ function makeTree(par) // output my tree in form of total html structure
       // place li w/ folder name. use for interaction
       const _li_fld = document.createElement("li");
       _li_fld.className = (par.id+"_li");
-      _li_fld.textContent = _n +": "+ _root[i][j] + " : " + obj_folders[_root[i][j]].length;
 
-      // _li_fld.textContent = _n; // Enable after tree works correctly or show size in new element
+      // _li_fld.textContent = _n +": "+ _root[i][j] + " : " + obj_folders[_root[i][j]].length;
+
+      _li_fld.textContent = obj_folders[_root[i][j]].length + " | " + _n; // Enable after tree works correctly or show size in new element
       
       _li_fld.style.backgroundColor = tree_colors[(_root[i][j]+1)%tree_colors.length];
       _li_fld.style.height = (_s_fld_li_h+_s_fld_li_ex)+'px';
@@ -716,127 +731,61 @@ function setChecked(id, setbool)
     _cbx.checked = setbool;
 }
 
+// move to menu fns ???
 function menuLinkObj()
 {link_obj(obj_cyc, stn_link_tool);}
 
-function gridSettingsUpdate(par)
-{
-    grid_.scale_f = getInputById(par.id);
-    updateGrid();
-}
 
-function circleSettingsUpdate() // bad needs system
-{
-    stn_cir_tool.scale = checkNumber(getInputById("textIn_scale")) != false ? parseFloat(getInputById("textIn_scale")) : stn_cir_tool.scale;
-    stn_cir_tool.divider = checkNumber(getInputById("textIn_divider")) != false ? parseFloat(getInputById("textIn_divider")) : stn_cir_tool.divider;
-    stn_cir_tool.off = checkNumber(getInputById("textIn_off")) != false ? parseFloat(getInputById("textIn_off")) : stn_cir_tool.off;
-}
+// side note: loadPoints fn if using redirect could generalize/link tree better?
+// parallel arrays should be provided an array pointing to what is in parallel
+// then a loop could provide data managment
 
-function drawSettingsUpdate(par)
+
+// new better way
+function updateSetting(par)
 {
-    var cbxs = document.querySelectorAll("."+par.class);
-    cbxs.forEach(function(e, i)
+  const _cd = document.getElementById(par.stn.id); // callback outer div
+  let ins = _cd.querySelectorAll('input');
+
+  ins.forEach(function(e, i)
+  {
+
+    switch(typeof par.stn.settings[i])
     {
-        stn_draw[i] = getCheckedById(e.id); // set happens here !!! :)
-        if (e.id === par.id)
+      case "number":
+        let _val = typeof checkNumber(e.value) != false ? parseFloat(e.value) : par.stn.settings[i]; // return previously valid if NaN
+        par.stn.settings[i] = _val;
+        break;
+      case "boolean":
+        par.stn.settings[i] = e.checked;
+        break;
+      case "object": // haxed
+        let _s = par.stn.settings.length;
+        if (e.id == par.id)
         {
-            //console.log(e.id);
-            //console.log(document.getElementById( e.id ).checked);
-            //console.log(getCheckedById( e.id ));
-        }
-    });
-
-    if (!stn_draw[2])
-    {
-        rgbas_tri_f = rgbas_tri;
-    } else {
-        rgbas_tri_f = rgbas_tri_opacity;
-    }
-
-}
-
-function linkSettingsUpdate(par)
-{
-    var cbxs = document.querySelectorAll("."+par.class);
-    cbxs.forEach(function(e, i)
-    {
-        //console.log(e.id);
-        setChecked(e.id, true);
-        if (e.id !== par.id)
-        {
-            setChecked(e.id, false);
-           // console.log(e.id + " : " + par.id);
+          par.stn.settings[i][0] = true;
+          e.checked = true;
         } else {
-            stn_link_tool = i;
-            //console.log(i);
+          par.stn.settings[i][0] = false;
+          e.checked = false;
         }
-    });
+        break;
+
+      // add text in later
+    }
+    
+    // console.log(i + " : " + par.stn.settings[i][0]);
+  });
+
+  // console.log(par.stn.settings);
 }
 
-//var stn_test = {};
-
-function lockSettingsUpdate(par)
-{
-    var cbxs = document.querySelectorAll("."+par.class);
-    cbxs.forEach(function(e, i)
-    {
-        stn_trns[i] = getCheckedById(e.id); // set happens here !!! :)
-        // maybe this obj creation can happen in the constructor
-        // uncertain if bidirectional
-        // seriously crazy amount of work compared to arrays lol
-        //stn_test[e.id] = getCheckedById(e.id); // set happens here !!! :)
-        if (e.id === par.id)
-        {
-            //console.log(e.id);
-            //console.log(getCheckedById( e.id ));
-        }
-    });
-}
-
-function paintSettingsUpdate() // bad needs system
-{
-    stn_paint[0] = checkNumber(document.getElementById("textIn_paintSettings_dist").value) != false ? parseFloat(document.getElementById("textIn_paintSettings_dist").value) : stn_paint[0];
-    stn_paint[1] = checkNumber(document.getElementById("textIn_paintSettings_nodes").value) != false ? parseFloat(document.getElementById("textIn_paintSettings_nodes").value) : stn_paint[1];
-    stn_paint[2] = document.getElementById("cbx_paintInf").checked;
-}
-
-var world_color = [];
-
-function colorSettingsUpdate(par) // bad needs system
-{
-    var inputs = document.querySelectorAll("."+par.class);
-    inputs.forEach(function(e, i)
-    {
-        world_color[i] = getInputById(e.id); // set happens here !!! :)
-        if (e.id === par.id)
-        {
-            //console.log(e.id);
-            //console.log(getCheckedById( e.id ));
-        }
-    });
-
-    setBackgroundColor(world_color);
-}
-
-
-function rotationSettingsUpdate(par) // bad needs system
-{
-    var inputs = document.querySelectorAll("."+par.class);
-    inputs.forEach(function(e, i)
-    {
-        stn_rotation[i] = getInputById(e.id)*1; // set happens here !!! :)
-        if (e.id === par.id)
-        {
-            //console.log(e.id);
-            //console.log(getCheckedById( e.id ));
-        }
-    });
-}
 
 /*
 
 
 */
+
 
 var justOuter =
 `
@@ -1036,6 +985,15 @@ var _error_info =
             //overflow-y: auto;
     
     //////////////////////////////////////////////////////////////////////////////////////
+
+/*
+                             ╔╗
+                            ╔╝╚╗
+                            ╚╗╔╝╔═╗╔══╗╔══╗
+                             ║║ ║╔╝║╔╗║║╔╗║
+                             ║╚╗║║ ║║═╣║║═╣
+                             ╚═╝╚╝ ╚══╝╚══╝
+*/
 
 /*
 left: 700px;
@@ -1520,6 +1478,7 @@ var div_root =
             var div_detail_circleSettings =
             {
                 id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
+                settings: [8, 24, 0],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detail_circleSettings);
 
@@ -1583,9 +1542,11 @@ var div_root =
                         id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
                         rootStyle: rootStyle + textIn_css,
                         hoverStyles: textIn_hover,
-                        value: stn_cir_tool.scale,
-                        callback: circleSettingsUpdate
-                    }; addTextInput(textInput_scale);
+                        value: _settings[_settings.length-1].settings[0],
+                        callback: updateSetting
+                    }; _this = textInput_scale;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
 
                 var div_divider =
                 {
@@ -1594,30 +1555,34 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_divider);
 
-                        // No use of class here.
-                        var textInput_divider =
-                        {
-                            id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
-                            rootStyle: rootStyle + textIn_css,
-                            hoverStyles: textIn_hover,
-                            value: stn_cir_tool.divider,
-                            callback: circleSettingsUpdate
-                        }; addTextInput(textInput_divider);
+                    // No use of class here.
+                    var textInput_divider =
+                    {
+                        id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
+                        rootStyle: rootStyle + textIn_css,
+                        hoverStyles: textIn_hover,
+                        value: _settings[_settings.length-1].settings[1],
+                        callback: updateSetting
+                    }; _this = textInput_divider;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
 
-                        var div_off =
-                        {
-                            id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
-                            text: `offset`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_off);
+                var div_off =
+                {
+                    id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
+                    text: `offset`,
+                    rootStyle: rootStyle + div_css + darkBorder
+                }; addDiv(div_off);
 
-                            var textInput_off =
-                            {
-                                id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
-                                rootStyle: rootStyle + textIn_css,
-                                value: stn_cir_tool.off,
-                                callback: circleSettingsUpdate
-                            }; addTextInput(textInput_off);
+                    var textInput_off =
+                    {
+                        id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
+                        rootStyle: rootStyle + textIn_css,
+                        value: _settings[_settings.length-1].settings[2],
+                        callback: updateSetting
+                    }; _this = textInput_off;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
 
             /*
               ╔╗                       ╔╗
@@ -1629,11 +1594,13 @@ var div_root =
             #drawsettings
             */
 
-            var div_detailMenuBox2 =
+
+            var div_detail_drawSettings =
             {
                 id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
+                settings: [true, true, false],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox2);
+            }; addDiv(div_detail_drawSettings);
 
                 var div_drawSettings =
                 {
@@ -1651,49 +1618,48 @@ var div_root =
                 }; addDiv(div_lines);
 
 
+                  var cbx_myStyle_checked =
+                  `
+                      background: rgba(159, 144, 75, 0.8);
+                      box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.3);
+                      border: 0px;
+                  `;
 
-                        var cbx_myStyle_checked =
-                        `
-                            background: rgba(159, 144, 75, 0.8);
-                            box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.3);
-                            border: 0px;
-                        `;
-
-                        var cbx_myStyle_hover =
-                        `
-                            box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
-                            border: 0px;
-                        `;
-                        /*
-                        box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
-                        */
-                        var cbx_myStyle =
-                         `
-                            border: 0px;
-                            float: right;
-                            box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.0);
-                            border-right: 1px solid rgba(120,120,120,0.1);
-                            cursor: pointer;
-                            appearance: none;
-                            outline: 0;
-                            background: rgb(60 60 60 / 50%);
-                            width: 40px;
-                            height:100%;
-                            color: rgba(1, 1, 1, 0);
-                            margin: 0% 0% 0 0%;
-                            padding: 0px;
-                        `;
-                        var cbx_lines =
-                        {
-                            id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
-                            rootStyle: rootStyle + cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: drawSettingsUpdate,
-                            defaultChecked: true
-                        };
-                        cbx_lines.params = {id: cbx_lines.id, class: cbx_lines.cls};
-                        addCheckbox(cbx_lines);
+                  var cbx_myStyle_hover =
+                  `
+                      box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
+                      border: 0px;
+                  `;
+                  /*
+                  box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
+                  */
+                  var cbx_myStyle =
+                   `
+                      border: 0px;
+                      float: right;
+                      box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.0);
+                      border-right: 1px solid rgba(120,120,120,0.1);
+                      cursor: pointer;
+                      appearance: none;
+                      outline: 0;
+                      background: rgb(60 60 60 / 50%);
+                      width: 40px;
+                      height:100%;
+                      color: rgba(1, 1, 1, 0);
+                      margin: 0% 0% 0 0%;
+                      padding: 0px;
+                  `;
+                  var cbx_lines =
+                  {
+                      id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
+                      rootStyle: rootStyle + cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      callback: updateSetting,
+                      defaultChecked: true
+                  }; _this = cbx_lines;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addCheckbox(_this);
 
                 var div_surfaces =
                 {
@@ -1702,17 +1668,17 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_surfaces);
 
-                        var cbx_surfaces =
-                        {
-                            id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
-                            rootStyle: rootStyle + cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: drawSettingsUpdate,
-                            defaultChecked: true
-                        };
-                        cbx_surfaces.params = {id: cbx_surfaces.id, class: cbx_surfaces.cls}
-                        addCheckbox(cbx_surfaces);
+                  var cbx_surfaces =
+                  {
+                      id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
+                      rootStyle: rootStyle + cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      callback: updateSetting,
+                      defaultChecked: true
+                  }; _this = cbx_surfaces;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addCheckbox(_this);
 
                 var div_opacity =
                 {
@@ -1721,16 +1687,16 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_opacity);
 
-                        var cbx_surfaces =
-                        {
-                            id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: drawSettingsUpdate
-                        };
-                        cbx_surfaces.params = {id: cbx_surfaces.id, class: cbx_surfaces.cls};
-                        addCheckbox(cbx_surfaces);
+                  var cbx_opacity =
+                  {
+                      id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
+                      rootStyle: rootStyle+cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      callback: updateSetting,
+                  }; _this = cbx_opacity;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addCheckbox(_this);
 
             /*
             ╔╗       ╔╗           ╔╗
@@ -1744,6 +1710,7 @@ var div_root =
             var div_detailMenuBox3 =
             {
                 id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
+                settings: [{0:false}, {0:true}, {0:false}], // pass numbers as objects to enable radio
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox3);
 
@@ -1767,10 +1734,10 @@ var div_root =
                             rootStyle: rootStyle+cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
-                            callback: linkSettingsUpdate
-                        };
-                        cbx_linear.params = {id: cbx_linear.id, class: cbx_linear.cls}
-                        addCheckbox(cbx_linear);
+                            callback: updateSetting
+                        }; _this = cbx_linear;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
                 var div_zigzag =
                 {
@@ -1786,10 +1753,10 @@ var div_root =
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
                             defaultChecked: true,
-                            callback: linkSettingsUpdate
-                        };
-                        cbx_zigzag.params = {id: cbx_zigzag.id, class: cbx_zigzag.cls}
-                        addCheckbox(cbx_zigzag);
+                            callback: updateSetting
+                        }; _this = cbx_zigzag;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
                 var div_poly =
                 {
@@ -1804,10 +1771,10 @@ var div_root =
                             rootStyle: rootStyle+cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
-                            callback: linkSettingsUpdate
-                        };
-                        cbx_poly.params = {id: cbx_poly.id, class: cbx_poly.cls}
-                        addCheckbox(cbx_poly);
+                            callback: updateSetting
+                        }; _this = cbx_poly;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
 
 
@@ -1823,6 +1790,7 @@ var div_root =
             var div_detailMenuBox4 =
             {
                 id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
+                settings: [false, false, false],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox4);
 
@@ -1862,10 +1830,10 @@ var div_root =
                             rootStyle: rootStyle+cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
-                            callback: lockSettingsUpdate
-                        };
-                        cbx_lockx.params = {id: cbx_lockx.id, class: cbx_lockx.cls}
-                        addCheckbox(cbx_lockx);
+                            callback: updateSetting
+                        }; _this = cbx_lockx;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
 
                 var div_lockySettings =
@@ -1881,10 +1849,10 @@ var div_root =
                             rootStyle: rootStyle+cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
-                            callback: lockSettingsUpdate
-                        };
-                        cbx_lockySettings.params = {id: cbx_lockySettings.id, class: cbx_lockySettings.cls}
-                        addCheckbox(cbx_lockySettings);
+                            callback: updateSetting
+                        }; _this = cbx_lockySettings;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
                 var div_lockzSettings =
                 {
@@ -1899,10 +1867,10 @@ var div_root =
                             rootStyle: rootStyle+cbx_myStyle,
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
-                            callback: lockSettingsUpdate
-                        };
-                        cbx_lockzSettings.params = {id: cbx_lockzSettings.id, class: cbx_lockzSettings.cls}
-                        addCheckbox(cbx_lockzSettings);
+                            callback: updateSetting
+                        }; _this = cbx_lockzSettings;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
 
             /*
@@ -1919,6 +1887,7 @@ var div_root =
             var div_detailMenuBox5 =
             {
                 id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
+                settings: [true, 1, 8],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox5);
 
@@ -1943,10 +1912,10 @@ var div_root =
                             hoverStyles: cbx_myStyle_hover,
                             checkedStyles: cbx_myStyle_checked,
                             defaultChecked: true,
-                            callback: paintSettingsUpdate
-                        };
-                        //cbx_paintInf.params = {id: cbx_paintInf.id, class: cbx_paintInf.cls}
-                        addCheckbox(cbx_paintInf);
+                            callback: updateSetting
+                        }; _this = cbx_paintInf;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addCheckbox(_this);
 
                         var div_paintSettings_dist =
                         {
@@ -1959,9 +1928,11 @@ var div_root =
                             {
                                 id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
                                 rootStyle: rootStyle + textIn_css,
-                                value: stn_paint[0],
-                                callback: paintSettingsUpdate
-                            }; addTextInput(textIn_paintSettings_dist);
+                                value: 1,
+                                callback: updateSetting
+                            }; _this = textIn_paintSettings_dist;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addTextInput(_this);
 
 
                         var div_paintSettings_nodes =
@@ -1975,9 +1946,11 @@ var div_root =
                             {
                                 id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
                                 rootStyle: rootStyle + textIn_css,
-                                value: stn_paint[1],
-                                callback: paintSettingsUpdate
-                            }; addTextInput(textIn_paintSettings_nodes);
+                                value: 8,
+                                callback: updateSetting
+                            }; _this = textIn_paintSettings_nodes;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addTextInput(_this);
 
 
             /*
@@ -1994,6 +1967,7 @@ var div_root =
             var div_detailMenuBox6 =
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
+                settings: [8],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox6);
 
@@ -2015,11 +1989,11 @@ var div_root =
                             {
                                 id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
                                 rootStyle: rootStyle + textIn_css,
-                                value: grid_.scale_f,
-                                callback: gridSettingsUpdate
-                            };
-                            textIn_gridSettings_scale.params = { id:textIn_gridSettings_scale.id };
-                            addTextInput(textIn_gridSettings_scale);
+                                value: 8,
+                                callback: updateSetting
+                            }; _this = textIn_gridSettings_scale;
+                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                        addTextInput(_this);
 
 
 
@@ -2038,6 +2012,7 @@ var div_root =
             var div_detailMenuBox7 =
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
+                settings: [15, 15, 15],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox7);
 
@@ -2059,11 +2034,12 @@ var div_root =
                             {
                                 id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
                                 rootStyle: rootStyle + textIn_css,
-                                value: _bg_default[0],
-                                callback: colorSettingsUpdate
-                            };
-                            textIn_colorSettings_r.params = {id: textIn_colorSettings_r.id, class: textIn_colorSettings_r.cls}
-                            addTextInput(textIn_colorSettings_r);
+                                value: 15,
+                                callback: updateSetting
+                            }; _this = textIn_colorSettings_r;
+                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                            addTextInput(_this);
+
 
                         var div_colorSettings_g =
                         {
@@ -2076,11 +2052,11 @@ var div_root =
                             {
                                 id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
                                 rootStyle: rootStyle + textIn_css,
-                                value: _bg_default[1],
-                                callback: colorSettingsUpdate
-                            };
-                            textIn_colorSettings_g.params = {id: textIn_colorSettings_g.id, class: textIn_colorSettings_g.cls}
-                            addTextInput(textIn_colorSettings_g);
+                                value: 15,
+                                callback: updateSetting
+                            }; _this = textIn_colorSettings_g;
+                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                            addTextInput(_this);
 
 
                         var div_colorSettings_b =
@@ -2094,14 +2070,15 @@ var div_root =
                             {
                                 id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
                                 rootStyle: rootStyle + textIn_css,
-                                value: _bg_default[2],
-                                callback: colorSettingsUpdate
-                            };
-                            textIn_colorSettings_b.params = {id: textIn_colorSettings_b.id, class: textIn_colorSettings_b.cls}
-                            addTextInput(textIn_colorSettings_b);
+                                value: 15,
+                                callback: updateSetting 
+                            }; _this = textIn_colorSettings_b;
+                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                            addTextInput(_this);
+
 
                             // automate this part
-                            world_color = ["20", "20", "20"];
+                            // world_color = ["20", "20", "20"];
 
             /*
                     ╔╗      ╔╗                    ╔╗
@@ -2116,6 +2093,7 @@ var div_root =
             var div_detailMenuBox8 =
             {
                 id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
+                settings: [45],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox8);
 
@@ -2137,11 +2115,11 @@ var div_root =
                             {
                                 id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
                                 rootStyle: rootStyle + textIn_css,
-                                value: stn_rotation[0],
-                                callback: rotationSettingsUpdate
-                            };
-                            textIn_rotationSettings_r.params = {id: textIn_rotationSettings_r.id, class: textIn_rotationSettings_r.cls}
-                            addTextInput(textIn_rotationSettings_r);
+                                value: 45,
+                                callback: updateSetting
+                            }; _this = textIn_rotationSettings_r;
+                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                            addTextInput(_this);
 
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
@@ -2206,85 +2184,6 @@ var div_root =
                 items: key_bind_info
             };
             addList(list_keyBindInfo);
-
-
-
-
-// Example usage code for future use
-
-
-// function fileInputCallback(files)
-// {
-//     console.log(files);
-// }
-
-// function textInputCallback(par)
-// {
-//     if (par != null) {console.log(`Text input changed! Parameter: ${par.text}`);}
-// }
-
-// var chkBx =
-//  `
-// left: 500px;
-// top: 500px;
-// background-color: rgb(99, 99, 99);
-// `;
-// var checkboxParams =
-// {
-//     id: "myCheckbox", cls: "_checkbox", prnt: "menu_detail",
-//     rootStyle: rootStyle+chkBx,
-//     callback: textInputCallback, // Pass the function reference
-//     params: { text: "Custom Parameter" }, // Pass the parameter as an object
-// };
-// addCheckbox(checkboxParams);
-
-// var txtIn =
-//  `
-// left: 600px;
-// top: 600px;
-// background-color: rgb(120, 120, 120);
-// `;
-// var textInputParams =
-// {
-//     id: "myTextInput", cls: "_textInput", prnt: "menu_detail",
-//     rootStyle: rootStyle+txtIn,
-//     callback: textInputCallback, // Pass the function reference
-//     params: { text: "Custom Parameter" }, // Pass the parameter as an object
-// };
-// addTextInput(textInputParams);
-
-// var listStyle =
-//  `
-// left: 100px;
-// top: 100px;
-// padding: 0px;
-// width: 300px;
-// height: 20px;
-// `;
-// var listParams =
-// {
-//     id: "myList", cls: "_list", prnt: "menu_detail",
-//     color1: "#666", color2: "#444",
-//     rootStyle: rootStyle + listStyle,
-//     items: ["Item 1", "Item 2", "Item 3"], // Add your array of items here
-// };
-// addList(listParams);
-
-// var fileBtn =
-//  `
-// left: 100px;
-// top: 100px;
-// background-color: rgb(55, 55, 55);
-// `;
-// var fileInputParams =
-// {
-//     id: "myFileInput", cls: "_filein", prnt: "menu_detail",
-//     rootStyle: fileBtn,
-//     callback: fileInputCallback, // Pass the function reference
-// };
-// addFileInput(fileInputParams);
-
-
 
 
 
