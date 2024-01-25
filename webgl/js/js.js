@@ -25,6 +25,9 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 @?@?@
 ?@?@?
 @?@?@
+
+      -- finish center inds?
+
       -- need parallel array manager to auto manage all the krap
 
       -- Multi select can be done by tracking change in obj_cyc and log kept such that any number referenced twice get's removed
@@ -392,8 +395,6 @@ var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win
 var in_win_wh, in_win_hw;
 var _s_ratio;
 
-const fileInput = document.getElementById('fileInput');
-
 var screen_width, screen_height;
 var fileName = "";
 
@@ -463,11 +464,11 @@ var one_time_fix = 1;
 
 var _preview_scaler;
 
-var menu_q_size = [610, 730];
+var menu_q_size = [610, 930];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [0, 0]; // fix me entire system wacked
 var menu_objpreview_pos = [0, 0]; // fix me
-var menu_keys_pos = [155, 10];
+// var menu_keys_pos = [155, 10];
 var menu_wpn_pos = [155, 10];
 
 var menu_tab = 0;
@@ -497,7 +498,7 @@ var rgba_ch = "rgba(50, 200, 50, 0.9)";
 var rgba_lp = "rgba(40, 40, 40, 0.75)";
 
 var rgba_dgray = "rgb(12, 12, 12)";
-var rgba_gray = "rgb(17, 17, 18)";
+var rgba_gray = "rgb(16, 16, 16)";
 
 var rgba_lgray = "rgba(222, 222, 222, 0.3)";
 var rgba_ldgray = "rgba(85, 85, 85, 0.3)";
@@ -636,8 +637,8 @@ function updateMenuPos() // this stuff so bad jesus
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
 
 
-	menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
+	// menu_keys_pos = [11, 10];
+	menu_q_pos = [in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]+100];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
@@ -664,9 +665,14 @@ function updateMenuPos() // this stuff so bad jesus
 	resizeCanvas(in_win_w, in_win_h);
 }
 
-function setBackgroundColor(_wc)
+function setBackgroundColor()
 {
-	document.body.style.backgroundColor = "rgb(" + _wc[0] + "," + _wc[1] + "," + _wc[2] + ")";
+  let _c = [
+   _settings[6].settings[0],
+   _settings[6].settings[1],
+   _settings[6].settings[2]
+  ];
+	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
 };
 
 
@@ -1133,10 +1139,9 @@ function makeSave()
   return new Float32Array(packArray(_r));
 }
 
-// obj load & unpack
-fileInput.addEventListener('change', event => 
+// obj load & unpack new
+function loadSelect(_fi)
 {
-	const _fi = event.target.files;
   if (key_map.shift)
   {
     // flag_loadingObject = 1;
@@ -1145,10 +1150,9 @@ fileInput.addEventListener('change', event =>
     // flag_loadingObject = 1;
     loadFile0(_fi[0]);
   }
-});
-
-
-
+  // should be replaced ...
+  updateValueByPar(menu_status_l3, fileName);
+}
 
 function offsetArray(ar, b)
 {
@@ -1229,7 +1233,7 @@ function loadFile0(_fi)
           obj_folders.push(offsetArray(_r[3][i], -(world_obj_count+1)+_s1));
         }
       }
-      console.log(_r);
+      // console.log(_r);
       
       // load objs
       for (let i=0; i<_r[1].length; i++)
@@ -1609,9 +1613,6 @@ function meanctr_obj(ar) // I think this work. I hope so.
 
 
 var m_obj_offs = [];
-
-// var m_obj_rots = [];
-
 
 var m_objs = []; // [[n,...,],[n,...,],...]
 var mem_log = []; // [start, size]
@@ -3054,7 +3055,8 @@ function del_world()
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
   m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
 
-	fileInput.value = '';
+  updateTextByPar(menu_status_l3, "...");
+
 	obj_cyc = m_objs.length-1;
 
   updateTree(tree_allObjects);
@@ -3167,21 +3169,18 @@ function drawOverlay(init_dat)
 
 	updateMenuPos();
 
-	// This needs to be fixed. Temp as I port menu to new script.
-	if (mouseLock)
-	{setVisibility({hide:"menu_1", show:""});
-	} else
-	{setVisibility({hide:"", show:"menu_1"});}
+	// While in menu with low call rate i'll set values here:
 
+	// This needs to be fixed. Temp as I port menu to new script.
+	if (mouseLock) {setVisibility({hide:"menu_1", show:""});} else {setVisibility({hide:"", show:"menu_1"});}
+
+  // temp until I move it to new menu in obj menu !!!
   setVisibility({hide:"list_objectSelect", show:""});
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 	//obj_updateNormalMaps();
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
-
-	// drawPanel(ctx_o, rgba_dgray, rgba_lgray, menu_obj_pos[0]+1, menu_obj_pos[1]-menu_obj_size[0], 148, 150);
-
 
 	//Crosshair
 	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
@@ -3194,47 +3193,18 @@ function drawOverlay(init_dat)
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+142, menu_wpn_pos[1]+6, 62, 58);
 	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+210, menu_wpn_pos[1]+6, 62, 58);
 
-	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56); // Darklighter box
-
- 
-	// While in menu with low call rate i'll set values here:
-
-	/*========================================================*/
-	/*================--------------------------==============*/
-	/*================----- SET TOOL VALUES ----==============*/
-	/*================--------------------------==============*/
-	/*========================================================*/
-
-
-	document.getElementById("fileInput").style.position = "absolute";
-	document.getElementById("fileInput").style.left = (menu_keys_pos[0]+15)+"px";
-	document.getElementById("fileInput").style.top = (62)+"px";
-
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_keys_pos[0], menu_keys_pos[1], 410, 88); // Open file mover
-
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, -5, -5, 1, 1); // SUPER HOT FIX for panel 1px border. MAKES. ZERO. SENSE. I have tried everything this is actually globally broken right now.
-
-	// Remove aim thing
-
-	drawText(ctx_o, rgba_otext, "left", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]", menu_keys_pos[0]+15, 34);
-	//drawText(ctx_o, rgba_otext, "right", "aim[" + ((init_dat.data[mem_log[1][0]]-in_win_wc)/s_fov).toFixed(1) + ", " + ((init_dat.data[mem_log[1][0]+1]-in_win_hc)/s_fov).toFixed(1) + ", " + init_dat.data[mem_log[1][0]+3].toFixed(1)+"]", menu_keys_pos[0]+398, 34);
-	// drawText(ctx_o, rgba_otext, "right", "aim[" + player_look_dir[0].toFixed(1) + ", " + player_look_dir[1].toFixed(1) + "]",  menu_keys_pos[0]+398, 34);
-  drawText(ctx_o, rgba_otext, "right", "fps[" + _fps + "]",  menu_keys_pos[0]+398, 34);
-	drawText(ctx_o, rgba_otext, "left", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]", menu_keys_pos[0]+15, 49);
-	drawText(ctx_o, rgba_otext, "right", "grid_scale[" + _settings[5].settings[0]+"]", menu_keys_pos[0]+398, 49);
-
+  // Darklighter box
+	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56);
 
 	//Wpn select text
-	drawText(ctx_o, rgba_otext, "left", "[1]", menu_wpn_pos[0]+9, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_otext, "left", "[2]", menu_wpn_pos[0]+76, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_otext, "left", "[3]", menu_wpn_pos[0]+144, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_otext, "left", "[4]", menu_wpn_pos[0]+212, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_otext, "left", "GRID", menu_wpn_pos[0]+22, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_otext, "left", "MOVE", menu_wpn_pos[0]+91, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_otext, "left", "PAINT", menu_wpn_pos[0]+155, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_otext, "left", "RAY", menu_wpn_pos[0]+230, menu_wpn_pos[1]+45);
-
-
+	drawText(ctx_o, rgba_w, "left", "[1]", menu_wpn_pos[0]+9, menu_wpn_pos[1]+21);
+	drawText(ctx_o, rgba_w, "left", "[2]", menu_wpn_pos[0]+76, menu_wpn_pos[1]+21);
+	drawText(ctx_o, rgba_w, "left", "[3]", menu_wpn_pos[0]+144, menu_wpn_pos[1]+21);
+	drawText(ctx_o, rgba_w, "left", "[4]", menu_wpn_pos[0]+212, menu_wpn_pos[1]+21);
+	drawText(ctx_o, rgba_w, "left", "GRID", menu_wpn_pos[0]+22, menu_wpn_pos[1]+45);
+	drawText(ctx_o, rgba_w, "left", "MOVE", menu_wpn_pos[0]+91, menu_wpn_pos[1]+45);
+	drawText(ctx_o, rgba_w, "left", "PAINT", menu_wpn_pos[0]+155, menu_wpn_pos[1]+45);
+	drawText(ctx_o, rgba_w, "left", "RAY", menu_wpn_pos[0]+230, menu_wpn_pos[1]+45);
 }
 
 
@@ -4385,11 +4355,12 @@ function Compute(init_dat)
            ?@?@?
            @?@*/
 
-	ctx.imageSmoothingEnabled = false;
-	ctx.lineCap = "butt";
+	// ctx.imageSmoothingEnabled = false;
+	// ctx.lineCap = "butt";
 
   // This needs to be replaced with menu script providing multiple callback functions.
   // Shared and specific callback functions need differentiation
+  // //
 
 	if (obj_cyc != obj_cyc_i)
 	{
@@ -4399,21 +4370,16 @@ function Compute(init_dat)
 		obj_cyc_i = obj_cyc;
 	}
 
+  // will have to look on my git to find history bring this back in to remove
   if (_settings[5].settings[0] != grid_scale_d)
   {
     updateGrid();
   }
 
-  if (_settings[6].settings[0] != world_color[0] ||
-      _settings[6].settings[1] != world_color[1] ||
-      _settings[6].settings[2] != world_color[2])
-  {
-    world_color[0] = _settings[6].settings[0];
-    world_color[1] = _settings[6].settings[1];
-    world_color[2] = _settings[6].settings[2];
-    setBackgroundColor(world_color);
-  }
-
+  updateTextByPar(menu_status_l0, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
+  updateTextByPar(menu_status_l1, "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
+  updateTextByPar(menu_status_r0, "fps[" + _fps + "]");
+  updateTextByPar(menu_status_r1, "grid_scale[" + _settings[5].settings[0]+"]");
 
 	if (key_map.shift && key_map.r) // Move to fn later
 	{

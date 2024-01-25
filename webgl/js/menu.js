@@ -4,30 +4,34 @@
 // very noob level implementation here though. I just wan't absolute freedom.
 
 /*
-                    -- check number on getInput function
+      -- check number on getInput function
 
-                    -- js so funny man
-                        - 1*"2" = 2
-                        - 2+"" = "2"
+      -- js so funny man
+          - 1*"2" = 2
+          - 2+"" = "2"
 
-                    -- i can't tell if i'm on the right track.
-                        - maybe i can design it such that
-                            [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
+      -- i can't tell if i'm on the right track.
+          - maybe i can design it such that
+              [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
 
-                        i'll learn how if I properly create a windowDraggable feature that's automatic per section.
-                        or use table with string id's to make one update function convert menu code to a settings array.
+          i'll learn how if I properly create a windowDraggable feature that's automatic per section.
+          or use table with string id's to make one update function convert menu code to a settings array.
 
-         log box needs to be reloadable 
-         basically make push fn also perform js text load
-             -- super key here to put that fn inside the listener assigned to text boxes.
-             -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
+     log box needs to be reloadable 
+     basically make push fn also perform js text load
+
+     -- super key here to put that fn inside the listener assigned to text boxes.
+     -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
+
+     -- not needed to pass params or callback. okay because of new params for functions not using secondary params
+     -- now add second callback par for check boxes and textinputs and file open?
 
 */
 
 var _this; // ez pointer for params
 var _settings = [];
 
-function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles, liStyle, myUlStyle)
+function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles, liStyle, myUlStyle) //myFileInStyle
 {
     /*
                ╔╗
@@ -128,6 +132,16 @@ function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles
         document.head.appendChild(styleElement);
     }      
 
+    /*
+    */
+
+    // if (myFileInStyle && myFileInStyle.trim() !== "")
+    // {
+    //     const _temp_str = `#${element.id} {${myFileInStyle}}`;
+    //     const styleElement = document.createElement('style');
+    //     styleElement.textContent = _temp_str;
+    //     document.head.appendChild(styleElement);
+    // }      
 }
 
 function addDiv(par)
@@ -186,7 +200,12 @@ function addCheckbox(par)
     checkbox.className = par.cls;
 
     checkbox.addEventListener("change", function ()
-    { par.callback(par.params); });
+    {
+      // could add undefined check but may not work
+      if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
+      if (typeof par.niladic != "undefined") {par.niladic();}
+      // par.callback(par.params);
+    });
 
     var _t = document.getElementById(par.prnt);
     if (_t == null)
@@ -208,7 +227,9 @@ function addTextInput(par)
     input.addEventListener("input", function ()
     {
       par.value = input.value;
-      par.callback(par.params);
+      // par.callback(par.params);
+      if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
+      if (typeof par.niladic != "undefined") {par.niladic();}
       flag_inText = 1;
     });
 
@@ -241,21 +262,40 @@ function addTextInput(par)
 
 function addFileInput(par)
 {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.id = par.id;
-    fileInput.className = par.cls;
+  const fileLabel = document.createElement("label");
+  fileLabel.id = par.id;
+  fileLabel.className = par.cls;
+  fileLabel.innerHTML = par.text;
 
-    fileInput.addEventListener("change", function ()
-    { par.callback(fileInput.files); });
+  // fileLabel.style.display = "inline-block";
+  // fileLabel.style.padding = "6px 12px";
+  // fileLabel.style.width = "100%";
+  // fileLabel.style.height = "25%";
+  // fileLabel.style.border = "1px solid #ccc";
+  // fileLabel.style.cursor = "pointer";
 
-    var _t = document.getElementById(par.prnt);
-    if (_t == null)
-    {document.body.appendChild(fileInput);}
-    else {_t.appendChild(fileInput);}
+  // manage file krap
+  const fileInput = document.createElement("input");
 
-    applyStyles(fileInput, par.rootStyle, par.hoverStyles, par.clickStyles);
-    return fileInput;
+  fileInput.type = "file";
+  fileInput.autocomplete = "off";
+  fileInput.accept = ".bin";
+  fileInput.style.width = "100%";
+  fileInput.style.height = "100%";
+
+  fileInput.addEventListener("change", function ()
+  { par.callback(fileInput.files); });
+
+  fileLabel.appendChild(fileInput);
+
+  var _t = document.getElementById(par.prnt);
+  if (_t == null)
+  {document.body.appendChild(fileLabel);}
+  else {_t.appendChild(fileLabel);}
+
+  // applyStyles(fileInput, par.rootStyle);
+  applyStyles(fileLabel, par.rootStyle, par.hoverStyles, par.clickStyles);
+  return fileLabel;
 }
 
 // need to make new addTree function. parse my arbitrary data
@@ -731,6 +771,18 @@ function setChecked(id, setbool)
     _cbx.checked = setbool;
 }
 
+function updateTextByPar(par, _v)
+{
+  const _e = document.getElementById(par.id);
+  if (_e != "undefined") {_e.innerHTML = _v;}
+}
+
+function updateValueByPar(par, _v)
+{
+  const _e = document.getElementById(par.id);
+  if (_e != "undefined") {_e.value = _v;}
+}
+
 // move to menu fns ???
 function menuLinkObj()
 {link_obj(obj_cyc, stn_link_tool);}
@@ -812,11 +864,12 @@ var rootStyle =
  `
 z-index: 2;
 font-size: 12px;
+color: #EEE;
 box-sizing: border-box;
-color: rgb(195, 123, 0);
-background-color: rgb(17, 17, 18);
+background-color: rgb(17, 17, 17);
 
 `;
+// color: rgb(195, 123, 0);
 
 var key_bind_info = 
 [
@@ -911,7 +964,7 @@ var _error_info =
 
     // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 
-    let _fixthis = 730-208;
+    let _fixthis = menu_q_size[1]-208;
     var menu_obj_style =
     `
     box-sizing: border-box;
@@ -943,48 +996,48 @@ var _error_info =
         rootStyle: rootStyle + menu_obj_style
     }; addDiv(menu_obj);
 
-            var menu_objPreview =
-            {
-                id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
-                rootStyle: rootStyle + menu_objPreview_style + justOuter
-            }; addDiv(menu_objPreview);
+      var menu_objPreview =
+      {
+          id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
+          rootStyle: rootStyle + menu_objPreview_style + justOuter
+      }; addDiv(menu_objPreview);
 
-            var listStyle2 =
-            `
-            background-color: rgba(0,0,0,0);
-            width: 96%;
-            padding: 0px;
-            margin: 3px;
-            border: 1px solid rgba(255,255,255,0.1);
-            max-height: `+_fixthis+`px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            `;
+      var listStyle2 =
+      `
+      background-color: rgba(0,0,0,0);
+      width: 96%;
+      padding: 0px;
+      margin: 3px;
+      border: 1px solid rgba(255,255,255,0.1);
+      max-height: `+_fixthis+`px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      `;
 
-            var myLiStyle2 =
-             `
-            box-sizing: border-box;
-            width: 100%;
-            height: 20px;
-            padding: 0px; margin: 0px;
-            border-bottom: 1px solid rgb(12,12,12);
-            text-align: center;
-            line-height: 1.8;
-            `;
+      var myLiStyle2 =
+       `
+      box-sizing: border-box;
+      width: 100%;
+      height: 20px;
+      padding: 0px; margin: 0px;
+      border-bottom: 1px solid rgb(12,12,12);
+      text-align: center;
+      line-height: 1.8;
+      `;
 
-            var list_objectSelect =
-            {
-                id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
-                color1: list_colors.c1, color2: list_colors.c2,
-                rootStyle: rootStyle + listStyle2,
-                liStyles: myLiStyle2,
-                items: _error_info
-            };
-            addList(list_objectSelect);
+      var list_objectSelect =
+      {
+          id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
+          color1: list_colors.c1, color2: list_colors.c2,
+          rootStyle: rootStyle + listStyle2,
+          liStyles: myLiStyle2,
+          items: _error_info
+      };
+      addList(list_objectSelect);
 
-            //overflow-y: auto;
-    
-    //////////////////////////////////////////////////////////////////////////////////////
+      //overflow-y: auto;
+
+//////////////////////////////////////////////////////////////////////////////////////
 
 /*
                              ╔╗
@@ -1013,6 +1066,7 @@ background: rgba(0, 0, 0, 0);
 border: 0px solid rgba(0, 0, 0, 0);
 color: #DDD;
 overflow-y: auto;
+overflow-x: hidden;
 `;
 
 
@@ -1043,87 +1097,86 @@ left: 1px;
 
 var menu_tree =
 {
-    id: "menu_tree", cls: "", prnt: "html",
-    rootStyle: rootStyle + menu_tree_style
+  id: "menu_tree", cls: "", prnt: "html",
+  rootStyle: rootStyle + menu_tree_style
 }; //addDiv(menu_tree);
 
-    var tree_allObjects =
-    {
-        id: "tree_allObjects", cls: "_list", prnt: "menu_obj",
-        color1: list_colors.c1, color2: list_colors.c2, color3: list_colors.c3,
-        rootStyle: rootStyle + menu_tree_style,
-        liStyles: menu_tree_liStyle,
-        myUlStyle: menu_tree_ulStyle
-    }; addTree(tree_allObjects);
+  var tree_allObjects =
+  {
+    id: "tree_allObjects", cls: "_list", prnt: "menu_obj",
+    color1: list_colors.c1, color2: list_colors.c2, color3: list_colors.c3,
+    rootStyle: rootStyle + menu_tree_style,
+    liStyles: menu_tree_liStyle,
+    myUlStyle: menu_tree_ulStyle
+  }; addTree(tree_allObjects);
 
-    var tree_btn_l =
-    `
-        border-radius: 3px 0px 0px 3px;
-    `;
+  var tree_btn_l =
+  `
+  border-radius: 3px 0px 0px 3px;
+  `;
 
-    var tree_btn_r =
-    `
-        border-radius: 0px 3px 3px 0px;
-        border-left: 0px solid black;
-    `;
+  var tree_btn_r =
+  `
+  border-radius: 0px 3px 3px 0px;
+  border-left: 0px solid black;
+  `;
 
-    // color: rgb(195, 123, 0);
-    var tree_btn =
-    `
-    color: #DDD;
-    background-color: rgb(17, 17, 18);
-    margin: 10px 0px 0px 0px;
-    width: 15%;
-    height: 26px;
-    text-align: center;
-    border: 1px solid rgba(200, 200, 200, 0.1);
-    line-height: 2.06;
-    float: right;
-    outline: none;
-    `;
+  var tree_btn =
+  `
+  color: #DDD;
+  background-color: rgb(17, 17, 17);
+  margin: 10px 0px 0px 0px;
+  width: 15%;
+  height: 26px;
+  text-align: center;
+  border: 1px solid rgba(200, 200, 200, 0.1);
+  line-height: 2.06;
+  float: right;
+  outline: none;
+  `;
 
-    var tree_btn_addFolder =
-    {
-        text: ` + `,
-        id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
-        rootStyle: rootStyle + tree_btn + tree_btn_r,
-        // hoverStyles: tree_btn_addFolder,
-        callback: treeModify,
-        params: {func:1}
-    }; addButton(tree_btn_addFolder);
+  var tree_btn_addFolder =
+  {
+    text: ` + `,
+    id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
+    rootStyle: rootStyle + tree_btn + tree_btn_r,
+    // hoverStyles: tree_btn_addFolder,
+    callback: treeModify,
+    params: {func:1}
+  }; addButton(tree_btn_addFolder);
 
-    var tree_btn_delFolder=
-    {
-        text: ` - `,
-        id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
-        rootStyle: rootStyle + tree_btn + tree_btn_l,
-        // hoverStyles: tree_btn_addFolder,
-        callback: treeModify,
-        params: {func:2}
-    }; addButton(tree_btn_delFolder);
+  var tree_btn_delFolder=
+  {
+    text: ` - `,
+    id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
+    rootStyle: rootStyle + tree_btn + tree_btn_l,
+    // hoverStyles: tree_btn_addFolder,
+    callback: treeModify,
+    params: {func:2}
+  }; addButton(tree_btn_delFolder);
 
-    var treeTextInStyle =
-    `
-    color: #DDD;
-    margin: 10px 0px 0px 1%;
-    padding: 4px 0px 0px 10px;
-    width: 68%;
-    height: 26px;
-    outline: none;
-    border-radius: 3px;
-    border: 1px solid rgba(200, 200, 200, 0.1);
-    `;
+  var treeTextInStyle =
+  `
+  color: #DDD;
+  margin: 10px 0px 0px 1%;
+  padding: 4px 0px 0px 10px;
+  width: 68%;
+  height: 26px;
+  outline: none;
+  border-radius: 3px;
+  border: 1px solid rgba(200, 200, 200, 0.1);
+  `;
 
-    var tree_textIn =
-    {
-        id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
-        rootStyle: rootStyle + treeTextInStyle,
-        // hoverStyles: textIn_hover,
-        value: "",
-        callback: treeTextInUpdate
-    };
-    tree_textIn.params = {id: tree_textIn.id, class: tree_textIn.cls};
-    addTextInput(tree_textIn);
+  var tree_textIn =
+  {
+    id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
+    rootStyle: rootStyle + treeTextInStyle,
+    // hoverStyles: textIn_hover,
+    value: "",
+    callback: treeTextInUpdate
+  };
+  tree_textIn.params = {id: tree_textIn.id, class: tree_textIn.cls};
+  addTextInput(tree_textIn);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1132,7 +1185,6 @@ var div_root =
     id: "menu_1", cls: "", prnt: "html",
     rootStyle: rootStyle
 }; addDiv(div_root);
-
 
     var q_menu_holder =
     `
@@ -1152,74 +1204,74 @@ var div_root =
         rootStyle: rootStyle + q_menu_holder + justOuter
     }; addDiv(div_q_menu);
 
-        var tabs_menu =
+      var tabs_menu =
+      `
+      box-sizing: border-box;
+      float: top;
+      height: 7%;
+      margin: 0; padding: 0;
+      z-index: -1;
+      `;
+      var div_q_tabs =
+      {
+          id: "menu_tabs", cls: "", prnt: "menu_q",
+          rootStyle: rootStyle + tabs_menu
+      }; addDiv(div_q_tabs);
+
+        var _btn_hover_tool =
         `
-        box-sizing: border-box;
-        float: top;
-        height: 7%;
-        margin: 0; padding: 0;
-        z-index: -1;
+        background-color: rgb(38, 38, 39);
+        box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
         `;
-        var div_q_tabs =
+
+        var _btn_hover =
+        `
+        background-color: rgb(38, 38, 39);
+        `;
+
+        var _btn_tab =
+        `
+        line-height: 2.4;
+        background-color: rgb(38, 38, 39);
+        text-align: center;
+        border-top: 1px solid rgba(222, 222, 222, 0.1);
+        border-bottom: 0px;
+        border-right: 1px solid rgba(222, 222, 222, 0.1);
+        border-left: 1px solid rgba(222, 222, 222, 0.1);
+        outline: none;
+        width: 23%;
+        height: 66%;
+        padding: 0;
+        border-radius: 2px;
+        `;
+
+        var _btn_tab0 = 
+        `
+        margin: 3% 0% 0% 1%;
+        `;
+        var _btn_tabn = 
+        `
+        margin: 3% 0% 0% 0.5%;
+        `;
+        var btn_open_tab1 =
         {
-            id: "menu_tabs", cls: "", prnt: "menu_q",
-            rootStyle: rootStyle + tabs_menu
-        }; addDiv(div_q_tabs);
+            text: "Tool Settings",
+            id: "tab1", cls: "_btn", prnt: "menu_tabs",
+            rootStyle: rootStyle + _btn_tab + _btn_tab0,
+            hoverStyles: _btn_hover,
+            callback: setVisibility,
+            params: { hide:"div_keysMenu", show:"menu_detail" }, // Update me later
+        }; addButton(btn_open_tab1);
 
-            var _btn_hover_tool =
-            `
-            background-color: rgb(27, 27, 33);
-            box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
-            `;
-
-            var _btn_hover =
-            `
-            background-color: rgb(27, 27, 33);
-            `;
-
-            var _btn_tab =
-            `
-            line-height: 2.4;
-            background-color: rgb(27, 27, 30);
-            text-align: center;
-            border-top: 1px solid rgba(222, 222, 222, 0.1);
-            border-bottom: 0px;
-            border-right: 1px solid rgba(222, 222, 222, 0.1);
-            border-left: 1px solid rgba(222, 222, 222, 0.1);
-            outline: none;
-            width: 23%;
-            height: 66%;
-            padding: 0;
-            border-radius: 2px;
-            `;
-
-            var _btn_tab0 = 
-            `
-            margin: 3% 0% 0% 1%;
-            `;
-            var _btn_tabn = 
-            `
-            margin: 3% 0% 0% 0.5%;
-            `;
-            var btn_open_tab1 =
-            {
-                text: "Tool Settings",
-                id: "tab1", cls: "_btn", prnt: "menu_tabs",
-                rootStyle: rootStyle + _btn_tab + _btn_tab0,
-                hoverStyles: _btn_hover,
-                callback: setVisibility,
-                params: { hide:"div_keysMenu", show:"menu_detail" }, // Update me later
-            }; addButton(btn_open_tab1);
-
-            var btn_open_tab2 =
-            {
-                text: "Key Binds \u1CC4",
-                id: "tab2", cls: "_btn", prnt: "menu_tabs",
-                rootStyle: rootStyle + _btn_tab + _btn_tabn,
-                hoverStyles: _btn_hover,
-                callback: setVisibility,
-                params: { hide:"menu_detail", show:"div_keysMenu" }, // Update me later
-            }; addButton(btn_open_tab2);
+        var btn_open_tab2 =
+        {
+            text: "Key Binds \u1CC4",
+            id: "tab2", cls: "_btn", prnt: "menu_tabs",
+            rootStyle: rootStyle + _btn_tab + _btn_tabn,
+            hoverStyles: _btn_hover,
+            callback: setVisibility,
+            params: { hide:"menu_detail", show:"div_keysMenu" }, // Update me later
+        }; addButton(btn_open_tab2);
 
         var tool_menu =
         `
@@ -1258,11 +1310,9 @@ var div_root =
                 Fqking spooky bugs AHHHHHHH
                     -- can't apply border here after
                             : rootStyle + _btn + _btn_tool_border,
-    
                 benzene ring
                 \u232C
             */
-
 
             var _btn_tool0 =
             `
@@ -1281,8 +1331,7 @@ var div_root =
 
             var _btn =
              `
-            color: rgb(195, 123, 0);
-            background-color: rgb(27, 27, 30);
+            background-color: rgb(38, 38, 39);
             text-align: right;
             border: 1px solid rgba(200, 200, 200, 0.1);
             outline: none;
@@ -1291,6 +1340,7 @@ var div_root =
             line-height: 2.06;
             border-radius: 0px 2px 2px 2px;
             `;
+            // color: rgb(195, 123, 0);
 
             var btn_tool_moveMode =
             {
@@ -1453,39 +1503,37 @@ var div_root =
         }; addDiv(div_detailMenu);
 
 
+              /*
+                           ╔╗              ╔╗
+                           ║║             ╔╝╚╗
+              ╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔═╗
+              ║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗╗
+              ║╚═╗║║║║ ║╚═╗║╚╗║║═╣    ╠══║ ║╚╗║║║║
+              ╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
+              #drawsettings
+              */
 
-            /*
-                         ╔╗              ╔╗
-                         ║║             ╔╝╚╗
-            ╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔═╗
-            ║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗╗
-            ║╚═╗║║║║ ║╚═╗║╚╗║║═╣    ╠══║ ║╚╗║║║║
-            ╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
-            #drawsettings
-            */
-
-
-            var detail_menu_box =
-             `
-            box-sizing: border-box;
-            float: left;
-            width: 48.5%;
-            margin: 5px 0 0 1%;
-            height: 24%;
-            background-color: rgb(17, 17, 18);
-            z-index: -1;
-            `;
-            var div_detail_circleSettings =
-            {
-                id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
-                settings: [8, 24, 0],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detail_circleSettings);
+              var detail_menu_box =
+               `
+              box-sizing: border-box;
+              float: left;
+              width: 48.5%;
+              margin: 5px 0 0 1%;
+              height: 24%;
+              background: rgb(17,17,17);
+              z-index: -1;
+              `;
+              // background-color: rgb(17, 17, 18);
+              var div_detail_circleSettings =
+              {
+                  id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
+                  settings: [8, 24, 0],
+                  rootStyle: rootStyle + detail_menu_box + lightSideBorder
+              }; addDiv(div_detail_circleSettings);
 
                 var div_css =
                 `
-                color: rgb(195, 123, 0);
-                background-color: rgb(27, 27, 30);
+                background-color: rgb(38, 38, 39);
                 text-align: center;
                 //border: 1px rgba(222, 222, 222, 0.3);
                 outline: none;
@@ -1494,6 +1542,7 @@ var div_root =
                 line-height: 2.4;
                 height: 30px;
                 `;
+                // background-color: rgb(27, 27, 30);
                 var textIn_css =
                 `
                     color: rgb(230, 230, 230);
@@ -1503,9 +1552,12 @@ var div_root =
                     height: 100%;
                     text-align: center;
                     outline: none;
-                    background: rgb(60 60 60 / 50%);
-                    border: 1px solid rgba(31,31,31,0.3);
+                    border: 0px solid rgba(0,0,0,0);
+                    background: rgb(16,16,16);
                 `;
+                    // border: 1px solid rgba(31,31,31,0.3);
+
+                    // background: rgb(60 60 60 / 50%);
                 var myTitleStyle =
                 `
                     margin: 0px 0px 6% 0px;
@@ -1513,7 +1565,6 @@ var div_root =
                     height: 24px;
                     line-height: 2;
                 `;
-
 
                 var textIn_hover
                 `
@@ -1536,17 +1587,23 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(circleTool_scale);
 
+                /*
+                  ╔╗╔═╗ 
+                  ╠╣║╔╗╗
+                  ║║║║║║
+                  ╚╝╚╝╚╝
+                */    
 
-                    var textInput_scale =
-                    {
-                        id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
-                        rootStyle: rootStyle + textIn_css,
-                        hoverStyles: textIn_hover,
-                        value: _settings[_settings.length-1].settings[0],
-                        callback: updateSetting
-                    }; _this = textInput_scale;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                  var textInput_scale =
+                  {
+                      id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
+                      rootStyle: rootStyle + textIn_css,
+                      hoverStyles: textIn_hover,
+                      value: _settings[_settings.length-1].settings[0],
+                      callback: updateSetting
+                  }; _this = textInput_scale;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
                 var div_divider =
                 {
@@ -1555,17 +1612,17 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_divider);
 
-                    // No use of class here.
-                    var textInput_divider =
-                    {
-                        id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
-                        rootStyle: rootStyle + textIn_css,
-                        hoverStyles: textIn_hover,
-                        value: _settings[_settings.length-1].settings[1],
-                        callback: updateSetting
-                    }; _this = textInput_divider;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                  // No use of class here.
+                  var textInput_divider =
+                  {
+                      id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
+                      rootStyle: rootStyle + textIn_css,
+                      hoverStyles: textIn_hover,
+                      value: _settings[_settings.length-1].settings[1],
+                      callback: updateSetting
+                  }; _this = textInput_divider;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
                 var div_off =
                 {
@@ -1574,33 +1631,33 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_off);
 
-                    var textInput_off =
-                    {
-                        id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
-                        rootStyle: rootStyle + textIn_css,
-                        value: _settings[_settings.length-1].settings[2],
-                        callback: updateSetting
-                    }; _this = textInput_off;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                  var textInput_off =
+                  {
+                      id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
+                      rootStyle: rootStyle + textIn_css,
+                      value: _settings[_settings.length-1].settings[2],
+                      callback: updateSetting
+                  }; _this = textInput_off;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
-            /*
-              ╔╗                       ╔╗
-              ║║                      ╔╝╚╗
-            ╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
-            ║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
-            ║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
-            ╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
-            #drawsettings
-            */
+              /*
+                ╔╗                       ╔╗
+                ║║                      ╔╝╚╗
+              ╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
+              ║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
+              ║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
+              ╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
+              #drawsettings
+              */
 
 
-            var div_detail_drawSettings =
-            {
-                id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-                settings: [true, true, false],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detail_drawSettings);
+              var div_detail_drawSettings =
+              {
+                  id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
+                  settings: [true, true, false],
+                  rootStyle: rootStyle + detail_menu_box + lightSideBorder
+              }; addDiv(div_detail_drawSettings);
 
                 var div_drawSettings =
                 {
@@ -1649,6 +1706,14 @@ var div_root =
                       margin: 0% 0% 0 0%;
                       padding: 0px;
                   `;
+
+                  /*
+                    ╔╗╔═╗ 
+                    ╠╣║╔╗╗
+                    ║║║║║║
+                    ╚╝╚╝╚╝
+                  */    
+      
                   var cbx_lines =
                   {
                       id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
@@ -1707,6 +1772,7 @@ var div_root =
             ╚═╝╚╝╚╝╚╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
             #linksettings
             */
+
             var div_detailMenuBox3 =
             {
                 id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
@@ -1714,67 +1780,74 @@ var div_root =
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox3);
 
-                var div_linkSettings =
-                {
-                    id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
-                    text: 'link settings \u2366',
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_linkSettings);
+              var div_linkSettings =
+              {
+                  id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
+                  text: 'link settings \u2366',
+                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+              }; addDiv(div_linkSettings);
 
-                var div_linear =
-                {
-                    id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
-                    text: `linear`,
-                    rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_linear);
+              var div_linear =
+              {
+                  id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
+                  text: `linear`,
+                  rootStyle: rootStyle + div_css + darkBorder
+              }; addDiv(div_linear);
 
-                        var cbx_linear =
-                        {
-                            id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: updateSetting
-                        }; _this = cbx_linear;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+              /*
+                ╔╗╔═╗ 
+                ╠╣║╔╗╗
+                ║║║║║║
+                ╚╝╚╝╚╝
+              */    
 
-                var div_zigzag =
-                {
-                    id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
-                    text: `zigzag`,
-                    rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_zigzag);
+              var cbx_linear =
+              {
+                  id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  callback: updateSetting
+              }; _this = cbx_linear;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
-                        var cbx_zigzag =
-                        {
-                            id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            defaultChecked: true,
-                            callback: updateSetting
-                        }; _this = cbx_zigzag;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+            var div_zigzag =
+            {
+                id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
+                text: `zigzag`,
+                rootStyle: rootStyle + div_css + darkBorder
+            }; addDiv(div_zigzag);
 
-                var div_poly =
-                {
-                    id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
-                    text: `poly`,
-                    rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_poly);
+              var cbx_zigzag =
+              {
+                  id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  defaultChecked: true,
+                  callback: updateSetting
+              }; _this = cbx_zigzag;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
-                        var cbx_poly =
-                        {
-                            id: "cbx_poly", cls: "cbx_linkSettings", prnt: "div_linkPoly",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: updateSetting
-                        }; _this = cbx_poly;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+            var div_poly =
+            {
+                id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
+                text: `poly`,
+                rootStyle: rootStyle + div_css + darkBorder
+            }; addDiv(div_poly);
+
+              var cbx_poly =
+              {
+                  id: "cbx_poly", cls: "cbx_linkSettings", prnt: "div_linkPoly",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  callback: updateSetting
+              }; _this = cbx_poly;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
 
 
@@ -1787,6 +1860,7 @@ var div_root =
             ╚═╝╚══╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
             #locksettings
             */
+
             var div_detailMenuBox4 =
             {
                 id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
@@ -1794,83 +1868,90 @@ var div_root =
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox4);
 
-                var div_lockSettings =
-                {
-                    id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
-                    text: 'lock settings \u0466',
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_lockSettings);
+              var div_lockSettings =
+              {
+                  id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
+                  text: 'lock settings \u0466',
+                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+              }; addDiv(div_lockSettings);
 
-                var div_lockSettings_r =
-                `
-                    color: rgb(140,40,40);
-                    text-shadow: 0px 0px 7px #000;
-                `;
-                var div_lockSettings_g =
-                `
-                    color: rgb(40,140,40);
-                    text-shadow: 0px 0px 7px #000;
-                `;
-                var div_lockSettings_b =
-                `
-                    color: rgb(40,40,140);
-                    text-shadow: 0px 0px 7px #000;
-                `;
+              var div_lockSettings_r =
+              `
+                  color: rgb(120,40,40);
+                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+              `;
+                  // text-shadow: 0px 0px 7px #000;
+              var div_lockSettings_g =
+              `
+                  color: rgb(40,120,40);
+                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+              `;
+              var div_lockSettings_b =
+              `
+                  color: rgb(60,60,180);
+                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+              `;
 
-                var div_lockxSettings =
-                {
-                    id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
-                    text: `X`,
-                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_r
-                }; addDiv(div_lockxSettings);
+              var div_lockxSettings =
+              {
+                  id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
+                  text: `X`,
+                  rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_r
+              }; addDiv(div_lockxSettings);
 
-                        var cbx_lockx =
-                        {
-                            id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: updateSetting
-                        }; _this = cbx_lockx;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+              /*
+                ╔╗╔═╗ 
+                ╠╣║╔╗╗
+                ║║║║║║
+                ╚╝╚╝╚╝
+              */    
 
+              var cbx_lockx =
+              {
+                  id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  callback: updateSetting
+              }; _this = cbx_lockx;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
-                var div_lockySettings =
-                {
-                    id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
-                    text: `Y`,
-                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_g
-                }; addDiv(div_lockySettings);
+            var div_lockySettings =
+            {
+                id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
+                text: `Y`,
+                rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_g
+            }; addDiv(div_lockySettings);
 
-                        var cbx_lockySettings =
-                        {
-                            id: "cbx_locky", cls: "cbx_lockSettings", prnt: "div_lockySettings",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: updateSetting
-                        }; _this = cbx_lockySettings;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+              var cbx_lockySettings =
+              {
+                  id: "cbx_locky", cls: "cbx_lockSettings", prnt: "div_lockySettings",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  callback: updateSetting
+              }; _this = cbx_lockySettings;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
-                var div_lockzSettings =
-                {
-                    id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
-                    text: `Z`,
-                    rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_b
-                }; addDiv(div_lockzSettings);
+            var div_lockzSettings =
+            {
+                id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
+                text: `Z`,
+                rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_b
+            }; addDiv(div_lockzSettings);
 
-                        var cbx_lockzSettings =
-                        {
-                            id: "cbx_lockz", cls: "cbx_lockSettings", prnt: "div_lockzSettings",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            callback: updateSetting
-                        }; _this = cbx_lockzSettings;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+              var cbx_lockzSettings =
+              {
+                  id: "cbx_lockz", cls: "cbx_lockSettings", prnt: "div_lockzSettings",
+                  rootStyle: rootStyle+cbx_myStyle,
+                  hoverStyles: cbx_myStyle_hover,
+                  checkedStyles: cbx_myStyle_checked,
+                  callback: updateSetting
+              }; _this = cbx_lockzSettings;
+              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+              addCheckbox(_this);
 
 
             /*
@@ -1884,6 +1965,7 @@ var div_root =
             ╚╝
             #paintsettings
             */
+
             var div_detailMenuBox5 =
             {
                 id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
@@ -1905,52 +1987,59 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_paintInf);
 
-                        var cbx_paintInf =
-                        {
-                            id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
-                            rootStyle: rootStyle+cbx_myStyle,
-                            hoverStyles: cbx_myStyle_hover,
-                            checkedStyles: cbx_myStyle_checked,
-                            defaultChecked: true,
-                            callback: updateSetting
-                        }; _this = cbx_paintInf;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addCheckbox(_this);
+                  /*
+                    ╔╗╔═╗ 
+                    ╠╣║╔╗╗
+                    ║║║║║║
+                    ╚╝╚╝╚╝
+                  */    
 
-                        var div_paintSettings_dist =
-                        {
-                            id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
-                            text: `dist`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_paintSettings_dist);
+                  var cbx_paintInf =
+                  {
+                      id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
+                      rootStyle: rootStyle+cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      defaultChecked: true,
+                      callback: updateSetting
+                  }; _this = cbx_paintInf;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addCheckbox(_this);
 
-                            var textIn_paintSettings_dist =
-                            {
-                                id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 1,
-                                callback: updateSetting
-                            }; _this = textIn_paintSettings_dist;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addTextInput(_this);
+                var div_paintSettings_dist =
+                {
+                    id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
+                    text: `dist`,
+                    rootStyle: rootStyle + div_css + darkBorder
+                }; addDiv(div_paintSettings_dist);
+
+                  var textIn_paintSettings_dist =
+                  {
+                      id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
+                      rootStyle: rootStyle + textIn_css,
+                      value: 1,
+                      callback: updateSetting
+                  }; _this = textIn_paintSettings_dist;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
 
-                        var div_paintSettings_nodes =
-                        {
-                            id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
-                            text: `nodes`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_paintSettings_nodes);
+                var div_paintSettings_nodes =
+                {
+                    id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
+                    text: `nodes`,
+                    rootStyle: rootStyle + div_css + darkBorder
+                }; addDiv(div_paintSettings_nodes);
 
-                            var textIn_paintSettings_nodes =
-                            {
-                                id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 8,
-                                callback: updateSetting
-                            }; _this = textIn_paintSettings_nodes;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addTextInput(_this);
+                  var textIn_paintSettings_nodes =
+                  {
+                      id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
+                      rootStyle: rootStyle + textIn_css,
+                      value: 8,
+                      callback: updateSetting
+                  }; _this = textIn_paintSettings_nodes;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
 
             /*
@@ -1971,29 +2060,37 @@ var div_root =
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox6);
 
-                var div_gridSettings =
+              var div_gridSettings =
+              {
+                  id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
+                  text: 'grid settings \u2637',
+                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+              }; addDiv(div_gridSettings);
+
+                var div_gridSettings_scale =
                 {
-                    id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
-                    text: 'grid settings \u2637',
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_gridSettings);
+                    id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
+                    text: `scale`,
+                    rootStyle: rootStyle + div_css + darkBorder
+                }; addDiv(div_gridSettings_scale);
 
-                        var div_gridSettings_scale =
-                        {
-                            id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
-                            text: `scale`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_gridSettings_scale);
+                  /*
+                    ╔╗╔═╗ 
+                    ╠╣║╔╗╗
+                    ║║║║║║
+                    ╚╝╚╝╚╝
+                  */    
 
-                            var textIn_gridSettings_scale =
-                            {
-                                id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 8,
-                                callback: updateSetting
-                            }; _this = textIn_gridSettings_scale;
-                        _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                        addTextInput(_this);
+                  var textIn_gridSettings_scale =
+                  {
+                      id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
+                      rootStyle: rootStyle + textIn_css,
+                      value: 8,
+                      callback: updateSetting,
+                      niladic: updateGrid
+                  }; _this = textIn_gridSettings_scale;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addTextInput(_this);
 
 
 
@@ -2012,7 +2109,7 @@ var div_root =
             var div_detailMenuBox7 =
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [15, 15, 15],
+                settings: [10, 10, 10],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox7);
 
@@ -2023,62 +2120,70 @@ var div_root =
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_colorSettings);
 
-                        var div_colorSettings_r =
-                        {
-                            id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
-                            text: `red`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_colorSettings_r);
+                  var div_colorSettings_r =
+                  {
+                      id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
+                      text: `red`,
+                      rootStyle: rootStyle + div_css + darkBorder
+                  }; addDiv(div_colorSettings_r);
 
-                            var textIn_colorSettings_r =
-                            {
-                                id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 15,
-                                callback: updateSetting
-                            }; _this = textIn_colorSettings_r;
-                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                            addTextInput(_this);
+                    /*
+                      ╔╗╔═╗ 
+                      ╠╣║╔╗╗
+                      ║║║║║║
+                      ╚╝╚╝╚╝
+                    */    
+
+                    var textIn_colorSettings_r =
+                    {
+                        id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
+                        rootStyle: rootStyle + textIn_css,
+                        value: 10,
+                        callback: updateSetting,
+                        niladic: setBackgroundColor
+                    }; _this = textIn_colorSettings_r;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
+
+                  var div_colorSettings_g =
+                  {
+                      id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
+                      text: `green`,
+                      rootStyle: rootStyle + div_css + darkBorder
+                  }; addDiv(div_colorSettings_g);
+
+                    var textIn_colorSettings_g =
+                    {
+                        id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
+                        rootStyle: rootStyle + textIn_css,
+                        value: 10,
+                        callback: updateSetting,
+                        niladic: setBackgroundColor
+                    }; _this = textIn_colorSettings_g;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
+
+                  var div_colorSettings_b =
+                  {
+                      id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
+                      text: `blue`,
+                      rootStyle: rootStyle + div_css + darkBorder
+                  }; addDiv(div_colorSettings_b);
+
+                    var textIn_colorSettings_b =
+                    {
+                        id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
+                        rootStyle: rootStyle + textIn_css,
+                        value: 10,
+                        callback: updateSetting ,
+                        niladic: setBackgroundColor
+                    }; _this = textIn_colorSettings_b;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
 
 
-                        var div_colorSettings_g =
-                        {
-                            id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
-                            text: `green`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_colorSettings_g);
-
-                            var textIn_colorSettings_g =
-                            {
-                                id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 15,
-                                callback: updateSetting
-                            }; _this = textIn_colorSettings_g;
-                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                            addTextInput(_this);
-
-
-                        var div_colorSettings_b =
-                        {
-                            id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
-                            text: `blue`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_colorSettings_b);
-
-                            var textIn_colorSettings_b =
-                            {
-                                id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 15,
-                                callback: updateSetting 
-                            }; _this = textIn_colorSettings_b;
-                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                            addTextInput(_this);
-
-
-                            // automate this part
-                            // world_color = ["20", "20", "20"];
+                      // automate this part
+                      // world_color = ["20", "20", "20"];
 
             /*
                     ╔╗      ╔╗                    ╔╗
@@ -2097,29 +2202,202 @@ var div_root =
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox8);
 
-                var div_rotationSettings =
-                {
-                    id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
-                    text: 'rotation settings \u2B6E',
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_rotationSettings);
+              var div_rotationSettings =
+              {
+                  id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
+                  text: 'rotation settings \u2B6E',
+                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+              }; addDiv(div_rotationSettings);
 
-                        var div_rotationSettings_r =
-                        {
-                            id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
-                            text: `deg`,
-                            rootStyle: rootStyle + div_css + darkBorder
-                        }; addDiv(div_rotationSettings_r);
+                  var div_rotationSettings_r =
+                  {
+                      id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
+                      text: `deg`,
+                      rootStyle: rootStyle + div_css + darkBorder
+                  }; addDiv(div_rotationSettings_r);
 
-                            var textIn_rotationSettings_r =
-                            {
-                                id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
-                                rootStyle: rootStyle + textIn_css,
-                                value: 45,
-                                callback: updateSetting
-                            }; _this = textIn_rotationSettings_r;
-                            _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                            addTextInput(_this);
+                    /*
+                      ╔╗╔═╗ 
+                      ╠╣║╔╗╗
+                      ║║║║║║
+                      ╚╝╚╝╚╝
+                    */    
+
+                    var textIn_rotationSettings_r =
+                    {
+                        id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
+                        rootStyle: rootStyle + textIn_css,
+                        value: 45,
+                        callback: updateSetting
+                    }; _this = textIn_rotationSettings_r;
+                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                    addTextInput(_this);
+
+
+/*
+                           ╔╗       ╔╗
+                          ╔╝╚╗     ╔╝╚╗
+  ╔╗╔╗╔══╗╔═╗ ╔╗╔╗    ╔══╗╚╗╔╝╔══╗ ╚╗╔╝╔╗╔╗╔══╗
+  ║╚╝║║╔╗║║╔╗╗║║║║    ║══╣ ║║ ╚ ╗║  ║║ ║║║║║══╣
+  ║║║║║║═╣║║║║║╚╝║    ╠══║ ║╚╗║╚╝╚╗ ║╚╗║╚╝║╠══║
+  ╚╩╩╝╚══╝╚╝╚╝╚══╝    ╚══╝ ╚═╝╚═══╝ ╚═╝╚══╝╚══╝
+*/
+
+
+var menu_status_style =
+`
+box-sizing: border-box;
+position: absolute;
+left: 12px;
+top: 12px;
+width: 400px;
+height: 90px;
+border-radius: 3px;
+border: 1px solid rgb(44,44,44);
+color: #DDD;
+padding: 12px;
+background: rgb(13,13,13);
+`;
+
+var menu_status_style_l =
+`
+width: 70%;
+height: 100%;
+float: left;
+background: rgb(13,13,13);
+`;
+
+var menu_status_style_r =
+`
+width: 30%;
+height: 100%;
+float: right;
+background: rgb(13,13,13);
+`;
+
+var _textLeft =
+`
+text-align: left;
+`;
+
+var _textRight =
+`
+text-align: right;
+`;
+
+var menu_status_style_l0 =
+`
+width: 100%;
+height: 23%;
+padding: 1px 0px 0px 1px;
+margin: 0px 0px 0px 0px;
+background: none;
+`;
+
+// border: 1px solid rgba(13,13,13,0.5);
+
+var menu_status_style_l2 =
+`
+display: inline-block;
+float: bottom;
+padding: 6px 0px 0px 12px;
+width: 36%;
+height: 26px;
+margin-top: 3%;
+border: 1px solid rgb(44,44,44);
+cursor: pointer;
+border-radius: 3px 0px 0px 3px;
+`;
+
+var menu_status_style_l3 =
+`
+position: relative;
+top: 0px;
+display: inline-block;
+float: bottom;
+padding: 2px 0px 0px 12px;
+width: 64%;
+height: 26px;
+margin-top: 3%;
+border: 1px solid rgb(44,44,44);
+border-left: none;
+background: rgb(13,13,13);
+border-radius: 0px 3px 3px 0px;
+outline: none;
+`;
+
+
+var menu_status =
+{
+  id: "menu_status", cls: "", prnt: "html",
+  rootStyle: rootStyle + menu_status_style
+}; addDiv(menu_status);
+
+  var menu_status_l =
+  {
+    id: "menu_status_l", cls: "", prnt: "menu_status",
+    rootStyle: rootStyle + menu_status_style_l
+  }; addDiv(menu_status_l);
+
+    var menu_status_l0 =
+    {
+      id: "menu_status_l0", cls: "", prnt: "menu_status_l",
+      text: 123,
+      rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+    }; addDiv(menu_status_l0);
+
+    var menu_status_l1 =
+    {
+      id: "menu_status_l1", cls: "", prnt: "menu_status_l",
+      text: 123,
+      rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+    }; addDiv(menu_status_l1);
+
+    /*
+      ╔╗╔═╗ 
+      ╠╣║╔╗╗
+      ║║║║║║
+      ╚╝╚╝╚╝
+    */    
+
+
+    // fix this area: can use settingUpdate and niladic -> var fileName -> loadSelect()
+
+    var menu_status_l2 =
+    {
+      id: "menu_status_l2", cls: "", prnt: "menu_status_l",
+      text: "Open file",
+      rootStyle: rootStyle + menu_status_style_l2,
+      callback: loadSelect
+    }; addFileInput(menu_status_l2);
+
+    var menu_status_l3 =
+    {
+      id: "menu_status_l3", cls: "", prnt: "menu_status_l",
+      value: "memspc.bin",
+      rootStyle: rootStyle + menu_status_style_l3
+    }; addTextInput(menu_status_l3);
+
+  var menu_status_r =
+  {
+    id: "menu_status_r", cls: "", prnt: "menu_status",
+    rootStyle: rootStyle + menu_status_style_r
+  }; addDiv(menu_status_r);
+
+    var menu_status_r0 =
+    {
+      id: "menu_status_r0", cls: "", prnt: "menu_status_r",
+      text: 123,
+      rootStyle: rootStyle + menu_status_style_l0 + _textRight
+    }; addDiv(menu_status_r0);
+
+    var menu_status_r1 =
+    {
+      id: "menu_status_r1", cls: "", prnt: "menu_status_r",
+      text: 123,
+      rootStyle: rootStyle + menu_status_style_l0 + _textRight
+    }; addDiv(menu_status_r1);
+
 
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
