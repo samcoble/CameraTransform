@@ -25,6 +25,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 @?@?@
 ?@?@?
 @?@?@
+      -- i see now. webgl can accept indices and interp 3d data directly
+      i can probably pass my perspective transform into the new setup 
 
       -- finish center inds?
 
@@ -715,6 +717,7 @@ var key_map =
 	"7": false,
 	" ": false,
 	"/": false,
+  escape: false,
 	control: false,
 	shift: false,
 	enter: false,
@@ -1414,6 +1417,14 @@ window.addEventListener('resize', function()
 document.addEventListener('contextmenu', function (e)
 {
 	e.preventDefault();
+});
+
+document.addEventListener('pointerlockchange', function ()
+{
+  if (document.pointerLockElement === null)
+  {
+    mouseLock = 0;
+  }
 });
 
 document.addEventListener('mousedown', function(e)
@@ -4335,6 +4346,7 @@ function updatePreview()
   */
 }
 
+
 function Compute(init_dat)
 {
 	m_obj_offs[12][0] = _lp_world[0];
@@ -4397,7 +4409,6 @@ function Compute(init_dat)
 	if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
 
 	if ((key_map.q || key_map.enter) && runEvery(220)) {pointerLockSwap();}
-
 
 	if (key_map["7"] && runEvery(300))
 	{
@@ -4847,7 +4858,9 @@ function Compute(init_dat)
 		var _v = 0;
 		for (var i=0; i<_d.length-4; i++)
 		{
-			if ( (i+1)%4 == 0 ) {_v = 0;} else {_v = _d[i].toFixed(4);}
+      // must have set i+1 when I did 2d
+			if ( (i)%4 == 0 ) {_v = 0;} else {_v = (_d[i]/100).toFixed(4);}
+      if (_d[i] == 0) {_v = 0;}
 			if (i!=_d.length-5) {_f = _f+_v+",";} else {_f = _f+_v;}
 			if (i==_d.length-5) {_f = _f+"]";}
 		}
