@@ -227,27 +227,16 @@ function addTextInput(par)
     input.addEventListener("input", function ()
     {
       par.value = input.value;
-      // par.callback(par.params);
       if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
       if (typeof par.niladic != "undefined") {par.niladic();}
-      flag_inText = 1;
-    });
-
-    input.addEventListener('click', function()
-    {
-      flag_inText = 1;
-    });
-
-    input.addEventListener('blur', function()
-    {
-      flag_inText = 0;
     });
 
     input.addEventListener('keydown', function(event)
     {
       if (event.key === 'Enter' && flag_inText == 1)
       {
-        input.blur();
+        // input.blur();
+        event.target.blur(); // maybe this more reliable?
       }
     });
 

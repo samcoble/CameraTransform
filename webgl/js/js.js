@@ -1109,24 +1109,26 @@ function makeSave()
   let _t = [];
   let _o = [];
   let _s;
+  let _c = 4; // default folder count
 
   // folder toggle
   _s = folder_toggle.length;
-  _t.push( folder_toggle.splice(4, _s-3) );
+  _t.push( folder_toggle.slice(_c, _s) );
   
   // folder parents
   _s = folder_parents.length;
-  _t.push( folder_parents.splice(4, _s-3) );
+  _t.push( folder_parents.slice(_c, _s) );
 
   // folders
   _s = obj_folders.length;
-  let _qf = obj_folders.splice(3, _s-3);
-  obj_folders.push(_qf[0]);
-  _t.push( packArray(_qf) );
+  // let _qf = obj_folders.splice(3, _s-3);
+  // obj_folders.push(_qf[0]);
+  // _t.push( packArray(_qf) );
+  _t.push( packArray(obj_folders.slice(_c-1, _s)) );
 
   // folder names
   _s = folder_names.length;
-  _t.push( packArray(namesToArrays(folder_names.splice(4, _s-3))) );
+  _t.push( packArray(namesToArrays(folder_names.slice(_c, _s))) );
 
   // now prep _o w/ objs
   _s = m_objs.length;
@@ -3247,76 +3249,6 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 		// hardest of them all
 
 /*
-function drawTriangleF(ctx, i, k)
-{
-	drawTriangle(ctx,
-	m1.data[8*k+mem_log[i][0]],
-	m1.data[8*k+mem_log[i][0]+1],
-	m1.data[8*k+mem_log[i][0]+4],
-	m1.data[8*k+mem_log[i][0]+5],
-	m1.data[8*k+mem_log[i][0]+8],
-	m1.data[8*k+mem_log[i][0]+9],
-	rgbas_tri_f[k%3]);
-}
-
-function drawLineF(ctx, i, j, c, lw)
-{
-	drawLine(ctx, c, lw,
-	m1.data[4*j+mem_log[i][0]],
-	m1.data[4*j+mem_log[i][0]+1],
-	m1.data[4*(j+1)+mem_log[i][0]],
-	m1.data[4*(j+1)+mem_log[i][0]+1]);
-}
-
-function fillDotF(ctx, i, j, c)
-{
-	fillDot(ctx, c,
-	m1.data[4*j+mem_log[i][0]],
-	m1.data[4*j+mem_log[i][0]+1],
-	Math.round(m1.data[4*j+mem_log[i][0]+2]*2+0.5),
-	Math.round(m1.data[4*j+mem_log[i][0]+3]*2+0.5));
-}
-*/
-
-/*var rgba_r = "rgba(220, 73, 73, 1)";
-var rgba_g = "rgba(24, 122, 24, 1)";
-var rgba_b = "rgba(73, 73, 220, 1)";
-var rgba_w = "rgba(255, 255, 255, 1.0)";
-var rgba_w_flr = "rgba(222, 222, 222, 0.8)";
-var rgba_y = "rgba(240, 240, 50, 1.0)";
-var rgba_o = "rgba(245, 213, 63, 1.0)";
-var rgba_ch = "rgba(50, 200, 50, 0.9)";
-var rgba_lp = "rgba(40, 40, 40, 0.75)";
-
-var rgba_dgray = "rgb(12, 12, 12)";
-var rgba_gray = "rgb(17, 17, 18)";
-
-var rgba_lgray = "rgba(222, 222, 222, 0.3)";
-var rgba_ldgray = "rgba(85, 85, 85, 0.3)";
-var rgba_otext = "rgba(194, 122, 52, 1.0)";
-var rgba_dtext = "rgba(155, 155, 155, 1.0)";
-var rgba_cindi = "rgb(183, 167, 101)";
-var rgba_cindig = "rgb(152, 106, 179)";
-var rgba_cindiglite = "rgba(0, 0, 0, 0.3)";
-var rgba_cindiga = "rgba(152, 106, 179, 0.9)";
-
-var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
-var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // main for loop
-var rgbas_trans = [rgba_lgray, rgba_g];
-
-
-var rgba_w_tri1 = "rgba(130, 130, 130, 1)";
-var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
-var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
-var rgba_w_tri4 = "rgba(90, 90, 90, 1)";
-
-var rgba_w_trio1 = "rgba(130, 130, 130, 0.5)";
-var rgba_w_trio2 = "rgba(120, 120, 120, 0.5)";
-var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
-var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
-var rgba_invis = "rgba(0, 0, 0, 0)";*/
-
-/*
     
   I need to parallel the write lines and tris at same time
     - maybe write a new way to get tri's from the loop for lines?
@@ -3331,16 +3263,14 @@ var rgba_invis = "rgba(0, 0, 0, 0)";*/
   Rotations can be computed in c. Only useful for pregenerated animations.
   Not sure how many 
 
-wait parallel means if I pass any data like
+  wait parallel means if I pass any data like
 
-x y z r
+  x y z r
 
-and in this instance r can represent a unique rotation per point of data.
-anything can actually be done in parallel then.
+  and in this instance r can represent a unique rotation per point of data.
+  anything can actually be done in parallel then.
 
-so if clipping in 2d can be done with matrices can it be done in parallel?
-
-
+  so if clipping in 2d can be done with matrices can it be done in parallel?
 
   Not sure if interp map is possible w/ large data format unless provided a spine?
 
@@ -3441,9 +3371,6 @@ function drawSegment(vertices, mi)
     }
   }
 
-
-  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
-
   switch(mi)
   {
     case -2:
@@ -3488,8 +3415,6 @@ function drawSegment(vertices, mi)
 function drawPoints(_pnts, mi)
 {
   
-  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
-
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
@@ -3594,54 +3519,6 @@ function z_buffer()
 */
 
 
-/*
-function updateDrawMap(priorityObjects)
-{
-	// for (var i=0; i<m_objs.length; i++)
-	for (let i = m_objs.length-1; i>=0; i--)
-	{
-		indices.push(i);
-		//distances.push(len3(sub(getctr_obj(i), player_pos)));
-		distances.push(Math.abs(m1.data[mem_log[i][0]+mem_log[i][1]-1]));
-	}
-
-	originalIndices = indices.slice();
-
-	indices.sort((a, b) => distances[a] - distances[b]);
-	//indices.sort((a, b) => distances[b] - distances[a]);
-  if (stn_link_tool == 0) {console.log(indices);}
-
-	indexMapping = originalIndices.map((originalIndex, sortedIndex) => ({
-	  originalIndex: originalIndex,
-	  sortedIndex: indices[sortedIndex],
-	  distance: distances[indices[sortedIndex]],
-	}));
-
-	indices.length = 0;
-	distances.length = 0;
-
-	indexMapping.forEach(item => {
-	  newIndex[item.originalIndex] = item.sortedIndex;
-	});
-
-	modIndex = Object.values(newIndex);
-
-	for (var i = 0; i < priorityObjects.length; i++)
-	{
-	    let priorityIndex = modIndex.indexOf(priorityObjects[i]);
-	    if (priorityIndex !== -1)
-	    {
-	        let entry = modIndex.splice(priorityIndex, 1)[0];
-	        modIndex.unshift(entry);
-	    }
-	}
-
-	//console.log(init_dat.data[mem_log[i][0]+mem_log[i][1]-1]); // Z dist test
-	return indexMapping;
-}
-*/
-
-
 function updateZMap()
 {
   
@@ -3669,17 +3546,33 @@ function updateZMap()
 
 }
 
-
 function drawLines()
 {
   updateZMap();
   
-  // can get more frames if I parallel everything and use shorter pipe
-  // worker clipper would be insane frames
-  // need to experiment with textured polys
+  // can get more frames if I parallel everything and use shorter pipe worker clipper would be insane frames
 
+  // need to experiment with textured polys
+  // problem is frames lost : maybe at least a mode
+
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // 
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
+  // THIS MIGHT BE THE ONE
   // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
   // would it be worth it even chunk draw last draw remainder?
+  // this may not work in every instance but marked objects may provide a tremendous performance bump
 
   // [] + [] [] [] | []
   //      [] [] [] |
@@ -3691,16 +3584,15 @@ function drawLines()
   // Now I have z's ready in z_map by object i and [0]
   // so far sorting tri's within objs. forgot has to be all tris at once.
   
-  // !!! maybe try packing line segments ? nah maybe this can't work.
-
-  // !!! can try drawing line between last two points of per tri?
-
   // Now make a set of data of 2d center points to feed this and scale w/ z from shader
   // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
   
   // First start with lines & tri data pack
   // This entire thing is sus.
+
+  // reset
   start = size = end = 0;
+
 
   for (let i = m_objs.length-1; i >= 0; i--)
   {
@@ -3769,12 +3661,11 @@ function drawLines()
                 break;
             }
 
-            // gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
-
             // Draw the triangles after setting the color
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
+            positionAttrib = gl.getAttribLocation(shaderProgram, 'aPosition');
             gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
             // gl.enableVertexAttribArray(positionAttrib);
 
@@ -3891,7 +3782,6 @@ function drawLines()
   // move all this back into fn to make good reverse fn
   let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
 
-  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
 
   // Draw the triangles after setting the color
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -4406,6 +4296,11 @@ function Compute(init_dat)
   updateTextByPar(menu_status_r0, "fps[" + _fps + "]");
   updateTextByPar(menu_status_r1, "grid_scale[" + _settings[5].settings[0]+"]");
 
+  if(document.activeElement.type ==  "text")
+  {
+    flag_inText = 1;
+  } else {flag_inText = 0;}
+  
 	if (key_map.shift && key_map.r) // Move to fn later
 	{
 		rotateObject(0, _settings[7].settings[0]);
