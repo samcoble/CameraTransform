@@ -3665,7 +3665,6 @@ function drawLines()
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
-            positionAttrib = gl.getAttribLocation(shaderProgram, 'aPosition');
             gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
             // gl.enableVertexAttribArray(positionAttrib);
 
