@@ -3678,13 +3678,16 @@ function drawLines()
       }       
     }
 
-    /*
+    /* // last
 
     */
 
     skipDat = 1;
 
-    if ( !(_settings[1].settings[0]) || (d_i == 13 && mem_t_sum == 0) )
+    if (!(_settings[1].settings[0])
+    || (d_i == 13 && mem_t_sum == 0)
+    || (d_i == 2 && !_settings[5].settings[1])
+    || (d_i == 11 && wpn_select!=3))
     {
       skipDat = 0;
     }
@@ -3718,7 +3721,6 @@ function drawLines()
           drawSegment(vertices, d_i);
       }
     }
-
 
     _si2 = mem_log[d_i][2];
     _pts = new Float32Array(_si2 * 2);

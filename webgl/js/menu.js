@@ -2045,7 +2045,7 @@ var div_root =
             var div_detailMenuBox6 =
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-                settings: [8],
+                settings: [8, true],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
             }; addDiv(div_detailMenuBox6);
 
@@ -2062,6 +2062,25 @@ var div_root =
                     text: `scale`,
                     rootStyle: rootStyle + div_css + darkBorder
                 }; addDiv(div_gridSettings_scale);
+
+                var div_gridSettings_mapWalls =
+                {
+                    id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
+                    text: `map walls`,
+                    rootStyle: rootStyle + div_css + darkBorder
+                }; addDiv(div_gridSettings_mapWalls);
+
+                  var cbx_mapWalls =
+                  {
+                      id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
+                      rootStyle: rootStyle+cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      defaultChecked: true,
+                      callback: updateSetting
+                  }; _this = cbx_mapWalls;
+                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+                  addCheckbox(_this);
 
                   /*
                     ╔╗╔═╗ 
