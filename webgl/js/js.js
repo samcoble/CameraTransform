@@ -785,7 +785,7 @@ onmousemove = function(e)
 
 function isAlphaNumeric(c)
 {
-  return /^[a-zA-Z0-9\s]$/.test(c);
+  return /^[a-zA-Z0-9\s.]$/.test(c);
 }
 
 // make fn to convert string to Float32Array
@@ -3722,28 +3722,34 @@ function drawLines()
       }
     }
 
-    _si2 = mem_log[d_i][2];
-    _pts = new Float32Array(_si2 * 2);
-
-    // Experiment using while instead of for. Irrelevant performance difference?
-    i0 = 0;
-    j0 = 0;
-    dataIndex = mem_log[d_i][0];
-
-    while (i0 < _si2 * 4)
+    if (d_i != 11
+    && (d_i > 2 && d_i < 6)
+    || d_i > world_obj_count
+    || d_i == 1)
     {
-      if (m1.data[dataIndex + 3] >= 0)
+      _si2 = mem_log[d_i][2];
+      _pts = new Float32Array(_si2 * 2);
+
+      // Experiment using while instead of for. Irrelevant performance difference?
+      i0 = 0;
+      j0 = 0;
+      dataIndex = mem_log[d_i][0];
+
+      while (i0 < _si2 * 4)
       {
-        _pts[j0] = m1.data[dataIndex];           // x
-        _pts[j0 + 1] = -m1.data[dataIndex + 1];  // y
-        j0 += 2;
+        if (m1.data[dataIndex + 3] >= 0)
+        {
+          _pts[j0] = m1.data[dataIndex];           // x
+          _pts[j0 + 1] = -m1.data[dataIndex + 1];  // y
+          j0 += 2;
+        }
+         dataIndex += 4;
+         i0 += 4;
       }
-       dataIndex += 4;
-       i0 += 4;
+
+      drawPoints(_pts, d_i);
+
     }
-
-    drawPoints(_pts, d_i);
-
 
   
   } // End of first obj loop
