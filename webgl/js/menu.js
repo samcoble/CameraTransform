@@ -2290,7 +2290,7 @@ var menu_status_style_l0 =
 width: 100%;
 height: 23%;
 padding: 1px 0px 0px 1px;
-margin: 0px 0px 0px 0px;
+margin: 0px 0px 1px 0px;
 background: none;
 `;
 
@@ -2298,27 +2298,28 @@ background: none;
 
 var menu_status_style_l2 =
 `
-display: inline-block;
-float: bottom;
-padding: 6px 0px 0px 12px;
+display: block;
+float: left;
+padding: 0px 0px 0px 12px;
 width: 36%;
 height: 26px;
-margin-top: 3%;
+margin: 3% 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 cursor: pointer;
 border-radius: 3px 0px 0px 3px;
+line-height: 2.2;
 `;
 
 var menu_status_style_l3 =
 `
 position: relative;
 top: 0px;
-display: inline-block;
-float: bottom;
-padding: 2px 0px 0px 12px;
+display: block;
+float: right;
+padding: 0px 0px 0px 12px;
 width: 64%;
 height: 26px;
-margin-top: 3%;
+margin: 3% 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 border-left: none;
 background: rgb(13,13,13);
