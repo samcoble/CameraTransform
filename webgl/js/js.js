@@ -1120,7 +1120,9 @@ function makeSave()
 
   // folders
   _s = obj_folders.length;
-  _t.push( packArray(obj_folders.splice(3, _s-3)) );
+  let _qf = obj_folders.splice(3, _s-3);
+  obj_folders.push(_qf[0]);
+  _t.push( packArray(_qf) );
 
   // folder names
   _s = folder_names.length;
@@ -1342,11 +1344,12 @@ function downloadSaveFile()
     // temp anchor
     const anchor = document.createElement('a');
     anchor.href = _url;
-    if (fileName == "")
+    const _n = document.getElementById("menu_status_l3");
+    if (_n.value == "")
     {
-    	anchor.download = "data_" + _l + ".bin";
+    	anchor.download = "memspc_" + _l + ".bin";
     } else {
-    	anchor.download = fileName + _l + ".bin";
+    	anchor.download = _n.value + _l + ".bin";
     }
 
     // use .click() to trigger download
@@ -3438,6 +3441,9 @@ function drawSegment(vertices, mi)
     }
   }
 
+
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
+
   switch(mi)
   {
     case -2:
@@ -3482,6 +3488,8 @@ function drawSegment(vertices, mi)
 function drawPoints(_pnts, mi)
 {
   
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
+
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
@@ -3761,12 +3769,15 @@ function drawLines()
                 break;
             }
 
+            // gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
+
             // Draw the triangles after setting the color
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
             gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
             // gl.enableVertexAttribArray(positionAttrib);
+
 
             gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
 
@@ -3879,6 +3890,8 @@ function drawLines()
 
   // move all this back into fn to make good reverse fn
   let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
+
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uIs2D'), true);
 
   // Draw the triangles after setting the color
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);

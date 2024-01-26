@@ -27,13 +27,34 @@ function initWebGL()
   const vertexShaderSource =
   `
   attribute vec2 aPosition;
+  attribute vec4 aVertexPosition;
+
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  uniform bool uIs2D;
+
   varying vec4 vColor;
   attribute vec4 aColor;
-  void main()
+
+  // void main()
+  // {
+    // gl_Position = vec4(aPosition, 0.0, 1.0);
+    // gl_PointSize = 1.8; // point size
+    // vColor = aColor;
+  // }
+
+  void main(void)
   {
-      gl_Position = vec4(aPosition, 0.0, 1.0);
+    // Check if rendering is 2D or 3D
+    if (uIs2D)
+    {
+      gl_Position = vec4(aPosition, 0.0, 1.0); // 2D
       gl_PointSize = 1.8; // point size
       vColor = aColor;
+    }
+    else {
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition.x, -aVertexPosition.y, aVertexPosition.z, 1.0);
+    }
   }
   `;
   const fragmentShaderSource0 =

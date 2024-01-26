@@ -2374,7 +2374,7 @@ var menu_status =
     var menu_status_l3 =
     {
       id: "menu_status_l3", cls: "", prnt: "menu_status_l",
-      value: "memspc.bin",
+      value: "memspc_",
       rootStyle: rootStyle + menu_status_style_l3
     }; addTextInput(menu_status_l3);
 
