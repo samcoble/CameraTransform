@@ -25,8 +25,7 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 @?@?@
 ?@?@?
 @?@?@
-      -- i see now. webgl can accept indices and interp 3d data directly
-      i can probably pass my perspective transform into the new setup 
+      -- Ray tracing used for z buffer must be parallelized 
 
       -- finish center inds?
 
@@ -541,6 +540,7 @@ var _plr_dtp = [0,0,0];
 
 var obj_normalMaps = [];
 var rayInterMap = [];
+var _rayLast = [];
 
 var _norm_x = norm([1,0.000001,0.000001]);
 var _norm_y = norm([0.000001,1,0.000001]);
@@ -1158,6 +1158,7 @@ function loadSelect(_fi)
     loadFile0(_fi[0]);
   }
   // should be replaced ...
+
   updateValueByPar(menu_status_l3, fileName);
 }
 
@@ -1251,6 +1252,7 @@ function loadFile0(_fi)
         {
           flag_loadingObject = 0;
         }
+        if (i==_r[1].length-1) {updateNormalMaps();}
       }
     };
 
@@ -1854,7 +1856,7 @@ function m_objs_loadPoints(ar) // Adds objects
 
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
-	//obj_updateNormalMaps();
+	//updateNormalMaps();
 	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
 
   let _count = Math.floor( (ar.length + 4)/4 ); 
@@ -2054,11 +2056,11 @@ var ctx_o = canvas_over.getContext("2d");
 ctx_o.scale(1, 1);
 // ctx.scale(1, 1); 
 
-function obj_updateNormalMaps()
+function updateNormalMaps()
 {
 	if (m_objs.length>world_obj_count+1) // xtra?
 	{
-		var p1, p2, p3, v1, v2, _cr;
+		let p1, p2, p3, v1, v2, _cr;
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
 			for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++)
@@ -2086,6 +2088,7 @@ function obj_updateNormalMaps()
 					// if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
 			}
 		}
+    // console.log("Normal map update complete...");
 	}
 }
 
@@ -2117,14 +2120,16 @@ function isPointInsideTriangle(p, p1, p2, p3)
     return u >= 0 && v >= 0 && u + v <= 1;
 }
 
+var interKOut = [];
 
-function updateRayInters()
+function updateRayInters(_dp, _p)
 {
 	if (m_objs.length>world_obj_count+1) // Remove?
 	{
-		obj_updateNormalMaps(); 
+		// updateNormalMaps(); 
 		rayInterMap.length = 0;
-		var p1, p2, p3, v1, v2, v3, _cr, _int, _fn;
+    interKOut.length = 0;
+		var p1, p2, p3, _cr, _int;
 		for (var i=world_obj_count; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
 		{
 			if (mem_log[i][2]>2) // wat?
@@ -2143,8 +2148,8 @@ function updateRayInters()
 					v1 = sub3(p2,p1);
 					v2 = sub3(p3,p2);
 					v3 = sub3(p1,p3);
-
-					_int = lpi(_plr_dtp, player_pos, p2, _cr);
+          //_plr_dtp, player_pos
+					_int = lpi(_dp, _p, p2, _cr);
 
 					//can use create point like I did before ez
 					if (isPointInsideTriangle(_int, p1, p2, p3))
@@ -2152,13 +2157,36 @@ function updateRayInters()
 						//console.log("Point in TRI");
 						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
 						rayInterMap.push(_int);
+						interKOut.push(k);
 					}
 				}
 			}
 		}
+    _rayLast = findClosestVector(player_pos, rayInterMap);
 	}
 }
 
+function findClosestVector(targetVector, vectors) {
+  let minDistance = Number.MAX_VALUE;
+  let closestIndex = -1;
+
+  for (let i = 0; i < vectors.length; i++) {
+    const currentVector = vectors[i];
+    let distance = 0;
+
+    for (let j = 0; j < targetVector.length; j++) {
+      const difference = targetVector[j] - currentVector[j];
+      distance += difference * difference;
+    }
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestIndex = i;
+    }
+  }
+
+  return closestIndex;
+}
 
 function teleport_plr()
 {
@@ -3194,7 +3222,7 @@ function drawOverlay(init_dat)
   setVisibility({hide:"list_objectSelect", show:""});
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
-	//obj_updateNormalMaps();
+	//updateNormalMaps();
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
 
@@ -3537,7 +3565,7 @@ function updateZMap()
         z_map[i][0][k] = m1.data[8 * k + mem_log[i][0] + 6];
         z_map[i][1][k] = k;
       }
-       z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]);
+       z_map[i][1].sort((a, b) => z_map[i][0][b] - z_map[i][0][a]);
     } else
     {
       z_map[i] = 0; // Later check if not zero. Or doesn't matter.
@@ -3546,9 +3574,92 @@ function updateZMap()
 
 }
 
+
+// I think this worked but it took a few SECONDS to trace every tri center
+// that's like 0.4 frames per second performance..
+
+/*
+
+function triMean(a, b, c)
+{
+    return new Float32Array([(a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3]);
+}
+
+var triCtr_map = [];
+var kIn_map = [];
+function updateTriCtrMap()
+{
+  triCtr_map.length = 0;
+  const _s = m_objs.length;
+  for (let i=0; i<_s; i++)
+  {
+    if (m_objs[i].length > 2)
+    {
+      // can try this one
+      // Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2
+      let _count = Math.floor( (m_objs[i].length + 4)/4 ); 
+      _si = (Math.floor((_count - 1) / 2) - _count%2);
+      triCtr_map.push(new Float32Array(_si * 3)); // _si -> tris * 3 floats -> one point per tri
+      kIn_map.push(new Float32Array(_si)); // _si -> tris * 1 k per tri
+    } else {triCtr_map.push([]);}
+  }
+
+  let p1, p2, p3, _cr;
+  // import normal map code here to calc and export dat
+  
+  for (var i=0; i<m_objs.length; i++)
+  {
+    for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++)
+    {
+      p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
+      p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
+      p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
+
+      _cr = triMean(p1,p2,p3);
+      triCtr_map[i][3*k+0] = _cr[0];
+      triCtr_map[i][3*k+1] = _cr[1];
+      triCtr_map[i][3*k+2] = _cr[2];
+    }
+  }
+}
+
+// now/ ray trace fn and write draw bool essentially
+
+
+function updateKInMap()
+{
+  const _s0 = triCtr_map.length;
+  for (let j=0; j<_s0; j++)
+  {
+    const _s = triCtr_map[j].length/3;
+    let _l = [];
+    for (let i=0; i<_s; i++)
+    {
+      _l = [triCtr_map[j][i*3], triCtr_map[j][i*3+1], triCtr_map[j][i*3+2]];
+
+      const _n = sub3(_l, player_pos);
+      updateRayInters(_n, player_pos)
+      kIn_map[j][i] = interKOut[_rayLast];
+      console.log(rayInterMap[_rayLast]);
+    }
+  }
+}
+
+updateTriCtrMap();
+
+// for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
+
+// borrow my old loop and just use one coord
+// maybe try populate it and setup size to fluc
+// ok make list of tri centers static -> rt fn uses center dat with lpi to check every tri center ---]
+// [--> nearest point --> ( this part can be complex for speed increase )store k by writing to final kIn_map --> if k == -1 no draw
+// later change to every second
+
+*/
+
 function drawLines()
 {
-  updateZMap();
+  // updateZMap();
   
   // can get more frames if I parallel everything and use shorter pipe worker clipper would be insane frames
 
@@ -3558,18 +3669,7 @@ function drawLines()
   // THIS MIGHT BE THE ONE
   // THIS MIGHT BE THE ONE
   // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // 
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
+  //
   // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
   // would it be worth it even chunk draw last draw remainder?
   // this may not work in every instance but marked objects may provide a tremendous performance bump
@@ -3619,27 +3719,27 @@ function drawLines()
 
             // I can try mod 2 to also save tri?
 
-            // for (let k = 0; k <= m_draw[d_i][1]; k++)
-            for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
+            for (let k = 0; k <= m_draw[d_i][1]; k++)
+            // for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
             {
               if (1) // && z_map[d_i][1][k]>2
               {
-                if (m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
-                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 7] > 0 &&
-                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 11] > 0)
+                if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
+                  m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
+                  m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
                 {
                   // if (Math.abs(m1.data[8 * k + mem_log[d_i][0]]) > 1.0) { continue; }
                   // z_map[d_i][1][k]
-                  m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
-                  m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
+                  m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+                  m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
-                  m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
-                  m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
+                  m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+                  m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
 
-                  m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
-                  m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+                  m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+                  m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
 
-                  vertices.push(m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]], -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1]);
+                  vertices.push(m1.data[8 * k + mem_log[d_i][0]], -m1.data[8 * k + mem_log[d_i][0] + 1]);
 
                   _si_f++;
                 }
@@ -3724,7 +3824,7 @@ function drawLines()
 
     if (d_i != 11
     && (d_i > 2 && d_i < 6)
-    || d_i > world_obj_count
+    || d_i < world_obj_count-1
     || d_i == 1)
     {
       _si2 = mem_log[d_i][2];
@@ -3756,7 +3856,7 @@ function drawLines()
 
   // Working object being drawn
   // for (var i = 0; i < mem_t_log.length; i++)
-  for (var i = mem_t_log.length - 1; i>=0 ; i--)
+  for (let i = mem_t_log.length - 1; i>=0 ; i--)
   {
     vertices = [];
     
@@ -4735,8 +4835,11 @@ function Compute(init_dat)
 		case 3:
 			if (key_map.lmb && mouseLock && runEvery(10))
 			{
-				updateRayInters();
+        //_plr_dtp, player_pos
+				updateRayInters(_plr_dtp, player_pos);
 				m_t_objs_loadPoints(rayInterMap);
+        // let _tc = typeof rayInterMap[_rayLast] != "undefined" ? rayInterMap[_rayLast] : [0,0,0];
+        // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
 			}
 			break;
 
@@ -4937,7 +5040,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
 
-	obj_updateNormalMaps();
+	updateNormalMaps();
 
 	updateList(objListConst(), "list_objectSelect");
   updateTree(tree_allObjects);
