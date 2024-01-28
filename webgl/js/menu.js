@@ -2261,7 +2261,7 @@ margin: 5px 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 cursor: pointer;
 border-radius: 3px 0px 0px 3px;
-line-height: 2.1;
+line-height: 2.2;
 `;
 
 var menu_status_style_l3 =
@@ -2289,7 +2289,7 @@ border-left: none;
 border-radius: 0px 3px 3px 0px;
 color: #555;
 background: rgb(13,13,13);
-line-height: 2.1;
+line-height: 2.2;
 `;
 
 
