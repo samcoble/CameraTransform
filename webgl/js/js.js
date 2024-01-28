@@ -1853,8 +1853,8 @@ function m_objs_loadPoints(ar) // Adds objects
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 15) {_fp = 2;}
-  if (m_objs.length > 15) {_fp = 3;} // redirect can be set global
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
+  if (m_objs.length > 14) {_fp = 3;} // redirect can be set global
 
   if (flag_loadingObject == 0)
   {
@@ -2005,7 +2005,7 @@ m_objs_loadPoints(_lop_world);   // 10
 m_objs_loadPoints(m_gun);        // 11
 m_objs_loadPoints(m_rect);       // 12
 m_objs_loadPoints(m_rect);       // 13
-m_objs_loadPoints(m_eyeRef);     // 14
+// m_objs_loadPoints(m_eyeRef);     // 14
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -3022,18 +3022,18 @@ function writeToObjI(_ob, i)
   }
 }
 
-function translateObjI(_i, _v)
-{
-  let _t_c = getctr_ghost(_i);
-  const _s = mem_log[_i][2];
-  for (let i=0; i<_s; i++)
-  {
-    m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
-    m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
-    m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
-    m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
-  }
-}
+// function translateObjI(_i, _v)
+// {
+//   let _t_c = getctr_ghost(_i);
+//   const _s = mem_log[_i][2];
+//   for (let i=0; i<_s; i++)
+//   {
+//     m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
+//     m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
+//     m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
+//     m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
+//   }
+// }
 
 function updateViewRef(_v, _i, _q)
 {
@@ -3244,11 +3244,13 @@ function drawOverlay()
 	updateMenuPos();
 
   
+  /*
   if (!mouseLock) // in menu
   {
     updateLook();
     updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
   }
+  */
   
 
 	// While in menu with low call rate i'll set values here:
