@@ -1271,7 +1271,7 @@ function loadFile0(_fi)
       }
     }
     fileName = _fn.slice(0, _si+1);
-    // _settings[8].settings[1] = _fn.slice(_si+2, _fn.length-1);
+    _settings[8].settings[0] = fileName;
     updateTextByPar(menu_status_r2, _fn.slice(_si+1, _fn.length));
   }
   // flag_loadingObject = 0;
@@ -1337,7 +1337,7 @@ function downloadSaveFile()
     const anchor = document.createElement('a');
     anchor.href = _url;
 
-    anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
+    anchor.download = makeValidFileName(_settings[8].settings[0]) + _l + ".bin";
 
     // use .click() to trigger download
     anchor.click();
@@ -3822,13 +3822,15 @@ function drawLines()
 
     */
 
+    // || (d_i == 14))
+    
     skipDat = 1;
 
     if (!(_settings[1].settings[0])
     || (d_i == 13 && mem_t_sum == 0)
     || (d_i == 2 && !_settings[5].settings[1])
     || (d_i == 11 && wpn_select!=3)
-    || (d_i == 14))
+    )
     {
       skipDat = 0;
     }
