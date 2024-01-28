@@ -31,117 +31,113 @@
 var _this; // ez pointer for params
 var _settings = [];
 
-function applyStyles(element, rootStyle, hoverStyles, clickStyles, checkedStyles, liStyle, myUlStyle) //myFileInStyle
+function applyStyles(element, par)
 {
-    /*
-               ╔╗
-              ╔╝╚╗
-              ╚╗╔╝    
-    ╔═╗╔══╗╔══╗║║
-    ║╔╝║╔╗║║╔╗║║║
-    ║║ ║╚╝║║╚╝║║╚╗
-    ╚╝ ╚══╝╚══╝╚═╝
-    */
-    if (rootStyle && rootStyle.trim() !== "")
-    {
-        const _temp_str = `#${element.id} {${rootStyle}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }
 
-    /*
-    ╔╗
-    ║║
-    ║╚═╗╔══╗╔╗╔╗╔══╗╔═╗
-    ║╔╗║║╔╗║║╚╝║║╔╗║║╔╝
-    ║║║║║╚╝║╚╗╔╝║║═╣║║
-    ╚╝╚╝╚══╝ ╚╝ ╚══╝╚╝
-    */
-    if (hoverStyles && hoverStyles.trim() !== "")
-    {
-        const _temp_str = `#${element.id}:hover {${hoverStyles}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }
+  /*
+             ╔╗
+            ╔╝╚╗
+            ╚╗╔╝    
+  ╔═╗╔══╗╔══╗║║
+  ║╔╝║╔╗║║╔╗║║║
+  ║║ ║╚╝║║╚╝║║╚╗
+  ╚╝ ╚══╝╚══╝╚═╝
+  */
+  if (par.rootStyle && par.rootStyle.trim() !== "")
+  {
+      const _temp_str = `#${element.id} {${par.rootStyle}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }
 
-    //input[type="text"]:hover
+  /*
+  ╔╗
+  ║║
+  ║╚═╗╔══╗╔╗╔╗╔══╗╔═╗
+  ║╔╗║║╔╗║║╚╝║║╔╗║║╔╝
+  ║║║║║╚╝║╚╗╔╝║║═╣║║
+  ╚╝╚╝╚══╝ ╚╝ ╚══╝╚╝
+  */
+  if (par.hoverStyles && par.hoverStyles.trim() !== "")
+  {
+      const _temp_str = `#${element.id}:hover {${par.hoverStyles}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }
 
-    /*
-        ╔╗       ╔╗
-        ║║       ║║
-    ╔══╗║║ ╔╗╔══╗║║╔╗
-    ║╔═╝║║ ╠╣║╔═╝║╚╝╝
-    ║╚═╗║╚╗║║║╚═╗║╔╗╗
-    ╚══╝╚═╝╚╝╚══╝╚╝╚╝
-    */
-    if (clickStyles && clickStyles.trim() !== "")
-    {
-        const _temp_str = `#${element.id}:checked {${checkedStyles}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }
+  //input[type="text"]:hover
 
-    /*
-        ╔╗          ╔╗        ╔╗
-        ║║          ║║        ║║
-    ╔══╗║╚═╗╔══╗╔══╗║║╔╗╔══╗╔═╝║
-    ║╔═╝║╔╗║║╔╗║║╔═╝║╚╝╝║╔╗║║╔╗║
-    ║╚═╗║║║║║║═╣║╚═╗║╔╗╗║║═╣║╚╝║
-    ╚══╝╚╝╚╝╚══╝╚══╝╚╝╚╝╚══╝╚══╝
-    */
-    if ((checkedStyles && checkedStyles.trim() !== "") && (element.type === "checkbox"))
-    {
-        const _temp_str = `#${element.id}:checked {${checkedStyles}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }
+  /*
+      ╔╗       ╔╗
+      ║║       ║║
+  ╔══╗║║ ╔╗╔══╗║║╔╗
+  ║╔═╝║║ ╠╣║╔═╝║╚╝╝
+  ║╚═╗║╚╗║║║╚═╗║╔╗╗
+  ╚══╝╚═╝╚╝╚══╝╚╝╚╝
+  */
+  if (par.clickStyles && par.clickStyles.trim() !== "")
+  {
+      const _temp_str = `#${element.id}:checked {${par.clickStyles}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }
 
-    /*
-    ╔╗
-    ║║
-    ║║ ╔╗
-    ║║ ╠╣
-    ║╚╗║║
-    ╚═╝╚╝
-    */
-    if (liStyle && liStyle.trim() !== "")
-    {
-        const _temp_str = `.${element.id+"_li"} {${liStyle}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }    
+  /*
+      ╔╗          ╔╗        ╔╗
+      ║║          ║║        ║║
+  ╔══╗║╚═╗╔══╗╔══╗║║╔╗╔══╗╔═╝║
+  ║╔═╝║╔╗║║╔╗║║╔═╝║╚╝╝║╔╗║║╔╗║
+  ║╚═╗║║║║║║═╣║╚═╗║╔╗╗║║═╣║╚╝║
+  ╚══╝╚╝╚╝╚══╝╚══╝╚╝╚╝╚══╝╚══╝
+  */
+  if ((par.checkedStyles && par.checkedStyles.trim() !== "") && (element.type === "checkbox"))
+  {
+      const _temp_str = `#${element.id}:checked {${par.checkedStyles}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }
 
-    /*
-        ╔╗
-        ║║
-    ╔╗╔╗║║
-    ║║║║║║
-    ║╚╝║║╚╗
-    ╚══╝╚═╝
-    */
-    if (myUlStyle && myUlStyle.trim() !== "")
-    {
-        const _temp_str = `.${element.className+"_ul"} {${myUlStyle}}`;
-        const styleElement = document.createElement('style');
-        styleElement.textContent = _temp_str;
-        document.head.appendChild(styleElement);
-    }      
+  /*
+  ╔╗
+  ║║
+  ║║ ╔╗
+  ║║ ╠╣
+  ║╚╗║║
+  ╚═╝╚╝
+  */
+  if (par.liStyles && par.liStyles.trim() !== "")
+  {
+      const _temp_str = `.${element.id+"_li"} {${par.liStyles}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }    
 
-    /*
-    */
+  /*
+      ╔╗
+      ║║
+  ╔╗╔╗║║
+  ║║║║║║
+  ║╚╝║║╚╗
+  ╚══╝╚═╝
+  */
+  if (par.myUlStyle && par.myUlStyle.trim() !== "")
+  {
+      const _temp_str = `.${element.className+"_ul"} {${par.myUlStyle}}`;
+      const styleElement = document.createElement('style');
+      styleElement.textContent = _temp_str;
+      document.head.appendChild(styleElement);
+  }
+}
 
-    // if (myFileInStyle && myFileInStyle.trim() !== "")
-    // {
-    //     const _temp_str = `#${element.id} {${myFileInStyle}}`;
-    //     const styleElement = document.createElement('style');
-    //     styleElement.textContent = _temp_str;
-    //     document.head.appendChild(styleElement);
-    // }      
+function appendFilter(p, e)
+{
+  if (document.getElementById(p) != null) {document.getElementById(p).appendChild(e);}
+  else {document.body.appendChild(e);}
 }
 
 function addDiv(par)
@@ -151,102 +147,82 @@ function addDiv(par)
   div.className = par.cls;
 
   if (par.text != null)
-  {
-      div.innerHTML = par.text;
-  }
+  {div.innerHTML = par.text;}
 
   if (typeof par.settings != "undefined")
-  {
-    _settings.push(par);
-  }
+  {_settings.push(par);}
 
-  var _t = document.getElementById(par.prnt);
-
-  if (_t == null)
-  {document.body.appendChild(div);}
-  else {_t.appendChild(div);}
-
-  applyStyles(div, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles);
+  appendFilter(par.prnt, div);
+  applyStyles(div, par);
   return div;
 }
 
 function addButton(par)
 {
-    const button = document.createElement("button");
-    button.textContent = par.text;
-    button.id = par.id;
-    button.className = par.cls;
+  const button = document.createElement("button");
+  button.textContent = par.text;
+  button.id = par.id;
+  button.className = par.cls;
 
-    button.addEventListener("click", function(e)
-    {
-        e.preventDefault();
-        par.callback(par.params);
-    });
+  button.addEventListener("click", function(e)
+  {
+      e.preventDefault();
+      par.callback(par.params);
+  });
 
-    if (document.getElementById(par.prnt) == null)
-    {document.body.appendChild(button);
-    } else {document.getElementById(par.prnt).appendChild(button);}
-
-    applyStyles(button, par.rootStyle, par.hoverStyles, par.clickStyles);
-    return button;
+  applyStyles(button, par);
+  appendFilter(par.prnt, button);
+  return button;
 }
 
 function addCheckbox(par)
 {
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = par.id;
-    checkbox.checked = par.defaultChecked === true; // Set default checked value
-    checkbox.className = par.cls;
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.id = par.id;
+  checkbox.checked = par.defaultChecked;
+  checkbox.className = par.cls;
 
-    checkbox.addEventListener("change", function ()
-    {
-      // could add undefined check but may not work
-      if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
-      if (typeof par.niladic != "undefined") {par.niladic();}
-      // par.callback(par.params);
-    });
+  checkbox.addEventListener("change", function ()
+  {
+    // could add undefined check but may not work
+    if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
+    if (typeof par.niladic != "undefined") {par.niladic();}
+    // par.callback(par.params);
+  });
 
-    var _t = document.getElementById(par.prnt);
-    if (_t == null)
-    {document.body.appendChild(checkbox);}
-    else {_t.appendChild(checkbox);}
-
-    applyStyles(checkbox, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles);
-    return checkbox;
+  appendFilter(par.prnt, checkbox);
+  applyStyles(checkbox, par);
+  return checkbox;
 }
 
 function addTextInput(par)
 {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.id = par.id;
-    input.className = par.cls;
-    input.value = par.value;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.id = par.id;
+  input.className = par.cls;
+  input.value = par.value;
 
-    input.addEventListener("input", function ()
+  input.addEventListener("input", function ()
+  {
+    par.value = input.value;
+    if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
+    if (typeof par.niladic != "undefined") {par.niladic();}
+  });
+
+  input.addEventListener('keydown', function(event)
+  {
+    if (event.key === 'Enter' && flag_inText == 1)
     {
-      par.value = input.value;
-      if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
-      if (typeof par.niladic != "undefined") {par.niladic();}
-    });
+      // input.blur();
+      event.target.blur(); // maybe this more reliable?
+    }
+  });
 
-    input.addEventListener('keydown', function(event)
-    {
-      if (event.key === 'Enter' && flag_inText == 1)
-      {
-        // input.blur();
-        event.target.blur(); // maybe this more reliable?
-      }
-    });
-
-    var _t = document.getElementById(par.prnt);
-    if (_t == null)
-    {document.body.appendChild(input);}
-    else {_t.appendChild(input);}
-
-    applyStyles(input, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles, par.liStyles);
-    return input;
+  appendFilter(par.prnt, input);
+  applyStyles(input, par);
+  return input;
 }
 
 function addFileInput(par)
@@ -255,13 +231,6 @@ function addFileInput(par)
   fileLabel.id = par.id;
   fileLabel.className = par.cls;
   fileLabel.innerHTML = par.text;
-
-  // fileLabel.style.display = "inline-block";
-  // fileLabel.style.padding = "6px 12px";
-  // fileLabel.style.width = "100%";
-  // fileLabel.style.height = "25%";
-  // fileLabel.style.border = "1px solid #ccc";
-  // fileLabel.style.cursor = "pointer";
 
   // manage file krap
   const fileInput = document.createElement("input");
@@ -277,23 +246,11 @@ function addFileInput(par)
 
   fileLabel.appendChild(fileInput);
 
-  var _t = document.getElementById(par.prnt);
-  if (_t == null)
-  {document.body.appendChild(fileLabel);}
-  else {_t.appendChild(fileLabel);}
-
-  // applyStyles(fileInput, par.rootStyle);
-  applyStyles(fileLabel, par.rootStyle, par.hoverStyles, par.clickStyles);
+  appendFilter(par.prnt, fileLabel);
+  applyStyles(fileLabel, par);
   return fileLabel;
 }
 
-// need to make new addTree function. parse my arbitrary data
-// construct by looping through trees.
-// not sure how data aligns
-// also need to move tree out of folders and only place inside when making save file
-
-// replacing entire works for lists so far but maybe not the best long term not sure
-// deletion updates and aligns but may also provide the data's delta for any updates...?
 // move to better place eventually
 
 var draggedElement;
@@ -323,26 +280,17 @@ function updateTree(par)
   const _t = document.getElementById(par.id);
   document.getElementById(par.id).innerHTML = "";
 
-
-  // should use par?
   // _m = makeTree(tree_allObjects);
   _m = makeTree(par);
 
-  // console.log(_m);
   // tree_allObjects_ul_0
   const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
 
-  // console.log(_e);
+  // append allows event listener creation. innerHTML is like text = text. not same. must query to be able to append
   _e.forEach(function(e)
   {
-    // console.log(e);
     _t.appendChild(e);
   });
-
-  // K so far this works 100
-  // i realized append allows event listener creation
-  // innerHTML is like text = text. not same.
-  // must query to be able to append
 }
 
 // the key here is query selector using direct parent ! lmao
@@ -417,7 +365,7 @@ function makeTree(par) // output my tree in form of total html structure
            ?@?@?
            @?@*/
 
-      _li_fld.addEventListener('click', function(event)
+      _li_fld.addEventListener('click', function()
       {
         if (folder_selected == _root[i][j])
         {
@@ -517,7 +465,6 @@ function makeTree(par) // output my tree in form of total html structure
         _li_obj.className = (par.id+"_li");
 
         // use mem_log for user info
-        // console.log(_obj_id);
         if (_obj_id <= m_objs.length-1)
         {
           _li_obj.textContent = mem_log[_obj_id][2];
@@ -626,10 +573,13 @@ function makeTree(par) // output my tree in form of total html structure
 function addTree(par)
 {
   let _r = makeTree(par);
-  let _t = document.getElementById(par.prnt);
-  if (_t == null) { document.body.appendChild(_r); }
-  else { _t.appendChild(_r); }
-  applyStyles(_r, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles, par.liStyles, par.myUlStyle);
+
+  // let _t = document.getElementById(par.prnt);
+  // if (_t == null) { document.body.appendChild(_r); }
+  // else { _t.appendChild(_r); }
+
+  appendFilter(par.prnt, _r);
+  applyStyles(_r, par);
 }
 
 function treeTextInUpdate(par)
@@ -641,35 +591,32 @@ function treeTextInUpdate(par)
 
 function addList(par)
 {
-    const ul = document.createElement("ul");
-    const li_cls = par.id+"_li"; // !!!
-    ul.id = par.id;
-    ul.className = par.cls;
-    ul.style.listStyleType = 'none';
+  const ul = document.createElement("ul");
+  const li_cls = par.id+"_li"; // !!!
+  ul.id = par.id;
+  ul.className = par.cls;
+  ul.style.listStyleType = 'none';
 
-    //console.log(ul.id + " : " + par.id);
+  //console.log(ul.id + " : " + par.id);
 
-    par.items.forEach((item, i) =>
-    {
-        const li = document.createElement("li");
-        li.className = li_cls; // !!!
-        li.textContent = String(item);
+  par.items.forEach((item, i) =>
+  {
+      const li = document.createElement("li");
+      li.className = li_cls; // !!!
+      li.textContent = String(item);
 
-        // Apply styles for alternating list items
-        if (i % 2)
-        {li.style.backgroundColor = par.color1;}
-        else {li.style.backgroundColor = par.color2;}
+      // Apply styles for alternating list items
+      if (i % 2)
+      {li.style.backgroundColor = par.color1;}
+      else {li.style.backgroundColor = par.color2;}
 
-        ul.appendChild(li);
-    });
+      ul.appendChild(li);
+  });
 
+  appendFilter(par.prnt, ul);
+  applyStyles(ul, par);
 
-    var _t = document.getElementById(par.prnt);
-    if (_t == null) { document.body.appendChild(ul); }
-    else { _t.appendChild(ul); }
-    applyStyles(ul, par.rootStyle, par.hoverStyles, par.clickStyles, par.checkedStyles, par.liStyles);
-
-    return ul;
+  return ul;
 }
 
 var list_colors =
@@ -701,8 +648,7 @@ function updateList(_item, _id) // pass data as an obj of items & ul id. li's go
 
             // not very generic here tho. starting to get too specific.
             // pls fix !! @?@?@?@
-            // pls fix !! @?@?@?@
-            // pls fix !! @?@?@?@
+
             updateList(objListConst(), _id);
         });
 
@@ -801,7 +747,6 @@ function updateSetting(par)
         par.stn.settings[i] = e.checked;
         break;
       case "object": // haxed
-        let _s = par.stn.settings.length;
         if (e.id == par.id)
         {
           par.stn.settings[i][0] = true;
@@ -862,169 +807,169 @@ background-color: rgb(17, 17, 17);
 
 var key_bind_info = 
 [
-    "Ctrl+F5 Update Game",
-    "Q(toggle menu & unlock mouse)",
-    "R(switch plane)",
-    "...",
-    "W(move forward), S(move backwards)",
-    "A(move left), D(move right)",
-    "Space(up), B(down)",
-    "Shift(speed up movement & deletion)",
-    "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
-    "...",
-    "[IN GAME] LMB(move 3D cursor to aim location)",
-    "[IN GAME] TAB(select obj by aiming at 3D center)",
-    "[IN MENU] LMB(select points in grid & obj & placed)",
-    "[IN MENU] RMB(select object)",
-    "[IN MENU] TAB(select by hovering over 3D center)",
-    "[IN MENU] Click to select object from list",
-    "[IN MENU] Scroll(object selection)",
-    "Scroll+Shift(grid size) 2^n",
-    "RMB(move cursor to near point in selected object)",
-    "MMB(show point indices & rotate camera from menu)",
-    "G(send cursor to ground)",
-    "F(place point at cursor)",
-    "Z(undo last point placed)",
-    "E(make object from points)",
-    "C(edit object -> converts to points)",
-    "L(link objects -> select in sequence)",
-    "I(join objects -> select in sequence) [BUGGY]",
-    "...",
-    "N(LOCK movement planar)",
-    "[PLANAR LOCK] Scroll(vertical movement)",
-    "Scroll(expand world from center)",
-    "[FREE FLY] Y(teleport)",
-    "[PLANAR LOCK] Y(teleport & 180 flip)",
-    "...",
-    "V(move object -> select in sequence)",
-    "X(delete selected object)",
-    "[GRID] Shift+R(rotate around cursor axis)",
-    "[MOVE] Shift+R(rotate around object center)",
-    "T(duplicate selected object)",
-    "Shift+T(dupe -> move cursor -> end[V] OR cont.)",
-    "[GRID] 5(mirror over selected plane & point)",
-    "[MOVE] 5(mirror over selected plane & object center)",
-    "6(scale by dist -> select in sequence)",
-    "7(generate circle at cursor & plane)",
-    "H(set cursor to object's encoded 3D center)",
-    "/(print object to console)",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym",
-    "hey man my name is gym"
+  "Ctrl+F5 Update Game",
+  "Q(toggle menu & unlock mouse)",
+  "R(switch plane)",
+  "...",
+  "W(move forward), S(move backwards)",
+  "A(move left), D(move right)",
+  "Space(up), B(down)",
+  "Shift(speed up movement & deletion)",
+  "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
+  "...",
+  "[IN GAME] LMB(move 3D cursor to aim location)",
+  "[IN GAME] TAB(select obj by aiming at 3D center)",
+  "[IN MENU] LMB(select points in grid & obj & placed)",
+  "[IN MENU] RMB(select object)",
+  "[IN MENU] TAB(select by hovering over 3D center)",
+  "[IN MENU] Click to select object from list",
+  "[IN MENU] Scroll(object selection)",
+  "Scroll+Shift(grid size) 2^n",
+  "RMB(move cursor to near point in selected object)",
+  "MMB(show point indices & rotate camera from menu)",
+  "G(send cursor to ground)",
+  "F(place point at cursor)",
+  "Z(undo last point placed)",
+  "E(make object from points)",
+  "C(edit object -> converts to points)",
+  "L(link objects -> select in sequence)",
+  "I(join objects -> select in sequence) [BUGGY]",
+  "...",
+  "N(LOCK movement planar)",
+  "[PLANAR LOCK] Scroll(vertical movement)",
+  "Scroll(expand world from center)",
+  "[FREE FLY] Y(teleport)",
+  "[PLANAR LOCK] Y(teleport & 180 flip)",
+  "...",
+  "V(move object -> select in sequence)",
+  "X(delete selected object)",
+  "[GRID] Shift+R(rotate around cursor axis)",
+  "[MOVE] Shift+R(rotate around object center)",
+  "T(duplicate selected object)",
+  "Shift+T(dupe -> move cursor -> end[V] OR cont.)",
+  "[GRID] 5(mirror over selected plane & point)",
+  "[MOVE] 5(mirror over selected plane & object center)",
+  "6(scale by dist -> select in sequence)",
+  "7(generate circle at cursor & plane)",
+  "H(set cursor to object's encoded 3D center)",
+  "/(print object to console)",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym",
+  "hey man my name is gym"
 ];
 
 var _error_info = 
 [
-    "DID",
-    "NOT",
-    "LOAD"
+  "DID",
+  "NOT",
+  "LOAD"
 ];
 
 
-    //////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
-    // Must add event listener to detect li clicks/hovers -> compare class/id
+// Must add event listener to detect li clicks/hovers -> compare class/id
 
-    // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+// background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 
-    let _fixthis = menu_q_size[1]-208;
-    var menu_obj_style =
-    `
-    box-sizing: border-box;
-    position: absolute;
-    width: 200px;
-    height: auto;
-    left: 600px;
-    top: 190px;
-    user-select: none;
-    background: rgba(0,0,0,0);
-    border-radius: 3px;
-   `;
+let _fixthis = menu_q_size[1]-208;
+var menu_obj_style =
+`
+box-sizing: border-box;
+position: absolute;
+width: 200px;
+height: auto;
+left: 600px;
+top: 190px;
+user-select: none;
+background: rgba(0,0,0,0);
+border-radius: 3px;
+`;
 
-    var menu_objPreview_style =
-    `
-    box-sizing: border-box;
-    border: 0px rgba(0,0,0,1);
-    margin: 0px;
-    width: 200px;
-    height: 200px;
-    user-select: none;
-    background: rgba(0,0,0,0);
-    border-radius: 3px;
-    `;
+var menu_objPreview_style =
+`
+box-sizing: border-box;
+border: 0px rgba(0,0,0,1);
+margin: 0px;
+width: 200px;
+height: 200px;
+user-select: none;
+background: rgba(0,0,0,0);
+border-radius: 3px;
+`;
 
-    var menu_obj =
-    {
-        id: "menu_obj", cls: "", prnt: "html",
-        rootStyle: rootStyle + menu_obj_style
-    }; addDiv(menu_obj);
+var menu_obj =
+{
+    id: "menu_obj", cls: "", prnt: "html",
+    rootStyle: rootStyle + menu_obj_style
+}; addDiv(menu_obj);
 
-      var menu_objPreview =
-      {
-          id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
-          rootStyle: rootStyle + menu_objPreview_style + justOuter
-      }; addDiv(menu_objPreview);
+  var menu_objPreview =
+  {
+      id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
+      rootStyle: rootStyle + menu_objPreview_style + justOuter
+  }; addDiv(menu_objPreview);
 
-      var listStyle2 =
-      `
-      background-color: rgba(0,0,0,0);
-      width: 96%;
-      padding: 0px;
-      margin: 3px;
-      border: 1px solid rgba(255,255,255,0.1);
-      max-height: `+_fixthis+`px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      `;
+  var listStyle2 =
+  `
+  background-color: rgba(0,0,0,0);
+  width: 96%;
+  padding: 0px;
+  margin: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-height: `+_fixthis+`px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  `;
 
-      var myLiStyle2 =
-       `
-      box-sizing: border-box;
-      width: 100%;
-      height: 20px;
-      padding: 0px; margin: 0px;
-      border-bottom: 1px solid rgb(12,12,12);
-      text-align: center;
-      line-height: 1.8;
-      `;
+  var myLiStyle2 =
+   `
+  box-sizing: border-box;
+  width: 100%;
+  height: 20px;
+  padding: 0px; margin: 0px;
+  border-bottom: 1px solid rgb(12,12,12);
+  text-align: center;
+  line-height: 1.8;
+  `;
 
-      var list_objectSelect =
-      {
-          id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
-          color1: list_colors.c1, color2: list_colors.c2,
-          rootStyle: rootStyle + listStyle2,
-          liStyles: myLiStyle2,
-          items: _error_info
-      };
-      addList(list_objectSelect);
+  var list_objectSelect =
+  {
+      id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
+      color1: list_colors.c1, color2: list_colors.c2,
+      rootStyle: rootStyle + listStyle2,
+      liStyles: myLiStyle2,
+      items: _error_info
+  };
+  addList(list_objectSelect);
 
-      //overflow-y: auto;
+  //overflow-y: auto;
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -1563,9 +1508,9 @@ var div_root =
 
                 var div_label =
                 {
-                    id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
-                    text: `circle settings \u25CB`,
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+                  id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
+                  text: `circle settings \u25CB`,
+                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
                 }; addDiv(div_label);
 
 
@@ -2396,14 +2341,12 @@ var menu_status =
     var menu_status_r0 =
     {
       id: "menu_status_r0", cls: "", prnt: "menu_status_r",
-      text: 123,
       rootStyle: rootStyle + menu_status_style_l0 + _textRight
     }; addDiv(menu_status_r0);
 
     var menu_status_r1 =
     {
       id: "menu_status_r1", cls: "", prnt: "menu_status_r",
-      text: 123,
       rootStyle: rootStyle + menu_status_style_l0 + _textRight
     }; addDiv(menu_status_r1);
 

@@ -2121,6 +2121,7 @@ function isPointInsideTriangle(p, p1, p2, p3)
 }
 
 var interKOut = [];
+var normOut = [];
 
 function updateRayInters(_dp, _p)
 {
@@ -2129,6 +2130,7 @@ function updateRayInters(_dp, _p)
 		// updateNormalMaps(); 
 		rayInterMap.length = 0;
     interKOut.length = 0;
+    normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
 		for (var i=world_obj_count; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
 		{
@@ -2158,6 +2160,7 @@ function updateRayInters(_dp, _p)
 						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
 						rayInterMap.push(_int);
 						interKOut.push(k);
+            normOut.push(_cr);
 					}
 				}
 			}
@@ -3822,10 +3825,7 @@ function drawLines()
       }
     }
 
-    if (d_i != 11
-    && (d_i > 2 && d_i < 6)
-    || d_i < world_obj_count-1
-    || d_i == 1)
+    if ((d_i > 2 && d_i < 6) || d_i == 1)
     {
       _si2 = mem_log[d_i][2];
       _pts = new Float32Array(_si2 * 2);
@@ -4372,6 +4372,9 @@ function Compute(init_dat)
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
 
+
+  // need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
+  // _settings[5].settings[0]
 
            /*@?@
            ?@?@?
