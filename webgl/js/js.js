@@ -707,6 +707,7 @@ var key_map =
 	h: false,
 	o: false,
 	i: false,
+  j: false,
 	k: false,
 	"1": false,
 	"2": false,
@@ -1270,6 +1271,8 @@ function loadFile0(_fi)
       }
     }
     fileName = _fn.slice(0, _si+1);
+    // _settings[8].settings[1] = _fn.slice(_si+2, _fn.length-1);
+    updateTextByPar(menu_status_r2, _fn.slice(_si+1, _fn.length));
   }
   // flag_loadingObject = 0;
   updateTree(tree_allObjects);
@@ -1312,32 +1315,17 @@ function loadFile(_fi)
   // flag_loadingObject = 0;
 }
 
+function makeValidFileName(_i)
+{
+  const _bads = /[\/:*?"<>|\.]/g;
+  const _n = _i.replace(_bads, '_');
+
+  if (!_n.trim()) {return "memspc_";}
+  return _n;
+}
 
 function downloadSaveFile()
 {
-    // var t_sum = 0;
-    // for (var i = world_obj_count + 1; i < mem_log.length; i++) {t_sum += (mem_log[i][1]-4);} // Remove center from size
-    //
-    // var _tar = new Float32Array(t_sum);
-    // var _ti = 0;  // Track total index in _tar
-    //
-    // for (var i = world_obj_count + 1; i < m_objs.length; i++)
-    // {
-    //     for (var j = 0; j < mem_log[i][2]-1; j++) // Remove center
-    //     {
-    //         var _bi = _ti; var _i = _bi * 4;
-    //         _tar[_i] = m_objs[i][j * 4];
-    //         _tar[_i + 1] = m_objs[i][j * 4 + 1];
-    //         _tar[_i + 2] = m_objs[i][j * 4 + 2];
-    //         _tar[_i + 3] = i - world_obj_count; // The magic
-    //         _ti++;
-    //     }
-    // }
-
-    // convert Float32Array to ArrayBuffer
-  
-    // var arrayBuffer = _tar.buffer;
-
     let arrayBuffer = makeSave();
     let _l = arrayBuffer.length;
 
@@ -1348,13 +1336,8 @@ function downloadSaveFile()
     // temp anchor
     const anchor = document.createElement('a');
     anchor.href = _url;
-    const _n = document.getElementById("menu_status_l3");
-    if (_n.value == "")
-    {
-    	anchor.download = "memspc_" + _l + ".bin";
-    } else {
-    	anchor.download = _n.value + _l + ".bin";
-    }
+
+    anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
 
     // use .click() to trigger download
     anchor.click();
@@ -1400,15 +1383,6 @@ window.addEventListener('blur', () =>
   }
   mouseLock = 0;
 });
-
-
-// Removing this for now. Clicks lock/unlock mouse.
-
-// canvas_over.addEventListener("click", async () => 
-// {
-// 	await canvas_over.requestPointerLock();
-// 	mouseLock = 1;
-// });
 
 
 function pointerLockSwap()
@@ -1642,10 +1616,6 @@ var m_t_objs = []; // [[n,...,],[n,...,],...]
 var mem_t_log = []; // [start, size]
 var mem_t_sum = 0;
 
-// var m_ref_objs = []; // [[n,...,],[n,...,],...]
-// var m_ref_log = []; // [start, size, i ref]
-// var m_ref_sum = 0;
-
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
 var _pp = [-125,0,-125]; // Point on plane will be static
@@ -1656,23 +1626,21 @@ var _lop_world = new Float32Array([0.0,0.0,0.0,1]);
 var trans_f = new Float32Array([0.0,0.0,0.0,1]);
 var exp_f = new Float32Array([0.0,0.0,0.0,1]);
 
-//const m_cube = new Float32Array([-1.0,-1.0,-1.0,1, -1.0,-1.0,1.0,1, 1.0,-1.0,-1.0,1, 1.0,-1.0,1.0,1, 1.0,1.0,-1.0,1, 1.0,1.0,1.0,1, -1.0,1.0,-1.0,1, -1.0,1.0,1.0,1]);
-//const m_cube = new Float32Array([-0.4,-0.4,-0.4,1, -0.4,-0.4,0.4,1, 0.4,-0.4,-0.4,1, 0.4,-0.4,0.4,1, 0.4,0.4,-0.4,1, 0.4,0.4,0.4,1, -0.4,0.4,-0.4,1, -0.4,0.4,0.4,1]);
-
 var m_rect =  new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
 
-
-//const m_cube = new Float32Array([-1.0000,1.0000,-1.0000,0,-1.0000,-1.0000,-1.0000,0,1.0000,-1.0000,-1.0000,0,1.0000,1.0000,-1.0000,0,1.0000,1.0000,1.0000,0,1.0000,-1.0000,1.0000,0,-1.0000,-1.0000,1.0000,0,-1.0000,1.0000,1.0000,0,-1.0000,1.0000,-1.0000,0,-1.0000,-1.0000,-1.0000,0,-1.0000,-1.0000,1.0000,0,-1.0000,1.0000,1.0000,0,1.0000,1.0000,1.0000,0,1.0000,-1.0000,1.0000,0,1.0000,-1.0000,-1.0000,0,1.0000,1.0000,-1.0000,0,-1.0000,1.0000,-1.0000,0]);
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
 const m_x = new Float32Array([0,0,0,1, 8,0,0,1]);
 const m_y = new Float32Array([0,0,0,1, 0,8,0,1]);
 const m_z = new Float32Array([0,0,0,1, 0,0,8,1]);
-const m_map = new Float32Array([277.1638,-128.0000,114.8050,0,277.1638,0.0000,114.8050,0,114.8050,0.0000,277.1638,0,114.8050,-128.0000,277.1638,0,-114.8050,-128.0000,277.1638,0,-114.8050,0.0000,277.1638,0,-277.1638,0.0000,114.8050,0,-277.1638,-128.0000,114.8050,0,-277.1638,-128.0000,-114.8050,0,-277.1638,0.0000,-114.8050,0,-114.8050,0.0000,-277.1638,0,-114.8050,-128.0000,-277.1638,0,114.8050,-128.0000,-277.1638,0,114.8050,0.0000,-277.1638,0,277.1638,0.0000,-114.8050,0,277.1638,-128.0000,-114.8050,0,277.1638,-128.0000,114.8050,0,277.1638,0.0000,114.8050,0,277.1638,0.0000,-114.8050,0,277.1638,-128.0000,-114.8050,0,114.8050,-128.0000,-277.1638,0,114.8050,0.0000,-277.1638,0,-114.8050,0.0000,-277.1638,0,-114.8050,-128.0000,-277.1638,0,-277.1638,-128.0000,-114.8050,0,-277.1638,0.0000,-114.8050,0,-277.1638,0.0000,114.8050,0,-277.1638,-128.0000,114.8050,0,-114.8050,-128.0000,277.1638,0,-114.8050,0.0000,277.1638,0,114.8050,0.0000,277.1638,0,114.8050,-128.0000,277.1638,0,277.1638,-128.0000,114.8050,0]);
-const m_flr = new Float32Array([-256.0000,0.0000,112.0000,0,-256.0000,0.0000,80.0000,0,-256.0000,0.0000,48.0000,0,-256.0000,0.0000,16.0000,0,-256.0000,0.0000,-16.0000,0,-256.0000,0.0000,-48.0000,0,-256.0000,0.0000,-80.0000,0,-256.0000,0.0000,-112.0000,0,-224.0000,0.0000,144.0000,0,-224.0000,0.0000,112.0000,0,-224.0000,0.0000,80.0000,0,-224.0000,0.0000,48.0000,0,-224.0000,0.0000,16.0000,0,-224.0000,0.0000,-16.0000,0,-224.0000,0.0000,-48.0000,0,-224.0000,0.0000,-80.0000,0,-224.0000,0.0000,-112.0000,0,-224.0000,0.0000,-144.0000,0,-192.0000,0.0000,176.0000,0,-192.0000,0.0000,144.0000,0,-192.0000,0.0000,112.0000,0,-192.0000,0.0000,80.0000,0,-192.0000,0.0000,48.0000,0,-192.0000,0.0000,16.0000,0,-192.0000,0.0000,-16.0000,0,-192.0000,0.0000,-48.0000,0,-192.0000,0.0000,-80.0000,0,-192.0000,0.0000,-112.0000,0,-192.0000,0.0000,-144.0000,0,-192.0000,0.0000,-176.0000,0,-160.0000,0.0000,208.0000,0,-160.0000,0.0000,176.0000,0,-160.0000,0.0000,144.0000,0,-160.0000,0.0000,112.0000,0,-160.0000,0.0000,80.0000,0,-160.0000,0.0000,48.0000,0,-160.0000,0.0000,16.0000,0,-160.0000,0.0000,-16.0000,0,-160.0000,0.0000,-48.0000,0,-160.0000,0.0000,-80.0000,0,-160.0000,0.0000,-112.0000,0,-160.0000,0.0000,-144.0000,0,-160.0000,0.0000,-176.0000,0,-160.0000,0.0000,-208.0000,0,-128.0000,0.0000,240.0000,0,-128.0000,0.0000,208.0000,0,-128.0000,0.0000,176.0000,0,-128.0000,0.0000,144.0000,0,-128.0000,0.0000,112.0000,0,-128.0000,0.0000,80.0000,0,-128.0000,0.0000,48.0000,0,-128.0000,0.0000,16.0000,0,-128.0000,0.0000,-16.0000,0,-128.0000,0.0000,-48.0000,0,-128.0000,0.0000,-80.0000,0,-128.0000,0.0000,-112.0000,0,-128.0000,0.0000,-144.0000,0,-128.0000,0.0000,-176.0000,0,-128.0000,0.0000,-208.0000,0,-128.0000,0.0000,-240.0000,0,-96.0000,0.0000,240.0000,0,-96.0000,0.0000,208.0000,0,-96.0000,0.0000,176.0000,0,-96.0000,0.0000,144.0000,0,-96.0000,0.0000,112.0000,0,-96.0000,0.0000,80.0000,0,-96.0000,0.0000,48.0000,0,-96.0000,0.0000,16.0000,0,-96.0000,0.0000,-16.0000,0,-96.0000,0.0000,-48.0000,0,-96.0000,0.0000,-80.0000,0,-96.0000,0.0000,-112.0000,0,-96.0000,0.0000,-144.0000,0,-96.0000,0.0000,-176.0000,0,-96.0000,0.0000,-208.0000,0,-96.0000,0.0000,-240.0000,0,-64.0000,0.0000,240.0000,0,-64.0000,0.0000,208.0000,0,-64.0000,0.0000,176.0000,0,-64.0000,0.0000,144.0000,0,-64.0000,0.0000,112.0000,0,-64.0000,0.0000,80.0000,0,-64.0000,0.0000,48.0000,0,-64.0000,0.0000,16.0000,0,-64.0000,0.0000,-16.0000,0,-64.0000,0.0000,-48.0000,0,-64.0000,0.0000,-80.0000,0,-64.0000,0.0000,-112.0000,0,-64.0000,0.0000,-144.0000,0,-64.0000,0.0000,-176.0000,0,-64.0000,0.0000,-208.0000,0,-64.0000,0.0000,-240.0000,0,-32.0000,0.0000,240.0000,0,-32.0000,0.0000,208.0000,0,-32.0000,0.0000,176.0000,0,-32.0000,0.0000,144.0000,0,-32.0000,0.0000,112.0000,0,-32.0000,0.0000,80.0000,0,-32.0000,0.0000,48.0000,0,-32.0000,0.0000,16.0000,0,-32.0000,0.0000,-16.0000,0,-32.0000,0.0000,-48.0000,0,-32.0000,0.0000,-80.0000,0,-32.0000,0.0000,-112.0000,0,-32.0000,0.0000,-144.0000,0,-32.0000,0.0000,-176.0000,0,-32.0000,0.0000,-208.0000,0,-32.0000,0.0000,-240.0000,0,0.0000,0.0000,240.0000,0,0.0000,0.0000,208.0000,0,0.0000,0.0000,176.0000,0,0.0000,0.0000,144.0000,0,0.0000,0.0000,112.0000,0,0.0000,0.0000,80.0000,0,0.0000,0.0000,48.0000,0,0.0000,0.0000,16.0000,0,0.0000,0.0000,-16.0000,0,0.0000,0.0000,-48.0000,0,0.0000,0.0000,-80.0000,0,0.0000,0.0000,-112.0000,0,0.0000,0.0000,-144.0000,0,0.0000,0.0000,-176.0000,0,0.0000,0.0000,-208.0000,0,0.0000,0.0000,-240.0000,0,32.0000,0.0000,240.0000,0,32.0000,0.0000,208.0000,0,32.0000,0.0000,176.0000,0,32.0000,0.0000,144.0000,0,32.0000,0.0000,112.0000,0,32.0000,0.0000,80.0000,0,32.0000,0.0000,48.0000,0,32.0000,0.0000,16.0000,0,32.0000,0.0000,-16.0000,0,32.0000,0.0000,-48.0000,0,32.0000,0.0000,-80.0000,0,32.0000,0.0000,-112.0000,0,32.0000,0.0000,-144.0000,0,32.0000,0.0000,-176.0000,0,32.0000,0.0000,-208.0000,0,32.0000,0.0000,-240.0000,0,64.0000,0.0000,240.0000,0,64.0000,0.0000,208.0000,0,64.0000,0.0000,176.0000,0,64.0000,0.0000,144.0000,0,64.0000,0.0000,112.0000,0,64.0000,0.0000,80.0000,0,64.0000,0.0000,48.0000,0,64.0000,0.0000,16.0000,0,64.0000,0.0000,-16.0000,0,64.0000,0.0000,-48.0000,0,64.0000,0.0000,-80.0000,0,64.0000,0.0000,-112.0000,0,64.0000,0.0000,-144.0000,0,64.0000,0.0000,-176.0000,0,64.0000,0.0000,-208.0000,0,64.0000,0.0000,-240.0000,0,96.0000,0.0000,240.0000,0,96.0000,0.0000,208.0000,0,96.0000,0.0000,176.0000,0,96.0000,0.0000,144.0000,0,96.0000,0.0000,112.0000,0,96.0000,0.0000,80.0000,0,96.0000,0.0000,48.0000,0,96.0000,0.0000,16.0000,0,96.0000,0.0000,-16.0000,0,96.0000,0.0000,-48.0000,0,96.0000,0.0000,-80.0000,0,96.0000,0.0000,-112.0000,0,96.0000,0.0000,-144.0000,0,96.0000,0.0000,-176.0000,0,96.0000,0.0000,-208.0000,0,96.0000,0.0000,-240.0000,0,128.0000,0.0000,208.0000,0,128.0000,0.0000,176.0000,0,128.0000,0.0000,144.0000,0,128.0000,0.0000,112.0000,0,128.0000,0.0000,80.0000,0,128.0000,0.0000,48.0000,0,128.0000,0.0000,16.0000,0,128.0000,0.0000,-16.0000,0,128.0000,0.0000,-48.0000,0,128.0000,0.0000,-80.0000,0,128.0000,0.0000,-112.0000,0,128.0000,0.0000,-144.0000,0,128.0000,0.0000,-176.0000,0,128.0000,0.0000,-208.0000,0,160.0000,0.0000,176.0000,0,160.0000,0.0000,144.0000,0,160.0000,0.0000,112.0000,0,160.0000,0.0000,80.0000,0,160.0000,0.0000,48.0000,0,160.0000,0.0000,16.0000,0,160.0000,0.0000,-16.0000,0,160.0000,0.0000,-48.0000,0,160.0000,0.0000,-80.0000,0,160.0000,0.0000,-112.0000,0,160.0000,0.0000,-144.0000,0,160.0000,0.0000,-176.0000,0,192.0000,0.0000,144.0000,0,192.0000,0.0000,112.0000,0,192.0000,0.0000,80.0000,0,192.0000,0.0000,48.0000,0,192.0000,0.0000,16.0000,0,192.0000,0.0000,-16.0000,0,192.0000,0.0000,-48.0000,0,192.0000,0.0000,-80.0000,0,192.0000,0.0000,-112.0000,0,192.0000,0.0000,-144.0000,0,224.0000,0.0000,112.0000,0,224.0000,0.0000,80.0000,0,224.0000,0.0000,48.0000,0,224.0000,0.0000,16.0000,0,224.0000,0.0000,-16.0000,0,224.0000,0.0000,-48.0000,0,224.0000,0.0000,-80.0000,0,224.0000,0.0000,-112.0000,0,256.0000,0.0000,80.0000,0,256.0000,0.0000,48.0000,0,256.0000,0.0000,16.0000,0,256.0000,0.0000,-16.0000,0,256.0000,0.0000,-48.0000,0,256.0000,0.0000,-80.0000,0,256.0000,0.0000,-80.0000,0]);
-//const m_gun = new Float32Array([0.0000,-28.0000,4.0000,1.0000,0.0000,-28.0000,-8.0000,1.0000,0.0000,-32.0000,-8.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-28.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-22.0000,9.0000,1.0000,0.0000,-22.0000,4.0000,1.0000,0.0000,-32.0000,4.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-34.0000,10.0000,1.0000,0.0000,-33.0000,11.0000,1.0000,0.0000,-32.0000,9.0000,1.0000,0.0000,-29.2222,3.8889,0.0000]);
-//const m_tri = new Float32Array([0,2,0,1,-1,0,-1,1,1,0,-1,1,1,0,1,1,-1,0,1,1]); //1,0,1,1,-1,0,-1,1,1,0,-1,1
+
+const m_map = new Float32Array([277.1638,-128.0,114.8050,0,277.1638,0.0,114.8050,0,114.8050,0.0,277.1638,0,114.8050,-128.0,277.1638,0,-114.8050,-128.0,277.1638,0,-114.8050,0.0,277.1638,0,-277.1638,0.0,114.8050,0,-277.1638,-128.0,114.8050,0,-277.1638,-128.0,-114.8050,0,-277.1638,0.0,-114.8050,0,-114.8050,0.0,-277.1638,0,-114.8050,-128.0,-277.1638,0,114.8050,-128.0,-277.1638,0,114.8050,0.0,-277.1638,0,277.1638,0.0,-114.8050,0,277.1638,-128.0,-114.8050,0,277.1638,-128.0,114.8050,0,277.1638,0.0,114.8050,0,277.1638,0.0,-114.8050,0,277.1638,-128.0,-114.8050,0,114.8050,-128.0,-277.1638,0,114.8050,0.0,-277.1638,0,-114.8050,0.0,-277.1638,0,-114.8050,-128.0,-277.1638,0,-277.1638,-128.0,-114.8050,0,-277.1638,0.0,-114.8050,0,-277.1638,0.0,114.8050,0,-277.1638,-128.0,114.8050,0,-114.8050,-128.0,277.1638,0,-114.8050,0.0,277.1638,0,114.8050,0.0,277.1638,0,114.8050,-128.0,277.1638,0,277.1638,-128.0,114.8050,0]);
+
+const m_flr = new Float32Array([-256.0,0.0,112.0,0,-256.0,0.0,80.0,0,-256.0,0.0,48.0,0,-256.0,0.0,16.0,0,-256.0,0.0,-16.0,0,-256.0,0.0,-48.0,0,-256.0,0.0,-80.0,0,-256.0,0.0,-112.0,0,-224.0,0.0,144.0,0,-224.0,0.0,112.0,0,-224.0,0.0,80.0,0,-224.0,0.0,48.0,0,-224.0,0.0,16.0,0,-224.0,0.0,-16.0,0,-224.0,0.0,-48.0,0,-224.0,0.0,-80.0,0,-224.0,0.0,-112.0,0,-224.0,0.0,-144.0,0,-192.0,0.0,176.0,0,-192.0,0.0,144.0,0,-192.0,0.0,112.0,0,-192.0,0.0,80.0,0,-192.0,0.0,48.0,0,-192.0,0.0,16.0,0,-192.0,0.0,-16.0,0,-192.0,0.0,-48.0,0,-192.0,0.0,-80.0,0,-192.0,0.0,-112.0,0,-192.0,0.0,-144.0,0,-192.0,0.0,-176.0,0,-160.0,0.0,208.0,0,-160.0,0.0,176.0,0,-160.0,0.0,144.0,0,-160.0,0.0,112.0,0,-160.0,0.0,80.0,0,-160.0,0.0,48.0,0,-160.0,0.0,16.0,0,-160.0,0.0,-16.0,0,-160.0,0.0,-48.0,0,-160.0,0.0,-80.0,0,-160.0,0.0,-112.0,0,-160.0,0.0,-144.0,0,-160.0,0.0,-176.0,0,-160.0,0.0,-208.0,0,-128.0,0.0,240.0,0,-128.0,0.0,208.0,0,-128.0,0.0,176.0,0,-128.0,0.0,144.0,0,-128.0,0.0,112.0,0,-128.0,0.0,80.0,0,-128.0,0.0,48.0,0,-128.0,0.0,16.0,0,-128.0,0.0,-16.0,0,-128.0,0.0,-48.0,0,-128.0,0.0,-80.0,0,-128.0,0.0,-112.0,0,-128.0,0.0,-144.0,0,-128.0,0.0,-176.0,0,-128.0,0.0,-208.0,0,-128.0,0.0,-240.0,0,-96.0,0.0,240.0,0,-96.0,0.0,208.0,0,-96.0,0.0,176.0,0,-96.0,0.0,144.0,0,-96.0,0.0,112.0,0,-96.0,0.0,80.0,0,-96.0,0.0,48.0,0,-96.0,0.0,16.0,0,-96.0,0.0,-16.0,0,-96.0,0.0,-48.0,0,-96.0,0.0,-80.0,0,-96.0,0.0,-112.0,0,-96.0,0.0,-144.0,0,-96.0,0.0,-176.0,0,-96.0,0.0,-208.0,0,-96.0,0.0,-240.0,0,-64.0,0.0,240.0,0,-64.0,0.0,208.0,0,-64.0,0.0,176.0,0,-64.0,0.0,144.0,0,-64.0,0.0,112.0,0,-64.0,0.0,80.0,0,-64.0,0.0,48.0,0,-64.0,0.0,16.0,0,-64.0,0.0,-16.0,0,-64.0,0.0,-48.0,0,-64.0,0.0,-80.0,0,-64.0,0.0,-112.0,0,-64.0,0.0,-144.0,0,-64.0,0.0,-176.0,0,-64.0,0.0,-208.0,0,-64.0,0.0,-240.0,0,-32.0,0.0,240.0,0,-32.0,0.0,208.0,0,-32.0,0.0,176.0,0,-32.0,0.0,144.0,0,-32.0,0.0,112.0,0,-32.0,0.0,80.0,0,-32.0,0.0,48.0,0,-32.0,0.0,16.0,0,-32.0,0.0,-16.0,0,-32.0,0.0,-48.0,0,-32.0,0.0,-80.0,0,-32.0,0.0,-112.0,0,-32.0,0.0,-144.0,0,-32.0,0.0,-176.0,0,-32.0,0.0,-208.0,0,-32.0,0.0,-240.0,0,0.0,0.0,240.0,0,0.0,0.0,208.0,0,0.0,0.0,176.0,0,0.0,0.0,144.0,0,0.0,0.0,112.0,0,0.0,0.0,80.0,0,0.0,0.0,48.0,0,0.0,0.0,16.0,0,0.0,0.0,-16.0,0,0.0,0.0,-48.0,0,0.0,0.0,-80.0,0,0.0,0.0,-112.0,0,0.0,0.0,-144.0,0,0.0,0.0,-176.0,0,0.0,0.0,-208.0,0,0.0,0.0,-240.0,0,32.0,0.0,240.0,0,32.0,0.0,208.0,0,32.0,0.0,176.0,0,32.0,0.0,144.0,0,32.0,0.0,112.0,0,32.0,0.0,80.0,0,32.0,0.0,48.0,0,32.0,0.0,16.0,0,32.0,0.0,-16.0,0,32.0,0.0,-48.0,0,32.0,0.0,-80.0,0,32.0,0.0,-112.0,0,32.0,0.0,-144.0,0,32.0,0.0,-176.0,0,32.0,0.0,-208.0,0,32.0,0.0,-240.0,0,64.0,0.0,240.0,0,64.0,0.0,208.0,0,64.0,0.0,176.0,0,64.0,0.0,144.0,0,64.0,0.0,112.0,0,64.0,0.0,80.0,0,64.0,0.0,48.0,0,64.0,0.0,16.0,0,64.0,0.0,-16.0,0,64.0,0.0,-48.0,0,64.0,0.0,-80.0,0,64.0,0.0,-112.0,0,64.0,0.0,-144.0,0,64.0,0.0,-176.0,0,64.0,0.0,-208.0,0,64.0,0.0,-240.0,0,96.0,0.0,240.0,0,96.0,0.0,208.0,0,96.0,0.0,176.0,0,96.0,0.0,144.0,0,96.0,0.0,112.0,0,96.0,0.0,80.0,0,96.0,0.0,48.0,0,96.0,0.0,16.0,0,96.0,0.0,-16.0,0,96.0,0.0,-48.0,0,96.0,0.0,-80.0,0,96.0,0.0,-112.0,0,96.0,0.0,-144.0,0,96.0,0.0,-176.0,0,96.0,0.0,-208.0,0,96.0,0.0,-240.0,0,128.0,0.0,208.0,0,128.0,0.0,176.0,0,128.0,0.0,144.0,0,128.0,0.0,112.0,0,128.0,0.0,80.0,0,128.0,0.0,48.0,0,128.0,0.0,16.0,0,128.0,0.0,-16.0,0,128.0,0.0,-48.0,0,128.0,0.0,-80.0,0,128.0,0.0,-112.0,0,128.0,0.0,-144.0,0,128.0,0.0,-176.0,0,128.0,0.0,-208.0,0,160.0,0.0,176.0,0,160.0,0.0,144.0,0,160.0,0.0,112.0,0,160.0,0.0,80.0,0,160.0,0.0,48.0,0,160.0,0.0,16.0,0,160.0,0.0,-16.0,0,160.0,0.0,-48.0,0,160.0,0.0,-80.0,0,160.0,0.0,-112.0,0,160.0,0.0,-144.0,0,160.0,0.0,-176.0,0,192.0,0.0,144.0,0,192.0,0.0,112.0,0,192.0,0.0,80.0,0,192.0,0.0,48.0,0,192.0,0.0,16.0,0,192.0,0.0,-16.0,0,192.0,0.0,-48.0,0,192.0,0.0,-80.0,0,192.0,0.0,-112.0,0,192.0,0.0,-144.0,0,224.0,0.0,112.0,0,224.0,0.0,80.0,0,224.0,0.0,48.0,0,224.0,0.0,16.0,0,224.0,0.0,-16.0,0,224.0,0.0,-48.0,0,224.0,0.0,-80.0,0,224.0,0.0,-112.0,0,256.0,0.0,80.0,0,256.0,0.0,48.0,0,256.0,0.0,16.0,0,256.0,0.0,-16.0,0,256.0,0.0,-48.0,0,256.0,0.0,-80.0,0,256.0,0.0,-80.0,0]);
+
 var _flr = 6*8; // Side length of square
 var edit_sum = 0;
+
+const m_eyeRef = new Float32Array([0,8.0,0,1.0,-8.0,0,0,1.0,0,-8.0,0,1.0,8.0,0,0,1.0,0,8.0,0,1.0]);
 
 function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
@@ -1885,8 +1853,8 @@ function m_objs_loadPoints(ar) // Adds objects
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
-  if (m_objs.length > 14) {_fp = 3;} // redirect can be set global
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 15) {_fp = 2;}
+  if (m_objs.length > 15) {_fp = 3;} // redirect can be set global
 
   if (flag_loadingObject == 0)
   {
@@ -1967,31 +1935,31 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
   }
   */
 
+      // for (let j = start; j < end - 4; j += 4)
+  // // try this one ^^^
 	// for (var j = 0; j<(m_objs.length); j++)
   for (let j = m_objs.length-1; j>=0; j--)
   {
-    _nextSize = m_objs[j].length/4-1;
-    // for (var i = 0; i<m_objs[j].length/4; i++) // fix
-    for (let i = _nextSize; i>=0; i--) // fix
+    _nextSize = m_objs[j].length;
+    for (let i = 0; i < _nextSize; i += 4)
     {
-      m1.data[i*4+mem_log[j][0]]   = m_objs[j][i*4+0]*m_obj_offs[j][3] + m_obj_offs[j][0];
-      m1.data[i*4+1+mem_log[j][0]] = m_objs[j][i*4+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
-      m1.data[i*4+2+mem_log[j][0]] = m_objs[j][i*4+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
-      m1.data[i*4+3+mem_log[j][0]] = m_objs[j][i*4+3]*m_obj_offs[j][3];
+      m1.data[i+mem_log[j][0]]   = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][0];
+      m1.data[i+1+mem_log[j][0]] = m_objs[j][i+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
+      m1.data[i+2+mem_log[j][0]] = m_objs[j][i+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
+      m1.data[i+3+mem_log[j][0]] = m_objs[j][i+3]*m_obj_offs[j][3];
     }
   }
 
   // for (var j = 0; j<(m_t_objs.length); j++)
   for (let j = m_t_objs.length-1; j>=0; j--)
   {
-    _nextSize = m_t_objs[j].length/4-1;
-    // for (var i = 0; i<m_t_objs[j].length/4; i++) // fix
-    for (let i = _nextSize; i>=0; i--) // fix
+    _nextSize = m_t_objs[j].length;
+    for (let i = 0; i < _nextSize; i += 4)
     {
-      m1.data[i*4+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i*4+0];
-      m1.data[i*4+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+1];
-      m1.data[i*4+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+2];
-      m1.data[i*4+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i*4+3];
+      m1.data[i+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i+0];
+      m1.data[i+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+1];
+      m1.data[i+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+2];
+      m1.data[i+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+3];
     }
   }
 
@@ -2035,8 +2003,9 @@ m_objs_loadPoints(m_z);          // 8
 m_objs_loadPoints(_lp_world);    // 9
 m_objs_loadPoints(_lop_world);   // 10
 m_objs_loadPoints(m_gun);        // 11
-m_objs_loadPoints(m_rect);      // 12
-m_objs_loadPoints(m_rect);      // 13
+m_objs_loadPoints(m_rect);       // 12
+m_objs_loadPoints(m_rect);       // 13
+m_objs_loadPoints(m_eyeRef);     // 14
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -2121,6 +2090,7 @@ function isPointInsideTriangle(p, p1, p2, p3)
 }
 
 var interKOut = [];
+var interIOut = [];
 var normOut = [];
 
 function updateRayInters(_dp, _p)
@@ -2130,6 +2100,7 @@ function updateRayInters(_dp, _p)
 		// updateNormalMaps(); 
 		rayInterMap.length = 0;
     interKOut.length = 0;
+    interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
 		for (var i=world_obj_count; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
@@ -2156,10 +2127,10 @@ function updateRayInters(_dp, _p)
 					//can use create point like I did before ez
 					if (isPointInsideTriangle(_int, p1, p2, p3))
 					{
-						//console.log("Point in TRI");
 						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
 						rayInterMap.push(_int);
 						interKOut.push(k);
+						interIOut.push(i);
             normOut.push(_cr);
 					}
 				}
@@ -2169,25 +2140,28 @@ function updateRayInters(_dp, _p)
 	}
 }
 
-function findClosestVector(targetVector, vectors) {
+function findClosestVector(targetVector, vectors)
+{
   let minDistance = Number.MAX_VALUE;
   let closestIndex = -1;
 
-  for (let i = 0; i < vectors.length; i++) {
+  for (let i = 0; i < vectors.length; i++)
+  {
     const currentVector = vectors[i];
     let distance = 0;
 
-    for (let j = 0; j < targetVector.length; j++) {
+    for (let j = 0; j < targetVector.length; j++)
+    {
       const difference = targetVector[j] - currentVector[j];
       distance += difference * difference;
     }
 
-    if (distance < minDistance) {
+    if (distance < minDistance)
+    {
       minDistance = distance;
       closestIndex = i;
     }
   }
-
   return closestIndex;
 }
 
@@ -2579,6 +2553,16 @@ function getctr_obj(_i) // Get encoded 3D center point
 	_c[0] = m_objs[_i][m_objs[_i].length-4];
 	_c[1] = m_objs[_i][m_objs[_i].length-3];
 	_c[2] = m_objs[_i][m_objs[_i].length-2];
+	_c[3] = 1;
+	return _c;
+}
+
+function getctr_ghost(_i) // Get encoded 3D center point
+{
+	var _c = new Float32Array(4);
+	_c[0] = m_objs_ghost[_i][m_objs_ghost[_i].length-4];
+	_c[1] = m_objs_ghost[_i][m_objs_ghost[_i].length-3];
+	_c[2] = m_objs_ghost[_i][m_objs_ghost[_i].length-2];
 	_c[3] = 1;
 	return _c;
 }
@@ -3029,7 +3013,7 @@ function writeToObjI(_ob, i)
   if (_ob.length == mem_log[i][1])
   {
     let start = 0;
-    const end = mem_log[i][2]*4;
+    const end = mem_log[i][1];
     while (start < end)
     {
       m_objs[i][start] = _ob[start];
@@ -3037,6 +3021,52 @@ function writeToObjI(_ob, i)
     }
   }
 }
+
+function translateObjI(_i, _v)
+{
+  let _t_c = getctr_ghost(_i);
+  const _s = mem_log[_i][2];
+  for (let i=0; i<_s; i++)
+  {
+    m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
+    m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
+    m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
+    m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
+  }
+}
+
+function updateViewRef(_v, _i, _q)
+{
+  let _t_c = getctr_ghost(_i);
+  const _s = mem_log[_i][2];
+  for (let i=0; i<_s; i++)
+  {
+    _t_gp =
+    [
+      m_objs_ghost[_i][i*4],
+      m_objs_ghost[_i][i*4+1],
+      m_objs_ghost[_i][i*4+2]
+    ];
+
+    _t_fp = add3(_v, quatRot( sub(_t_gp, _t_c), _q ));
+
+    m_objs[_i][i*4] = _t_fp[0];
+    m_objs[_i][i*4+1] = _t_fp[1];
+    m_objs[_i][i*4+2] = _t_fp[2];
+  }
+}
+
+// quatRot( sub(_gp, _c), _viewq ) // looks like _c center removed from point
+// function rotateObjI(_i, _q)
+// {
+//   _c = getctr_obj(_i);
+//   const _s = mem_log[_i][2];
+//   for (let i=0; i<_s; i++)
+//   {
+//     _gp = [m_objs_ghost[_i][i*4], m_objs_ghost[_i][i*4+1], m_objs_ghost[_i][i*4+2]]
+//     // quatRot( sub(_gp, _c), _viewq ) // looks like _c center removed from point
+//   }
+// }
 
 function updateCursor()
 {
@@ -3048,9 +3078,6 @@ function updateCursor()
     {
       case 0:
         _ob[i] = rot_z_pln(_ob[i], pi/2);  
-        break;
-      case 1:
-        // _ob[i] = rot_z_pln(_ob[i], pi/2);  
         break;
       case 2:
         _ob[i] = rot_x_pln(_ob[i], pi/2);
@@ -3210,11 +3237,19 @@ function moveObject()
     */
 	// #DRAW
 	
-function drawOverlay(init_dat)
+function drawOverlay()
 {
 	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
 
 	updateMenuPos();
+
+  
+  if (!mouseLock) // in menu
+  {
+    updateLook();
+    updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
+  }
+  
 
 	// While in menu with low call rate i'll set values here:
 
@@ -3701,7 +3736,7 @@ function drawLines()
   {
 
    d_i = modIndex[i];
-   vertices = [];
+   // vertices = [];
    // d_i = i;
 
     // If I sort obj tri's by dist w/ fast set table reorganize
@@ -3725,8 +3760,8 @@ function drawLines()
             for (let k = 0; k <= m_draw[d_i][1]; k++)
             // for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
             {
-              if (1) // && z_map[d_i][1][k]>2
-              {
+              // if (1) // && z_map[d_i][1][k]>2
+              // {
                 if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
@@ -3742,7 +3777,7 @@ function drawLines()
                   m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
                   m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
 
-                  vertices.push(m1.data[8 * k + mem_log[d_i][0]], -m1.data[8 * k + mem_log[d_i][0] + 1]);
+                  // vertices.push(m1.data[8 * k + mem_log[d_i][0]], -m1.data[8 * k + mem_log[d_i][0] + 1]);
 
                   _si_f++;
                 }
@@ -3750,7 +3785,7 @@ function drawLines()
                 {
                   _km--;
                 }
-              }
+              // }
              }
 
           
@@ -3765,7 +3800,7 @@ function drawLines()
             }
 
             // Draw the triangles after setting the color
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
             gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
@@ -3790,7 +3825,8 @@ function drawLines()
     if (!(_settings[1].settings[0])
     || (d_i == 13 && mem_t_sum == 0)
     || (d_i == 2 && !_settings[5].settings[1])
-    || (d_i == 11 && wpn_select!=3))
+    || (d_i == 11 && wpn_select!=3)
+    || (d_i == 14))
     {
       skipDat = 0;
     }
@@ -3805,18 +3841,18 @@ function drawLines()
       
       for (let j = start; j < end - 4; j += 4)
       {
-          if (m1.data[j + 3] < 0)
+        if (m1.data[j + 3] < 0)
+        {
+          if (vertices.length > 0) // do not remove this
           {
-              if (vertices.length > 0)
-              {
-                  drawSegment(vertices, d_i);
-                  vertices.length = 0;
-              }
-          } else
-          {
-              // x, y
-              vertices.push(m1.data[j], -m1.data[j + 1]);
+            drawSegment(vertices, d_i);
+            vertices.length = 0;
           }
+        } else
+        {
+          // x, y
+          vertices.push(m1.data[j], -m1.data[j + 1]);
+        }
       }
       // last segment
       if (vertices.length > 0)
@@ -4356,7 +4392,6 @@ function updatePreview()
   */
 }
 
-
 function Compute(init_dat)
 {
 	m_obj_offs[12][0] = _lp_world[0];
@@ -4375,6 +4410,7 @@ function Compute(init_dat)
 
   // need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
   // _settings[5].settings[0]
+
 
            /*@?@
            ?@?@?
@@ -4601,6 +4637,10 @@ function Compute(init_dat)
 
 	// if (m_objs.length > tse && tse!=0)
 	// {
+  
+
+
+
 		if (wpn_select==3)
 		{
 			_c =
@@ -4712,12 +4752,58 @@ function Compute(init_dat)
 					select2dpoint(0, 0);
 				}
 			}
+      // console.log(m1.data[mem_log[14][0] + 4]);
+      // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+
+      /*
+      let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
+      let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+      
+      let _x = in_win_wc-mouseData[0];
+      let _y = in_win_hc-mouseData[1];
+      
+      let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
+      let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
+      
+      let _vsc = _dx/_2dx;
+      let _vsc0 = -_dy/_2dy;
+
+      let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
+      let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
+      let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
+
+      let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
+      let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
+      let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
+
+      let _vdf = add3(_vd1_0, _vd1_1);
+      let _testv = sub3(_vdf, player_pos)
+      
+      let _teste = scale(_testv, 1/len3(_testv));
+      translateObjI(13, add3(scale3(_teste, 35), player_pos));
+
+      let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
+      let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
+
+      if (key_map.lmb && runEvery(100))
+      {
+        updateRayInters(_ff, player_pos);
+        let _tc = typeof interIOut[_rayLast] != "undefined" ? interIOut[_rayLast] : 0;
+        obj_cyc = _tc;
+        // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
+      }
+      */
 
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
 				if (pointerOutsideWindow()[0])
 				{
 					select2dpoint(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+
+        // now here find ray from eye
+
+        // m1.data[4*k+mem_log[14][0]]+_x/in_win_hc*(in_win_h/in_win_w),
+        // m1.data[4*k+mem_log[14][0]+1]+_y/in_win_hc
 				}
 			}
 
@@ -4839,6 +4925,7 @@ function Compute(init_dat)
 			if (key_map.lmb && mouseLock && runEvery(10))
 			{
         //_plr_dtp, player_pos
+
 				updateRayInters(_plr_dtp, player_pos);
 				m_t_objs_loadPoints(rayInterMap);
         // let _tc = typeof rayInterMap[_rayLast] != "undefined" ? rayInterMap[_rayLast] : [0,0,0];
@@ -4880,13 +4967,15 @@ function Compute(init_dat)
 		for (var i=0; i<_d.length-4; i++)
 		{
       // must have set i+1 when I did 2d
-			if ( (i)%4 == 0 ) {_v = 0;} else {_v = (_d[i]/100).toFixed(4);}
+			// if ( (i)%4 == 0 ) {_v = 0;} else {_v = (_d[i]/1).toFixed(4);}
+      _v = (_d[i]/1).toFixed(4);
       if (_d[i] == 0) {_v = 0;}
 			if (i!=_d.length-5) {_f = _f+_v+",";} else {_f = _f+_v;}
 			if (i==_d.length-5) {_f = _f+"]";}
 		}
 		console.log(_f); // Do not remove
 	}
+
 
 /*
 */
@@ -4930,6 +5019,9 @@ function Compute(init_dat)
 	setData(); // Load all vertices
 
 /*
+ 
+  // 1/Math.pow((w*(0.03))
+
 	// float a = PI/6.;
 	float a = PI/24.;
 	float n = 0.015;
@@ -4949,6 +5041,18 @@ function Compute(init_dat)
 		1.006789411194167
 		(2.*n*f)/(2.-n)
 		618.2947208121826 
+
+  // // Rotate around y-axis (yaw)
+  // vec4 after_yaw = vec4(
+  //     cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
+  //     after_tran.y,
+  //     cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
+  //     after_tran.w
+  // );
+
+	#define _S1 1.0000600006
+	#define _S2 7.55682619647
+
 */
 
 
@@ -4962,74 +5066,48 @@ GLSLfragmentShader.run(init_dat,
   float _hc = float(${in_win_hc});
   float _fov = float(${s_fov});
 
-	#define _S1 1.0000600006
-	#define _S2 7.55682619647
 	#define d 0.112672939
 
 	vec4 after_tran = vec4(
 		read().x-float(${player_pos[0]}), 
 		read().y-float(${player_pos[1]}),
 		read().z-float(${player_pos[2]}),
-		read().w
+		0.
 	);
-
-  // // Rotate around y-axis (yaw)
-  // vec4 after_yaw = vec4(
-  //     cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
-  //     after_tran.y,
-  //     cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
-  //     after_tran.w
-  // );
 
   // Rotate around x-axis (pitch)
   vec4 after_pit = vec4(
       cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
       cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
-      sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
-      after_tran.w
+      0.,
+      -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
   );
 
-    // Perspective
-	vec4 after_per = vec4(
-		after_pit.x/d,
-		after_pit.y/d,
-		after_pit.z * _S1+_S2,
-		-after_pit.z
-	);
-
 	// Divide by w
-	if (after_per.w != 0.)
+	if (after_pit.w != 0.)
 	{
 		commit(vec4(
-			after_per.x/after_per.w*_fov,
-			after_per.y/after_per.w*_fov*(_wc/_hc),
-			1.0 / pow(after_per.w*0.03, 0.7),
-			after_per.w
+			(after_pit.x/d)/after_pit.w*_fov,
+			(after_pit.y/d)/after_pit.w*_fov*(_wc/_hc),
+			1.0 / pow(after_pit.w*0.03, 0.7),
+			after_pit.w
 			));
 		} else {
 		commit(vec4(
-			0,
-			0,
-			0,
-			0
+			0.,
+			0.,
+			0.,
+			0.
 			));
 	}
-
-    // commit(final_result);
 }`);
-
 
 } // End of Compute()
 
-// 1/Math.pow((w*(0.03))
-
-function menuTime()
-{
-	drawOverlay(m1);
-}
 
 
-document.addEventListener("DOMContentLoaded", function(event)
+
+document.addEventListener("DOMContentLoaded", function()
 {
 						/*-- GET&SET SCREEN DIMENSIONS --\
 						\-------------------------------*/
@@ -5067,7 +5145,7 @@ document.addEventListener("DOMContentLoaded", function(event)
   
 	setBackgroundColor(_bg_default);
 
-	setInterval(menuTime, menuTime_int); 
+	setInterval(drawOverlay, menuTime_int); 
 	setInterval(setTitle, title_int); 
 
 });

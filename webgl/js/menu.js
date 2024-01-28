@@ -756,8 +756,9 @@ function updateSetting(par)
           e.checked = false;
         }
         break;
-
-      // add text in later
+      case "string":
+        par.stn.settings[i] = e.value;
+        break;
     }
     
     // console.log(i + " : " + par.stn.settings[i][0]);
@@ -2256,34 +2257,46 @@ float: left;
 padding: 0px 0px 0px 12px;
 width: 36%;
 height: 26px;
-margin: 3% 0px 0px 0px;
+margin: 5px 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 cursor: pointer;
 border-radius: 3px 0px 0px 3px;
-line-height: 2.2;
+line-height: 2.1;
 `;
 
 var menu_status_style_l3 =
 `
-position: relative;
-top: 0px;
 display: block;
 float: right;
-padding: 0px 0px 0px 12px;
+padding: 2px 0px 0px 12px;
 width: 64%;
 height: 26px;
-margin: 3% 0px 0px 0px;
+margin: 5px 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 border-left: none;
 background: rgb(13,13,13);
-border-radius: 0px 3px 3px 0px;
 outline: none;
+`;
+
+var menu_status_style_r2 =
+`
+padding: 0px 0px 0px 12px;
+width: 100%;
+height: 26px;
+margin: 6px 0px 0px 0px;
+border: 1px solid rgb(44,44,44);
+border-left: none;
+border-radius: 0px 3px 3px 0px;
+color: #555;
+background: rgb(13,13,13);
+line-height: 2.1;
 `;
 
 
 var menu_status =
 {
   id: "menu_status", cls: "", prnt: "html",
+  settings: ["memspc_", ""],
   rootStyle: rootStyle + menu_status_style
 }; addDiv(menu_status);
 
@@ -2296,14 +2309,12 @@ var menu_status =
     var menu_status_l0 =
     {
       id: "menu_status_l0", cls: "", prnt: "menu_status_l",
-      text: 123,
       rootStyle: rootStyle + menu_status_style_l0 + _textLeft
     }; addDiv(menu_status_l0);
 
     var menu_status_l1 =
     {
       id: "menu_status_l1", cls: "", prnt: "menu_status_l",
-      text: 123,
       rootStyle: rootStyle + menu_status_style_l0 + _textLeft
     }; addDiv(menu_status_l1);
 
@@ -2329,8 +2340,11 @@ var menu_status =
     {
       id: "menu_status_l3", cls: "", prnt: "menu_status_l",
       value: "memspc_",
-      rootStyle: rootStyle + menu_status_style_l3
-    }; addTextInput(menu_status_l3);
+      rootStyle: rootStyle + menu_status_style_l3,
+      callback: updateSetting
+    }; _this = menu_status_l3;
+    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+    addTextInput(_this);
 
   var menu_status_r =
   {
@@ -2350,7 +2364,14 @@ var menu_status =
       rootStyle: rootStyle + menu_status_style_l0 + _textRight
     }; addDiv(menu_status_r1);
 
-
+    var menu_status_r2 =
+    {
+      id: "menu_status_r2", cls: "", prnt: "menu_status_r",
+      text: "",
+      rootStyle: rootStyle + menu_status_style_r2 + _textLeft
+    }; _this = menu_status_r2;
+    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
+    addDiv(_this);
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
     ║╔╗╔╗║║╔═╗║║╔╗║     ║╔═╗║
