@@ -19,15 +19,19 @@ WebGL shader functions have access to the GPU and it's unique ability to process
 This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline. 
 It will be interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space.
 
-Save & Load FIXED. So far handling any large amount of junk!
+
 - Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V)
 - Tab finds nearest obj and right click will find nearest point in the obj. Right click also finds any points you have placed that are not made into an obj yet.
 - (L) links two objects of equal size linearly.
 
+Save & load now work for all unique data created. The folder tree state is saved as well. Open/closed states are also saved!
+I have limited folder names to use the following characters: A-Z, 0-9, period and spaces.
+
+
 I'm starting to get distracted using this rather than writing any code lol.
 There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and explore procedural noise at some point
 
-So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save. Also I noticed when saving with Chrome the file was empty (0KB) despite having been labeled with the correct size upon creation.
+So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save.
 
 Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally ~~simple sun light.~~ Maybe shaded slightly but I will eventually start over in a webgl environment.
 
