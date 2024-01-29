@@ -3,6 +3,7 @@
 <script src="webgl/js/math.min.js"></script>
 <script src="webgl/js/shader.js"></script>
 
+<!-- <script src="js/gl-matrix.js"></script> -->
 <!-- <script src="js/math.min.js"></script> -->
 <!-- <script src="js/shader.js"></script> -->
 
@@ -31,29 +32,12 @@
     box-shadow:inset 0px 0px 0px 1px rgba(88, 88, 88, 0.6);
 	}
 
-
 	/* Canvas Style */
-	#cv, #cv_over, #cv_gl
+	#cv_gl
 	{
 		position: absolute;
 		left: 0; top: 0;
 		box-sizing: border-box;
-	}
-
-	#cv
-	{
-		z-index: 0;
-		visibility: hidden;
-	}
-
-	#cv_over
-	{
-		z-index: 2;
-	}
-
-	#cv_gl
-	{
-		z-index: 1;
 	}
 
   input[type="file"]
@@ -63,15 +47,7 @@
 
 </style>
 
-<html id = "html">
-<body>
-
-	<canvas id="cv_over" width="1800" height="800" ></canvas>
-	<canvas id="cv" width="1800" height="800" ></canvas>
-	<canvas id="cv_gl" width="1800" height="800" ></canvas>
-
-</body>
-</html>
+<html id = "html"><body><canvas id="cv_gl" width="1800" height="800" ></canvas></body></html>
 
 <script src="webgl/js/draw.js"></script>
 <script src="webgl/js/mgun.js"></script>

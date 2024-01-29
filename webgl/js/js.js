@@ -20,7 +20,26 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
   
   #todolist
   
-	New priorities after menu.js
+
+    -- physics engine should be possible but first I need to fix my triangles
+    -- collision detections will need to borrow from the same idea of culling back faces
+    -- but I will replace the tri actually with a bounding box
+    -- so I first do check if they are close together then use dist to plane w/ dot simple
+    -- if anything checks in adjust the objects velocities (rotational and position)
+    -- collision's determine the angular velocity by distance from center
+    -- apply standard gravity ticks
+    -- collisions must always result in energy lost
+    -- maybe all velocities and acceleration can be computed on the gpu or in a worker or both.
+    -- a worker's latency may not matter if only left to manage some layers not visually noticeable
+    -- the ground is defined by a positional min/max (no loop if below threshold)
+    -- the ground can apply more dampening than obj to obj
+    -- default amount of inverse angular velocity
+    --
+    -- to get started setup the buffers
+    -- box collision function and tests
+    -- 
+    --
+
 
 @?@?@
 ?@?@?
@@ -595,8 +614,6 @@ function updateMenuPos() // this stuff so bad jesus
 
   _s_ratio = [1, in_win_wh];
 	
-  document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
-	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 	resizeCanvas(in_win_w, in_win_h);
@@ -1095,7 +1112,7 @@ function loadSelect(_fi)
   }
   // should be replaced ...
 
-  updateValueByPar(menu_status_l3, fileName);
+  updateValueByPar("menu_status_l3", fileName);
 }
 
 function offsetArray(ar, b)
@@ -1207,7 +1224,7 @@ function loadFile0(_fi)
     }
     fileName = _fn.slice(0, _si+1);
     _settings[8].settings[0] = fileName;
-    updateTextByPar(menu_status_r2, _fn.slice(_si+1, _fn.length));
+    updateTextByPar("menu_status_r2", _fn.slice(_si+1, _fn.length));
   }
   // flag_loadingObject = 0;
   updateTree(tree_allObjects);
@@ -1321,7 +1338,7 @@ window.addEventListener('blur', () =>
 
 
 function pointerLockSwap()
-{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {canvas.requestPointerLock(); mouseLock = 1;}}
+{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {ctx_gl.requestPointerLock(); mouseLock = 1;}}
 
 
 window.addEventListener('resize', function()
@@ -1967,19 +1984,6 @@ world_obj_count = obj_cyc = m_objs.length-1;
 
 setData();
 
-var canvas = document.getElementById("cv");
-var ctx = canvas.getContext("2d");
-
-
-var canvas_over = document.getElementById("cv_over");
-var ctx_o = canvas_over.getContext("2d");
-
-
-// WTF IS THIS YO. Fix for mac users at some point if this doesn't already.
-// const ratio = window.devicePixelRatio || 1;
-
-ctx_o.scale(1, 1);
-// ctx.scale(1, 1); 
 
 function updateNormalMaps()
 {
@@ -3085,8 +3089,6 @@ function del_world()
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
   m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
 
-  updateTextByPar(menu_status_l3, "...");
-
 	obj_cyc = m_objs.length-1;
 
   updateTree(tree_allObjects);
@@ -3195,7 +3197,6 @@ function moveObject()
 	
 function drawOverlay()
 {
-	ctx_o.clearRect(0, 0, in_win_w, in_win_h);
 
 	updateMenuPos();
 
@@ -3222,29 +3223,7 @@ function drawOverlay()
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
 
-	//Crosshair
-	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc-crosshair_l,in_win_hc, in_win_wc+crosshair_l, in_win_hc);
-	drawLine(ctx_o, rgba_ch, crosshair_w, in_win_wc,in_win_hc-crosshair_l, in_win_wc, in_win_hc+crosshair_l);
 
-	//Wpn select
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0], menu_wpn_pos[1], 278, 70);
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+6, menu_wpn_pos[1]+6, 62, 58);
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+74, menu_wpn_pos[1]+6, 62, 58);
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+142, menu_wpn_pos[1]+6, 62, 58);
-	drawPanel(ctx_o, rgba_gray, rgba_lgray, menu_wpn_pos[0]+210, menu_wpn_pos[1]+6, 62, 58);
-
-  // Darklighter box
-	drawPanel(ctx_o, rgba_dgray, rgba_gray, menu_wpn_pos[0]+7+wpn_select*68, menu_wpn_pos[1]+7, 60, 56);
-
-	//Wpn select text
-	drawText(ctx_o, rgba_w, "left", "[1]", menu_wpn_pos[0]+9, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_w, "left", "[2]", menu_wpn_pos[0]+76, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_w, "left", "[3]", menu_wpn_pos[0]+144, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_w, "left", "[4]", menu_wpn_pos[0]+212, menu_wpn_pos[1]+21);
-	drawText(ctx_o, rgba_w, "left", "GRID", menu_wpn_pos[0]+22, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_w, "left", "MOVE", menu_wpn_pos[0]+91, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_w, "left", "PAINT", menu_wpn_pos[0]+155, menu_wpn_pos[1]+45);
-	drawText(ctx_o, rgba_w, "left", "RAY", menu_wpn_pos[0]+230, menu_wpn_pos[1]+45);
 }
 
 
@@ -3836,7 +3815,7 @@ function drawLines()
     if ((d_i > 2 && d_i < 6) || d_i == 1)
     {
       _si2 = mem_log[d_i][2];
-      _pts = new Float32Array(_si2 * 2);
+      _pts = new Float32Array(_si2 * 2 + 2);
 
       // Experiment using while instead of for. Irrelevant performance difference?
       i0 = 0;
@@ -3854,6 +3833,8 @@ function drawLines()
          dataIndex += 4;
          i0 += 4;
       }
+      _pts[_si2] = 0.0;
+      _pts[_si2+1] = 0.0;
 
       drawPoints(_pts, d_i);
 
@@ -3999,146 +3980,7 @@ function drawIt()
   updateFPS();
 	
 
-	/*
-
-	ctx.clearRect(0, 0, in_win_w, in_win_h);
-
-
-	// Draw packed verts
-	//for (var i=1; i<m_objs.length; i++) // i find object
-	// for (var i = m_objs.length-1; i >= 0; i--)
-	for (var n = m_objs.length-1; n >= 0; n--)
-	{
-		d_i = modIndex[n];
-
-		if (stn_draw[1]) // Tris
-		{
-			if (d_i>world_obj_count-1)
-			{	
-				if (mem_log[d_i][2]>2)
-				{
-					//for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) //-(mem_log[i][2]-1)%2 // can make log of floored points
-					
-					for (var k = (Math.floor((mem_log[d_i][2]-1)/2)-mem_log[d_i][2]%2)-1; k >= 0; k--)
-					{
-						//if (m1.data[8*k+mem_log[i][0]+3]>0 && m1.data[8*k+mem_log[i][0]+7]>0 && m1.data[8*k+mem_log[i][0]+11]>0)
-						if (m1.data[8*k+mem_log[d_i][0]+3] > 0)
-						{
-							if (m1.data[8*k+mem_log[d_i][0]+7] > 0)
-							{
-								if (m1.data[8*k+mem_log[d_i][0]+11] > 0)
-								{
-									if (m1.data[8*k+mem_log[d_i][0]] > -_epsilon)
-									{
-										if (m1.data[8*k+mem_log[d_i][0]] < in_win_clip)
-										{
-											drawTriangleF(ctx, d_i, k);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		//for (var j=0; j<mem_log[i][2]-1; j++) // Draw Lines & Points
-
-
-
-		for (var j = mem_log[d_i][2]-2; j >= 0; j--)
-		{
-			if (m1.data[4*j+mem_log[d_i][0]+3] > 0) // Line clipping
-			// if (1) // Clipping off
-			{	
-				if (m1.data[4*(j+1)+mem_log[d_i][0]+3] > 0) // Line clipping second point
-				{
-					if (m1.data[4*j+mem_log[d_i][0]] > -_epsilon) // Left side plane clip
-					{
-						if (m1.data[4*j+mem_log[d_i][0]] < in_win_clip) // Right side plane clip. Add top and bottom later.
-						{		
-							if (stn_draw[0])
-							{
-								if (d_i>world_obj_count-1 && j != mem_log[d_i][2]-2)
-								{
-									if (d_i==obj_cyc || d_i==_all_lock_i)
-									{
-										drawLineF(ctx, d_i, j, rgbas_link[_all_lock], 0.8);
-									} else {
-										drawLineF(ctx, d_i, j, rgba_w, 0.8);
-									}
-								}
-							}
-
-							if (d_i >= 6)
-							{
-								if (d_i <= 8)
-								{
-									if (j == 0)
-									{
-										drawLineF(ctx, d_i, j, rgbas[d_i-6], 0.5);
-									}
-								}
-							}
-
-							if (d_i == 2)
-							{
-								if (j != mem_log[d_i][2]-2)
-								{
-									drawLineF(ctx, d_i, j, rgba_w, 0.4);
-								}
-							}
-
-							if (d_i==1)
-							{
-								fillDotF(ctx, d_i, j, rgba_w_flr);
-							};
-
-							// Center point
-
-							if (key_map.tab || wpn_select==1 || !mouseLock)
-							{
-								if (d_i>world_obj_count)
-								{
-									if (j == mem_log[d_i][2]-2)
-									{
-										if (d_i==obj_cyc)
-										{drawCircle(ctx, rgba_cindig, 2.5,
-										 m1.data[4*j+mem_log[d_i][0]+4],
-										  m1.data[4*j+mem_log[d_i][0]+5],
-										   0.5*8*m1.data[4*j+mem_log[d_i][0]+2]+3);}
-										if (d_i!=obj_cyc)
-										{drawCircle(ctx, rgba_cindi, 2.5,
-										 m1.data[4*j+mem_log[d_i][0]+4],
-										  m1.data[4*j+mem_log[d_i][0]+5],
-										   0.5*8*m1.data[4*j+mem_log[d_i][0]+2]+3);}
-									}
-								}
-							}
-							if (d_i>2)
-							{
-								if (d_i<6)
-								{
-									if ((d_i-3) == pln_cyc) // ayy 
-									{
-										if (m1.data[mem_log[d_i][0]+4*j+3] > 0)
-										{
-											drawDot(ctx, rgbas[pln_cyc], 0.9,
-											 m1.data[4*j+mem_log[d_i][0]],
-											  m1.data[4*j+mem_log[d_i][0]+1],
-											   m1.data[4*j+mem_log[d_i][0]+2]+1); // dot planes rgba(102, 79, 185, 0.8)
-										}
-									}
-								}
-							}
-						} // End of all clipping
-					}
-				}	
-			}
-		} // End of Lines & Points
-	} // End of m_objs
-
+  /*
 
 	// Draw unpacked verts
 	for (var i = 0; i<m_t_objs.length; i++)
@@ -4409,10 +4251,10 @@ function Compute(init_dat)
     updateGrid();
   }
 
-  updateTextByPar(menu_status_l0, "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
-  updateTextByPar(menu_status_l1, "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
-  updateTextByPar(menu_status_r0, "fps[" + _fps + "]");
-  updateTextByPar(menu_status_r1, "grid_scale[" + _settings[5].settings[0]+"]");
+  updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
+  updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
+  updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
+  updateTextByPar("menu_status_r1", "grid_scale[" + _settings[5].settings[0]+"]");
 
   if(document.activeElement.type ==  "text")
   {
@@ -4665,13 +4507,11 @@ function Compute(init_dat)
 
 	if (isNaN(m_objs[0][0])) {m_objs[0][0] = 0.0; m_objs[0][1] = 0.0; m_objs[0][2] = 0.0; m_objs[0][3] = 1.0;}
 
-	if (mouseLock) // Menu can input numbers freely
-	{
-		if (key_map["1"] && runEvery(100)) {wpn_select = 0;}
-		if (key_map["2"] && runEvery(100)) {wpn_select = 1;}
-		if (key_map["3"] && runEvery(100)) {wpn_select = 2;}
-		if (key_map["4"] && runEvery(100)) {wpn_select = 3;}
-	}
+  if (key_map["1"] && runEvery(100)) {wpn_select = 0; updateWpnSelect();}
+  if (key_map["2"] && runEvery(100)) {wpn_select = 1; updateWpnSelect();}
+  if (key_map["3"] && runEvery(100)) {wpn_select = 2; updateWpnSelect();}
+  if (key_map["4"] && runEvery(100)) {wpn_select = 3; updateWpnSelect();}
+	
 
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
@@ -5087,8 +4927,6 @@ document.addEventListener("DOMContentLoaded", function()
 	screen_width = window.screen.width * window.devicePixelRatio;
 	screen_height = window.screen.height * window.devicePixelRatio;
 
-	document.getElementById("cv").width = document.getElementById("cv_over").width = in_win_w;
-	document.getElementById("cv").height = document.getElementById("cv_over").height = in_win_h;
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
 
@@ -5101,6 +4939,7 @@ document.addEventListener("DOMContentLoaded", function()
   updateRefLog();
   updatePreview();
 	updateMenuPos();
+  updateWpnSelect();
 
 	Compute(m1);
 	updateGrid();
