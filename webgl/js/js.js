@@ -1223,7 +1223,7 @@ function loadFile0(_fi)
       }
     }
     fileName = _fn.slice(0, _si+1);
-    _settings[8].settings[0] = fileName;
+    _settings[8].settings[1] = fileName;
     updateTextByPar("menu_status_r2", _fn.slice(_si+1, _fn.length));
   }
   // flag_loadingObject = 0;
@@ -1289,7 +1289,7 @@ function downloadSaveFile()
     const anchor = document.createElement('a');
     anchor.href = _url;
 
-    anchor.download = makeValidFileName(_settings[8].settings[0]) + _l + ".bin";
+    anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
 
     // use .click() to trigger download
     anchor.click();
