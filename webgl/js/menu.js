@@ -30,6 +30,7 @@
 
 var _this; // ez pointer for params
 var _settings = [];
+var _setting_ids = [];
 
 function applyStyles(element, par)
 {
@@ -150,7 +151,10 @@ function addDiv(par)
   {div.innerHTML = par.text;}
 
   if (typeof par.settings != "undefined")
-  {_settings.push(par);}
+  {
+    _settings.push(par);
+    _setting_ids.push(par.id);
+  }
 
   appendFilter(par.prnt, div);
   applyStyles(div, par);
@@ -720,7 +724,7 @@ function updateValueByPar(par, _v)
 
 // move to menu fns ???
 function menuLinkObj()
-{link_obj(obj_cyc, stn_link_tool);}
+{link_obj(obj_cyc);}
 
 
 // side note: loadPoints fn if using redirect could generalize/link tree better?
@@ -765,6 +769,31 @@ function updateSetting(par)
   });
 
   // console.log(par.stn.settings);
+}
+
+// this work good yuh
+let _prevEle = Object;
+_prevEle.i = 0; _prevEle.id = 0;
+
+function makeElement(_f, _o)
+{
+  // if (typeof _o.callback != "undefined")
+  if (_o.callback == updateSetting)
+  {
+    _o.params = {id: _o.id, cls: _o.cls, prnt: _o.prnt, stn: _settings[Math.max(0,_settings.length-1)]};
+    if (_prevEle.id == _settings[Math.max(0,_settings.length-1)])
+    {
+      _prevEle.i++;
+      if (_settings[Math.max(0,_settings.length-1)].settings.length > _prevEle.i)
+      {_o.value = _settings[Math.max(0,_settings.length-1)].settings[_prevEle.i];}
+    } else {
+      _prevEle.i = 0;
+      if (_settings[Math.max(0,_settings.length-1)].settings.length >= _prevEle.i) // I think this also excludes the case of empty
+      {_o.value = _settings[Math.max(0,_settings.length-1)].settings[_prevEle.i];}
+      _prevEle.id = (_settings[Math.max(0,_settings.length-1)]);
+    }
+  }
+  _f(_o);
 }
 
 
@@ -925,17 +954,17 @@ background: rgba(0,0,0,0);
 border-radius: 3px;
 `;
 
-var menu_obj =
+makeElement(addDiv,
 {
     id: "menu_obj", cls: "", prnt: "html",
     rootStyle: rootStyle + menu_obj_style
-}; addDiv(menu_obj);
+});
 
-  var menu_objPreview =
+  makeElement(addDiv,
   {
       id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
       rootStyle: rootStyle + menu_objPreview_style + justOuter
-  }; addDiv(menu_objPreview);
+  });
 
   var listStyle2 =
   `
@@ -1030,12 +1059,13 @@ position: relative;
 left: 1px;
 `;
 
-var menu_tree =
-{
-  id: "menu_tree", cls: "", prnt: "html",
-  rootStyle: rootStyle + menu_tree_style
-}; //addDiv(menu_tree);
+// makeElement(addDiv,
+// {
+//   id: "menu_tree", cls: "", prnt: "html",
+//   rootStyle: rootStyle + menu_tree_style
+// });
 
+  // almost converted but no li style
   var tree_allObjects =
   {
     id: "tree_allObjects", cls: "_list", prnt: "menu_obj",
@@ -1070,7 +1100,7 @@ var menu_tree =
   outline: none;
   `;
 
-  var tree_btn_addFolder =
+  makeElement(addButton,
   {
     text: ` + `,
     id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
@@ -1078,9 +1108,9 @@ var menu_tree =
     // hoverStyles: tree_btn_addFolder,
     callback: treeModify,
     params: {func:1}
-  }; addButton(tree_btn_addFolder);
+  });
 
-  var tree_btn_delFolder=
+  makeElement(addButton,
   {
     text: ` - `,
     id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
@@ -1088,7 +1118,7 @@ var menu_tree =
     // hoverStyles: tree_btn_addFolder,
     callback: treeModify,
     params: {func:2}
-  }; addButton(tree_btn_delFolder);
+  });
 
   var treeTextInStyle =
   `
@@ -1102,24 +1132,22 @@ var menu_tree =
   border: 1px solid rgba(200, 200, 200, 0.1);
   `;
 
-  var tree_textIn =
+  makeElement(addTextInput,
   {
     id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
     rootStyle: rootStyle + treeTextInStyle,
-    // hoverStyles: textIn_hover,
     value: "",
-    callback: treeTextInUpdate
-  };
-  tree_textIn.params = {id: tree_textIn.id, class: tree_textIn.cls};
-  addTextInput(tree_textIn);
+    callback: treeTextInUpdate,
+    params: {id:"tree_textIn"}
+  });
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-var div_root =
+makeElement(addDiv,
 {
     id: "menu_1", cls: "", prnt: "html",
     rootStyle: rootStyle
-}; addDiv(div_root);
+});
 
     var q_menu_holder =
     `
@@ -1133,11 +1161,11 @@ var div_root =
     background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
     border-radius: 3px;
     `;
-    var div_q_menu =
+    makeElement(addDiv,
     {
         id: "menu_q", cls: "", prnt: "menu_1",
         rootStyle: rootStyle + q_menu_holder + justOuter
-    }; addDiv(div_q_menu);
+    });
 
       var tabs_menu =
       `
@@ -1147,11 +1175,11 @@ var div_root =
       margin: 0; padding: 0;
       z-index: -1;
       `;
-      var div_q_tabs =
+      makeElement(addDiv,
       {
           id: "menu_tabs", cls: "", prnt: "menu_q",
           rootStyle: rootStyle + tabs_menu
-      }; addDiv(div_q_tabs);
+      });
 
         var _btn_hover_tool =
         `
@@ -1188,7 +1216,8 @@ var div_root =
         `
         margin: 3% 0% 0% 0.5%;
         `;
-        var btn_open_tab1 =
+
+        makeElement(addButton,
         {
             text: "Tool Settings",
             id: "tab1", cls: "_btn", prnt: "menu_tabs",
@@ -1196,9 +1225,9 @@ var div_root =
             hoverStyles: _btn_hover,
             callback: setVisibility,
             params: { hide:"div_keysMenu", show:"menu_detail" }, // Update me later
-        }; addButton(btn_open_tab1);
+        });
 
-        var btn_open_tab2 =
+        makeElement(addButton,
         {
             text: "Key Binds \u1CC4",
             id: "tab2", cls: "_btn", prnt: "menu_tabs",
@@ -1206,7 +1235,7 @@ var div_root =
             hoverStyles: _btn_hover,
             callback: setVisibility,
             params: { hide:"menu_detail", show:"div_keysMenu" }, // Update me later
-        }; addButton(btn_open_tab2);
+        });
 
         var tool_menu =
         `
@@ -1225,11 +1254,12 @@ var div_root =
         border-left: 1px solid rgba(120,120,120, 0.1);
         z-index: -1;
         `;
-        var div_toolMenu =
+
+        makeElement(addDiv,
         {
             id: "menu_tools", cls: "", prnt: "menu_q",
             rootStyle: rootStyle + tool_menu
-        }; addDiv(div_toolMenu); // help
+        });
 
             /*
              ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
@@ -1277,131 +1307,131 @@ var div_root =
             `;
             // color: rgb(195, 123, 0);
 
-            var btn_tool_moveMode =
+            makeElement(addButton,
             {
                 text: `Lock Player Planar \u26C7`,
                 id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
                 callback: playerChangeMovementMode
-            }; addButton(btn_tool_moveMode);
+            });
 
-            var btn_tool_curToCtr =
+            makeElement(addButton,
             {
                 text: "Get Object Center \u22A1",
                 id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: setCursorToObjCenter
-            }; addButton(btn_tool_curToCtr);
+            });
 
-            var btn_tool_curToGrnd =
+            makeElement(addButton,
             {
                 text: "Cursor to Ground \u2356",
                 id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: returnCursorToGround
-            }; addButton(btn_tool_curToGrnd);
+            });
 
-            var btn_tool_createCircle =
+            makeElement(addButton,
             {
                 text: "Create Circle \u25EF",
                 id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: createCircleAtCursor
-            }; addButton(btn_tool_createCircle);
+            });
 
-            var btn_tool_mirrorOverPlane =
+            makeElement(addButton,
             {
                 text: "Mirror over Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: mirrorOverPlane
-            }; addButton(btn_tool_mirrorOverPlane);
+            });
 
-            var btn_tool_applyRotation =
+            makeElement(addButton,
             {
                 text: "Apply Rotation \u2B6E",
                 id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: applyRotation
-            }; addButton(btn_tool_applyRotation);
+            });
 
-            var btn_tool_moveObj =
+            makeElement(addButton,
             {
                 text: "Move Object \u2933",
                 id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: moveObject
-            }; addButton(btn_tool_moveObj);
+            });
 
-            var btn_tool_dupeObj =
+            makeElement(addButton,
             {
                 text: "Duplicate Object \u26FC",
                 id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: cloneObjSelected
-            }; addButton(btn_tool_dupeObj);
+            });
 
-            var btn_tool_editObj =
+            makeElement(addButton,
             {
                 text: "Edit Object \u2188",
                 id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: editSelectedObject
-            }; addButton(btn_tool_editObj);
+            });
 
-            var btn_tool_finishObj =
+            makeElement(addButton,
             {
                 text: "Finish Object \u07F7",
                 id: "tool_finishObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: mem_t_mov
-            }; addButton(btn_tool_finishObj);
+            });
 
-            var btn_tool_objLink =
+            makeElement(addButton,
             {
                 text: "Link Object \u2366",
                 id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: menuLinkObj
-            }; addButton(btn_tool_objLink);
+            });
 
-            var btn_tool_delObj =
+            makeElement(addButton,
             {
                 text: "\u2421 Delete Object \u2421",
                 id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: deleteObjectSelected
-            }; addButton(btn_tool_delObj);
+            });
 
-            var btn_tool_clearWorld =
+            makeElement(addButton,
             {
                 text: `\u05D0 Clear World \u05D0`,
                 id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: del_world
-            }; addButton(btn_tool_clearWorld);
+            });
 
-            var btn_tool_closeMenu =
+            makeElement(addButton,
             {
                 text: `Close Menu`,
                 id: "tool_closeMenu", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
                 callback: pointerLockSwap 
-            }; addButton(btn_tool_closeMenu);
+            });
 
 
         /*
@@ -1431,12 +1461,11 @@ var div_root =
         border-bottom: 1px solid rgba(120,120,120, 0.3);
         border-left: 1px solid rgba(120,120,120, 0.3);
         `;
-        var div_detailMenu =
+        makeElement(addDiv,
         {
             id: "menu_detail", cls: "", prnt: "menu_q",
             rootStyle: rootStyle + detail_menu
-        }; addDiv(div_detailMenu);
-
+        });
 
               /*
                            ╔╗              ╔╗
@@ -1459,12 +1488,12 @@ var div_root =
               z-index: -1;
               `;
               // background-color: rgb(17, 17, 18);
-              var div_detail_circleSettings =
+              makeElement(addDiv,
               {
                   id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
                   settings: [8, 24, 0],
                   rootStyle: rootStyle + detail_menu_box + lightSideBorder
-              }; addDiv(div_detail_circleSettings);
+              });
 
                 var div_css =
                 `
@@ -1507,20 +1536,19 @@ var div_root =
                     box-shadow:inset 0px 0px 0px 1px rgba(88, 88, 88, 0.6);
                 `;
 
-                var div_label =
+                makeElement(addDiv,
                 {
                   id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
                   text: `circle settings \u25CB`,
                   rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_label);
+                });
 
-
-                var circleTool_scale =
+                makeElement(addDiv,
                 {
                     id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
                     text: `scale`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(circleTool_scale);
+                });
 
                 /*
                   ╔╗╔═╗ 
@@ -1529,53 +1557,42 @@ var div_root =
                   ╚╝╚╝╚╝
                 */    
 
-                  var textInput_scale =
+                  makeElement(addTextInput,
                   {
                       id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
                       rootStyle: rootStyle + textIn_css,
                       hoverStyles: textIn_hover,
-                      value: _settings[_settings.length-1].settings[0],
                       callback: updateSetting
-                  }; _this = textInput_scale;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
+                  });
 
-                var div_divider =
+                makeElement(addDiv,
                 {
                     id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
                     text: `divider`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_divider);
+                });
 
-                  // No use of class here.
-                  var textInput_divider =
+                  makeElement(addTextInput,
                   {
-                      id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
-                      rootStyle: rootStyle + textIn_css,
-                      hoverStyles: textIn_hover,
-                      value: _settings[_settings.length-1].settings[1],
-                      callback: updateSetting
-                  }; _this = textInput_divider;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
+                    id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
+                    rootStyle: rootStyle + textIn_css,
+                    hoverStyles: textIn_hover,
+                    callback: updateSetting
+                  });
 
-                var div_off =
+                makeElement(addDiv,
                 {
                     id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
                     text: `offset`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_off);
+                });
 
-                  var textInput_off =
+                  makeElement(addTextInput,
                   {
                       id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
                       rootStyle: rootStyle + textIn_css,
-                      value: _settings[_settings.length-1].settings[2],
                       callback: updateSetting
-                  }; _this = textInput_off;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
-
+                  });
               /*
                 ╔╗                       ╔╗
                 ║║                      ╔╝╚╗
@@ -1587,27 +1604,27 @@ var div_root =
               */
 
 
-              var div_detail_drawSettings =
+              makeElement(addDiv,
               {
                   id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
                   settings: [true, true, false],
                   rootStyle: rootStyle + detail_menu_box + lightSideBorder
-              }; addDiv(div_detail_drawSettings);
+              });
 
-                var div_drawSettings =
+                makeElement(addDiv,
                 {
                     id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
                     text: 'draw settings \u03BB',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_drawSettings);
+                });
 
 
-                var div_lines =
+                makeElement(addDiv,
                 {
                     id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
                     text: `lines`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_lines);
+                });
 
 
                   var cbx_myStyle_checked =
@@ -1649,7 +1666,7 @@ var div_root =
                     ╚╝╚╝╚╝
                   */    
       
-                  var cbx_lines =
+                  makeElement(addCheckbox,
                   {
                       id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
                       rootStyle: rootStyle + cbx_myStyle,
@@ -1657,18 +1674,17 @@ var div_root =
                       checkedStyles: cbx_myStyle_checked,
                       callback: updateSetting,
                       defaultChecked: true
-                  }; _this = cbx_lines;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addCheckbox(_this);
+                  });
 
-                var div_surfaces =
+
+                makeElement(addDiv,
                 {
                     id: "div_drawSurfaces", cls: "", prnt: "detail_box_drawSettings",
                     text: `surfaces`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_surfaces);
+                });
 
-                  var cbx_surfaces =
+                  makeElement(addCheckbox,
                   {
                       id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
                       rootStyle: rootStyle + cbx_myStyle,
@@ -1676,27 +1692,25 @@ var div_root =
                       checkedStyles: cbx_myStyle_checked,
                       callback: updateSetting,
                       defaultChecked: true
-                  }; _this = cbx_surfaces;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addCheckbox(_this);
+                  });
 
-                var div_opacity =
+
+                makeElement(addDiv,
                 {
                     id: "div_drawOpacity", cls: "", prnt: "detail_box_drawSettings",
                     text: `opacity`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_opacity);
+                });
 
-                  var cbx_opacity =
+                  makeElement(addCheckbox,
                   {
                       id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
                       rootStyle: rootStyle+cbx_myStyle,
                       hoverStyles: cbx_myStyle_hover,
                       checkedStyles: cbx_myStyle_checked,
                       callback: updateSetting,
-                  }; _this = cbx_opacity;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addCheckbox(_this);
+                  });
+
 
             /*
             ╔╗       ╔╗           ╔╗
@@ -1708,26 +1722,26 @@ var div_root =
             #linksettings
             */
 
-            var div_detailMenuBox3 =
+            makeElement(addDiv,
             {
                 id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
                 settings: [{0:false}, {0:true}, {0:false}], // pass numbers as objects to enable radio
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox3);
+            });
 
-              var div_linkSettings =
+              makeElement(addDiv,
               {
                   id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
                   text: 'link settings \u2366',
                   rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-              }; addDiv(div_linkSettings);
+              });
 
-              var div_linear =
+              makeElement(addDiv,
               {
                   id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
                   text: `linear`,
                   rootStyle: rootStyle + div_css + darkBorder
-              }; addDiv(div_linear);
+              });
 
               /*
                 ╔╗╔═╗ 
@@ -1736,25 +1750,24 @@ var div_root =
                 ╚╝╚╝╚╝
               */    
 
-              var cbx_linear =
+              makeElement(addCheckbox,
               {
                   id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
                   rootStyle: rootStyle+cbx_myStyle,
                   hoverStyles: cbx_myStyle_hover,
                   checkedStyles: cbx_myStyle_checked,
                   callback: updateSetting
-              }; _this = cbx_linear;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
 
-            var div_zigzag =
+
+            makeElement(addDiv,
             {
                 id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
                 text: `zigzag`,
                 rootStyle: rootStyle + div_css + darkBorder
-            }; addDiv(div_zigzag);
+            });
 
-              var cbx_zigzag =
+              makeElement(addCheckbox,
               {
                   id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
                   rootStyle: rootStyle+cbx_myStyle,
@@ -1762,27 +1775,25 @@ var div_root =
                   checkedStyles: cbx_myStyle_checked,
                   defaultChecked: true,
                   callback: updateSetting
-              }; _this = cbx_zigzag;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
 
-            var div_poly =
+
+            makeElement(addDiv,
             {
                 id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
                 text: `poly`,
                 rootStyle: rootStyle + div_css + darkBorder
-            }; addDiv(div_poly);
+            });
 
-              var cbx_poly =
+              makeElement(addCheckbox,
               {
                   id: "cbx_poly", cls: "cbx_linkSettings", prnt: "div_linkPoly",
                   rootStyle: rootStyle+cbx_myStyle,
                   hoverStyles: cbx_myStyle_hover,
                   checkedStyles: cbx_myStyle_checked,
                   callback: updateSetting
-              }; _this = cbx_poly;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
+
 
 
 
@@ -1796,19 +1807,19 @@ var div_root =
             #locksettings
             */
 
-            var div_detailMenuBox4 =
+            makeElement(addDiv,
             {
                 id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
                 settings: [false, false, false],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox4);
+            });
 
-              var div_lockSettings =
+              makeElement(addDiv,
               {
                   id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
                   text: 'lock settings \u0466',
                   rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-              }; addDiv(div_lockSettings);
+              });
 
               var div_lockSettings_r =
               `
@@ -1827,12 +1838,12 @@ var div_root =
                   text-shadow: rgb(34, 34, 34) 0px 0px 2px;
               `;
 
-              var div_lockxSettings =
+              makeElement(addDiv,
               {
                   id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
                   text: `X`,
                   rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_r
-              }; addDiv(div_lockxSettings);
+              });
 
               /*
                 ╔╗╔═╗ 
@@ -1841,52 +1852,49 @@ var div_root =
                 ╚╝╚╝╚╝
               */    
 
-              var cbx_lockx =
+              makeElement(addCheckbox,
               {
                   id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
                   rootStyle: rootStyle+cbx_myStyle,
                   hoverStyles: cbx_myStyle_hover,
                   checkedStyles: cbx_myStyle_checked,
                   callback: updateSetting
-              }; _this = cbx_lockx;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
 
-            var div_lockySettings =
+
+            makeElement(addDiv,
             {
                 id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
                 text: `Y`,
                 rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_g
-            }; addDiv(div_lockySettings);
+            });
 
-              var cbx_lockySettings =
+              makeElement(addCheckbox,
               {
                   id: "cbx_locky", cls: "cbx_lockSettings", prnt: "div_lockySettings",
                   rootStyle: rootStyle+cbx_myStyle,
                   hoverStyles: cbx_myStyle_hover,
                   checkedStyles: cbx_myStyle_checked,
                   callback: updateSetting
-              }; _this = cbx_lockySettings;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
 
-            var div_lockzSettings =
+
+            makeElement(addDiv,
             {
                 id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
                 text: `Z`,
                 rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_b
-            }; addDiv(div_lockzSettings);
+            });
 
-              var cbx_lockzSettings =
+              makeElement(addCheckbox,
               {
                   id: "cbx_lockz", cls: "cbx_lockSettings", prnt: "div_lockzSettings",
                   rootStyle: rootStyle+cbx_myStyle,
                   hoverStyles: cbx_myStyle_hover,
                   checkedStyles: cbx_myStyle_checked,
                   callback: updateSetting
-              }; _this = cbx_lockzSettings;
-              _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-              addCheckbox(_this);
+              });
+
 
 
             /*
@@ -1901,26 +1909,26 @@ var div_root =
             #paintsettings
             */
 
-            var div_detailMenuBox5 =
+            makeElement(addDiv,
             {
                 id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
                 settings: [true, 1, 8],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox5);
+            });
 
-                var div_paintSettings =
+                makeElement(addDiv,
                 {
                     id: "div_paintSettings", cls: "", prnt: "detail_box_paintSettings",
                     text: 'paint settings \u06A9',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_paintSettings);
+                });
 
-                var div_paintInf =
+                makeElement(addDiv,
                 {
                     id: "div_paintInf", cls: "", prnt: "detail_box_paintSettings",
                     text: `infinite &#8734;`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_paintInf);
+                });
 
                   /*
                     ╔╗╔═╗ 
@@ -1929,7 +1937,7 @@ var div_root =
                     ╚╝╚╝╚╝
                   */    
 
-                  var cbx_paintInf =
+                  makeElement(addCheckbox,
                   {
                       id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
                       rootStyle: rootStyle+cbx_myStyle,
@@ -1937,44 +1945,39 @@ var div_root =
                       checkedStyles: cbx_myStyle_checked,
                       defaultChecked: true,
                       callback: updateSetting
-                  }; _this = cbx_paintInf;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addCheckbox(_this);
+                  });
 
-                var div_paintSettings_dist =
+
+                makeElement(addDiv,
                 {
                     id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
                     text: `dist`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_paintSettings_dist);
+                });
 
-                  var textIn_paintSettings_dist =
+                  makeElement(addTextInput,
                   {
                       id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
                       rootStyle: rootStyle + textIn_css,
-                      value: 1,
                       callback: updateSetting
-                  }; _this = textIn_paintSettings_dist;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
+                  });
 
 
-                var div_paintSettings_nodes =
+
+                makeElement(addDiv,
                 {
                     id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
                     text: `nodes`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_paintSettings_nodes);
+                });
 
-                  var textIn_paintSettings_nodes =
+                  makeElement(addTextInput,
                   {
                       id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
                       rootStyle: rootStyle + textIn_css,
-                      value: 8,
                       callback: updateSetting
-                  }; _this = textIn_paintSettings_nodes;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
+                  });
+
 
 
             /*
@@ -1988,45 +1991,34 @@ var div_root =
             ╚══╝
             #gridsettings
             */
-            var div_detailMenuBox6 =
+            makeElement(addDiv,
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
                 settings: [8, true],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox6);
+            });
 
-              var div_gridSettings =
+              makeElement(addDiv,
               {
                   id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
                   text: 'grid settings \u2637',
                   rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-              }; addDiv(div_gridSettings);
+              });
 
-                var div_gridSettings_scale =
+                makeElement(addDiv,
                 {
                     id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
                     text: `scale`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_gridSettings_scale);
+                });
 
-                var div_gridSettings_mapWalls =
+                makeElement(addDiv,
                 {
                     id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
                     text: `map walls`,
                     rootStyle: rootStyle + div_css + darkBorder
-                }; addDiv(div_gridSettings_mapWalls);
+                });
 
-                  var cbx_mapWalls =
-                  {
-                      id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
-                      rootStyle: rootStyle+cbx_myStyle,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      defaultChecked: true,
-                      callback: updateSetting
-                  }; _this = cbx_mapWalls;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addCheckbox(_this);
 
                   /*
                     ╔╗╔═╗ 
@@ -2035,17 +2027,23 @@ var div_root =
                     ╚╝╚╝╚╝
                   */    
 
-                  var textIn_gridSettings_scale =
+                  makeElement(addTextInput,
                   {
                       id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
                       rootStyle: rootStyle + textIn_css,
-                      value: 8,
                       callback: updateSetting,
                       niladic: updateGrid
-                  }; _this = textIn_gridSettings_scale;
-                  _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                  addTextInput(_this);
+                  });
 
+                  makeElement(addCheckbox,
+                  {
+                      id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
+                      rootStyle: rootStyle+cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      defaultChecked: true,
+                      callback: updateSetting
+                  });
 
 
             /*
@@ -2060,26 +2058,26 @@ var div_root =
             #colorsettings
             */
 
-            var div_detailMenuBox7 =
+            makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
                 settings: [10, 10, 10],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox7);
+            });
 
-                var div_colorSettings =
+                makeElement(addDiv,
                 {
                     id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
                     text: 'color settings (0:255)',
                     rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-                }; addDiv(div_colorSettings);
+                });
 
-                  var div_colorSettings_r =
+                  makeElement(addDiv,
                   {
                       id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
                       text: `red`,
                       rootStyle: rootStyle + div_css + darkBorder
-                  }; addDiv(div_colorSettings_r);
+                  });
 
                     /*
                       ╔╗╔═╗ 
@@ -2088,52 +2086,44 @@ var div_root =
                       ╚╝╚╝╚╝
                     */    
 
-                    var textIn_colorSettings_r =
+                    makeElement(addTextInput,
                     {
                         id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
                         rootStyle: rootStyle + textIn_css,
-                        value: 10,
                         callback: updateSetting,
                         niladic: setBackgroundColor
-                    }; _this = textIn_colorSettings_r;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                    });
 
-                  var div_colorSettings_g =
+                  makeElement(addDiv,
                   {
                       id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
                       text: `green`,
                       rootStyle: rootStyle + div_css + darkBorder
-                  }; addDiv(div_colorSettings_g);
+                  });
 
-                    var textIn_colorSettings_g =
+                    makeElement(addTextInput,
                     {
                         id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
                         rootStyle: rootStyle + textIn_css,
-                        value: 10,
                         callback: updateSetting,
                         niladic: setBackgroundColor
-                    }; _this = textIn_colorSettings_g;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                    });
 
-                  var div_colorSettings_b =
+                  makeElement(addDiv,
                   {
                       id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
                       text: `blue`,
                       rootStyle: rootStyle + div_css + darkBorder
-                  }; addDiv(div_colorSettings_b);
+                  });
 
-                    var textIn_colorSettings_b =
+                    makeElement(addTextInput,
                     {
                         id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
                         rootStyle: rootStyle + textIn_css,
-                        value: 10,
-                        callback: updateSetting ,
+                        callback: updateSetting,
                         niladic: setBackgroundColor
-                    }; _this = textIn_colorSettings_b;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                    });
+
 
 
                       // automate this part
@@ -2149,26 +2139,26 @@ var div_root =
             #rotationsettings
             */
                             
-            var div_detailMenuBox8 =
+            makeElement(addDiv,
             {
                 id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
                 settings: [45],
                 rootStyle: rootStyle + detail_menu_box + lightSideBorder
-            }; addDiv(div_detailMenuBox8);
+            });
 
-              var div_rotationSettings =
+              makeElement(addDiv,
               {
                   id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
                   text: 'rotation settings \u2B6E',
                   rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
-              }; addDiv(div_rotationSettings);
+              });
 
-                  var div_rotationSettings_r =
+                  makeElement(addDiv,
                   {
                       id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
                       text: `deg`,
                       rootStyle: rootStyle + div_css + darkBorder
-                  }; addDiv(div_rotationSettings_r);
+                  });
 
                     /*
                       ╔╗╔═╗ 
@@ -2177,15 +2167,13 @@ var div_root =
                       ╚╝╚╝╚╝
                     */    
 
-                    var textIn_rotationSettings_r =
+                    makeElement(addTextInput,
                     {
                         id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
                         rootStyle: rootStyle + textIn_css,
-                        value: 45,
                         callback: updateSetting
-                    }; _this = textIn_rotationSettings_r;
-                    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-                    addTextInput(_this);
+                    });
+
 
 
 /*
@@ -2293,30 +2281,30 @@ line-height: 2.2;
 `;
 
 
-var menu_status =
+makeElement(addDiv,
 {
   id: "menu_status", cls: "", prnt: "html",
   settings: ["memspc_", ""],
   rootStyle: rootStyle + menu_status_style
-}; addDiv(menu_status);
+});
 
-  var menu_status_l =
+  makeElement(addDiv,
   {
     id: "menu_status_l", cls: "", prnt: "menu_status",
     rootStyle: rootStyle + menu_status_style_l
-  }; addDiv(menu_status_l);
+  });
 
-    var menu_status_l0 =
+    makeElement(addDiv,
     {
       id: "menu_status_l0", cls: "", prnt: "menu_status_l",
       rootStyle: rootStyle + menu_status_style_l0 + _textLeft
-    }; addDiv(menu_status_l0);
+    });
 
-    var menu_status_l1 =
+    makeElement(addDiv,
     {
       id: "menu_status_l1", cls: "", prnt: "menu_status_l",
       rootStyle: rootStyle + menu_status_style_l0 + _textLeft
-    }; addDiv(menu_status_l1);
+    });
 
     /*
       ╔╗╔═╗ 
@@ -2328,50 +2316,74 @@ var menu_status =
 
     // fix this area: can use settingUpdate and niladic -> var fileName -> loadSelect()
 
-    var menu_status_l2 =
+    makeElement(addFileInput,
     {
       id: "menu_status_l2", cls: "", prnt: "menu_status_l",
       text: "Open file",
       rootStyle: rootStyle + menu_status_style_l2,
       callback: loadSelect
-    }; addFileInput(menu_status_l2);
+    });
 
-    var menu_status_l3 =
+    makeElement(addTextInput,
     {
       id: "menu_status_l3", cls: "", prnt: "menu_status_l",
       value: "memspc_",
       rootStyle: rootStyle + menu_status_style_l3,
       callback: updateSetting
-    }; _this = menu_status_l3;
-    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-    addTextInput(_this);
+    });
 
-  var menu_status_r =
+
+  makeElement(addDiv,
   {
     id: "menu_status_r", cls: "", prnt: "menu_status",
     rootStyle: rootStyle + menu_status_style_r
-  }; addDiv(menu_status_r);
+  });
 
-    var menu_status_r0 =
+    makeElement(addDiv,
     {
       id: "menu_status_r0", cls: "", prnt: "menu_status_r",
       rootStyle: rootStyle + menu_status_style_l0 + _textRight
-    }; addDiv(menu_status_r0);
+    });
 
-    var menu_status_r1 =
+    makeElement(addDiv,
     {
       id: "menu_status_r1", cls: "", prnt: "menu_status_r",
       rootStyle: rootStyle + menu_status_style_l0 + _textRight
-    }; addDiv(menu_status_r1);
+    });
 
-    var menu_status_r2 =
+    makeElement(addDiv,
     {
       id: "menu_status_r2", cls: "", prnt: "menu_status_r",
       text: "",
       rootStyle: rootStyle + menu_status_style_r2 + _textLeft
-    }; _this = menu_status_r2;
-    _this.params = {id: _this.id, cls: _this.cls, prnt: _this.prnt, stn: _settings[_settings.length-1]};
-    addDiv(_this);
+    });
+
+
+
+/*
+var style_wpn_select =
+`
+position: absolute;
+top: 90%;
+left: 3%;
+background: rgb(130,13,13);
+width: 100px;
+height: 60px;
+border: 1px solid #900;
+`;
+
+
+makeElement(addDiv,
+{
+  id: "menu_wpn_select", cls: "", prnt: "html",
+  rootStyle: style_wpn_select
+});
+*/
+
+
+
+
+
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
     ║╔╗╔╗║║╔═╗║║╔╗║     ║╔═╗║
@@ -2394,11 +2406,11 @@ var menu_status =
             padding: 0px;
         `;
 
-        var div_keysMenu =
+        makeElement(addDiv,
         {
             id: "div_keysMenu", cls: "", prnt: "menu_q",
             rootStyle: rootStyle + detail_menu + defaultHidden + bind_menu
-        }; addDiv(div_keysMenu);
+        });
 
 
             var listStyle =
@@ -2426,15 +2438,14 @@ var menu_status =
             line-height: 2.09;
             `;
 
-            var list_keyBindInfo =
+            makeElement(addList,
             {
                 id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
                 color1: list_colors.c1, color2: list_colors.c2,
                 rootStyle: rootStyle + listStyle,
                 liStyles: myLiStyle,
                 items: key_bind_info
-            };
-            addList(list_keyBindInfo);
+            });
 
 
 

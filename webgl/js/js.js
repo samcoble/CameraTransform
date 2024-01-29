@@ -31,8 +31,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
       -- need parallel array manager to auto manage all the krap
 
-      -- Multi select can be done by tracking change in obj_cyc and log kept such that any number referenced twice get's removed
-
       -- Scrap overlay and redo menu
 
       -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
@@ -44,28 +42,15 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
       -- fix preview image to offset w/ 2d forced square w/ check
 
 			-- rewrite the select2dpoint function
+        - needs system to provide hologram ui
 
 			-- if encoded center is within plane of poly's captures some overlap
 	
-				- function( ? )
-
-				- ez2use for working with hologram objects
-					- preview and holograms need to be separated.
-
-				- make a sort function returning 
-					???, i, dist to i.
-
 			-- engine space
 
 			-- manual method for scroll boxes
 
-			-- add file name setting & input trickery?
-
-			-- translate ghost lol
-
-			-- must revert code to prefer visual fidelity
-
-			-- time to start porting to glsl shaders
+			-- translate ghost lol idk remember where
 
 			-- generate dir vec curves
 
@@ -78,23 +63,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 					- len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
 					- logic diagram could provide more direct code struct
 
-
-			-- back to the real world ig
-
-				- i will have to encode typically such that first struct explains sizes of following structs (type may be implicit as defined in reader)
-				- first number is number of chunks
-					- chunks are sizes (unique data structs) (2 for now)
-
-					[ n=2 ] [c1 size] [c2 size] [group tree dat] [ x y z x y z x y z ...]
-
-					so [group tree dat] looks like [ n=groups ] [ n1 size ] [nn size ] [ dat ]
-
-					so [ dat ] = size implies amount of indices per group and provides offset to find subsequent groups
-
-					m_objs is kept the same but an overseeing manager populates a new html structure for navigation.
-
-			-- finish mem log rebuild to add bounding box ? system ? what am i doing
-
 			-- unique ids for objs will help w/ identical objs in future?
 
 			-- lock point offsets grid? could fix a lot of things w/ rmb select
@@ -106,13 +74,13 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 				- line's checked for intersection within some range of it's len.
 
 			-- ray trace teleport
-				- fix teleport flip to use quaternions
+			-- fix teleport flip to use quaternions
 
-			-- wrap data
 			-- multi select
 
 			-- just noticed save data corrupted by single point data
 				- fuqk
+        - temp fix is making all 1 point objs 2 equal points w/ center ig
 
 			-- string dat find sys or mem addr sys?
 
@@ -126,26 +94,17 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 							use data to reveal bounding areas to hover over to select overlapping selection of objs
 								don't i already have a good z buffer.. wait
 
-			-- make #incheck a function
-
-			-- mouse to world ray trace from eye...
-				- point on near plane
+            might have the answer to this now with the new manual 2d gen circles
 
 			-- unit vector line conversion method for arc len
 
 			-- distribute heights using 20% remainder to make hover to settings
 
-			-- convert lines into one long line as draw functions are structured.
+			--  edit obj
 
-			-- add functions
-				- edit obj
-					: done but needs full mode
+			--  menu scrollbar hide ???
 
-			--	menu scrollbar hide ???
-
-			-- THE MENU SCRIPT IS BAD
-
-			-- Correctly log changed information that can be applied to reverse.
+			--  Correctly log changed information that can be applied to reverse.
 
 @?@?@
 ?@?@?
@@ -155,16 +114,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		if I can clip a region of polygon's in 2d space creating two sets
 			-> i could then display them at two different fov's creating a zoomed region for scopes/sights
 
-	So I guess I need to learn geometric algebra now. Linear algebra isn't enough. Quaternions are not even meta anymore.
+	So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
 	W/ new menu script I can provide a better sense of what tools are.
-
-	Maybe web workers will make a lot more possible.
-		can pass things like updateNormalMaps, updateRayInters maybe too.
-		there must be a way to do the damn poly clip this way.
-		some super fast painter's algorithm + spotting manual clip locations
-		could do the mild shadow map eventually
-		will determine if I can make this useable
-
 
 	Wrap data increase to hold more layers
 		r g b a comes first
@@ -172,22 +123,14 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 	Push to top of stack function
 
-	Try making a list in real time of anything entirely behind another obj's triangles?
-		try in 2d w/ triangle intersector later
 	Obj cut hole { i could try using the link script on to the hole... }
 		i keep reusing my linear link. need to learn poly fill alg
 		i need to implement geometric obj creation.
 			with more layers of encoded data i can keep logs of what obj's are fundamentally
 
-
 	Mover should show bounding box w/ corners to drag size
 	All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
 	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet. Do I really need to interp packed data??
-
-	fill array with indice map pointing to an even 1/n stack
-	pickUp array basically takes the remaining fraction and draws it.
-		example: n=5 -> use 4 even stacks to compute 4 renders at once
-				 remainder here is 1 so I go through at original per second point sequence to finish w/ modulo even/odd offset
 
 
 I can make real physgun by compounding quaternions and ray trace AYYYYYYYYYYYYYYYYYYYYYYY
@@ -270,10 +213,7 @@ Assault cube old code
 	= Make ray trace fn use inputs so I can call it to get data anywhere.
 
 	= Strange some polys not detected by rays..?? may come from zigzag gen? should be considering it's visually parallel w/ data
-		- probably caused by ghost obj
-
-	?@?@?@?@ mouse slow down for draw !!!!
-	?@?@?@?@ END # is broken
+		- probably caused by ghost obj ??? not translated ??
 
 	= Cut obj in half by plane!
 		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
@@ -310,11 +250,6 @@ Assault cube old code
 - Need rect cube tool
 - Circle tool also needs to have options for half or n parts
 
-- Grid upgrade: rotation of grid aligns with the slope of the diagonal/half way points between rounded grid points. This way everything stays in alignment.
-
-- I realize now I actually need two patterns. And patterns of offsets can actually be very fast as they're not computed when running.
-- premake a list w/ the right number pattern to use as index offset
-
 */
 
 // Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
@@ -348,7 +283,7 @@ Assault cube old code
 	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&&&!!!! the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
 	-	Maybe a separate self made api for handling the screen interface would be wise.
 	-	It really needs 3d/2d simple text obj generation for real notepad capacity. Idk how to edit something like that other than detecting the objects vertices relative and essentially making a hash table. Easier to just store the string in the bg. More arrays...
-	-	Effects and sounds.  Recreate similar Hl2 sounds.
+	-	Effects and sounds.
 
 
 	// MAYBE SOME TIME IN 2053 (after christ)
@@ -1935,19 +1870,40 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
   }
   */
 
-      // for (let j = start; j < end - 4; j += 4)
-  // // try this one ^^^
-	// for (var j = 0; j<(m_objs.length); j++)
+
   for (let j = m_objs.length-1; j>=0; j--)
   {
     _nextSize = m_objs[j].length;
-    for (let i = 0; i < _nextSize; i += 4)
+
+    for (let i=0; i<_nextSize; i++)
     {
-      m1.data[i+mem_log[j][0]]   = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][0];
-      m1.data[i+1+mem_log[j][0]] = m_objs[j][i+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
-      m1.data[i+2+mem_log[j][0]] = m_objs[j][i+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
-      m1.data[i+3+mem_log[j][0]] = m_objs[j][i+3]*m_obj_offs[j][3];
+
+        // switch (i%4)
+        // {
+        //   case 0:
+        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
+        //     break;
+        //   case 1:
+        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
+        //     break;
+        //   case 2:
+        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
+        //     break;
+        //   case 3:
+        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3];
+        //     break;
+        // }
+
+      m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
     }
+
+    // for (let i = 0; i < _nextSize; i += 4)
+    // {
+    //   m1.data[i+mem_log[j][0]]   = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][0];
+    //   m1.data[i+1+mem_log[j][0]] = m_objs[j][i+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
+    //   m1.data[i+2+mem_log[j][0]] = m_objs[j][i+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
+    //   m1.data[i+3+mem_log[j][0]] = m_objs[j][i+3]*m_obj_offs[j][3];
+    // }
   }
 
   // for (var j = 0; j<(m_t_objs.length); j++)
@@ -3696,6 +3652,18 @@ updateTriCtrMap();
 // later change to every second
 
 */
+// _uniLast = [];
+// function setGlColor(_c)
+// {
+//   if (_uniLast[0] != _c[0] || _uniLast[1] != _c[1] || _uniLast[2] != _c[2] || _uniLast[3] != _c[3])
+//   {
+//     gl.uniform4fv(colorUniformLocation, _c);
+//     _uniLast[0] = _c[0];
+//     _uniLast[1] = _c[1];
+//     _uniLast[2] = _c[2];
+//     _uniLast[3] = _c[3];
+//   }
+// }
 
 function drawLines()
 {

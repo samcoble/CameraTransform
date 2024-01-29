@@ -92,6 +92,10 @@ function initWebGL()
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+  // Enable backface culling
+  // gl.enable(gl.CULL_FACE);
+  // gl.cullFace(gl.BACK);
+
   shaderProgram = createProgram(gl, vertexShader, fragmentShader0);
   //shaderProgram2 = createProgram(gl, vertexShader, fragmentShader1);
 
