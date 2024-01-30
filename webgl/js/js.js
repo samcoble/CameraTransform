@@ -419,7 +419,7 @@ var one_time_fix = 1;
 
 var _preview_scaler;
 
-var menu_q_size = [610, 930];
+var menu_q_size = [548, 720];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [0, 0]; // fix me entire system wacked
 var menu_objpreview_pos = [0, 0]; // fix me
@@ -594,7 +594,7 @@ function updateMenuPos() // this stuff so bad jesus
 
 
 	// menu_keys_pos = [11, 10];
-	menu_q_pos = [in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]+100];
+	menu_q_pos = [in_win_w*0.015, in_win_h*0.5 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.
@@ -4090,9 +4090,9 @@ function pointerOutsideWindow()
 	// #incheck
 	var _in = [0,1,1];
 
-	if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+610)))
+	if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+menu_q_size[0])))
 	{
-		if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+660)))
+		if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+menu_q_size[1])))
 		{
 			_in[1] = 0;
 		}

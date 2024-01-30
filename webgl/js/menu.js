@@ -1162,8 +1162,8 @@ makeElement(addDiv,
     `
     box-sizing: border-box;
     position: absolute;
-    width: 610px;
-    height: 730px;
+    width: 548px;
+    height: 720px;
     left: 30px;
     top: 190px;
     user-select: none;
@@ -1219,11 +1219,11 @@ makeElement(addDiv,
 
         var _btn_tab0 = 
         `
-        margin: 3% 0% 0% 1%;
+        margin: 18px 0% 0% 1%;
         `;
         var _btn_tabn = 
         `
-        margin: 3% 0% 0% 0.5%;
+        margin: 18px 0% 0% 0.5%;
         `;
 
         makeElement(addButton,
@@ -1249,19 +1249,21 @@ makeElement(addDiv,
         var tool_menu =
         `
         box-sizing: border-box;
-        float: right;
+        position: absolute;
+        left: 379px;
+        top: 50px;
         width: 29.25%;
 
         margin-left: 0%;
         margin-right: 1%;
         padding-top: 3%;
-        height: 92%;
+        height: 663px;
         background-color: rgb(12, 12, 12);
         border-top: 1px solid rgba(120,120,120, 0.3);
         border-right: 1px solid rgba(120,120,120, 0.3);
         border-bottom: 1px solid rgba(120,120,120, 0.3);
         border-left: 1px solid rgba(120,120,120, 0.1);
-        z-index: -1;
+        z-index: 0;
         `;
 
         makeElement(addDiv,
@@ -1295,7 +1297,7 @@ makeElement(addDiv,
 
             var _btn_tooln =
             `
-            margin: 2px 0% 0 3%;
+            margin: 1px 0% 0 3%;
             `;
 
             var _btn_tooln_wspc =
@@ -1307,18 +1309,21 @@ makeElement(addDiv,
              `
             background-color: rgb(38, 38, 39);
             text-align: right;
-            border: 1px solid rgba(200, 200, 200, 0.1);
+            border-bottom: 1px solid rgba(200, 200, 200, 0.1);
+            border-top: 0px solid #FFF;
+            border-left: 0px solid #FFF;
+            border-right: 0px solid #FFF;
             outline: none;
             width: 94%;
             height: 26px;
-            line-height: 2.06;
-            border-radius: 0px 2px 2px 2px;
+            line-height: 2.2;
             `;
             // color: rgb(195, 123, 0);
 
+            // border-radius: 0px 2px 2px 2px;
             makeElement(addButton,
             {
-                text: `Lock Player Planar \u26C7`,
+                text: `Lock Planar \u26C7`,
                 id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
@@ -1327,7 +1332,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "Get Object Center \u22A1",
+                text: "Get Center \u22A1",
                 id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
                 hoverStyles: _btn_hover_tool,
@@ -1454,21 +1459,26 @@ makeElement(addDiv,
                            ╚╝
         #toolpanels
         overflow-y: auto;
+
+        box-sizing: border-box;
+        float: left;
         */
         var detail_menu =
          `
-        box-sizing: border-box;
-        float: left;
-        width: 68%;
+        position: absolute;
+        left: 0px;
+        top: 50px;
+        width: 420px;
         margin: 0 0% 0 1%;
         padding-top: 3%;
-        height: 92%;
+        height: 663px;
         background-color: rgb(12, 12, 12);
         z-index: -1;
         border-top: 1px solid rgba(120,120,120, 0.3);
         border-right: 1px solid rgba(120,120,120, 0.1);
         border-bottom: 1px solid rgba(120,120,120, 0.3);
         border-left: 1px solid rgba(120,120,120, 0.3);
+        overflow-y: auto;
         `;
         makeElement(addDiv,
         {
@@ -1490,9 +1500,20 @@ makeElement(addDiv,
                `
               box-sizing: border-box;
               float: left;
-              width: 48.5%;
+              width: 364px;
               margin: 5px 0 0 1%;
-              height: 24%;
+              height: 22%;
+              background: rgb(17,17,17);
+              z-index: -1;
+              `;
+
+              var detail_menu_box_half =
+               `
+              box-sizing: border-box;
+              float: left;
+              width: 180px;
+              margin: 5px 0 0 1%;
+              height: 22%;
               background: rgb(17,17,17);
               z-index: -1;
               `;
@@ -1501,7 +1522,7 @@ makeElement(addDiv,
               {
                   id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
                   settings: [8, 24, 0],
-                  rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                  rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
               });
 
                 var div_css =
@@ -1510,8 +1531,20 @@ makeElement(addDiv,
                 text-align: center;
                 //border: 1px rgba(222, 222, 222, 0.3);
                 outline: none;
-                margin: 7px 0% 0 5%;
-                width: 90%;
+                margin: 7px 0% 0 2%;
+                width: 45%;
+                line-height: 2.4;
+                height: 30px;
+                `;
+
+                var div_css_half =
+                `
+                background-color: rgb(38, 38, 39);
+                text-align: center;
+                //border: 1px rgba(222, 222, 222, 0.3);
+                outline: none;
+                margin: 5px 0% 0 2%;
+                width: 95%;
                 line-height: 2.4;
                 height: 30px;
                 `;
@@ -1533,7 +1566,7 @@ makeElement(addDiv,
                     // background: rgb(60 60 60 / 50%);
                 var myTitleStyle =
                 `
-                    margin: 0px 0px 6% 0px;
+                    margin: 0px 0px 10px 0px;
                     width: 100%;
                     height: 24px;
                     line-height: 2;
@@ -1549,14 +1582,14 @@ makeElement(addDiv,
                 {
                   id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
                   text: `circle settings \u25CB`,
-                  rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+                  rootStyle: rootStyle + div_css_half + darkBorder + myTitleStyle
                 });
 
                 makeElement(addDiv,
                 {
                     id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
                     text: `scale`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                 /*
@@ -1578,7 +1611,7 @@ makeElement(addDiv,
                 {
                     id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
                     text: `divider`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addTextInput,
@@ -1593,7 +1626,7 @@ makeElement(addDiv,
                 {
                     id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
                     text: `offset`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addTextInput,
@@ -1617,7 +1650,7 @@ makeElement(addDiv,
               {
                   id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
                   settings: [true, true, false],
-                  rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                  rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
               });
 
                 makeElement(addDiv,
@@ -1632,20 +1665,21 @@ makeElement(addDiv,
                 {
                     id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
                     text: `lines`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
 
+                      // background: rgba(159, 144, 75, 0.8);
                   var cbx_myStyle_checked =
                   `
-                      background: rgba(159, 144, 75, 0.8);
+                      background: rgba(122,122,122, 0.8);
                       box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.3);
                       border: 0px;
                   `;
 
                   var cbx_myStyle_hover =
                   `
-                      box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.1);
+                      box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
                       border: 0px;
                   `;
                   /*
@@ -1660,7 +1694,7 @@ makeElement(addDiv,
                       cursor: pointer;
                       appearance: none;
                       outline: 0;
-                      background: rgb(60 60 60 / 50%);
+                      background: rgb(16,16,16);
                       width: 40px;
                       height:100%;
                       color: rgba(1, 1, 1, 0);
@@ -1690,7 +1724,7 @@ makeElement(addDiv,
                 {
                     id: "div_drawSurfaces", cls: "", prnt: "detail_box_drawSettings",
                     text: `surfaces`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addCheckbox,
@@ -1708,7 +1742,7 @@ makeElement(addDiv,
                 {
                     id: "div_drawOpacity", cls: "", prnt: "detail_box_drawSettings",
                     text: `opacity`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addCheckbox,
@@ -1735,7 +1769,7 @@ makeElement(addDiv,
             {
                 id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
                 settings: [{0:false}, {0:true}, {0:false}], // pass numbers as objects to enable radio
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
               makeElement(addDiv,
@@ -1749,7 +1783,7 @@ makeElement(addDiv,
               {
                   id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
                   text: `linear`,
-                  rootStyle: rootStyle + div_css + darkBorder
+                  rootStyle: rootStyle + div_css_half + darkBorder
               });
 
               /*
@@ -1773,7 +1807,7 @@ makeElement(addDiv,
             {
                 id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
                 text: `zigzag`,
-                rootStyle: rootStyle + div_css + darkBorder
+                rootStyle: rootStyle + div_css_half + darkBorder
             });
 
               makeElement(addCheckbox,
@@ -1791,7 +1825,7 @@ makeElement(addDiv,
             {
                 id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
                 text: `poly`,
-                rootStyle: rootStyle + div_css + darkBorder
+                rootStyle: rootStyle + div_css_half + darkBorder
             });
 
               makeElement(addCheckbox,
@@ -1820,7 +1854,7 @@ makeElement(addDiv,
             {
                 id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
                 settings: [false, false, false],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
               makeElement(addDiv,
@@ -1851,7 +1885,7 @@ makeElement(addDiv,
               {
                   id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
                   text: `X`,
-                  rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_r
+                  rootStyle: rootStyle + div_css_half + darkBorder + div_lockSettings_r
               });
 
               /*
@@ -1875,7 +1909,7 @@ makeElement(addDiv,
             {
                 id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
                 text: `Y`,
-                rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_g
+                rootStyle: rootStyle + div_css_half + darkBorder + div_lockSettings_g
             });
 
               makeElement(addCheckbox,
@@ -1892,7 +1926,7 @@ makeElement(addDiv,
             {
                 id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
                 text: `Z`,
-                rootStyle: rootStyle + div_css + darkBorder + div_lockSettings_b
+                rootStyle: rootStyle + div_css_half + darkBorder + div_lockSettings_b
             });
 
               makeElement(addCheckbox,
@@ -1922,7 +1956,7 @@ makeElement(addDiv,
             {
                 id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
                 settings: [true, 1, 8],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
                 makeElement(addDiv,
@@ -1936,7 +1970,7 @@ makeElement(addDiv,
                 {
                     id: "div_paintInf", cls: "", prnt: "detail_box_paintSettings",
                     text: `infinite &#8734;`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   /*
@@ -1961,7 +1995,7 @@ makeElement(addDiv,
                 {
                     id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
                     text: `dist`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addTextInput,
@@ -1977,7 +2011,7 @@ makeElement(addDiv,
                 {
                     id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
                     text: `nodes`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                   makeElement(addTextInput,
@@ -2004,7 +2038,7 @@ makeElement(addDiv,
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
                 settings: [8, true],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
               makeElement(addDiv,
@@ -2018,14 +2052,14 @@ makeElement(addDiv,
                 {
                     id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
                     text: `scale`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
                 makeElement(addDiv,
                 {
                     id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
                     text: `map walls`,
-                    rootStyle: rootStyle + div_css + darkBorder
+                    rootStyle: rootStyle + div_css_half + darkBorder
                 });
 
 
@@ -2071,21 +2105,21 @@ makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
                 settings: [10, 10, 10],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
                 makeElement(addDiv,
                 {
                     id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
                     text: 'color settings (0:255)',
-                    rootStyle: rootStyle + div_css + darkBorder + myTitleStyle
+                    rootStyle: rootStyle + div_css_half + darkBorder + myTitleStyle
                 });
 
                   makeElement(addDiv,
                   {
                       id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
                       text: `red`,
-                      rootStyle: rootStyle + div_css + darkBorder
+                      rootStyle: rootStyle + div_css_half + darkBorder
                   });
 
                     /*
@@ -2107,7 +2141,7 @@ makeElement(addDiv,
                   {
                       id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
                       text: `green`,
-                      rootStyle: rootStyle + div_css + darkBorder
+                      rootStyle: rootStyle + div_css_half + darkBorder
                   });
 
                     makeElement(addTextInput,
@@ -2122,7 +2156,7 @@ makeElement(addDiv,
                   {
                       id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
                       text: `blue`,
-                      rootStyle: rootStyle + div_css + darkBorder
+                      rootStyle: rootStyle + div_css_half + darkBorder
                   });
 
                     makeElement(addTextInput,
@@ -2152,7 +2186,7 @@ makeElement(addDiv,
             {
                 id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
                 settings: [45],
-                rootStyle: rootStyle + detail_menu_box + lightSideBorder
+                rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
               makeElement(addDiv,
@@ -2166,7 +2200,7 @@ makeElement(addDiv,
                   {
                       id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
                       text: `deg`,
-                      rootStyle: rootStyle + div_css + darkBorder
+                      rootStyle: rootStyle + div_css_half + darkBorder
                   });
 
                     /*
@@ -2293,7 +2327,7 @@ line-height: 2.2;
 makeElement(addDiv,
 {
   id: "menu_status", cls: "", prnt: "html",
-  settings: ["memspc_", ""],
+  settings: ["", "memspc_"],
   rootStyle: rootStyle + menu_status_style
 });
 
@@ -2588,7 +2622,7 @@ console.log(_rightRadius);
             var listStyle =
              `
             background-color: rgba(0,0,0,0);
-            width: 96%;
+            width: 395px;
             padding: 0px;
 
             max-height: 97%;
@@ -2602,8 +2636,7 @@ console.log(_rightRadius);
             var myLiStyle =
              `
             box-sizing: border-box;
-            width: 100%;
-            height: 25px;
+            width: 364px;
             padding 0px; margin: 0px;
             border-bottom: 1px solid rgb(12,12,12);
             text-align: center;
