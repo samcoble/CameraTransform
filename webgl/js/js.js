@@ -1759,7 +1759,11 @@ function m_objs_loadPoints(ar) // Adds objects
 		mem_log.push([mem_sum, ar_f.length, Math.floor(ar_f.length/4), Math.floor(ar_f.length/12)]);
 		mem_sum += ar_f.length;
 
-		obj_normalMaps.push(new Float32Array(ar.length + 4)); // Idk this works for now??
+		// obj_normalMaps.push(new Float32Array(ar.length + 4)); // Idk this works for now??
+    
+    let _t_tris = Math.floor((Math.floor(ar_f.length/12)-1)/2)-Math.floor(ar_f.length/12)%2;
+		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // Idk this works for now??
+
 
 		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
@@ -1776,7 +1780,7 @@ function m_objs_loadPoints(ar) // Adds objects
 
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
-	//updateNormalMaps();
+
 	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
 
   let _count = Math.floor( (ar.length + 4)/4 ); 
@@ -1813,7 +1817,9 @@ function m_objs_loadPoints(ar) // Adds objects
     obj_folders[_fp].push(m_objs.length-1);
   }
 
+
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
+	updateNormalMaps();
 }
 
 
@@ -2366,8 +2372,10 @@ function del_obj(_i)
 		_all_lock = 0; _all_lock = 0;
 		if (obj_cyc == m_objs.length-1) // If last delete last
 		{
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); obj_cyc = obj_cyc-1; m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
+      obj_cyc = obj_cyc-1;
+			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); m_draw.splice(-1);
+      m_center2d.splice(-1); m_center2d_buffer.splice(-1); z_map.splice(-1);
+      obj_normalMaps.splice(-1);
 
 		} else // Delete specific
 		{
@@ -2378,6 +2386,7 @@ function del_obj(_i)
 			}
 			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
       m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
+      obj_normalMaps.splice(obj_cyc, 1);
 		}
 		updateList(objListConst(), "list_objectSelect");
     foldersDel(_i);
@@ -3088,7 +3097,7 @@ function del_world()
 	_all_lock = 0; _all_lock_i = 0;
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
   m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
-
+  obj_normalMaps.splice(world_obj_count+1);
 	obj_cyc = m_objs.length-1;
 
   updateTree(tree_allObjects);
