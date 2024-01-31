@@ -2037,7 +2037,7 @@ makeElement(addDiv,
             makeElement(addDiv,
             {
                 id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-                settings: [8, true],
+                settings: [8, true, false],
                 rootStyle: rootStyle + detail_menu_box_half + lightSideBorder
             });
 
@@ -2088,7 +2088,22 @@ makeElement(addDiv,
                       callback: updateSetting
                   });
 
+                  makeElement(addDiv,
+                  {
+                      id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
+                      text: `face culling`,
+                      rootStyle: rootStyle + div_css_half + darkBorder
+                  });
 
+                  makeElement(addCheckbox,
+                  {
+                      id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
+                      rootStyle: rootStyle+cbx_myStyle,
+                      hoverStyles: cbx_myStyle_hover,
+                      checkedStyles: cbx_myStyle_checked,
+                      defaultChecked: false,
+                      callback: updateSetting
+                  });
             /*
             ╔╗                  ╔╗                 ╔╗
             ║║                  ║║                ╔╝╚╗
