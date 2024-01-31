@@ -9,7 +9,6 @@ var colorUniformLocation;
 
 var vertices, _pts, _si, _si2, colorBuffer, colorAttrib;
 
-// var _triverts = new Float32Array(160000);
 var _triverts;
 
 function resizeCanvas(w, h)
@@ -20,33 +19,6 @@ function resizeCanvas(w, h)
   // Refresh the WebGL context
   gl.viewport(0, 0, w, h);
 }
-
-/*
- 
-    // Check if rendering is 2D or 3D
-    if (uIs2D)
-    {
-      gl_Position = vec4(aPosition, 0.0, 1.0); // 2D
-      gl_PointSize = 1.8; // point size
-      vColor = aColor;
-    }
-    else {
-      vec3 viewDirection = normalize(uCameraPosition - aVertexPosition.xyz);
-      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition.x*uScale, aVertexPosition.y*uScaleY*uScale, aVertexPosition.z*uScale, 1.0);
-      vColor = aColor;
-
-    }
-  
-  uniform bool uIs2D;
-  uniform float uScaleY;
-  uniform float uScale;
-
-  attribute vec4 aVertexPosition;
-  uniform mat4 uModelViewMatrix;
-  uniform mat4 uProjectionMatrix;
-  uniform vec3 uCameraPosition;
-
-*/
 
 function initWebGL()
 {
@@ -92,15 +64,10 @@ function initWebGL()
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  // Enable backface culling
-  // gl.enable(gl.CULL_FACE);
-  // gl.cullFace(gl.BACK);
-
   shaderProgram = createProgram(gl, vertexShader, fragmentShader0);
   //shaderProgram2 = createProgram(gl, vertexShader, fragmentShader1);
 
   colorUniformLocation = gl.getUniformLocation(shaderProgram, 'uColor');
-  // gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]); // Set your desired color
 
   positionAttrib = gl.getAttribLocation(shaderProgram, 'aPosition');
   gl.enableVertexAttribArray(positionAttrib);
@@ -110,16 +77,6 @@ function initWebGL()
 }
 
 initWebGL();
-          /*          
-          let d;
-          if (in_win_h > in_win_w)
-          {
-            d = in_win_w/in_win_h;
-          } else {
-            d = in_win_h/in_win_w;
-          }
-          */
-
 
 function createShader(gl, source, type)
 {
@@ -133,7 +90,6 @@ function createShader(gl, source, type)
       gl.deleteShader(shader);
       return null;
   }
-
   return shader;
 }
 
@@ -150,7 +106,35 @@ function createProgram(gl, vertexShader, fragmentShader)
       gl.deleteProgram(program);
       return null;
   }
-
   gl.useProgram(program);
   return program;
 }
+
+/*
+ 
+    // Check if rendering is 2D or 3D
+    if (uIs2D)
+    {
+      gl_Position = vec4(aPosition, 0.0, 1.0); // 2D
+      gl_PointSize = 1.8; // point size
+      vColor = aColor;
+    }
+    else {
+      vec3 viewDirection = normalize(uCameraPosition - aVertexPosition.xyz);
+      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition.x*uScale, aVertexPosition.y*uScaleY*uScale, aVertexPosition.z*uScale, 1.0);
+      vColor = aColor;
+
+    }
+  
+  uniform bool uIs2D;
+  uniform float uScaleY;
+  uniform float uScale;
+
+  attribute vec4 aVertexPosition;
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  uniform vec3 uCameraPosition;
+
+*/
+
+

@@ -38,8 +38,17 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
     -- to get started setup the buffers
     -- box collision function and tests
     -- 
-    --
+    -- 13.25, 13.625, 74.875
 
+    -- 
+    -- my current poly generation algs do not create a winding effect for back face culling,
+    -- but my alternating sequence could be separated into two groupings and one gets flipped.
+    -- 
+    -- 
+    -- 
+    -- 
+    -- 
+    -- 
 
 @?@?@
 ?@?@?
@@ -49,8 +58,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
       -- finish center inds?
 
       -- need parallel array manager to auto manage all the krap
-
-      -- Scrap overlay and redo menu
 
       -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
 
@@ -1183,7 +1190,7 @@ function loadFile0(_fi)
       {
         if (i==0)
         {
-          let _s3 = offsetArray(_r[3][i], -(world_obj_count+1)+_s1);
+          let _s3 = offsetArray(_r[3][i], -(world_obj_count)+_s1); // change here for more world objects I think subtract from world count
           let _s4 = _s3.length;
           for (let j=0; j<_s4; j++)
           {
@@ -1191,7 +1198,7 @@ function loadFile0(_fi)
           }
         } else
         {
-          obj_folders.push(offsetArray(_r[3][i], -(world_obj_count+1)+_s1));
+          obj_folders.push(offsetArray(_r[3][i], -(world_obj_count)+_s1)); // and here
         }
       }
       // console.log(_r);
@@ -1735,7 +1742,8 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 	// #DATAFNS
 
 
-var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
+// var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
+var m1 = shaderModule.alloc(80000); // Allocate memory for parallel operations
 for (i=0; i<m1.data.length; i++)
 {
 	m1.data[i] = 0.0;
@@ -1764,6 +1772,10 @@ function m_objs_loadPoints(ar) // Adds objects
     let _t_tris = Math.floor((Math.floor(ar_f.length/12)-1)/2)-Math.floor(ar_f.length/12)%2;
 		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // Idk this works for now??
 
+    var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
+    m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
+    
+    
 
 		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
 		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
@@ -1778,6 +1790,8 @@ function m_objs_loadPoints(ar) // Adds objects
 		mem_sum += ar.length;
 		obj_normalMaps.push(new Float32Array([0.0, 0.0, 0.0, 0.0]));
 
+    var ar_t = new Float32Array( 6 );
+    m_draw.push([ar_t, 1, ar_t.length]); // Make space for webgl tris
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 
@@ -1786,31 +1800,31 @@ function m_objs_loadPoints(ar) // Adds objects
   let _count = Math.floor( (ar.length + 4)/4 ); 
   _si = (Math.floor((_count - 1) / 2) - _count%2) - 1;
 
-  if (ar.length >= (3*4))
-  {
-    var ar_r = new Float32Array( _si * 6 + 6 );
-    var ar_z = new Float32Array( _si + 1 );
-    var ar_k = new Float32Array( _si + 1 );
-    m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
-    z_map.push([ar_z, ar_k, _si + 1]);
-
-  } else
-  {
-    var ar_r = new Float32Array( 6 );
-    var ar_z = new Float32Array( 1 );
-    var ar_k = new Float32Array( 1 );
-    m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
-    z_map.push([ar_z, ar_k, 1]);
-  }
-
+  // if (ar.length >= (3*4))
+  // {
+  //   var ar_r = new Float32Array( _si * 6 + 6 );
+  //   var ar_z = new Float32Array( _si + 1 );
+  //   var ar_k = new Float32Array( _si + 1 );
+  //   m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
+  //   z_map.push([ar_z, ar_k, _si + 1]);
+  //
+  // } else
+  // {
+  //   var ar_r = new Float32Array( 6 );
+  //   var ar_z = new Float32Array( 1 );
+  //   var ar_k = new Float32Array( 1 );
+  //   m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
+  //   z_map.push([ar_z, ar_k, 1]);
+  // }
+  //
   m_center2d_buffer.push(new Float32Array(33*2));
   m_center2d.push(new Float32Array(2));
 
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 14) {_fp = 2;}
-  if (m_objs.length > 14) {_fp = 3;} // redirect can be set global
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 15) {_fp = 2;}
+  if (m_objs.length > 15) {_fp = 3;} // redirect can be set global
 
   if (flag_loadingObject == 0)
   {
@@ -1984,7 +1998,7 @@ m_objs_loadPoints(_lop_world);   // 10
 m_objs_loadPoints(m_gun);        // 11
 m_objs_loadPoints(m_rect);       // 12
 m_objs_loadPoints(m_rect);       // 13
-// m_objs_loadPoints(m_eyeRef);     // 14
+m_objs_loadPoints(m_eyeRef);     // 14
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -2069,7 +2083,7 @@ function updateRayInters(_dp, _p)
     interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
-		for (var i=world_obj_count; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
+		for (var i=world_obj_count+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
 		{
 			if (mem_log[i][2]>2) // wat?
 			{
@@ -2260,6 +2274,11 @@ function makeQuaternion(_r, _a) // Radians, Axis
 	return _q;
 }
 
+// conjugate of a quaternion
+function conjugate(q)
+{
+  return [q[0], -q[1], -q[2], -q[3]];
+}
 
 // Quat rot using matrix quat multiplier
 function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
@@ -2271,15 +2290,17 @@ function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
     }
 	// Normalize it. Makes sense when you are adding many together.
 	const _nq = norm4(_fq);
+
 	// Make a vector quaternion / quaternion vector
     const _vq = [0, _p[0], _p[1], _p[2]]; // q w/ no scaler
-    const _rq0 = multiplyQuaternions(_nq, _vq); // Must do this first (l2r)
-    const _rq = multiplyQuaternions(_rq0, [
-         _nq[0],
-        -_nq[1],
-        -_nq[2],
-        -_nq[3]
-    ]);
+    // const _rq0 = multiplyQuaternions(_nq, _vq); // Must do this first (l2r)
+    // const _rq = multiplyQuaternions(_rq0, [
+    //      _nq[0],
+    //     -_nq[1],
+    //     -_nq[2],
+    //     -_nq[3]
+    // ]);
+   const _rq = multiplyQuaternions(_nq, multiplyQuaternions(_vq, conjugate(_nq)));
     return [_rq[1], _rq[2], _rq[3]];
 }
 
@@ -2396,8 +2417,8 @@ function del_obj(_i)
 
 function updateLook() // Quat view rot
 {
-		_viewq = [makeQuaternion(-player_look_dir[1], _norm_x),
-				  makeQuaternion(-player_look_dir[0], _norm_y)];
+		_viewq = [makeQuaternion(-player_look_dir[1], [1,0,0]),
+				  makeQuaternion(-player_look_dir[0], [0,1,0])];
 		f_look = quatRot( [0,0,1], _viewq );
 
 		_oh = dot(player_pos,[0,1,0,1]);
@@ -2991,18 +3012,18 @@ function writeToObjI(_ob, i)
   }
 }
 
-// function translateObjI(_i, _v)
-// {
-//   let _t_c = getctr_ghost(_i);
-//   const _s = mem_log[_i][2];
-//   for (let i=0; i<_s; i++)
-//   {
-//     m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
-//     m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
-//     m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
-//     m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
-//   }
-// }
+function translateObjI(_i, _v)
+{
+  let _t_c = getctr_ghost(_i);
+  const _s = mem_log[_i][2];
+  for (let i=0; i<_s; i++)
+  {
+    m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
+    m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
+    m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
+    m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
+  }
+}
 
 function updateViewRef(_v, _i, _q)
 {
@@ -3210,13 +3231,13 @@ function drawOverlay()
 	updateMenuPos();
 
   
-  /*
-  if (!mouseLock) // in menu
-  {
-    updateLook();
-    updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
-  }
-  */
+  
+  // if (!mouseLock) // in menu
+  // {
+  //   updateLook();
+  //   updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
+  // }
+  
   
 
 	// While in menu with low call rate i'll set values here:
@@ -3291,6 +3312,16 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 const vertexBuffer = gl.createBuffer();
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
+
+/*
+
+
+to fix excess calls to uniform location just map array to colors and store prev color as indice
+
+
+*/
+
+
 
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi)
@@ -3653,6 +3684,10 @@ updateTriCtrMap();
 //   }
 // }
 
+var _si_d = 0;
+var _od = 0;
+var _h = 0;
+
 function drawLines()
 {
   // updateZMap();
@@ -3687,6 +3722,9 @@ function drawLines()
   // This entire thing is sus.
 
   // reset
+  
+  // #linesandtris
+
   start = size = end = 0;
 
 
@@ -3710,42 +3748,75 @@ function drawLines()
         {
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
-            _km = _si_f = 0;
+            _si_f = _si_d = 0;
             vertices = [];
 
             // I can try mod 2 to also save tri?
-
-            for (let k = 0; k <= m_draw[d_i][1]; k++)
-            // for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
+            if (_settings[5].settings[2])
             {
-              // if (1) // && z_map[d_i][1][k]>2
-              // {
+              _od = m_draw[d_i][1]%2;
+              _h = (m_draw[d_i][1]-_od)/2;
+
+              for (let k = 0; k < m_draw[d_i][1]; k++)
+              {
                 if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
                 {
-                  // if (Math.abs(m1.data[8 * k + mem_log[d_i][0]]) > 1.0) { continue; }
-                  // z_map[d_i][1][k]
-                  m_draw[d_i][0][(k+_km) * 6] = m1.data[8 * k + mem_log[d_i][0]];
-                  m_draw[d_i][0][(k+_km) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
+                  
+                  if (k%2 != 0)
+                  {
+                    m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+                    m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
-                  m_draw[d_i][0][(k+_km) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
-                  m_draw[d_i][0][(k+_km) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
+                    m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+                    m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
 
-                  m_draw[d_i][0][(k+_km) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
-                  m_draw[d_i][0][(k+_km) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                    m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+                    m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                    _si_f++;
+                  }
+                  else
+                  {
+                    m_draw[d_i][0][(_si_d+_h) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+                    m_draw[d_i][0][(_si_d+_h) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
-                  // vertices.push(m1.data[8 * k + mem_log[d_i][0]], -m1.data[8 * k + mem_log[d_i][0] + 1]);
+                    m_draw[d_i][0][(_si_d+_h) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+                    m_draw[d_i][0][(_si_d+_h) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
 
-                  _si_f++;
+                    m_draw[d_i][0][(_si_d+_h) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+                    m_draw[d_i][0][(_si_d+_h) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                    _si_d++;
+                  }
                 }
-                else
-                {
-                  _km--;
-                }
-              // }
-             }
+               } // end of k loop
+            }
+            else
+            {
+              _si_f = 0;
 
+              for (let k = 0; k < m_draw[d_i][1]; k++)
+              {
+                  if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
+                    m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
+                    m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
+                  {
+                   // z_map[d_i][1][k]
+                  
+                    m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+                    m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
+
+                    m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+                    m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
+
+                    m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+                    m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                    _si_f++;
+                  }
+               }
+            }
+
+            // console.log(_si_d + " : " + _si_f + " : " + _od);
           
             switch(_settings[1].settings[2])
             {
@@ -3757,15 +3828,39 @@ function drawLines()
                 break;
             }
 
+            gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
+            gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+            if (_settings[5].settings[2])
+            {
+              gl.enable(gl.CULL_FACE);
+
+              gl.frontFace(gl.CCW);
+              gl.cullFace(gl.BACK);
+              gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+
+              gl.frontFace(gl.CW);
+              gl.cullFace(gl.BACK);
+              gl.drawArrays(gl.TRIANGLES, ( (_h) * 6 ) / 2, ( (_si_d) * 6 ) / 2);
+            }
+            else
+            {
+
+              // if (gl.getParameter(gl.CULL_FACE)) {gl.disable(gl.CULL_FACE);}
+              gl.disable(gl.CULL_FACE);
+              gl.drawArrays(gl.TRIANGLES, 0,  (_si_f * 6) / 2);
+            }
+
             // Draw the triangles after setting the color
             // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
 
-            gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
             // gl.enableVertexAttribArray(positionAttrib);
 
-
-            gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+            // gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+            //
+            // // if (d_i == 2) {
+            // // was going to check the sizes here
+            // }
 
             // drawSegment(m_draw[d_i][0], (_si_f * 6) / 2);
             // drawSegment(vertices, vertices.length/2);
@@ -3775,7 +3870,15 @@ function drawLines()
     }
 
     /* // last
-
+    //
+    // var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
+    // m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
+    // 
+    //
+    // var ar_t = new Float32Array( 6 );
+    // m_draw.push([ar_t, 1, ar_t.length]); // Make space for webgl tris
+    //
+    //
     */
 
     // || (d_i == 14))
@@ -4610,10 +4713,12 @@ function Compute(init_dat)
       {
         updateRayInters(_ff, player_pos);
         let _tc = typeof interIOut[_rayLast] != "undefined" ? interIOut[_rayLast] : 0;
+        console.log(interIOut);
         obj_cyc = _tc;
         // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
       }
       */
+      
 
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
@@ -4874,18 +4979,17 @@ function Compute(init_dat)
 	#define _S1 1.0000600006
 	#define _S2 7.55682619647
 
-*/
-
-
-GLSLfragmentShader.run(init_dat,
-
-	`void main(void) {
+  float _yaw = float(${player_look_dir[0]});
+  float _pit = float(${player_look_dir[1]});
+  float _wc = float(${in_win_wc});
+  float _hc = float(${in_win_hc});
+  float _fov = float(${s_fov})*myVariable;
 
   float _yaw = float(${player_look_dir[0]});
   float _pit = float(${player_look_dir[1]});
   float _wc = float(${in_win_wc});
   float _hc = float(${in_win_hc});
-  float _fov = float(${s_fov});
+  float _fov = float(${s_fov})*myVariable;
 
 	#define d 0.112672939
 
@@ -4896,12 +5000,40 @@ GLSLfragmentShader.run(init_dat,
 		0.
 	);
 
+*/
+
+
+/*
+
+	vec4 after_tran = vec4(
+		read().x-_plr_x, 
+		read().y-_plr_y,
+		read().z-_plr_z,
+		0.
+	);
+
   // Rotate around x-axis (pitch)
   vec4 after_pit = vec4(
       cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
       cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
       0.,
       -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
+  );
+
+*/
+
+
+shaderModule.run(init_dat,
+  `void main(void) {
+
+	#define d 0.112672939
+
+  // Rotate around x-axis (pitch)
+  vec4 after_pit = vec4(
+      cos(_yaw) * (read().x-_plr_x) + sin(_yaw) * (read().z-_plr_z),
+      cos(_pit) * (read().y-_plr_y) - sin(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)),
+      0.,
+      -(sin(_pit) * (read().y-_plr_y) + cos(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)))
   );
 
 	// Divide by w
@@ -4921,7 +5053,7 @@ GLSLfragmentShader.run(init_dat,
 			0.
 			));
 	}
-}`);
+}`, player_look_dir[0], player_look_dir[1], in_win_wc, in_win_hc, s_fov, player_pos[0], player_pos[1], player_pos[2]);
 
 } // End of Compute()
 
