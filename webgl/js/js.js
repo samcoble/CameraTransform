@@ -5005,6 +5005,22 @@ function Compute(init_dat)
 
 /*
 
+
+  // Rotate around x-axis (pitch)
+  vec4 after_pit = vec4(
+      cos(_yaw) * (read().x-_plr_x) + sin(_yaw) * (read().z-_plr_z),
+      cos(_pit) * (read().y-_plr_y) - sin(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)),
+      0.,
+      -(sin(_pit) * (read().y-_plr_y) + cos(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)))
+  );
+
+
+*/
+
+
+shaderModule.run(init_dat,
+  `void main(void) {
+
 	vec4 after_tran = vec4(
 		read().x-_plr_x, 
 		read().y-_plr_y,
@@ -5020,21 +5036,7 @@ function Compute(init_dat)
       -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
   );
 
-*/
-
-
-shaderModule.run(init_dat,
-  `void main(void) {
-
 	#define d 0.112672939
-
-  // Rotate around x-axis (pitch)
-  vec4 after_pit = vec4(
-      cos(_yaw) * (read().x-_plr_x) + sin(_yaw) * (read().z-_plr_z),
-      cos(_pit) * (read().y-_plr_y) - sin(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)),
-      0.,
-      -(sin(_pit) * (read().y-_plr_y) + cos(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)))
-  );
 
 	// Divide by w
 	if (after_pit.w != 0.)
