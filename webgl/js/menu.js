@@ -254,7 +254,7 @@ function addFileInput(par)
   fileInput.style.height = "100%";
 
   fileInput.addEventListener("change", function ()
-  { par.callback(fileInput.files); });
+  { par.callback(fileInput.files); fileInput.value = ''; });
 
   fileLabel.appendChild(fileInput);
 

@@ -1226,7 +1226,7 @@ function loadFile0(_fi)
           obj_folders.push(offsetArray(_r[3][i], -(_sml)+_s1)); // and here
         }
       }
-      console.log(_r);
+      // console.log(_r);
       
       // load objs
       for (let i=0; i<_r[1].length; i++)
@@ -3142,6 +3142,7 @@ function deleteObjectSelected()
 function del_world()
 {
   obj_folders[3].length = 0;
+  mem_sum = 7336;
 
   let _c = 4;
   folder_parents.splice(_c);
@@ -3154,7 +3155,10 @@ function del_world()
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
   m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
   obj_normalMaps.splice(world_obj_count+1);
-	obj_cyc = m_objs.length-1;
+	obj_cyc = 2;
+
+  document.getElementById("menu_status_l3").value = '';
+  document.getElementById("menu_status_r2").value = '';
 
   updateTree(tree_allObjects);
 }
