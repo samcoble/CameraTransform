@@ -1133,6 +1133,30 @@ function offsetArray(ar, b)
   return _n;
 }
 
+function returnSmallest(ar)
+{
+  // if (ar.length == 0) {return 0;}
+  let _t = Number.MAX_VALUE;
+  let _s = ar.length;
+  for (let i=0; i<_s; i++)
+  {
+    if (ar[i] < _t) {_t = ar[i];}
+  }
+  return _t;
+}
+
+function returnSmallestInArrays(ar)
+{
+  let _t = Number.MAX_VALUE;
+  let _s = ar.length;
+  for (let i=0; i<_s; i++)
+  {
+    let _rs = returnSmallest(ar[i]);
+    if (_rs < _t) {_t = _rs;}
+  }
+  return _t;
+}
+
 
 function loadFile0(_fi)
 {
@@ -1186,11 +1210,12 @@ function loadFile0(_fi)
       // load folder arrays
       _s = _r[3].length; // array containing folder arrays : now 0 is folder 3
       let _s1 = m_objs.length;
+      let _sml = returnSmallestInArrays(_r[3]);
       for (let i=0; i<_s; i++)
       {
         if (i==0)
         {
-          let _s3 = offsetArray(_r[3][i], -(world_obj_count)+_s1); // change here for more world objects I think subtract from world count
+          let _s3 = offsetArray(_r[3][i], -(_sml)+_s1); // change here for more world objects I think subtract from world count
           let _s4 = _s3.length;
           for (let j=0; j<_s4; j++)
           {
@@ -1198,10 +1223,10 @@ function loadFile0(_fi)
           }
         } else
         {
-          obj_folders.push(offsetArray(_r[3][i], -(world_obj_count)+_s1)); // and here
+          obj_folders.push(offsetArray(_r[3][i], -(_sml)+_s1)); // and here
         }
       }
-      // console.log(_r);
+      console.log(_r);
       
       // load objs
       for (let i=0; i<_r[1].length; i++)
@@ -1450,15 +1475,21 @@ function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s];} // Removed last 1 take no
 function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
 function scale2(a,s) {return [a[0]*s, a[1]*s];}
 
+function makeDir(_p)
+{
+	let _l = Math.sqrt(dot(_p,_p));
+	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
+}
+
 function norm(_p)
 {
-	_l = dot(_p,_p);
+	let _l = dot(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
 }
 
 function norm4(_p) // Quaternion 
 {
-	_l = dot4(_p,_p);
+	let _l = dot4(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
 }
 
@@ -3225,6 +3256,13 @@ function moveObject()
     */
 	// #DRAW
 	
+
+
+
+
+
+
+
 function drawOverlay()
 {
 
@@ -3238,6 +3276,23 @@ function drawOverlay()
   //   updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
   // }
   
+  // if (rayInterMap.length > 0)
+  // {
+  //   let _a = [0,1,0];
+  //   let _b = makeDir(normOut[_rayLast]);
+  //   let _ang1 = Math.asin(_b[1]);
+  //   let _ang2 = Math.acos(_b[2]);
+  //
+		// let _tq = [
+  //     makeQuaternion(_ang1, [1,0,0]), // pitch
+		// 	makeQuaternion(_ang2, [0,1,0]) // yaw
+  //   ];
+  //
+  //   // console.log(_tq);
+  //   console.log(_b);
+  //
+  //   updateViewRef([0,0,0], obj_cyc, _tq);
+  // }
   
 
 	// While in menu with low call rate i'll set values here:
@@ -4851,9 +4906,10 @@ function Compute(init_dat)
 			if (key_map.lmb && mouseLock && runEvery(10))
 			{
         //_plr_dtp, player_pos
+        //where gun shoots
 
 				updateRayInters(_plr_dtp, player_pos);
-				m_t_objs_loadPoints(rayInterMap);
+				// m_t_objs_loadPoints(rayInterMap);
         // let _tc = typeof rayInterMap[_rayLast] != "undefined" ? rayInterMap[_rayLast] : [0,0,0];
         // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
 			}
