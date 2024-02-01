@@ -121,8 +121,8 @@ var shaderModule = {
         var o = b(a.data, n);
         c.viewport(0, 0, n, n);
         c.bindFramebuffer(c.FRAMEBUFFER, c.createFramebuffer());
-        // bTex = b(new Float32Array(a.data.length), n);
-        bTex = b(a.data, n);
+        bTex = b(new Float32Array(a.data.length), n);
+        // bTex = b(a.data, n);
         c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, bTex, 0);
         c.bindTexture(c.TEXTURE_2D, o);
         c.activeTexture(c.TEXTURE0);
