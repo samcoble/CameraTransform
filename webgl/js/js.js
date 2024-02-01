@@ -3158,7 +3158,7 @@ function del_world()
 	obj_cyc = 2;
 
   document.getElementById("menu_status_l3").value = '';
-  document.getElementById("menu_status_r2").value = '';
+  document.getElementById("menu_status_r2").innerHTML = '';
 
   updateTree(tree_allObjects);
 }
