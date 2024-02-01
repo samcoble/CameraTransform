@@ -959,7 +959,7 @@ function delFolder(_i)
   obj_folders.splice(_i, 1);
   folder_names.splice(_i, 1);
   folder_toggle.splice(_i, 1);
-
+  folder_selected = 3;
   updateTree(tree_allObjects);
 }
 
