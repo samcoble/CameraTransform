@@ -790,7 +790,7 @@ var folder_names = [];
 var folder_parents = [-1,0,0,-1]; // -1 is no parent
 var folder_toggle =[1,0,0,1];
 
-var folder_selected = 0;
+var folder_selected = 3;
 
 folder_names.push("World Objects");
 folder_names.push("Planes");
@@ -1855,7 +1855,10 @@ function m_objs_loadPoints(ar) // Adds objects
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
   if ((m_objs.length-1) > 11 && (m_objs.length-1) < 15) {_fp = 2;}
-  if (m_objs.length > 15) {_fp = 3;} // redirect can be set global
+  if (m_objs.length > 15)
+  {
+    _fp = (folder_selected < 4) ? 3 : folder_selected;
+  }
 
   if (flag_loadingObject == 0)
   {
@@ -2114,7 +2117,7 @@ function updateRayInters(_dp, _p)
     interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
-		for (var i=world_obj_count+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
+		for (var i=world_obj_count+1+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
 		{
 			if (mem_log[i][2]>2) // wat?
 			{
@@ -3259,9 +3262,74 @@ function moveObject()
 
 
 
-
-
-
+// function makeQuaternionFromAxisAngle(angle, axis) {
+//   let halfAngle = angle / 2;
+//   let s = Math.sin(halfAngle);
+//   let q = [
+//     Math.cos(halfAngle),
+//     axis[0] * s,
+//     axis[1] * s,
+//     axis[2] * s
+//   ];
+//   return q;
+// }
+//
+//
+// function angleBetweenVectors(A, B) {
+//   if (A.length !== B.length) {
+//     throw new Error('Vectors must have the same dimensionality');
+//   }
+//
+//   // Calculate the dot product of vectors A and B
+//   let dotProduct = A.reduce((sum, a, i) => sum + a * B[i], 0);
+//
+//   // Calculate the norm of vector A
+//   let normA = Math.sqrt(A.reduce((sum, a) => sum + a * a, 0));
+//
+//   // Calculate the norm of vector B
+//   let normB = Math.sqrt(B.reduce((sum, b) => sum + b * b, 0));
+//
+//   // Handle zero norms
+//   if (normA === 0 || normB === 0) {
+//     // You can decide what value to return in this case, for example, 0 radians or degrees
+//     return 0;
+//   }
+//
+//   // Calculate the cosine of the angle
+//   let cosTheta = dotProduct / (normA * normB);
+//
+//   // Ensure cosTheta is within the valid range [-1, 1]
+//   cosTheta = Math.max(-1, Math.min(1, cosTheta));
+//
+//   // Calculate the angle in radians using the arccosine formula
+//   let angle = Math.acos(cosTheta);
+//
+//   // Convert the angle to degrees if needed
+//   // let angleDegrees = angle * (180 / Math.PI);
+//
+//   return angle; // Return the angle in radians or degrees
+// }
+//
+// // Function to generate quaternion from a direction vector
+// function generateQuaternionFromDirection(dir) {
+//     // Normalize the direction vector
+//     const normalizedDir = normalizeVector(dir);
+//
+//     // Find the rotation axis and angle to rotate [0, 0, 1] to the normalized direction
+//     const rotationAxis = cross([0, 0, 1], normalizedDir);
+//     const rotationAngle = Math.acos(dot([0, 0, 1], normalizedDir));
+//
+//     // Create quaternion from the rotation axis and angle
+//     const quaternion = makeQuaternion(rotationAngle, rotationAxis);
+//
+//     return quaternion;
+// }
+//
+// // Helper function to normalize a vector
+// function normalizeVector(vec) {
+//     const length = Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+//     return [vec[0] / length, vec[1] / length, vec[2] / length];
+// }
 
 function drawOverlay()
 {
@@ -3276,23 +3344,40 @@ function drawOverlay()
   //   updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
   // }
   
-  // if (rayInterMap.length > 0)
-  // {
-  //   let _a = [0,1,0];
-  //   let _b = makeDir(normOut[_rayLast]);
-  //   let _ang1 = Math.asin(_b[1]);
-  //   let _ang2 = Math.acos(_b[2]);
-  //
+  if (rayInterMap.length > 0)
+  {
+    // let _b = normalizeVector(normOut[_rayLast]);
+    // let _qf0 = generateQuaternionFromDirection(_b);
+    // ^
+    //
+    //
+    // let _b = makeDir(cross(normOut[_rayLast], [0,1,0]));
+    // let _a = -Math.PI + angleBetweenVectors(makeDir(normOut[_rayLast]), [0,1,0]);
+    // console.log(_a + " : " + _b);
+
+    // let _ang1 = Math.asin(_b[1]);
+    // let _ang2 = Math.atan2(_b[2], _b[0]);
+
+    // _ang1 -= Math.PI;
+    // _ang2 -= Math.PI;
+    
+
+    // let quaternionPitch = makeQuaternionFromAxisAngle(_ang1, [0, 0, 1]);
+    // let quaternionYaw = makeQuaternionFromAxisAngle(_ang2, [0, 1, 0]);
+
 		// let _tq = [
-  //     makeQuaternion(_ang1, [1,0,0]), // pitch
-		// 	makeQuaternion(_ang2, [0,1,0]) // yaw
+  //     // makeQuaternion(_ang1, [1,0,0]), // pitch
+		// 	// makeQuaternion(_ang2, [0,1,0]) // yaw
+		// 	// makeQuaternion(_a, _b) // yaw
+  //     _qf0
   //   ];
-  //
-  //   // console.log(_tq);
-  //   console.log(_b);
-  //
-  //   updateViewRef([0,0,0], obj_cyc, _tq);
-  // }
+
+
+    // console.log(_tq);
+    // console.log(_b);
+
+    // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
+  }
   
 
 	// While in menu with low call rate i'll set values here:
@@ -4909,7 +4994,11 @@ function Compute(init_dat)
         //where gun shoots
 
 				updateRayInters(_plr_dtp, player_pos);
-				// m_t_objs_loadPoints(rayInterMap);
+        if (rayInterMap.length > 0)
+        {
+          m_t_objs_loadPoint(rayInterMap[_rayLast]);
+        }
+        
         // let _tc = typeof rayInterMap[_rayLast] != "undefined" ? rayInterMap[_rayLast] : [0,0,0];
         // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
 			}

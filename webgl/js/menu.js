@@ -373,6 +373,16 @@ function makeTree(par) // output my tree in form of total html structure
         _li_fld.style.borderRadius = _s_radius+'px 0px 0px 0px';
       }
 
+      if (folder_selected == _root[i][j] && folder_selected > 2)
+      {
+        _li_fld.style.borderLeft = "6px solid rgba(180,180,180,0.4)";
+      }
+
+      if (folder_selected < 3 && _root[i][j] == 3)
+      {
+        _li_fld.style.borderLeft = "6px solid rgba(180,180,180,0.4)";
+      }
+
            /*@?@
            ?@?@?
            @?@*/
