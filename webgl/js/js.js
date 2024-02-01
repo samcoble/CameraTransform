@@ -1774,6 +1774,7 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
 
 // var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
+shaderModule.init();
 var m1 = shaderModule.alloc(80000); // Allocate memory for parallel operations
 for (i=0; i<m1.data.length; i++)
 {
@@ -3379,6 +3380,10 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
   
+  updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
+  updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
+  updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
+  updateTextByPar("menu_status_r1", "grid_scale[" + _settings[5].settings[0]+"]");
 
 	// While in menu with low call rate i'll set values here:
 
@@ -4503,10 +4508,6 @@ function Compute(init_dat)
     updateGrid();
   }
 
-  updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
-  updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
-  updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
-  updateTextByPar("menu_status_r1", "grid_scale[" + _settings[5].settings[0]+"]");
 
   if(document.activeElement.type ==  "text")
   {
@@ -5162,49 +5163,59 @@ function Compute(init_dat)
 
 */
 
-
-shaderModule.run(init_dat,
-  `void main(void) {
-
-	vec4 after_tran = vec4(
-		read().x-_plr_x, 
-		read().y-_plr_y,
-		read().z-_plr_z,
-		0.
-	);
-
-  // Rotate around x-axis (pitch)
-  vec4 after_pit = vec4(
-      cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
-      cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
-      0.,
-      -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
+shaderModule.run(
+    init_dat,
+    player_look_dir[0],
+    player_look_dir[1],
+    in_win_wc,
+    in_win_hc,
+    s_fov,
+    player_pos[0],
+    player_pos[1],
+    player_pos[2]
   );
-
-	#define d 0.112672939
-
-	// Divide by w
-	if (after_pit.w != 0.)
-	{
-		commit(vec4(
-			(after_pit.x/d)/after_pit.w*_fov,
-			(after_pit.y/d)/after_pit.w*_fov*(_wc/_hc),
-			1.0 / pow(after_pit.w*0.03, 0.7),
-			after_pit.w
-			));
-		} else {
-		commit(vec4(
-			0.,
-			0.,
-			0.,
-			0.
-			));
-	}
-}`, player_look_dir[0], player_look_dir[1], in_win_wc, in_win_hc, s_fov, player_pos[0], player_pos[1], player_pos[2]);
 
 } // End of Compute()
 
 
+// const cameraTransform =
+// `void main(void) {
+//
+// 	vec4 after_tran = vec4(
+// 		read().x-_plr_x, 
+// 		read().y-_plr_y,
+// 		read().z-_plr_z,
+// 		0.
+// 	);
+//
+//   // Rotate around x-axis (pitch)
+//   vec4 after_pit = vec4(
+//       cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
+//       cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
+//       0.,
+//       -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
+//   );
+//
+// 	#define d 0.112672939
+//
+// 	// Divide by w
+// 	if (after_pit.w != 0.)
+// 	{
+// 		commit(vec4(
+// 			(after_pit.x/d)/after_pit.w*_fov,
+// 			(after_pit.y/d)/after_pit.w*_fov*(_wc/_hc),
+// 			1.0 / pow(after_pit.w*0.03, 0.7),
+// 			after_pit.w
+// 			));
+// 		} else {
+// 		commit(vec4(
+// 			0.,
+// 			0.,
+// 			0.,
+// 			0.
+// 			));
+// 	}
+// }`;
 
 
 document.addEventListener("DOMContentLoaded", function()

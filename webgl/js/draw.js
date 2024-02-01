@@ -1,7 +1,6 @@
 const ctx_gl = document.getElementById('cv_gl');
 const gl = ctx_gl.getContext("webgl", { antialias: true, preserveDrawingBuffer: true, alpha:true });
 
-if (!gl) {console.error('Unable to initialize WebGL. Your browser may not support it.');}
 
 var shaderProgram, shaderProgram2;
 var positionAttrib;
