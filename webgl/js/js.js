@@ -3339,11 +3339,11 @@ function drawOverlay()
 
   
   
-  // if (!mouseLock) // in menu
-  // {
-  //   updateLook();
-  //   updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
-  // }
+  if (!mouseLock && wpn_select==3) // in menu
+  {
+    updateLook();
+    updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
+  }
   
   if (rayInterMap.length > 0)
   {
@@ -4034,6 +4034,7 @@ function drawLines()
     || (d_i == 13 && mem_t_sum == 0)
     || (d_i == 2 && !_settings[5].settings[1])
     || (d_i == 11 && wpn_select!=3)
+    || (d_i == 14)
     )
     {
       skipDat = 0;
@@ -4820,45 +4821,7 @@ function Compute(init_dat)
       // console.log(m1.data[mem_log[14][0] + 4]);
       // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 
-      /*
-      let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
-      let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
-      
-      let _x = in_win_wc-mouseData[0];
-      let _y = in_win_hc-mouseData[1];
-      
-      let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
-      let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
-      
-      let _vsc = _dx/_2dx;
-      let _vsc0 = -_dy/_2dy;
 
-      let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
-      let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
-      let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
-
-      let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
-      let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
-      let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
-
-      let _vdf = add3(_vd1_0, _vd1_1);
-      let _testv = sub3(_vdf, player_pos)
-      
-      let _teste = scale(_testv, 1/len3(_testv));
-      translateObjI(13, add3(scale3(_teste, 35), player_pos));
-
-      let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
-      let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
-
-      if (key_map.lmb && runEvery(100))
-      {
-        updateRayInters(_ff, player_pos);
-        let _tc = typeof interIOut[_rayLast] != "undefined" ? interIOut[_rayLast] : 0;
-        console.log(interIOut);
-        obj_cyc = _tc;
-        // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
-      }
-      */
       
 
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
@@ -4989,6 +4952,58 @@ function Compute(init_dat)
 			if (_settings[4].settings[0] && key_map.lmb == false) {mem_t_mov();} // Finish draw !
 			break;
 		case 3:
+
+
+
+
+
+
+
+      let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
+      let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+      
+      let _x = in_win_wc-mouseData[0];
+      let _y = in_win_hc-mouseData[1];
+      
+      let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
+      let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
+      
+      let _vsc = _dx/_2dx;
+      let _vsc0 = -_dy/_2dy;
+
+      let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
+      let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
+      let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
+
+      let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
+      let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
+      let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
+
+      let _vdf = add3(_vd1_0, _vd1_1);
+      let _testv = sub3(_vdf, player_pos)
+      
+      let _teste = scale(_testv, 1/len3(_testv));
+      translateObjI(13, add3(scale3(_teste, 35), player_pos));
+
+      let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
+      let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
+
+      if (key_map.lmb && !mouseLock && runEvery(20))
+      {
+        updateRayInters(_ff, player_pos);
+        if (rayInterMap.length > 0)
+        {
+          m_t_objs_loadPoint(rayInterMap[_rayLast]);
+          // console.log(rayInterMap[_rayLast]);
+        }
+        // obj_cyc = _tc;
+        // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
+      }
+
+
+
+
+
 			if (key_map.lmb && mouseLock && runEvery(10))
 			{
         //_plr_dtp, player_pos
