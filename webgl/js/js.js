@@ -2118,7 +2118,7 @@ function updateRayInters(_dp, _p)
     interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
-		for (var i=world_obj_count+1+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
+		for (var i=world_obj_count+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
 		{
 			if (mem_log[i][2]>2) // wat?
 			{
@@ -4346,6 +4346,39 @@ function fixme2(a)
   console.log(_f);
 }
 */
+      function mouseToWorld()
+      {
+        let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
+        let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+        
+        let _x = in_win_wc-mouseData[0];
+        let _y = in_win_hc-mouseData[1];
+        
+        let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
+        let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
+        
+        let _vsc = _dx/_2dx;
+        let _vsc0 = -_dy/_2dy;
+
+        let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
+        let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
+        let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
+
+        let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
+        let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
+        let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
+
+        let _vdf = add3(_vd1_0, _vd1_1);
+        let _testv = sub3(_vdf, player_pos)
+        
+        let _teste = scale(_testv, 1/len3(_testv));
+        // translateObjI(13, add3(scale3(_teste, 35), player_pos));
+
+        let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
+        let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
+
+        return _ff;
+      }
 
 function pointerOutsideWindow()
 {
@@ -4963,41 +4996,21 @@ function Compute(init_dat)
 
 
 
-      let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
-      let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
-      
-      let _x = in_win_wc-mouseData[0];
-      let _y = in_win_hc-mouseData[1];
-      
-      let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
-      let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
-      
-      let _vsc = _dx/_2dx;
-      let _vsc0 = -_dy/_2dy;
-
-      let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
-      let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
-      let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
-
-      let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
-      let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
-      let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
-
-      let _vdf = add3(_vd1_0, _vd1_1);
-      let _testv = sub3(_vdf, player_pos)
-      
-      let _teste = scale(_testv, 1/len3(_testv));
-      translateObjI(13, add3(scale3(_teste, 35), player_pos));
-
-      let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
-      let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
 
       if (key_map.lmb && !mouseLock && runEvery(20))
       {
-        updateRayInters(_ff, player_pos);
+			// let _p = lpi(mouseToWorld, player_pos, _lp_world, [0,1,0]);
+        // could get this to work if I made _plr_dtp use mouseToWorld dir vec
+        // but might work out easier to ray to new obj?
+
+        updateRayInters(mouseToWorld(), player_pos);
         if (rayInterMap.length > 0)
         {
-          m_t_objs_loadPoint(rayInterMap[_rayLast]);
+          let _p = rayInterMap[_rayLast];
+          m_t_objs_loadPoint(_p);
+          _lp_world[0] = _p[0];
+          _lp_world[1] = _p[1];
+          _lp_world[2] = _p[2];
           // console.log(rayInterMap[_rayLast]);
         }
         // obj_cyc = _tc;
