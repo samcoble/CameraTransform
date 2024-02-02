@@ -337,8 +337,8 @@ Assault cube old code
 						\--------------*/
 
 // !
-var menuTime_int = 170;
-var title_int = 350;
+const menuTime_int = 170;
+const title_int = 350;
 // !
 
 // Timer
@@ -351,17 +351,14 @@ var _frames = 0;
 var _date_now_fps = 0;
 var _fps = 0;
 
-// Maybe move this into DOM LOAD event instead and keep var init.
-var in_win_w = document.getElementsByTagName("html")[0].clientWidth; var in_win_wc = document.getElementsByTagName("html")[0].clientWidth/2;
-var in_win_h = document.getElementsByTagName("html")[0].clientHeight; var in_win_hc = document.getElementsByTagName("html")[0].clientHeight/2;
-var in_win_wh, in_win_hw;
+var in_win_wh, in_win_hw, in_win_w, in_win_h, in_win_wc, in_win_hc;
 var _s_ratio;
 
 var screen_width, screen_height;
 var fileName = "";
 
-var pi = 3.1415926538; // High definition PI makes a visible difference
-var pi2 = 6.2831853071;
+const pi = 3.1415926538; // High definition PI makes a visible difference
+const pi2 = 6.2831853071;
 
 var player_speed = 0.5;
 var player_speed_vert = 0.3; // Vertical travel speed
@@ -369,8 +366,6 @@ var player_speed_mult = 4; // Shift key
 
 var player_look_dir = [0, 0, 0];
 var player_look_dir_i = [0, 0, 0];
-var aim_dir = [0.0, 0.0, 0.0];
-var aim_dir_n = [0.0, 0.0, 0.0];
 var mouseData = [0.0, 0.0];  // rt data
 var mouseDataS = [0.0, 0.0]; // saved state
 var mouseDataI = [0.0, 0.0]; // initial
@@ -381,9 +376,6 @@ var keyVec = [];
 
 var fov_slide = 1.1;
 var s_fov = fov_slide*fov_slide*fov_slide/20;
-
-var crosshair_l = 5;
-var crosshair_w = 0.4;
 
 var cursor_helper = 0;
 
@@ -401,14 +393,10 @@ var pln_cyc = 1;
 var obj_cyc = 0; // Selector
 var obj_cyc_i = 0;
 
-// So bad fix jesus
-var grid_scale = 3; var grid_scale_f = 8; var grid_scale_ar = [8, 8, 8];
-var grid_ =
-{
-	scale:3,
-	scale_f:8,
-	scale_ar:[8,8,8]
-};
+var grid_scale = 3;
+var grid_scale_f = 8;
+var grid_scale_ar = [8, 8, 8];
+var grid_scale_d = 8;
 
 var del_obj_lock = 0;
 
@@ -422,7 +410,6 @@ var paint_d = 0; var paint_n = 0;
 
 var _epsilon = 300;
 var in_win_clip;
-var one_time_fix = 1;
 
 var _preview_scaler;
 
@@ -430,12 +417,10 @@ var menu_q_size = [548, 720];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [0, 0]; // fix me entire system wacked
 var menu_objpreview_pos = [0, 0]; // fix me
-// var menu_keys_pos = [155, 10];
 var menu_wpn_pos = [155, 10];
 
 var menu_tab = 0;
 
-// New type of js entirely for this.
 // Sorting algorithm provided by js. 
 // Mapping indicies in a table is a useful concept
 var indices = [];
@@ -446,51 +431,6 @@ var newIndex = {};
 var modIndex = [];
 var d_i = 0;
 
-// Premade color strings and color arrays
-// #COLORS
-
-var rgba_r = "rgba(220, 73, 73, 1)";
-var rgba_g = "rgba(24, 122, 24, 1)";
-var rgba_b = "rgba(73, 73, 220, 1)";
-var rgba_w = "rgba(255, 255, 255, 1.0)";
-var rgba_w_flr = "rgba(222, 222, 222, 0.8)";
-var rgba_y = "rgba(240, 240, 50, 1.0)";
-var rgba_o = "rgba(245, 213, 63, 1.0)";
-var rgba_ch = "rgba(50, 200, 50, 0.9)";
-var rgba_lp = "rgba(40, 40, 40, 0.75)";
-
-var rgba_dgray = "rgb(12, 12, 12)";
-var rgba_gray = "rgb(16, 16, 16)";
-
-var rgba_lgray = "rgba(222, 222, 222, 0.3)";
-var rgba_ldgray = "rgba(85, 85, 85, 0.3)";
-var rgba_otext = "rgba(194, 122, 52, 1.0)";
-var rgba_dtext = "rgba(155, 155, 155, 1.0)";
-var rgba_cindi = "rgb(183, 167, 101)";
-var rgba_cindig = "rgb(152, 106, 179)";
-var rgba_cindiglite = "rgba(0, 0, 0, 0.3)";
-var rgba_cindiga = "rgba(152, 106, 179, 0.9)";
-
-var rgbas = [rgba_r, rgba_g, rgba_b, rgba_w, rgba_o];
-var rgbas_link = [rgba_y, rgba_b, rgba_r, rgba_cindiga, rgba_lgray, rgba_g]; // main for loop
-var rgbas_trans = [rgba_lgray, rgba_g];
-
-var rgba_w_tri1 = "rgba(130, 130, 130, 1)";
-var rgba_w_tri2 = "rgba(120, 120, 120, 1)";
-var rgba_w_tri3 = "rgba(105, 105, 105, 1)";
-var rgba_w_tri4 = "rgba(90, 90, 90, 1)";
-
-var rgba_w_trio1 = "rgba(130, 130, 130, 0.5)";
-var rgba_w_trio2 = "rgba(120, 120, 120, 0.5)";
-var rgba_w_trio3 = "rgba(105, 105, 105, 0.5)";
-var rgba_w_trio4 = "rgba(90, 90, 90, 0.5)";
-var rgba_invis = "rgba(0, 0, 0, 0)";
-
-rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri3];
-//var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri2, rgba_w_tri3, rgba_w_tri3, rgba_w_tri4];
-var rgbas_tri = [rgba_w_tri1, rgba_w_tri2, rgba_w_tri2, rgba_w_tri3, rgba_w_tri3, rgba_w_tri4];
-var rgbas_tri_opacity = [rgba_w_trio1, rgba_w_trio2, rgba_w_trio3, rgba_w_trio4];
-var rgbas_tri_f = rgbas_tri;
 
 var _oh = [0,0,0,0];
 var f_look = [0,0,0,0];
@@ -503,15 +443,10 @@ var obj_normalMaps = [];
 var rayInterMap = [];
 var _rayLast = [];
 
-var _norm_x = norm([1,0.000001,0.000001]);
-var _norm_y = norm([0.000001,1,0.000001]);
-
-var _bg_default = [15,15,15]; // 9,20,30
-
 // Junk needs to be organized
 var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 
-
+// IEMobile and BlackBerry users I got you fam.
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 var _touch_i = [0,0];
@@ -521,76 +456,7 @@ var _touch_delta = [0,0];
 var flag_loadingObject = 0;
 var flag_inText = 0;
 
-var grid_scale_d = 8;
 
-var world_color = [15, 15, 15];
-
-						/*-- 2D Canvas Draw Functions --\
-						\------------------------------*/
-
-function drawText(c, rgba, ta, txt, x0, y0)
-{
-	c.textAlign = ta;
-	c.fillStyle = rgba; 
-	c.font = "12px Lucida Console";
-	c.fillText(txt, x0, y0);
-}
-
-function drawRect(c, rgba, x, y, w, h)
-{
-	c.rect(x, y, w, h);
-	c.fillStyle = rgba;
-	c.fill();
-}
-
-function drawPanel(c, rgba1, rgba2, x, y, w, h)
-{
-	c.fillStyle = rgba1;
-	c.strokeStyle = rgba2; 
-	c.lineWidth = 1; 
-	c.strokeRect(x, y, w, h);
-	c.fillRect(x, y, w, h);
-}
-
-function fillDot(c, rgba, x, y, s)
-{
-	c.fillStyle = rgba;
-	c.fillRect(x-s/2, y-s/2, s, s);
-}
-
-function drawDot(c, rgba, lw, x, y, s)
-{
-	c.beginPath(); 
-	c.strokeStyle = rgba;
-	c.rect(x-s/2, y-s/2, s+0.1, s);
-	c.lineWidth = lw; c.stroke();
-}
-
-function drawLine(c, rgba, lw, x0, y0, x1, y1)
-{
-	c.strokeStyle = rgba;
-	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1);
-	c.lineWidth = lw; c.stroke();
-}
-
-function drawTriangle(c, p1x, p1y, p2x, p2y, p3x, p3y, rgba)
-{
-    c.beginPath();
-    c.moveTo(p1x, p1y);
-    c.lineTo(p2x, p2y);
-    c.lineTo(p3x, p3y);
-    c.closePath();
-    c.fillStyle = rgba;
-    c.fill();
-}
-
-function drawCircle(c, rgba, lw, x, y, r)
-{
-    c.beginPath();
-    c.strokeStyle = rgba;
-    c.arc(x, y, r, 0, 2*pi); // x, y, radius, startAngle, endAngle
-    c.lineWidth = lw; c.stroke();
-}
 
 function updateMenuPos() // this stuff so bad jesus
 {
@@ -599,8 +465,6 @@ function updateMenuPos() // this stuff so bad jesus
   menu_obj_pos = [in_win_w-200-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
 
-
-	// menu_keys_pos = [11, 10];
 	menu_q_pos = [in_win_w*0.015, in_win_h*0.5 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
@@ -1423,9 +1287,7 @@ window.addEventListener("wheel", function(e)
 
 	} else if (runEvery(200)) {
 			grid_scale += -e.deltaY/Math.abs(e.deltaY);
-			grid_.scale += -e.deltaY/Math.abs(e.deltaY);
-			grid_scale_f = Math.pow(2, grid_scale);
-			_settings[5].settings[0] = Math.pow(2, grid_.scale);
+			_settings[5].settings[0] = Math.pow(2, grid_scale);
 	}
 	s_fov = fov_slide*fov_slide*fov_slide/20;
 });
@@ -1773,13 +1635,9 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 	// #DATAFNS
 
 
-// var m1 = GLSLfragmentShader.alloc(80000); // Allocate memory for parallel operations
 shaderModule.init();
 var m1 = shaderModule.alloc(80000); // Allocate memory for parallel operations
-for (i=0; i<m1.data.length; i++)
-{
-	m1.data[i] = 0.0;
-}
+for (i=0; i<m1.data.length; i++) {m1.data[i] = 0.0;}
 
 var m_draw = [];
 var m_center2d = [];
@@ -1807,13 +1665,6 @@ function m_objs_loadPoints(ar) // Adds objects
     var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
     m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
     
-    
-
-		// Need accurate size here: actual length found with ar.length or Math.floor(((ar.length + 4)/4-1)/2)-mem_log[i][2]%2
-		// obj_normalMaps.push(new Float32Array(Math.floor(((ar.length + 4)/4-1)/2)-(ar.length + 4)/4%2));
-		// obj_normalMaps.push(new Float32Array(Math.ceil(ar.length/2))); // idk fix this poo
-		// obj_normalMaps.push(new Float32Array( 4*(Math.floor((ar.length/4-1)/2)-(ar.length/4)%2) ));
-
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -1870,8 +1721,6 @@ function m_objs_loadPoints(ar) // Adds objects
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
 }
-
-
 
 function m_t_objs_loadPoint(ar) // Adds point to stack
 {
@@ -1931,18 +1780,6 @@ function cloneObj(ar) // Removes ctr pt from linear array
 var _nextSize;
 function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification. m_obj_offs creates temporary modification! animations!
 {
-
-  /*
-  function arClone(a, b, c, s)
-  {
-    for (let i = a.length-1; i>=0; i--)
-    {
-      a[i] = (b[i] - c[i%4])*s;
-    }
-  }
-  */
-
-
   for (let j = m_objs.length-1; j>=0; j--)
   {
     _nextSize = m_objs[j].length;
@@ -1966,6 +1803,7 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
         //     break;
         // }
 
+      // I swear one line is smoother lol
       m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
     }
 
@@ -1978,7 +1816,6 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
     // }
   }
 
-  // for (var j = 0; j<(m_t_objs.length); j++)
   for (let j = m_t_objs.length-1; j>=0; j--)
   {
     _nextSize = m_t_objs[j].length;
@@ -1990,19 +1827,6 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
       m1.data[i+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+3];
     }
   }
-
-  /*
-	for (var j = 0; j<(m_ref_objs.length); j++)
-	{
-		for (var i = 0; i<m_ref_objs[j].length/4; i++)
-		{
-			m1.data[i*4+m_ref_log[j][0]+mem_sum+mem_t_sum]   = m_ref_objs[j][i*4+0];
-			m1.data[i*4+1+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+1];
-			m1.data[i*4+2+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+2];
-			m1.data[i*4+3+m_ref_log[j][0]+mem_sum+mem_t_sum] = m_ref_objs[j][i*4+3];
-		}
-	}
-  */
 }
 
 
@@ -2075,8 +1899,6 @@ function updateNormalMaps()
     // console.log("Normal map update complete...");
 	}
 }
-
-
 
 // Just this one fn I copy paste. Wow it works too. Gotta review my barycentric coordinates lol
 // I realized that my tri's are not with 90's so a dot w/ 3 vectors didn't work.
@@ -2370,15 +2192,12 @@ function arHasC(ar, c) // Useless?
 				generate a draw -> nvm ref table from 0 to n and access table[1]
 */
 
-// rewrite this krapppppp
 // indices.sort((a, b) => distances[a] - distances[b]);
 // that's it basically ^
 function updateDrawMap(priorityObjects)
 {
-
   let _t_i = m_objs.length;
 	for (var i=0; i<_t_i; i++)
-	// for (let i = m_objs.length-1; i>=0; i--)
 	{
 		indices.push(i);
 		//distances.push(len3(sub(getctr_obj(i), player_pos)));
@@ -2389,7 +2208,6 @@ function updateDrawMap(priorityObjects)
 
 	indices.sort((a, b) => distances[a] - distances[b]);
 	//indices.sort((a, b) => distances[b] - distances[a]);
-  // if (stn_link_tool == 0) {console.log(indices);}
 
 	indexMapping = originalIndices.map((originalIndex, sortedIndex) => ({
 	  originalIndex: originalIndex,
@@ -2646,27 +2464,7 @@ function m_obj_explode(_i)
 	}
 }
 
-
-// New plan way better. Shift elements along so that
-//		first array's overlapping point is it's last.
-//		second array's overlapping point is it's first.
-//		wait this won't work for lines.
-//		going with this for now
-//		objs should be simply grouped to avoid this?
-
-//		I can do two algs
-//		one if list joins w/ itself once
-//		another if no connected points
-//		another if more than 1 connected point
-
-//		difference in points from link generation needs to be the same !!!
-//		my poly link needs fix
-//		I give up. Just going to fix load/save encoding and group objs instead.
-//		My final attempt should work but it didn't. I just can't waste more time on this one for now.
-
-//		So far so good they're rotating. I realized it's more complex because start and end can be removed from rotation as their location is implied
-
-
+// Del me
 function rotateArray(ar, n)
 {
 	const l = ar.length;
@@ -2675,8 +2473,6 @@ function rotateArray(ar, n)
 	const rotatedArray = ar.slice(l - nn).concat(ar.slice(0, l - nn));
 	return rotatedArray;
 }
-
-
 
 function bond_obj(_i)
 {
@@ -2709,7 +2505,6 @@ function bond_obj(_i)
 				cut out last -> to var w/ splice
 				rotate until n: 
 				put end back into ar
-	
 			*/
 
 			_oi.push(_oi[_oi.length-1]); // ??
@@ -2742,7 +2537,6 @@ function bond_obj(_i)
 
 			// //_oi.push(_oi_p);
 
-
 			// for (var i = _of.length - 1; i >= 0; i--)
 			// {
 			// 	// if (_of[0] != matchPoint) // checking if last point in array is not match point.
@@ -2756,9 +2550,6 @@ function bond_obj(_i)
 			//_of.unshift(_of_p);
 
 
-
-
-
 			//_oi.splice(-1);
 			// for (var j = 0; j<_of.length; j++) // idk just use len for now
 			// {
@@ -2769,7 +2560,6 @@ function bond_obj(_i)
 			// }
 
 			//console.log("zzzzzzzzzzzzzzzzzzzzzz------");
-
 
 			// console.log(_oi);
 			// console.log(_of);
@@ -2783,8 +2573,6 @@ function bond_obj(_i)
 			{
 				_f.push(e1);
 			});
-
-
 
 			m_objs_loadPoints(packObj(_f));
 			_all_lock_i = 0; _all_lock = 0;
@@ -3122,8 +2910,6 @@ function planeCycle()
 }
 
 
-
-
 /*
 	╔═╗╔═╗╔═══╗╔═╗ ╔╗╔╗ ╔╗     ╔═══╗╔═╗ ╔╗╔═══╗
 	║║╚╝║║║╔══╝║║╚╗║║║║ ║║     ║╔══╝║║╚╗║║║╔═╗║
@@ -3172,7 +2958,6 @@ function createCircleAtCursor()
 	}
 }
 
-//if (key_map["5"] && mouseLock && obj_cyc>world_obj_count && runEvery(150)) // Move to fn later
 function mirrorOverPlane()
 {
 	if (obj_cyc>world_obj_count)
@@ -3198,7 +2983,6 @@ function mirrorOverPlane()
 					m_objs[obj_cyc][j*4+0] = _to[j][0];
 					m_objs[obj_cyc][j*4+1] = _to[j][1];
 					m_objs[obj_cyc][j*4+2] = _to[j][2];
-
 				}
 			}
 		}
@@ -3264,8 +3048,6 @@ function moveObject()
     */
 	// #DRAW
 	
-
-
 
 // function makeQuaternionFromAxisAngle(angle, axis) {
 //   let halfAngle = angle / 2;
@@ -3398,11 +3180,8 @@ function drawOverlay()
   setVisibility({hide:"list_objectSelect", show:""});
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
-	//updateNormalMaps();
 
 	if (wpn_select==1 && key_map.lmb==false && mouseLock) {obj_cyc = findbyctr_obj(0, 0);}
-
-
 }
 
 
@@ -3431,46 +3210,12 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 		// hardest of them all
 
 /*
-    
-  I need to parallel the write lines and tris at same time
-    - maybe write a new way to get tri's from the loop for lines?
-    - lines are also needed to be segmented??
-
-  Look for any non float32array data structs and condense pipeline
-
-  Lines must be separate from tri's implying I need only upper surface lines.
-  I can try near far sort and using ray trace?
-
-  I just need to make a real 2d clip procedure to reduce draw calls.
-  Rotations can be computed in c. Only useful for pregenerated animations.
-  Not sure how many 
-
-  wait parallel means if I pass any data like
-
-  x y z r
-
-  and in this instance r can represent a unique rotation per point of data.
-  anything can actually be done in parallel then.
-
-  so if clipping in 2d can be done with matrices can it be done in parallel?
-
-  Not sure if interp map is possible w/ large data format unless provided a spine?
 
  */
 
 const vertexBuffer = gl.createBuffer();
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
-
-/*
-
-
-to fix excess calls to uniform location just map array to colors and store prev color as indice
-
-
-*/
-
-
 
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi)
@@ -3482,8 +3227,6 @@ function drawSegment(vertices, mi)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-
-  // gl.enableVertexAttribArray(positionAttrib);
 
   gl.lineWidth = 1;
 
@@ -3596,13 +3339,8 @@ function drawSegment(vertices, mi)
 
 
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
-
-
-  // gl.disableVertexAttribArray(positionAttrib);
 }
 
-/*
- */
 
 function drawPoints(_pnts, mi)
 {
@@ -3634,8 +3372,6 @@ function drawPoints(_pnts, mi)
 
   // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
-  // gl.disableVertexAttribArray(positionAttrib);
-  
 }
 
 var _km = 0;
@@ -3713,11 +3449,6 @@ function z_buffer()
 
 function updateZMap()
 {
-  
-  // in each array of len ( # of tris ) store list of k's
-
-  // for (let i = m_objs.length-1; i>=0; i--)
-
   let _t_i = m_objs.length;
 	for (var i=0; i<_t_i; i++)
   {
@@ -3735,9 +3466,7 @@ function updateZMap()
       z_map[i] = 0; // Later check if not zero. Or doesn't matter.
     }
   }
-
 }
-
 
 // I think this worked but it took a few SECONDS to trace every tri center
 // that's like 0.4 frames per second performance..
@@ -3841,21 +3570,9 @@ function drawLines()
 {
   // updateZMap();
   
-  // can get more frames if I parallel everything and use shorter pipe worker clipper would be insane frames
-
-  // need to experiment with textured polys
-  // problem is frames lost : maybe at least a mode
-
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  // THIS MIGHT BE THE ONE
-  //
   // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
   // would it be worth it even chunk draw last draw remainder?
   // this may not work in every instance but marked objects may provide a tremendous performance bump
-
-  // [] + [] [] [] | []
-  //      [] [] [] |
 
   // can try compare each 2d surface near to far and stop pushing tri to draw when overlap occurs
   // maybe because if already sorted the first to create overlap indicates end of top of surface
@@ -3867,22 +3584,14 @@ function drawLines()
   // Now make a set of data of 2d center points to feed this and scale w/ z from shader
   // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
   
-  // First start with lines & tri data pack
-  // This entire thing is sus.
-
-  // reset
-  
   // #linesandtris
 
   start = size = end = 0;
 
-
   for (let i = m_objs.length-1; i >= 0; i--)
   {
-
    d_i = modIndex[i];
    // vertices = [];
-   // d_i = i;
 
     // If I sort obj tri's by dist w/ fast set table reorganize
     // not really that bad it's 1 check per tri.
@@ -3984,10 +3693,15 @@ function drawLines()
             {
               gl.enable(gl.CULL_FACE);
 
+              // I just realized now this is free dynamic color!!!!!!!!!!!!!!!
+              // i can split tri's into shared color groupings
+
+              gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
               gl.frontFace(gl.CCW);
               gl.cullFace(gl.BACK);
               gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
 
+              gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
               gl.frontFace(gl.CW);
               gl.cullFace(gl.BACK);
               gl.drawArrays(gl.TRIANGLES, ( (_h) * 6 ) / 2, ( (_si_d) * 6 ) / 2);
@@ -4019,15 +3733,11 @@ function drawLines()
     }
 
     /* // last
-    //
     // var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
     // m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
-    // 
-    //
+    
     // var ar_t = new Float32Array( 6 );
     // m_draw.push([ar_t, 1, ar_t.length]); // Make space for webgl tris
-    //
-    //
     */
 
     // || (d_i == 14))
@@ -4106,7 +3816,6 @@ function drawLines()
   } // End of first obj loop
 
   // Working object being drawn
-  // for (var i = 0; i < mem_t_log.length; i++)
   for (let i = mem_t_log.length - 1; i>=0 ; i--)
   {
     vertices = [];
@@ -4242,66 +3951,6 @@ function drawIt()
   updateFPS();
 	
 
-  /*
-
-	// Draw unpacked verts
-	for (var i = 0; i<m_t_objs.length; i++)
-	{
-		if (m1.data[mem_t_log[i][0]+3+mem_sum] > 0 && m1.data[4+mem_t_log[i][0]+3+mem_sum] > 0) // Clipping, can even be optimized? js has no clue?
-		// if (1) // Clipping off
-		{
-			drawDot(ctx, rgba_w, 0, m1.data[mem_t_log[i][0]+mem_sum], m1.data[mem_t_log[i][0]+1+mem_sum], 3*m1.data[mem_t_log[i][0]+2+mem_sum]); // Is this doing anything????
-			if (i == m_t_objs.length-1)
-			{
-				drawText(ctx, rgba_otext, "left", "END " + i, m1.data[mem_t_log[i][0]+mem_sum]-17, m1.data[mem_t_log[i][0]+1+mem_sum]-18);
-				} else {
-				drawLine(ctx, rgba_b, 1.3, m1.data[mem_t_log[i][0]+mem_sum], m1.data[mem_t_log[i][0]+1+mem_sum], m1.data[4+mem_t_log[i][0]+mem_sum], m1.data[4+mem_t_log[i][0]+1+mem_sum]);
-				if (key_map.mmb) {drawText(ctx, rgba_otext, "left", i, m1.data[mem_t_log[i][0]+mem_sum]-3, m1.data[mem_t_log[i][0]+1+mem_sum]-18-13*i);}
-			}
-		}
-	}
-menu_obj_pos
-	drawPanel(ctx, rgba_dgray, rgba_lgray, in_win_w-157, 10, 148, 150);
-
-	// Draw preview obj
-	
-	for (var i = 0; i<m_ref_objs.length; i++)
-	{
-		for (var j = 0; j<m_ref_log[i][1]/4-2; j++)
-		{
-			drawLineF_preview(ctx, i, j, rgba_g, 0.8);
-		}
-	}
-	
-
-
-	// #INDICATORS
-
-	// Last point of m_t_objs
-	if (m_t_objs.length>0)
-	{
-		if (m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+3] > 0)
-			{drawDot(ctx, rgba_lp, 1.3, m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]], m1.data[mem_sum+mem_t_log[mem_t_log.length-1][0]+1], 15);}
-	}
-
-	if (m1.data[mem_log[9][0]+3] > 0)
-	{
-		drawDot(ctx, rgbas_trans[trns_lock], 1.0, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 8);
-	}
-	if (m1.data[mem_log[9][0]+3] > 0 && cursor_helper)
-	{
-		drawCircle(ctx, rgba_cindiglite, 16, m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1], 20); // goback
-	}
-
-	if (trns_lock)
-	{
-		if (m1.data[mem_log[10][0]+3] > 0)
-			{drawDot(ctx, rgbas_trans[1], 1.0, m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1], 15);}
-	}
-
-	*/
-
-
 	requestAnimationFrame(drawIt);
 
 } // END OF drawIt()
@@ -4321,64 +3970,46 @@ menu_obj_pos
 */
 // #HELL2
 
-/*
-function vertFixMeF(a)
+// now here find ray from eye
+
+// m1.data[4*k+mem_log[14][0]]+_x/in_win_hc*(in_win_h/in_win_w),
+// m1.data[4*k+mem_log[14][0]+1]+_y/in_win_hc
+
+function mouseToWorld()
 {
-  let f = new Float32Array(a.length/2);
-  for (let i = 0; i<a.length/4; i++) {
-  f[i*2] = (a[i*4]).toFixed(3);
-  f[i*2+1] = (a[i*4+2]).toFixed(3);
-  }
-  return f;
+  // Needs refactor and rename
+
+  let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
+  let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+  
+  let _x = in_win_wc-mouseData[0];
+  let _y = in_win_hc-mouseData[1];
+  
+  let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
+  let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
+  
+  let _vsc = _dx/_2dx;
+  let _vsc0 = -_dy/_2dy;
+
+  let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
+  let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
+  let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
+
+  let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
+  let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
+  let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
+
+  let _vdf = add3(_vd1_0, _vd1_1);
+  let _testv = sub3(_vdf, player_pos)
+  
+  let _teste = scale(_testv, 1/len3(_testv));
+  // translateObjI(13, add3(scale3(_teste, 35), player_pos));
+
+  let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
+  let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
+
+  return _ff;
 }
-
-function fixme2(a)
-{
-  var _d = a; // String
-  var _f = "[";
-  var _v = 0;
-  for (var i=0; i<_d.length; i++)
-  {
-    _v = _d[i].toFixed(4);
-    if (i!=_d.length-1) {_f = _f+_v+",";} else {_f = _f+_v;}
-    if (i==_d.length-1) {_f = _f+"]";}
-  }
-  console.log(_f);
-}
-*/
-      function mouseToWorld()
-      {
-        let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
-        let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
-        
-        let _x = in_win_wc-mouseData[0];
-        let _y = in_win_hc-mouseData[1];
-        
-        let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
-        let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
-        
-        let _vsc = _dx/_2dx;
-        let _vsc0 = -_dy/_2dy;
-
-        let _v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
-        let _v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
-        let _vd1_0 = add3(scale(sub3(_v1, _v2), _vsc), _v2); // length always 16
-
-        let _v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
-        let _v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
-        let _vd1_1 = scale(sub3(_v10, _v20), _vsc0); // length always 16
-
-        let _vdf = add3(_vd1_0, _vd1_1);
-        let _testv = sub3(_vdf, player_pos)
-        
-        let _teste = scale(_testv, 1/len3(_testv));
-        // translateObjI(13, add3(scale3(_teste, 35), player_pos));
-
-        let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
-        let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
-
-        return _ff;
-      }
 
 function pointerOutsideWindow()
 {
@@ -4451,55 +4082,6 @@ function updateRefLog()
 	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
 
-// @?@?@?@? Later refactor to general function for more interactive tools
-function updatePreview()
-{
-/*
-	updateLook();
-
-	m_ref_log[0] = [0, m_objs[obj_cyc].length, obj_cyc];
-
-  // updateRefLog();
-	//m_ref_objs_loadObj()
-
-	// place updated data for preview
-	// var _nar = new Float32Array(m_objs[obj_cyc].length);
-	// to retain i ref data reset sum to rebuild addrs and change size of obj at index.
-	//m_ref_sum = 0;
-	
-	// go through m_ref_objs and rebuild log w/o preview (big change when generalized later)
-
-	for (var i = 0; i<m_ref_objs[0].length-0; i++) // HOLY MOLY -1 -> 0 => center used for 2d => most insane work around I have ever done
-	{
-		_tp =
-		[
-			( m_objs[obj_cyc][i*4]   - _preview_ctr[0] )*_preview_scaler,
-			( m_objs[obj_cyc][i*4+1] - _preview_ctr[1] )*_preview_scaler,
-			( m_objs[obj_cyc][i*4+2] - _preview_ctr[2] )*_preview_scaler
-		]
-
-    // Okay so this is batshit insane I need to go back to moving 2d correctly??? fuck i'm missing something simple
-    // if (runEveryPreview(300))
-    // {
-    //   _tp = rot_x_pln(_tp, 0.2);
-    //   _tp = rot_z_pln(_tp, 0.2);
-    //   _tp = rot_y_pln(_tp, 0.001*Date.now()%10000); // holy joly
-    // }
-
-    // _tp[0] = _tp[0]+3.1;
-    // _tp[1] = _tp[1]-1.1;
-    //
-
-		// _np = quatRot( _tp, _viewq );
-
-		// obj points: f - i is 0
-		m_ref_objs[0][i*4]   = _tp[0] + ( player_pos[0]-f_look[0]*33 );
-		m_ref_objs[0][i*4+1] = _tp[1] + ( player_pos[1]-f_look[1]*33 );
-		m_ref_objs[0][i*4+2] = _tp[2] + ( player_pos[2]-f_look[2]*33 );
-		m_ref_objs[0][i*4+3] = m_objs[obj_cyc][i*4+3];
-	}
-  */
-}
 
 function Compute(init_dat)
 {
@@ -4530,7 +4112,6 @@ function Compute(init_dat)
 
   // This needs to be replaced with menu script providing multiple callback functions.
   // Shared and specific callback functions need differentiation
-  // //
 
 	if (obj_cyc != obj_cyc_i)
 	{
@@ -4606,9 +4187,6 @@ function Compute(init_dat)
 	}
 
 	if (key_map.x == false) {del_obj_lock = 0;}
-
-	//if (key_map.arrowdown && runEvery(200)) {if (obj_cyc==m_objs.length-1) {obj_cyc=0} else {obj_cyc++;}}
-	//if (key_map.arrowup && runEvery(200)) {if (obj_cyc==0) {obj_cyc=m_objs.length-1} else {obj_cyc-=1;}}
 
 	if (key_map.e && runEvery(120)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 	
@@ -4740,11 +4318,6 @@ function Compute(init_dat)
 		}
 	}
 
-	// if (m_objs.length > tse && tse!=0)
-	// {
-  
-
-
 
 		if (wpn_select==3)
 		{
@@ -4778,23 +4351,8 @@ function Compute(init_dat)
 
 				m_obj_offs[tse] = [player_pos[0]-f_look[0]*3, player_pos[1]-f_look[1]*3, player_pos[2]-f_look[2]*3, 1/(4*7)];
 			}
-
-		//}
-		/*
-		 else {
-			m_obj_offs[tse] = [0, 0, 0, 1];
-			for (var i=0; i<mem_log[tse][2]-1; i++)
-			{
-				m_objs[tse][i*4] = m_objs_ghost[tse][i*4],
-				m_objs[tse][i*4+1] = m_objs_ghost[tse][i*4+1],
-				m_objs[tse][i*4+2] = m_objs_ghost[tse][i*4+2]
-				// and ctr?
-			}
-		}
-		*/
 		}
 
-	updatePreview();
 
 	if (isNaN(m_objs[0][0])) {m_objs[0][0] = 0.0; m_objs[0][1] = 0.0; m_objs[0][2] = 0.0; m_objs[0][3] = 1.0;}
 
@@ -4807,16 +4365,16 @@ function Compute(init_dat)
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
 		case 0:
-			grid_.scale_ar[1] = _settings[5].settings[0];
-			grid_.scale_ar[2] = _settings[5].settings[0];
+			grid_scale_ar[1] = _settings[5].settings[0];
+			grid_scale_ar[2] = _settings[5].settings[0];
 			break
 		case 1:
-			grid_.scale_ar[0] = _settings[5].settings[0];
-			grid_.scale_ar[2] = _settings[5].settings[0];
+			grid_scale_ar[0] = _settings[5].settings[0];
+			grid_scale_ar[2] = _settings[5].settings[0];
 			break
 		case 2:
-			grid_.scale_ar[0] = _settings[5].settings[0];
-			grid_.scale_ar[1] = _settings[5].settings[0];
+			grid_scale_ar[0] = _settings[5].settings[0];
+			grid_scale_ar[1] = _settings[5].settings[0];
 			break
 	}
 
@@ -4824,7 +4382,7 @@ function Compute(init_dat)
  	// check nan other place? like lpi?
  	if (mouseLock == 1)
  	{
-		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_.scale_ar[0]), roundTo(_lp[1], grid_.scale_ar[1]), roundTo(_lp[2], grid_.scale_ar[2])];}
+		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_scale_ar[0]), roundTo(_lp[1], grid_scale_ar[1]), roundTo(_lp[2], grid_scale_ar[2])];}
  	}
 
 	switch(wpn_select) //#WEAPONSCRIPT
@@ -4859,18 +4417,12 @@ function Compute(init_dat)
       // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 
 
-      
-
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
 				if (pointerOutsideWindow()[0])
 				{
 					select2dpoint(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 
-        // now here find ray from eye
-
-        // m1.data[4*k+mem_log[14][0]]+_x/in_win_hc*(in_win_h/in_win_w),
-        // m1.data[4*k+mem_log[14][0]+1]+_y/in_win_hc
 				}
 			}
 
@@ -4881,7 +4433,6 @@ function Compute(init_dat)
 					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 				}
 			}
-
 
 			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
 
@@ -4897,7 +4448,6 @@ function Compute(init_dat)
 			}
 
 			if (key_map.v && runEvery(150)) {trans_obj(obj_cyc);}
-
 
 
 			if (key_map.t && obj_cyc>world_obj_count && runEvery(350)) // Fix this area needs to check obj_cyc or in fn
@@ -4930,7 +4480,6 @@ function Compute(init_dat)
 			if (obj_cyc>world_obj_count)
 			{
 				
-
 				if (key_map.lmb && mouseLock && !wpn_1)
 				{
 					wpn_1_mc = getctr_obj(obj_cyc);
@@ -4992,11 +4541,6 @@ function Compute(init_dat)
 
 
 
-
-
-
-
-
       if (key_map.lmb && !mouseLock && runEvery(20))
       {
 			// let _p = lpi(mouseToWorld, player_pos, _lp_world, [0,1,0]);
@@ -5016,9 +4560,6 @@ function Compute(init_dat)
         // obj_cyc = _tc;
         // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
       }
-
-
-
 
 
 			if (key_map.lmb && mouseLock && runEvery(10))
@@ -5082,6 +4623,29 @@ function Compute(init_dat)
 
 
 /*
+function vertFixMeF(a)
+{
+  let f = new Float32Array(a.length/2);
+  for (let i = 0; i<a.length/4; i++) {
+  f[i*2] = (a[i*4]).toFixed(3);
+  f[i*2+1] = (a[i*4+2]).toFixed(3);
+  }
+  return f;
+}
+
+function fixme2(a)
+{
+  var _d = a; // String
+  var _f = "[";
+  var _v = 0;
+  for (var i=0; i<_d.length; i++)
+  {
+    _v = _d[i].toFixed(4);
+    if (i!=_d.length-1) {_f = _f+_v+",";} else {_f = _f+_v;}
+    if (i==_d.length-1) {_f = _f+"]";}
+  }
+  console.log(_f);
+}
 */
 
 	_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
@@ -5119,14 +4683,10 @@ function Compute(init_dat)
 	}
 
 
-
-	setData(); // Load all vertices
-
 /*
- 
-  // 1/Math.pow((w*(0.03))
+  The depth for pts: 1/Math.pow((w*(0.03))
 
-	// float a = PI/6.;
+	float a = PI/6.;
 	float a = PI/24.;
 	float n = 0.015;
 	float f = 500.01;
@@ -5145,55 +4705,10 @@ function Compute(init_dat)
 		1.006789411194167
 		(2.*n*f)/(2.-n)
 		618.2947208121826 
-
-  // // Rotate around y-axis (yaw)
-  // vec4 after_yaw = vec4(
-  //     cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z ,
-  //     after_tran.y,
-  //     cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x,
-  //     after_tran.w
-  // );
-
-	#define _S1 1.0000600006
-	#define _S2 7.55682619647
-
-  float _yaw = float(${player_look_dir[0]});
-  float _pit = float(${player_look_dir[1]});
-  float _wc = float(${in_win_wc});
-  float _hc = float(${in_win_hc});
-  float _fov = float(${s_fov})*myVariable;
-
-  float _yaw = float(${player_look_dir[0]});
-  float _pit = float(${player_look_dir[1]});
-  float _wc = float(${in_win_wc});
-  float _hc = float(${in_win_hc});
-  float _fov = float(${s_fov})*myVariable;
-
-	#define d 0.112672939
-
-	vec4 after_tran = vec4(
-		read().x-float(${player_pos[0]}), 
-		read().y-float(${player_pos[1]}),
-		read().z-float(${player_pos[2]}),
-		0.
-	);
-
 */
 
+setData(); // Load all vertices
 
-/*
-
-
-  // Rotate around x-axis (pitch)
-  vec4 after_pit = vec4(
-      cos(_yaw) * (read().x-_plr_x) + sin(_yaw) * (read().z-_plr_z),
-      cos(_pit) * (read().y-_plr_y) - sin(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)),
-      0.,
-      -(sin(_pit) * (read().y-_plr_y) + cos(_pit) * (cos(_yaw) * (read().z-_plr_z) - sin(_yaw) * (read().x-_plr_x)))
-  );
-
-
-*/
 
 shaderModule.run(
     init_dat,
@@ -5208,46 +4723,6 @@ shaderModule.run(
   );
 
 } // End of Compute()
-
-
-// const cameraTransform =
-// `void main(void) {
-//
-// 	vec4 after_tran = vec4(
-// 		read().x-_plr_x, 
-// 		read().y-_plr_y,
-// 		read().z-_plr_z,
-// 		0.
-// 	);
-//
-//   // Rotate around x-axis (pitch)
-//   vec4 after_pit = vec4(
-//       cos(_yaw) * after_tran.x + sin(_yaw) * after_tran.z,
-//       cos(_pit) * after_tran.y - sin(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x),
-//       0.,
-//       -(sin(_pit) * after_tran.y + cos(_pit) * (cos(_yaw) * after_tran.z - sin(_yaw) * after_tran.x))
-//   );
-//
-// 	#define d 0.112672939
-//
-// 	// Divide by w
-// 	if (after_pit.w != 0.)
-// 	{
-// 		commit(vec4(
-// 			(after_pit.x/d)/after_pit.w*_fov,
-// 			(after_pit.y/d)/after_pit.w*_fov*(_wc/_hc),
-// 			1.0 / pow(after_pit.w*0.03, 0.7),
-// 			after_pit.w
-// 			));
-// 		} else {
-// 		commit(vec4(
-// 			0.,
-// 			0.,
-// 			0.,
-// 			0.
-// 			));
-// 	}
-// }`;
 
 
 document.addEventListener("DOMContentLoaded", function()
@@ -5268,7 +4743,6 @@ document.addEventListener("DOMContentLoaded", function()
   updateTree(tree_allObjects);
 
   updateRefLog();
-  updatePreview();
 	updateMenuPos();
   updateWpnSelect();
 
@@ -5285,14 +4759,12 @@ document.addEventListener("DOMContentLoaded", function()
 
 	// m_ref_objs[0] = new Float32Array(m_map.length);
   
-	setBackgroundColor(_bg_default);
+	setBackgroundColor();
 
 	setInterval(drawOverlay, menuTime_int); 
 	setInterval(setTitle, title_int); 
 
 });
-
-
 
 
 /*

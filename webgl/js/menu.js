@@ -78,7 +78,7 @@ function applyStyles(element, par)
   ║╚═╗║╚╗║║║╚═╗║╔╗╗
   ╚══╝╚═╝╚╝╚══╝╚╝╚╝
   */
-  if (par.clickStyles && par.clickStyles.trim() !== "")
+  if (par.clickStyles && par.clickStyles.trim() !== "") // I think supposed to be click not checked
   {
       const _temp_str = `#${element.id}:checked {${par.clickStyles}}`;
       const styleElement = document.createElement('style');
@@ -360,7 +360,7 @@ function makeTree(par) // output my tree in form of total html structure
       _li_fld.style.paddingTop = _s_fld_li_ex/2+'px';
       _li_fld.style.borderBottom = '0px solid #000'; // remove bottom border for last
 
-      _li_fld.style.cursor = "grab";
+      _li_fld.style.cursor = "pointer";
       _li_fld.draggable = true;
       _li_fld.setAttribute(_attr_fi, _root[i][j]);
       _li_fld.setAttribute(_attr_t, 1); // identify type at drop
@@ -476,7 +476,7 @@ function makeTree(par) // output my tree in form of total html structure
 
         _li_obj = document.createElement("li");
 
-        _li_obj.style.cursor = "grab";
+        _li_obj.style.cursor = "default";
         _li_obj.draggable = true;
         _li_obj.setAttribute(_attr_fi, _root[i][j]);
         _li_obj.setAttribute(_attr_t, 2); // identify type at drop
@@ -954,8 +954,8 @@ box-sizing: border-box;
 position: absolute;
 width: 200px;
 height: auto;
-left: 600px;
-top: 190px;
+left: -500px;
+top: 0px;
 user-select: none;
 background: rgba(0,0,0,0);
 border-radius: 3px;
@@ -2193,10 +2193,6 @@ makeElement(addDiv,
                     });
 
 
-
-                      // automate this part
-                      // world_color = ["20", "20", "20"];
-
             /*
                     ╔╗      ╔╗                    ╔╗
                    ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
@@ -2600,7 +2596,6 @@ makeElement(addDiv,
     callback: updateWpnFromMenu,
     params: {i: 3}
   });
-console.log(_rightRadius);
 
     makeElement(addDiv,
     {
