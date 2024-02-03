@@ -1333,6 +1333,7 @@ function len3(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);}
 function len2(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]);}
 function len2fast(a) {return a[0]*a[0]+a[1]*a[1];}
 
+function scalew1(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
 function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s];} // Removed last 1 take note
 function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
 function scale2(a,s) {return [a[0]*s, a[1]*s];}
@@ -1416,7 +1417,7 @@ function updateFPS()
   let _dt = Date.now() - _date_now_fps;
   if (_dt > 250)
   {
-    _fps = _frames*4;
+    _fps = Math.floor(_frames*4);
     _frames = 0;
     _date_now_fps = Date.now();
   } else
@@ -1479,6 +1480,8 @@ var trans_f = new Float32Array([0.0,0.0,0.0,1]);
 var exp_f = new Float32Array([0.0,0.0,0.0,1]);
 
 var m_rect =  new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
+
+const m_cube = new Float32Array([-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,-1.0,-1.0,-1.0,1.0]);
 
 const m_tri = new Float32Array([0,20,0,10, 10,0,10,10, 10,0,-10,10, -10,0,-10,10, -10,0,10,10]);
 const m_x = new Float32Array([0,0,0,1, 8,0,0,1]);
@@ -1706,8 +1709,8 @@ function m_objs_loadPoints(ar) // Adds objects
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 15) {_fp = 2;}
-  if (m_objs.length > 15)
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 16) {_fp = 2;}
+  if (m_objs.length > 16)
   {
     _fp = (folder_selected < 4) ? 3 : folder_selected;
   }
@@ -1858,6 +1861,7 @@ m_objs_loadPoints(m_gun);        // 11
 m_objs_loadPoints(m_rect);       // 12
 m_objs_loadPoints(m_rect);       // 13
 m_objs_loadPoints(m_eyeRef);     // 14
+m_objs_loadPoints(m_cube);       // 15
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -2314,7 +2318,8 @@ function select2dpoint(x, y) // 2D find
 
 	_f = Number.MAX_VALUE;
 
-	if (obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
+  
+	if (!boundingBox.focus && obj_cyc != boundingBox.obj && obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
 	{
 		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 		{
@@ -2360,6 +2365,21 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
+  if (boundingBox.enable && !boundingBox.active)
+  {
+    for (let k = 0; k<mem_log[15][1]/4; k++)
+    {
+      _t1 = Math.pow(m1.data[4*k+mem_log[15][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[15][0]+1]+y/in_win_hc, 2);
+      if (_t1 < _f)
+      {
+        _f = _t1;
+        _n_sku = k;
+        _d = 3;
+      }
+    }
+  }
+
+
 	switch(_d)
 	{
 		case 0:
@@ -2386,6 +2406,12 @@ function select2dpoint(x, y) // 2D find
 			_lp[1] = _lp_world[1] = m_objs[_d2][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = m_objs[_d2][4*_n_sku+2];
 			cursor_helper = 0;
+			break;
+		case 3:
+			_lp[0] = _lp_world[0] = m_objs[15][4*_n_sku];
+			_lp[1] = _lp_world[1] = m_objs[15][4*_n_sku+1];
+			_lp[2] = _lp_world[2] = m_objs[15][4*_n_sku+2];
+      boundingBox.apply(); boundingBox.set(); boundingBox.match(); 
 			break;
 	}
 }
@@ -2821,6 +2847,14 @@ function arClone(a, b, c, s)
   }
 }
 
+function arScale(a, b, c, d, s)
+{
+  for (let i = a.length-1; i>=0; i--)
+  {
+    a[i] = (b[i]-d[i%4])*s[i%4] + c[i%4];
+  }
+}
+
 function writeToObjI(_ob, i)
 {
   if (_ob.length == mem_log[i][1])
@@ -3067,7 +3101,7 @@ function moveObject()
 //     throw new Error('Vectors must have the same dimensionality');
 //   }
 //
-//   // Calculate the dot product of vectors A and B
+//  // Calculate the dot product of vectors A and B
 //   let dotProduct = A.reduce((sum, a, i) => sum + a * B[i], 0);
 //
 //   // Calculate the norm of vector A
@@ -3305,6 +3339,9 @@ function drawSegment(vertices, mi)
         break;
     }
   }
+
+  if (mi == 15) {gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.4, 1.0]);}
+  if (mi == 2) {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);}
 
   switch(mi)
   {
@@ -3562,6 +3599,29 @@ updateTriCtrMap();
 //   }
 // }
 
+/*
+function drawThinLines(vertices)
+{
+  for (let i = 0; i < vertices.length / 2 - 1; i++)
+  {
+    const lineWidth = 2.0 / in_win_w + 0.001; // Adjust based on canvas size
+    const offset = lineWidth / 2; // Diagonal offset
+    // const _r = (in_win_h/in_win_w);
+    const _r = 1;
+    lineVertices = new Float32Array([
+       vertices[i * 2] - offset*_r, vertices[i * 2 + 1] - offset,
+       vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
+       vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
+       vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
+       vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
+       vertices[i * 2 + 2] + offset*_r, vertices[i * 2 + 3] + offset,
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, lineVertices, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+}
+*/
+
 var _si_d = 0;
 var _od = 0;
 var _h = 0;
@@ -3749,6 +3809,7 @@ function drawLines()
     || (d_i == 2 && !_settings[5].settings[1])
     || (d_i == 11 && wpn_select!=3)
     || (d_i == 14)
+    || (d_i == 15 && !boundingBox.enable)
     )
     {
       skipDat = 0;
@@ -3780,7 +3841,7 @@ function drawLines()
       // last segment
       if (vertices.length > 0)
       {
-          drawSegment(vertices, d_i);
+        drawSegment(vertices, d_i);
       }
     }
 
@@ -3830,6 +3891,7 @@ function drawLines()
             if (vertices.length > 0)
             {
                 drawSegment(vertices, -1);
+                // drawThinLines(vertices);
                 vertices.length = 0;
             }
         } else
@@ -3841,7 +3903,8 @@ function drawLines()
     // last segment
     if (vertices.length > 0)
     {
-        drawSegment(vertices, -1);
+      drawSegment(vertices, -1);
+      // drawThinLines(vertices);
     }
   }
 
@@ -3901,6 +3964,8 @@ function drawLines()
 
   _np = [ -m1.data[mem_log[9][0]], m1.data[mem_log[9][0]+1] ];
   _tp = [ -m1.data[mem_log[10][0]], m1.data[mem_log[10][0]+1] ];
+  _2dp_boundingBox0 = [ -m1.data[mem_log[15][0] + 4*boundingBox.kf], m1.data[mem_log[15][0] + 4*boundingBox.kf+1] ];
+  _2dp_boundingBox1 = [ -m1.data[mem_log[15][0] + 4*boundingBox.if], m1.data[mem_log[15][0] + 4*boundingBox.if+1] ];
 
   // Use this: by dist scale to setup the centers.
   // drawSegment(ar2Dmod(_2dis[j], _np, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.01 ), -2);
@@ -3914,6 +3979,12 @@ function drawLines()
   else
   {
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
+  }
+
+  if (boundingBox.active)
+  {
+    if (m1.data[mem_log[15][0] + 4*boundingBox.k+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _2dp_boundingBox0, 0.006 ), -3);}
+    if (m1.data[mem_log[15][0] + 4*boundingBox.i+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _2dp_boundingBox1, 0.006 ), -3);}
   }
 
   if (!mouseLock || wpn_select == 1 || key_map.tab)
@@ -3941,7 +4012,7 @@ function drawLines()
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap([obj_cyc,12,3,4,5]);
+	updateDrawMap([obj_cyc,12,15,3,4,5]);
 
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT);	
@@ -4037,6 +4108,129 @@ function pointerOutsideWindow()
 	return _in;
 }
 
+var functionRunList = [];
+var boundingBox =
+{
+  i: 0,
+  k: 0,
+  kf: 0,
+  if: 0,
+  c: Object,
+  op: [0,0,0],
+  ep: 1e-3,
+  obj: 0,
+  dims: [1,1,1],
+  prev: [0,0,0],
+  half: [1,1,1,1],
+  match: [0,0,0],
+  remap1: [1, 0, 3, 2, 5, 4, 7, 6],
+  remap2: [4, 5, 6, 7, 0, 1, 2, 3],
+  active: 0,
+  focus: 0,
+  enable: 0,
+  toggle: function ()
+  {
+    boundingBox.enable = !boundingBox.enable;
+    boundingBox.set();
+    // if (!boundingBox.enable) {boundingBox.set();}
+  },
+  set: function ()
+  {
+    boundingBox.focus = 1;
+    this.obj = obj_cyc;
+    this.c = getctr_obj(obj_cyc);
+    this.dims = getMinMaxPairs(m_objs[obj_cyc]);
+    arScale(m_objs[15], m_objs_ghost[15], this.c, [0,0,0], [this.dims[0]/2,this.dims[1]/2,this.dims[2]/2,1]);
+  },
+  match: function()
+  {
+    let _s = m_cube.length;
+    for (let i=0; i<_s; i++)
+    {
+      let _;
+      if (Math.abs(_lp_world[0] - m_objs[15][i * 4]) < this.ep
+          && Math.abs(_lp_world[1] - m_objs[15][i * 4 + 1]) < this.ep
+          && Math.abs(_lp_world[2] - m_objs[15][i * 4 + 2]) < this.ep)
+      {
+        boundingBox.getMatch(i);
+        boundingBox.focus = 0;
+        break;
+      }
+    }
+  },
+  updateK: function()
+  {
+    let _s = m_cube.length;
+    for (let i=0; i<_s; i++)
+    {
+      if (Math.abs(this.prev[0] - m_objs[15][i * 4]) < this.ep
+          && Math.abs(this.prev[1] - m_objs[15][i * 4 + 1]) < this.ep
+          && Math.abs(this.prev[2] - m_objs[15][i * 4 + 2]) < this.ep)
+      {
+        this.k = i;
+        break;
+      }
+    }
+  },
+  getMatch: function(i)
+  {
+      console.log("aye: " + i);
+      // 0 -> 5
+      // 1 -> 4
+      // 3 -> 6
+      // 2 -> 7
+
+      let _sign = (i<4) ? 1 : -1;
+      let _off = (i==0 || i==2 || i==5 || i==7) ? 2 : 0;
+
+      this.op[0] = this.prev[0] = m_objs[15][(i+(3+_off)*_sign)*4];
+      this.op[1] = this.prev[1] = m_objs[15][(i+(3+_off)*_sign)*4 + 1];
+      this.op[2] = this.prev[2] = m_objs[15][(i+(3+_off)*_sign)*4 + 2];
+      this.match[0] = m_objs[15][(i)*4];
+      this.match[1] = m_objs[15][(i)*4 + 1];
+      this.match[2] = m_objs[15][(i)*4 + 2];
+      this.i = i; this.k = (i+(3+_off)*_sign);
+  },
+  apply: function ()
+  {
+    if (this.active)
+    {
+      // this.updateK(); // bad
+      arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+      this.active = 0; return;
+    } else {this.active = 1;}
+  },
+  run: function ()
+  {
+    this.updateK();
+    this.if = this.remap2[this.remap1[this.k]];
+    // this.kf = this.k;
+    
+    this.dims = sub3(_lp_world, this.op);
+    this.half = add3(scale3(this.dims, 0.5), this.op);
+
+    let _md0 = sub3(this.match, this.op);
+    let _md = sub3(_lp_world, this.match);
+    let _mdf = [
+        _md[0]/_md0[0]+1,
+        _md[1]/_md0[1]+1,
+        _md[2]/_md0[2]+1
+      ];
+
+    arScale(m_objs[15], m_objs_ghost[15], this.half, [0,0,0,0], [this.dims[0]/2,this.dims[1]/2,this.dims[2]/2,1]);
+    arScale(m_objs[this.obj], m_objs_ghost[this.obj], getctr_obj(15), this.c, _mdf);
+
+
+    if (!key_map.lmb) {boundingBox.apply(); boundingBox.focus = 1;}
+  }
+};
+
+functionRunList.push(boundingBox);
+
+// function makeBoundingBox()
+
+
+
 // scale a unit cube to the size of min/max
 // really 6 pieces of information
 // min & max of each axis so 3*2 querys
@@ -4066,7 +4260,7 @@ function getMinMaxPairs(ar)
 	return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
 }
 
-var _tp, _np;
+var _tp, _np, _2dp_boundingBox0, _2dp_boundingBox1;
 var _preview_ctr = [];
 var _preview_obj;
 
@@ -4081,7 +4275,14 @@ function updateRefLog()
 	// m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
 	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
-
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
 function Compute(init_dat)
 {
@@ -4097,6 +4298,17 @@ function Compute(init_dat)
     m_obj_offs[13][2] = m_t_objs[m_t_objs.length-1][2];
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
+
+
+  // if (key_map.j && runEvery(200)) {boundingBox.set(); boundingBox.match();}
+  // if (key_map.k && runEvery(200)) {boundingBox.apply(); boundingBox.set(); boundingBox.match();}
+
+
+  for (let p = functionRunList.length-1; p>=0; p--)
+  {
+    if (functionRunList[p].active) {functionRunList[p].run();}
+  }
+
 
 
   // need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales

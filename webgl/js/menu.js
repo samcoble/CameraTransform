@@ -1369,6 +1369,15 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
+                text: "Resize Object \u2922",
+                id: "tool_resizeObject", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln,
+                hoverStyles: _btn_hover_tool,
+                callback: boundingBox.toggle
+            });
+
+            makeElement(addButton,
+            {
                 text: "Mirror over Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln,
