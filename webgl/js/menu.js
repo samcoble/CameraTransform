@@ -231,11 +231,9 @@ function addTextInput(par)
       event.target.blur(); // maybe this more reliable?
     }
   });
-  console.log(par.hoverShadow);
 
   if (typeof par.hoverShadow != "undefined")
   {
-    console.log("wtf");
     input.addEventListener('mouseover', function(event)
     {
       event.target.style.boxShadow = par.hoverShadow;
