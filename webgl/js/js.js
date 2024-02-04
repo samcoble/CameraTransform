@@ -413,7 +413,7 @@ var in_win_clip;
 
 var _preview_scaler;
 
-var menu_q_size = [548, 720];
+var menu_q_size = [531, 548];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [0, 0]; // fix me entire system wacked
 var menu_objpreview_pos = [0, 0]; // fix me
