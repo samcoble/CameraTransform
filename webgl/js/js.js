@@ -4130,9 +4130,17 @@ var boundingBox =
   enable: 0,
   toggle: function ()
   {
-    boundingBox.enable = !boundingBox.enable;
-    boundingBox.set();
-    // if (!boundingBox.enable) {boundingBox.set();}
+    if (boundingBox.enable)
+    {
+      boundingBox.focus = 0;
+      boundingBox.enable = 0;
+      boundingBox.obj = 0;
+    } else
+    {
+      boundingBox.enable = 1;
+      boundingBox.focus = 1;
+      boundingBox.set();
+    }
   },
   set: function ()
   {
