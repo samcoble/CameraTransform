@@ -39,6 +39,7 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 
 I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better.
 
+![MENY](https://github.com/samcoble/CameraTransform/assets/32228102/1f018bcf-1078-4289-9b04-ea40bf0f9b18)
 ![BFC](https://github.com/samcoble/CameraTransform/assets/32228102/f3017d83-86d5-4826-8cdd-adaad4742197)
 ![fldrs](https://github.com/samcoble/CameraTransform/assets/32228102/2a1dea5f-7a53-49a5-aa2e-15a9420ef840)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
@@ -57,9 +58,6 @@ I have ported a lot to webgl and the performance improvements are quite insane a
 ![qq](https://github.com/samcoble/CameraTransform/assets/32228102/9da981a7-05ad-4940-b3d9-ebf9aa8188a2)
 ![musho](https://github.com/samcoble/CameraTransform/assets/32228102/2835a077-84fd-4285-b048-fdc2f344729c)
 ![cirsets](https://github.com/samcoble/CameraTransform/assets/32228102/d3bb6839-7c86-48b3-aea0-10174655bfce)
-![newdrip](https://github.com/samcoble/CameraTransform/assets/32228102/4b9fff77-ec46-4c0f-b8be-aa4498910fed)
-![botman](https://github.com/samcoble/CameraTransform/assets/32228102/308ae207-8c05-45d7-9f6e-3375862dda42)
-![genderneutraldesktheythem](https://github.com/samcoble/CameraTransform/assets/32228102/8b5651b2-5644-41a9-815e-ab1863b02a4e)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
 Finally I can make simple 3d models =)
 ![great](https://github.com/samcoble/CameraTransform/assets/32228102/6fae7623-2369-4245-98fd-bbb6a218ba52)
