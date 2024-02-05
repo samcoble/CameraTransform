@@ -3304,10 +3304,10 @@ function drawSegment(vertices, mi)
     	if (mi == 12) {gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);}
 	} else
   {
-		switch(mi)
+		switch(mi) // Temp drawn line color
 		{
 			case -1:
-				gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 1.0, 1.0]);
+				gl.uniform4fv(colorUniformLocation, [0.3, 0.2, 0.5, 1.0]);
 				break;
 			case -2:
 				gl.uniform4fv(colorUniformLocation, [0.2, 0.5, 0.2, 1.0]);
@@ -3340,7 +3340,7 @@ function drawSegment(vertices, mi)
     }
   }
 
-  if (mi == 15) {gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.4, 1.0]);}
+  if (mi == 15) {gl.uniform4fv(colorUniformLocation, [0.3, 0.2, 0.5, 1.0]);}
   if (mi == 2) {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);}
 
   switch(mi)
@@ -3806,7 +3806,7 @@ function drawLines()
     skipDat = 1;
 
     if (!(_settings[1].settings[0])
-    || (d_i == 13 && mem_t_sum == 0)
+    || (d_i == 13 && mem_t_sum == 0) // mem t sum ???
     || (d_i == 2 && !_settings[5].settings[1])
     || (d_i == 11 && wpn_select!=3)
     || (d_i == 14)
