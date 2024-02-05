@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 
+<link rel="stylesheet" href="lucon.ttf">
+
 <script src="webgl/js/math.min.js"></script>
 <script src="webgl/js/shader.js"></script>
 
@@ -9,8 +11,15 @@
 
 <style>
 
-	* {
-		font-family: "Lucida Console", Courier, monospace;
+  @font-face
+  {
+    font-family: 'lucon';
+    src: local("lucon"), url('lucon.ttf') format('truetype');
+  }
+
+	*
+  {
+		font-family: "lucon", "Lucida Console", monospace, Courier;
 	}
 
 	html, body
