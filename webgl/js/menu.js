@@ -296,20 +296,21 @@ var _attr_k = 'data-k';
 
 const tree_colors =
 [
-  "rgba(77, 48, 37, 1)",
+  "rgba(78, 55, 81, 1)",
   "rgba(63, 46, 110, 1)",
   "rgba(58, 89, 52, 1)",
   "rgba(60, 101, 115, 1)",
   "rgba(94, 66, 55, 1)"
 ];
-
+// 69, 43, 72
+  // "rgba(46, 66, 39, 1)",
 const tree_colors_d =
 [
-  "rgba(54, 33, 26, 1)",
+  "rgba(55, 39, 57, 1)",
   "rgba(44, 32, 77, 1)",
   "rgba(41, 62, 36, 1)",
   "rgba(42, 71, 80, 1)",
-  "rgba(66, 46, 38, 1)"
+  "rgba(65, 46, 38, 1)"
 ];
 
 function updateTree(par)
