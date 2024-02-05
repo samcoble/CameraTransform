@@ -3427,7 +3427,7 @@ _2dis_buffers.push(new Float32Array(10));
 _2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1]));
 _2dis_buffers.push(new Float32Array(12));
 
-_2dis.push(new Float32Array([1.0000,0.0000,0.9810,0.1950,0.9240,0.3830,0.8310,0.5560,0.7070,0.7070,0.5560,0.8310,0.3830,0.9240,0.1950,0.9810,0.0000,1.0000,-0.1950,0.9810,-0.3830,0.9240,-0.5560,0.8310,-0.7070,0.7070,-0.8310,0.5560,-0.9240,0.3830,-0.9810,0.1950,-1.0000,0.0000,-0.9810,-0.1950,-0.9240,-0.3830,-0.8310,-0.5560,-0.7070,-0.7070,-0.5560,-0.8310,-0.3830,-0.9240,-0.1950,-0.9810,0.0000,-1.0000,0.1950,-0.9810,0.3830,-0.9240,0.5560,-0.8310,0.7070,-0.7070,0.8310,-0.5560,0.9240,-0.3830,0.9810,-0.1950,1.0000,0.0000]));
+_2dis.push(new Float32Array([1.0,0.0,0.981,0.195,0.924,0.383,0.831,0.556,0.707,0.707,0.556,0.831,0.383,0.924,0.195,0.981,0.0,1.0,-0.195,0.981,-0.383,0.924,-0.556,0.831,-0.707,0.707,-0.831,0.556,-0.924,0.383,-0.981,0.195,-1.0,0.0,-0.981,-0.195,-0.924,-0.383,-0.831,-0.556,-0.707,-0.707,-0.556,-0.831,-0.383,-0.924,-0.195,-0.981,0.0,-1.0,0.195,-0.981,0.383,-0.924,0.556,-0.831,0.707,-0.707,0.831,-0.556,0.924,-0.383,0.981,-0.195,1.0,0.0]));
 
 // This one is temp but must setup center buffer dat
 // _2dis_buffers.push(new Float32Array(33*2));
@@ -3622,6 +3622,7 @@ function drawThinLines(vertices)
 }
 */
 
+var _2d_previewBack;
 var _si_d = 0;
 var _od = 0;
 var _h = 0;
@@ -3870,7 +3871,6 @@ function drawLines()
       _pts[_si2+1] = 0.0;
 
       drawPoints(_pts, d_i);
-
     }
 
   
@@ -3910,17 +3910,17 @@ function drawLines()
 
 
   // move all this back into fn to make good reverse fn
-  let tempDis = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
+  _2d_previewBack = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
 
 
   // Draw the triangles after setting the color
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, tempDis, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, _2d_previewBack, gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
 
-  gl.uniform4fv(colorUniformLocation, [0.05, 0.05, 0.05, 1.0]); 
-  gl.drawArrays(gl.TRIANGLES, 0, tempDis.length / 2);
+  gl.uniform4fv(colorUniformLocation, [0.12, 0.12, 0.12, 1.0]); 
+  gl.drawArrays(gl.TRIANGLES, 0, _2d_previewBack.length / 2);
 
   // Preview object
   vertices = [];

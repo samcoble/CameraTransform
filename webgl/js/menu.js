@@ -32,6 +32,12 @@ var _this; // ez pointer for params
 var _settings = [];
 var _setting_ids = [];
 
+var _btn_col1 = `background-color: rgb(28, 28, 28);`;
+var _btn_col1_str = `rgb(28, 28, 28)`;
+
+var _btn_col2 = `background-color: rgb(34, 34, 34);`;
+var _btn_col2_str = `rgb(34, 34, 34)`;
+
 function applyStyles(element, par)
 {
 
@@ -287,21 +293,23 @@ var _attr_fi = 'data-folderIndex';
 var _attr_t = 'data-type';
 var _attr_k = 'data-k';
 
-const tree_colors_a = 1.0;
-const tree_colors = [
-  "rgba(77, 48, 37, "+tree_colors_a+")",
-  "rgba(40, 41, 102, "+tree_colors_a+")",
-  "rgba(46, 66, 39, "+tree_colors_a+")",
-  "rgba(81, 54, 74, "+tree_colors_a+")",
-  "rgba(42, 75, 92, "+tree_colors_a+")"
+
+const tree_colors =
+[
+  "rgba(77, 48, 37, 1)",
+  "rgba(63, 46, 110, 1)",
+  "rgba(58, 89, 52, 1)",
+  "rgba(60, 101, 115, 1)",
+  "rgba(94, 66, 55, 1)"
 ];
 
-const tree_colors_d = [
-  "rgba(53, 34, 26, 1)",
-  "rgba(33, 33, 74, 1)",
-  "rgba(38, 53, 33, 1)",
-  "rgba(62, 42, 57, 1)",
-  "rgba(36, 63, 77, 1)"
+const tree_colors_d =
+[
+  "rgba(54, 33, 26, 1)",
+  "rgba(44, 32, 77, 1)",
+  "rgba(41, 62, 36, 1)",
+  "rgba(42, 71, 80, 1)",
+  "rgba(66, 46, 38, 1)"
 ];
 
 function updateTree(par)
@@ -349,7 +357,7 @@ function makeTree(par) // output my tree in form of total html structure
       _ul.id = par.id+"_ul_"+i+"_"+_root[i][j];
       _ul.className = par.id+"_ul"+" "+par.id+"_ul_"+i;
       _ul.style.listStyleType = 'none';
-      _ul.style.textShadow = '0px 0px 2px #222';
+      _ul.style.textShadow = '0px 0px 3px #111';
 
       // simple math to generate folder border width
       let _pxl = (_s-i+1)*2+3;
@@ -463,6 +471,7 @@ function makeTree(par) // output my tree in form of total html structure
             // console.log(event.target.getAttribute(_attr_fi) + " : " + draggedElement.getAttribute(_attr_fi));
             folderSetParent(draggedElement.getAttribute(_attr_fi), event.target.getAttribute(_attr_fi));
             updateTree(par);
+            key_map.lmb = false;
           }
         }
 
@@ -568,6 +577,7 @@ function makeTree(par) // output my tree in form of total html structure
           );
 
           updateTree(par);
+          key_map.lmb = false;
         });
 
         _li_obj.addEventListener("click", function ()
@@ -660,9 +670,9 @@ function addList(par)
 
 var list_colors =
 {
-    c1:"rgb(13,13,13)",
-    c2:"rgb(17,17,17)",
-    c3:"rgb(33,33,33)",
+    c1:_btn_col2_str,
+    c2:_btn_col1_str,
+    c3:"rgb(77,77,77)",
     c4:"rgb(188,188,188)",
     tc:"rgb(195, 123, 0)"
 };
@@ -854,32 +864,17 @@ border-top: 1px solid rgba(150, 150, 150, 0.2);
 border-left: 1px solid rgba(100, 100, 100, 0.1);
 border-bottom: 1px solid rgba(100, 100, 100, 0.1);
 `;
-//background: radial-gradient(circle, rgba(18,18,18,1) 0%, rgba(12,12,12,1) 100%);
-var radial_bg =
-`
-background: radial-gradient(circle, rgba(17,17,17,1) 0%, rgba(12,12,12,1) 100%);
-`;
 
-var _btn_col1 =
- `
-background-color: rgb(13, 13, 13);
- `;
-
-var _btn_col2 =
- `
-background-color: rgb(17, 17, 17);
- `;
+// var radial_bg = `background: radial-gradient(circle, rgba(17,17,17,1) 0%, rgba(12,12,12,1) 100%);`;
 
 var rootStyle =
- `
+`
 z-index: 2;
 font-size: 12px;
 color: #EEE;
 box-sizing: border-box;
-background-color: rgb(17, 17, 17);
-
+background-color: rgb(32, 32, 32);
 `;
-// color: rgb(195, 123, 0);
 
 var key_bind_info = 
 [
@@ -1074,7 +1069,7 @@ user-select: none;
 border-radius: 3px;
 background: rgba(0, 0, 0, 0);
 border: 0px solid rgba(0, 0, 0, 0);
-color: #DDD;
+color: #CCC;
 overflow-y: auto;
 overflow-x: hidden;
 `;
@@ -1135,7 +1130,6 @@ left: 1px;
   var tree_btn =
   `
   color: #DDD;
-  background-color: rgb(17, 17, 17);
   margin: 10px 0px 0px 0px;
   width: 15%;
   height: 26px;
@@ -1144,7 +1138,7 @@ left: 1px;
   line-height: 2.06;
   float: right;
   outline: none;
-  `;
+  ` + _btn_col2;
 
   makeElement(addButton,
   {
@@ -1176,7 +1170,7 @@ left: 1px;
   outline: none;
   border-radius: 3px;
   border: 1px solid rgba(200, 200, 200, 0.1);
-  `;
+  ` + _btn_col2;
 
   makeElement(addTextInput,
   {
@@ -1208,7 +1202,7 @@ makeElement(addDiv,
   top: 190px;
   user-select: none;
   border-radius: 3px;
-  background: rgba(12,12,12,0);
+  background: rgba(0,0,0,0);
   `
 });
 
@@ -1227,7 +1221,7 @@ makeElement(addDiv,
   float: right;
   margin: 50px 13px 0px 0px;
   padding: 0px;
-  background-color: rgba(12, 12, 12, 0);
+  background-color: rgba(0, 0, 0, 0);
   border-top: 0px solid rgba(120,120,120, 0.3);
   border-right: 0px solid rgba(120,120,120, 0.3);
   border-bottom: 0px solid rgba(120,120,120, 0.3);
@@ -1259,6 +1253,7 @@ makeElement(addDiv,
             `
             margin: 0px;
             border-radius: 3px 3px 0px 0px;
+            border-top: 1px solid #282828;
             `;
 
             var _btn_toolf =
@@ -1558,9 +1553,9 @@ makeElement(addDiv,
               float: left;
               width: 98%;
               margin: 5px 0 0 1%;
-              background: rgb(17,17,17);
               border-radius: 3px;
               z-index: -1;
+              border-bottom: 1px solid rgb(32,32,32);
               `;
 
               var detail_menu_box_half =
@@ -1569,9 +1564,9 @@ makeElement(addDiv,
               float: left;
               width: 48.5%;
               margin: 3px 0 0 1%;
-              background: rgb(17,17,17);
               border-radius: 3px;
               z-index: -1;
+              border-bottom: 1px solid rgb(32,32,32);
               `;
 
               var _cbxLastRad = `border-radius: 0px 0px 3px 0px;`;
@@ -1623,7 +1618,6 @@ makeElement(addDiv,
                 text-align: center;
                 outline: none;
                 border: 0px solid rgba(0,0,0,0);
-                background: rgb(16,16,16);
                 `;
 
                 // Settings box title bar w/ name
@@ -1633,11 +1627,12 @@ makeElement(addDiv,
                 width: 100%;
                 height: 26px;
                 line-height: 2.1;
-                background: rgb(44,44,44);
-                border-top: 1px solid rgb(12,12,12);
-                border-bottom: 1px solid rgb(12,12,12);
+                background: rgb(38,38,39);
                 border-radius: 3px 3px 0px 0px;
+                border-top: 1px solid rgb(62,62,62);
+                border-bottom: 1px solid rgb(16,16,16);
                 `;
+
 
                 var textIn_hover = `inset 0px 0px 2px 0px rgba(84, 84, 84, 1)`;
                 var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
@@ -1769,18 +1764,17 @@ makeElement(addDiv,
                   var cbx_myStyle =
                   `
                   float: right;
-                  box-shadow: inset 0px 0px 1px 0px rgba(14, 14, 14, 1);
+                  box-shadow: inset 0px 0px 2px -1px rgba(0, 0, 0, 1);
                   border: 0px;
                   cursor: pointer;
                   appearance: none;
                   outline: 0;
-                  background: rgb(16,16,16);
                   width: 40px;
                   height:100%;
                   color: rgba(1, 1, 1, 0);
                   margin: 0% 0% 0 0%;
                   padding: 0px;
-                  `;
+                  ` + _btn_col2;
 
                   /*
                     ╔╗╔═╗ 
@@ -1804,7 +1798,7 @@ makeElement(addDiv,
                 {
                     id: "div_drawSurfaces", cls: "", prnt: "detail_box_drawSettings",
                     text: `surfaces`,
-                    rootStyle: rootStyle + div_css_half
+                    rootStyle: rootStyle + div_css_half + _btn_col2
                 });
 
                   makeElement(addCheckbox,
@@ -1887,7 +1881,7 @@ makeElement(addDiv,
             {
                 id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
                 text: `zigzag`,
-                rootStyle: rootStyle + div_css_half
+                rootStyle: rootStyle + div_css_half + _btn_col2
             });
 
               makeElement(addCheckbox,
@@ -1989,7 +1983,7 @@ makeElement(addDiv,
             {
                 id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
                 text: `Y`,
-                rootStyle: rootStyle + div_css_half + div_lockSettings_g
+                rootStyle: rootStyle + div_css_half + div_lockSettings_g + _btn_col2
             });
 
               makeElement(addCheckbox,
@@ -2202,7 +2196,7 @@ makeElement(addDiv,
             makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [8, 8, 8],
+                settings: [20, 20, 20],
                 rootStyle: rootStyle + detail_menu_box_half
             });
 
@@ -2339,24 +2333,21 @@ border-radius: 3px;
 border: 1px solid rgb(44,44,44);
 color: #DDD;
 padding: 12px;
-background: rgb(13,13,13);
-`;
+` + _btn_col1;
 
 var menu_status_style_l =
 `
 width: 70%;
 height: 100%;
 float: left;
-background: rgb(13,13,13);
-`;
+` + _btn_col1;
 
 var menu_status_style_r =
 `
 width: 30%;
 height: 100%;
 float: right;
-background: rgb(13,13,13);
-`;
+` + _btn_col1;
 
 var _textLeft =
 `
@@ -2403,9 +2394,8 @@ height: 26px;
 margin: 5px 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 border-left: none;
-background: rgb(13,13,13);
 outline: none;
-`;
+` + _btn_col1;
 
 var menu_status_style_r2 =
 `
@@ -2417,9 +2407,8 @@ border: 1px solid rgb(44,44,44);
 border-left: none;
 border-radius: 0px 3px 3px 0px;
 color: #555;
-background: rgb(13,13,13);
 line-height: 2.2;
-`;
+` + _btn_col1;
 
 
 makeElement(addDiv,
@@ -2552,7 +2541,7 @@ function updateWpnSelect()
   const _q = _e.querySelectorAll("._wpnSlct");
   _q.forEach(function(e, i)
   {
-    let _c = (i == wpn_select) ? 'rgb(22,22,22)' : 'rgb(13,13,13)';
+    let _c = (i == wpn_select) ? _btn_col1_str : _btn_col2_str;
     e.style.background = _c;
   });
 }
@@ -2574,96 +2563,104 @@ makeElement(addDiv,
   height: 40px;
   padding: 0px;
   margin: 0px;
-  background: rgba(13,13,13,0);
-  border: 0px solid rgb(44,44,44);
+  background: rgba(0,0,0,0);
+  border: 0px solid rgb(0,0,0);
   `
 });
 
-  makeElement(addDiv,
-  {
-    id: "menu_wpn_1", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n + _leftRadius,
-    callback: updateWpnFromMenu,
-    params: {i: 0}
-  });
+makeElement(addDiv,
+{
+  id: "menu_wpn_1", cls: "_wpnSlct", prnt: "menu_wpn_select",
+  rootStyle: style_wpn_n + _leftRadius,
+  callback: updateWpnFromMenu,
+  params: {i: 0}
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_1_key", cls: "", prnt: "menu_wpn_1",
-      text: "1",
-      rootStyle: style_wpn_n_key
-    });
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_1_name", cls: "", prnt: "menu_wpn_1",
-      text: "grid",
-      rootStyle: style_wpn_n_name
-    });
+makeElement(addDiv,
+{
+  id: "menu_wpn_1_key", cls: "", prnt: "menu_wpn_1",
+  text: "1",
+  rootStyle: style_wpn_n_key
+});
+makeElement(addDiv,
+{
+  id: "menu_wpn_1_name", cls: "", prnt: "menu_wpn_1",
+  text: "grid",
+  rootStyle: style_wpn_n_name
+});
 
-  makeElement(addDiv,
-  {
-    id: "menu_wpn_2", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n,
-    callback: updateWpnFromMenu,
-    params: {i: 1}
-  });
+// ---
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_2_key", cls: "", prnt: "menu_wpn_2",
-      text: "2",
-      rootStyle: style_wpn_n_key
-    });
+makeElement(addDiv,
+{
+  id: "menu_wpn_2", cls: "_wpnSlct", prnt: "menu_wpn_select",
+  rootStyle: style_wpn_n,
+  callback: updateWpnFromMenu,
+  params: {i: 1}
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_2_name", cls: "", prnt: "menu_wpn_2",
-      text: "mover",
-      rootStyle: style_wpn_n_name
-    });
+makeElement(addDiv,
+{
+  id: "menu_wpn_2_key", cls: "", prnt: "menu_wpn_2",
+  text: "2",
+  rootStyle: style_wpn_n_key
+});
 
-  makeElement(addDiv,
-  {
-    id: "menu_wpn_3", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n,
-    callback: updateWpnFromMenu,
-    params: {i: 2}
-  });
+makeElement(addDiv,
+{
+  id: "menu_wpn_2_name", cls: "", prnt: "menu_wpn_2",
+  text: "mover",
+  rootStyle: style_wpn_n_name
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_3_key", cls: "", prnt: "menu_wpn_3",
-      text: "3",
-      rootStyle: style_wpn_n_key
-    });
+// ---
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_3_name", cls: "", prnt: "menu_wpn_3",
-      text: "paint",
-      rootStyle: style_wpn_n_name
-    });
+makeElement(addDiv,
+{
+  id: "menu_wpn_3", cls: "_wpnSlct", prnt: "menu_wpn_select",
+  rootStyle: style_wpn_n,
+  callback: updateWpnFromMenu,
+  params: {i: 2}
+});
 
-  makeElement(addDiv,
-  {
-    id: "menu_wpn_4", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n + _borderRight + _rightRadius,
-    callback: updateWpnFromMenu,
-    params: {i: 3}
-  });
+makeElement(addDiv,
+{
+  id: "menu_wpn_3_key", cls: "", prnt: "menu_wpn_3",
+  text: "3",
+  rootStyle: style_wpn_n_key
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_4_key", cls: "", prnt: "menu_wpn_4",
-      text: "4",
-      rootStyle: style_wpn_n_key
-    });
-    makeElement(addDiv,
-    {
-      id: "menu_wpn_4_name", cls: "", prnt: "menu_wpn_4",
-      text: "ray",
-      rootStyle: style_wpn_n_name
-    });
+makeElement(addDiv,
+{
+  id: "menu_wpn_3_name", cls: "", prnt: "menu_wpn_3",
+  text: "paint",
+  rootStyle: style_wpn_n_name
+});
+
+// ---
+
+makeElement(addDiv,
+{
+  id: "menu_wpn_4", cls: "_wpnSlct", prnt: "menu_wpn_select",
+  rootStyle: style_wpn_n + _borderRight + _rightRadius,
+  callback: updateWpnFromMenu,
+  params: {i: 3}
+});
+
+makeElement(addDiv,
+{
+  id: "menu_wpn_4_key", cls: "", prnt: "menu_wpn_4",
+  text: "4",
+  rootStyle: style_wpn_n_key
+});
+
+makeElement(addDiv,
+{
+  id: "menu_wpn_4_name", cls: "", prnt: "menu_wpn_4",
+  text: "ray",
+  rootStyle: style_wpn_n_name
+});
+
 /*
     ╔════╗╔═══╗╔══╗     ╔═══╗
     ║╔╗╔╗║║╔═╗║║╔╗║     ║╔═╗║
@@ -2712,11 +2709,11 @@ line-height: 2.09;
 
 makeElement(addList,
 {
-    id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
-    color1: list_colors.c1, color2: list_colors.c2,
-    rootStyle: rootStyle + listStyle,
-    liStyles: myLiStyle,
-    items: key_bind_info
+  id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
+  color1: list_colors.c1, color2: list_colors.c2,
+  rootStyle: rootStyle + listStyle,
+  liStyles: myLiStyle,
+  items: key_bind_info
 });
 
 
