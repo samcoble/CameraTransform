@@ -2405,6 +2405,21 @@ function select2dpoint(x, y) // 2D find
 			_lp[0] = _lp_world[0] = m_objs[_d2][4*_n_sku];
 			_lp[1] = _lp_world[1] = m_objs[_d2][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = m_objs[_d2][4*_n_sku+2];
+
+      if (boundingBox.focus && boundingBox.enable)
+      {
+        let _s = m_objs[15].length - 4;
+        for (let i=0; i<_s; i++)
+        {
+          if (m_objs[15][4*i] == _lp_world[0]
+          && m_objs[15][4*i+1] == _lp_world[1]
+          && m_objs[15][4*i+2] == _lp_world[2])
+          {
+            boundingBox.apply(); boundingBox.set(); boundingBox.match(); 
+            break;
+          }
+        }
+      }
 			cursor_helper = 0;
 			break;
 		case 3:
@@ -2460,6 +2475,8 @@ function trans_obj(_i)
 				m_obj_offs[trns_obj_i][0] = 0;
 				m_obj_offs[trns_obj_i][1] = 0;
 				m_obj_offs[trns_obj_i][2] =	0;
+
+      arScale(m_objs_ghost[trns_obj_i], m_objs[trns_obj_i], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 
 				// _lp[0] = _lp_world[0];
 				// _lp[1] = _lp_world[1];
@@ -4128,6 +4145,11 @@ var boundingBox =
   active: 0,
   focus: 0,
   enable: 0,
+  runhook: 0,
+  fpshook: 0,
+  lpstart: [0,0,0],
+  lpdelta: [0,0,0],
+  lp: [0,0,0],
   toggle: function ()
   {
     if (boundingBox.enable)
@@ -4139,15 +4161,15 @@ var boundingBox =
     {
       boundingBox.enable = 1;
       boundingBox.focus = 1;
+      boundingBox.obj = obj_cyc;
       boundingBox.set();
     }
   },
   set: function ()
   {
     boundingBox.focus = 1;
-    this.obj = obj_cyc;
-    this.c = getctr_obj(obj_cyc);
-    this.dims = getMinMaxPairs(m_objs[obj_cyc]);
+    this.c = getctr_obj(this.obj);
+    this.dims = getMinMaxPairs(m_objs[this.obj]);
     arScale(m_objs[15], m_objs_ghost[15], this.c, [0,0,0], [this.dims[0]/2,this.dims[1]/2,this.dims[2]/2,1]);
   },
   match: function()
@@ -4205,38 +4227,64 @@ var boundingBox =
     {
       // this.updateK(); // bad
       arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
-      this.active = 0; return;
+      this.active = 0;
+      this.runhook = 0;
+      return;
     } else {this.active = 1;}
   },
   run: function ()
   {
+    if (!this.runhook)
+    {
+      this.lpstart =
+      [
+        _lp_world[0],
+        _lp_world[1],
+        _lp_world[2]
+      ];
+      this.runhook = 1;
+    }
+
+    this.lpdelta=
+    [
+      (_settings[3].settings[0]) ? 0 : _lp_world[0] - this.lpstart[0],
+      (_settings[3].settings[1]) ? 0 : _lp_world[1] - this.lpstart[1],
+      (_settings[3].settings[2]) ? 0 : _lp_world[2] - this.lpstart[2]
+    ];
+
     this.updateK();
     this.if = this.remap2[this.remap1[this.k]];
     // this.kf = this.k;
-    
-    this.dims = sub3(_lp_world, this.op);
+
+    this.lp =
+    [
+      this.lpstart[0] + this.lpdelta[0],
+      this.lpstart[1] + this.lpdelta[1],
+      this.lpstart[2] + this.lpdelta[2]
+    ];
+
+    this.dims = sub3(this.lp, this.op);
     this.half = add3(scale3(this.dims, 0.5), this.op);
 
     let _md0 = sub3(this.match, this.op);
-    let _md = sub3(_lp_world, this.match);
-    let _mdf = [
-        _md[0]/_md0[0]+1,
-        _md[1]/_md0[1]+1,
-        _md[2]/_md0[2]+1
-      ];
+    let _md = sub3(this.lp, this.match);
+    
+    let _mdf =
+    [
+      _md[0]/((_md0[0]==0) ? 1 : _md0[0])+1,
+      _md[1]/((_md0[1]==0) ? 1 : _md0[1])+1,
+      _md[2]/((_md0[2]==0) ? 1 : _md0[2])+1,
+      1
+    ];
 
     arScale(m_objs[15], m_objs_ghost[15], this.half, [0,0,0,0], [this.dims[0]/2,this.dims[1]/2,this.dims[2]/2,1]);
     arScale(m_objs[this.obj], m_objs_ghost[this.obj], getctr_obj(15), this.c, _mdf);
-
 
     if (!key_map.lmb) {boundingBox.apply(); boundingBox.focus = 1;}
   }
 };
 
 functionRunList.push(boundingBox);
-
-// function makeBoundingBox()
-
 
 
 // scale a unit cube to the size of min/max
@@ -4247,9 +4295,9 @@ functionRunList.push(boundingBox);
 function getMinMaxPairs(ar)
 {
 	// set the initial values to the first point.
-	var ar_x_max = ar[0]; var ar_x_min = ar[0];
-	var ar_y_max = ar[1]; var ar_y_min = ar[1];
-	var ar_z_max = ar[2]; var ar_z_min = ar[2];
+	let ar_x_max = ar[0]; let ar_x_min = ar[0];
+	let ar_y_max = ar[1]; let ar_y_min = ar[1];
+	let ar_z_max = ar[2]; let ar_z_min = ar[2];
 
 	// loop through ar and max/min -logic-> update val
 	for (var i = 0; i<ar.length/4-1; i++) // divide by 4 to get point and remove encoded center
@@ -4657,7 +4705,7 @@ function Compute(init_dat)
 			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
 
 			if (key_map.lmb && mouseLock)
-			{	
+      {	
 				cursor_helper = 0;
 				_lp[0] = _inter[0];
 				_lp[1] = _inter[1];
@@ -4665,10 +4713,22 @@ function Compute(init_dat)
 				_lp_world[0] = _inter_rnd[0];
 				_lp_world[1] = _inter_rnd[1];
 				_lp_world[2] = _inter_rnd[2];
-			}
+
+        // here one time pass to ez connect resize tool
+        if (!boundingBox.fpshook)
+        {
+          if (boundingBox.enable)
+          {
+            select2dpoint(0,0);
+          }
+          boundingBox.fpshook = 1;
+        }
+      } else if (!key_map.lmb)
+      {
+        boundingBox.fpshook = 0;
+      }
 
 			if (key_map.v && runEvery(150)) {trans_obj(obj_cyc);}
-
 
 			if (key_map.t && obj_cyc>world_obj_count && runEvery(350)) // Fix this area needs to check obj_cyc or in fn
 			{
@@ -4869,12 +4929,13 @@ function fixme2(a)
 */
 
 	_pp = [_lp[0], _lp[1], _lp[2]]; // Point on plane = last point placed
-	switch(pln_cyc)
+
+  // Need to keep the next plane always ready so there's no funny business when switching
+  // using mod 3
+
+  switch((pln_cyc+1)%3)
 	{
 		case 0:
-
-			// m_obj = ghost+_inter_rnd
-			// add on press or r. runtime fix pls.
 			for (var i = 0; i<=mem_log[3][2]; i++)
 			{
 				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _lp_world[0];
@@ -4883,7 +4944,6 @@ function fixme2(a)
 			}
 			break;
 		case 1:
-
 			for (var i = 0; i<=mem_log[4][2]; i++)
 			{
 				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _lp_world[0];
@@ -4892,7 +4952,34 @@ function fixme2(a)
 			}
 			break;
 		case 2:
+			for (var i = 0; i<mem_log[5][2]+1; i++)
+			{
+				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _lp_world[0];
+				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _lp_world[1];
+				m_objs[5][4*i+2] = m_objs_ghost[5][4*i+2] + _lp_world[2];
+			}
+			break;
+	}
 
+	switch(pln_cyc)
+	{
+		case 0:
+			for (var i = 0; i<=mem_log[3][2]; i++)
+			{
+				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _lp_world[0];
+				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _lp_world[1];
+				m_objs[3][4*i+2] = m_objs_ghost[3][4*i+2] + _lp_world[2];
+			}
+			break;
+		case 1:
+			for (var i = 0; i<=mem_log[4][2]; i++)
+			{
+				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _lp_world[0];
+				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _lp_world[1];
+				m_objs[4][4*i+2] = m_objs_ghost[4][4*i+2] + _lp_world[2];
+			}
+			break;
+		case 2:
 			for (var i = 0; i<mem_log[5][2]+1; i++)
 			{
 				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _lp_world[0];
