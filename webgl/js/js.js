@@ -2979,7 +2979,7 @@ function deleteObjectSelected()
 function del_world()
 {
   obj_folders[3].length = 0;
-  mem_sum = 7336;
+  mem_sum = 7408;
 
   let _c = 4;
   folder_parents.splice(_c);
