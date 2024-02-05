@@ -2848,8 +2848,8 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 					m_objs[obj_cyc][j*4+0] = _to[j][0];
 					m_objs[obj_cyc][j*4+1] = _to[j][1];
 					m_objs[obj_cyc][j*4+2] = _to[j][2];
-
 				}
+        arScale(m_objs_ghost[obj_cyc], m_objs[obj_cyc], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 			}
 		}
 	}
