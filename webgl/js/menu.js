@@ -1195,52 +1195,47 @@ makeElement(addDiv,
     rootStyle: rootStyle
 });
 
-    var q_menu_holder =
-    `
-    box-sizing: border-box;
-    position: absolute;
-    width: 531px;
-    height: 548px;
-    left: 30px;
-    top: 190px;
-    user-select: none;
-    border-radius: 3px;
-    background: rgba(12,12,12,0);
-    `;
-    makeElement(addDiv,
-    {
-        id: "menu_q", cls: "", prnt: "menu_1",
-        rootStyle: rootStyle + q_menu_holder
-    });
+makeElement(addDiv,
+{
+  id: "menu_q", cls: "", prnt: "menu_1",
+  rootStyle: rootStyle +
+  `
+  box-sizing: border-box;
+  position: absolute;
+  width: 531px;
+  height: 548px;
+  left: 30px;
+  top: 190px;
+  user-select: none;
+  border-radius: 3px;
+  background: rgba(12,12,12,0);
+  `
+});
 
+// background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
+// position: absolute;
+// left: 379px;
+// top: 50px;
 
-        // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
-        // position: absolute;
-        // left: 379px;
-        // top: 50px;
-
-        var tool_menu =
-        `
-        box-sizing: border-box;
-        width: 29.25%;
-        float: right;
-
-        margin: 50px 0px 0px 0px;
-        padding: 0px;
-        background-color: rgba(12, 12, 12, 0);
-        border-top: 0px solid rgba(120,120,120, 0.3);
-        border-right: 0px solid rgba(120,120,120, 0.3);
-        border-bottom: 0px solid rgba(120,120,120, 0.3);
-        border-left: 0px solid rgba(120,120,120, 0.1);
-        border-radius: 3px;
-        z-index: 0;
-        `;
-
-        makeElement(addDiv,
-        {
-            id: "menu_tools", cls: "", prnt: "menu_q",
-            rootStyle: rootStyle + tool_menu
-        });
+makeElement(addDiv,
+{
+  id: "menu_tools", cls: "", prnt: "menu_q",
+  rootStyle: rootStyle +
+  `
+  box-sizing: border-box;
+  width: 29.25%;
+  float: right;
+  margin: 50px 13px 0px 0px;
+  padding: 0px;
+  background-color: rgba(12, 12, 12, 0);
+  border-top: 0px solid rgba(120,120,120, 0.3);
+  border-right: 0px solid rgba(120,120,120, 0.3);
+  border-bottom: 0px solid rgba(120,120,120, 0.3);
+  border-left: 0px solid rgba(120,120,120, 0.1);
+  border-radius: 3px;
+  z-index: 0;
+  `
+});
 
             /*
              ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
@@ -1262,12 +1257,13 @@ makeElement(addDiv,
 
             var _btn_tool0 =
             `
-            margin: 0px 0% 0px 0px;
+            margin: 0px;
             border-radius: 3px 3px 0px 0px;
             `;
 
             var _btn_toolf =
             `
+            margin: 0px 0px 3px 0px;
             border-radius: 0px 0px 3px 3px;
             `;
 
@@ -1336,9 +1332,18 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
+                text: "Duplicate Object \u26FC",
+                id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+                hoverStyles: _btn_hover_tool,
+                callback: cloneObjSelected
+            });
+
+            makeElement(addButton,
+            {
                 text: "Resize Object \u2922",
                 id: "tool_resizeObject", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
                 callback: boundingBox.toggle
             });
@@ -1347,7 +1352,7 @@ makeElement(addDiv,
             {
                 text: "Mirror over Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
                 hoverStyles: _btn_hover_tool,
                 callback: mirrorOverPlane
             });
@@ -1356,7 +1361,7 @@ makeElement(addDiv,
             {
                 text: "Apply Rotation \u2B6E",
                 id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
                 hoverStyles: _btn_hover_tool,
                 callback: applyRotation
             });
@@ -1365,18 +1370,9 @@ makeElement(addDiv,
             {
                 text: "Move Object \u2933",
                 id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: moveObject
-            });
-
-            makeElement(addButton,
-            {
-                text: "Duplicate Object \u26FC",
-                id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
                 hoverStyles: _btn_hover_tool,
-                callback: cloneObjSelected
+                callback: moveObject
             });
 
             makeElement(addButton,
@@ -1401,7 +1397,7 @@ makeElement(addDiv,
             {
                 text: "Link Object \u2366",
                 id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
                 hoverStyles: _btn_hover_tool,
                 callback: menuLinkObj
             });
@@ -1410,7 +1406,7 @@ makeElement(addDiv,
             {
                 text: "\u2421 Delete Object \u2421",
                 id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
                 callback: deleteObjectSelected
             });
@@ -1487,10 +1483,7 @@ makeElement(addDiv,
       });
 
 
-        var _btn_hover =
-        `
-        background-color: rgb(38, 38, 39);
-        `;
+        var _btn_hover = `background-color: rgb(38, 38, 39);`;
 
         var _btn_tab =
         `
@@ -1508,14 +1501,8 @@ makeElement(addDiv,
         border-radius: 2px;
         `;
 
-        var _btn_tab0 = 
-        `
-        margin: 0px 0% 0% 1%;
-        `;
-        var _btn_tabn = 
-        `
-        margin: 0px 0% 0% 1%;
-        `;
+        var _btn_tab0 = `margin: 0px 0% 0% 1%;`;
+        var _btn_tabn = `margin: 0px 0% 0% 1%;`;
 
         makeElement(addButton,
         {
@@ -1543,12 +1530,8 @@ makeElement(addDiv,
         height: 100%;
         margin: 0px;
         padding: 0px;
-        border-top: 0px solid rgba(120,120,120, 0.3);
-        border-right: 0px solid rgba(120,120,120, 0.1);
-        border-bottom: 0px solid rgba(120,120,120, 0.3);
-        border-left: 0px solid rgba(120,120,120, 0.3);
-        background-color: rgba(12, 12, 12, 0);
-        border-radius: 3px;
+        border: 0px;
+        background-color: rgba(0, 0, 0, 0);
         overflow-y: auto;
         z-index: -1;
         `;
@@ -1585,58 +1568,54 @@ makeElement(addDiv,
               box-sizing: border-box;
               float: left;
               width: 48.5%;
-              margin: 5px 0 0 1%;
+              margin: 3px 0 0 1%;
               background: rgb(17,17,17);
               border-radius: 3px;
               z-index: -1;
               `;
 
-              var _cbxLastRad =
-              `
-              border-radius: 0px 0px 3px 0px;
-              `;
-
-              var _detailLastRad =
-              `
-              border-radius: 0px 0px 3px 3px;
-              `;
+              var _cbxLastRad = `border-radius: 0px 0px 3px 0px;`;
+              var _detailLastRad = `border-radius: 0px 0px 3px 3px;`;
 
 
-
+                // For setting half size of full size box
                 var div_css =
                 `
-                text-align: center;
-                outline: none;
-                margin: 0px 0% 0 0%;
                 width: 50%;
-                line-height: 2.0;
-                height: 24px;
-                font-size: 12px;
+                margin: 0px 0% 0 0%;
+                outline: none;
+                text-align: center;
+                line-height: 2.4;
+                height: 26px;
+                font-size: 11px;
+                color: #AAA;
+                text-shadow: #191919 0px 0px 2px;
+
                 border-top: 0px rgba(0,0,0,0);
                 border-left: 0px rgba(0,0,0,0);
                 border-right: 0px rgba(0,0,0,0);
                 border-bottom: 1px rgba(12,12,12,1);
                 `;
 
+                // Style for li's inside boxes for boxes of half size
                 var div_css_half =
                 `
-                text-align: center;
-                //border: 1px rgba(222, 222, 222, 0.3);
-                outline: none;
-                margin: 0px 0% 0 0%;
                 width: 100%;
+                margin: 0px 0% 0 0%;
+                outline: none;
+                text-align: center;
                 line-height: 2.4;
                 height: 26px;
                 font-size: 11px;
-                text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+                color: #AAA;
+                text-shadow: #191919 0px 0px 2px;
                 `;
 
-                // background-color: rgb(27, 27, 30);
-
+                // Text / Number input box styles
                 var textIn_css =
                 `
                 padding-top: 3px;
-                color: rgb(230, 230, 230);
+                color: rgb(140, 140, 235);
                 box-sizing: border-box;
                 float: right;
                 width: 50%;
@@ -1647,24 +1626,21 @@ makeElement(addDiv,
                 background: rgb(16,16,16);
                 `;
 
-                // border: 1px solid rgba(31,31,31,0.3);
-                // background: rgb(60 60 60 / 50%);
-
+                // Settings box title bar w/ name
                 var myTitleStyle =
                 `
                 margin: 0px;
                 width: 100%;
                 height: 26px;
-                line-height: 2.0;
+                line-height: 2.1;
                 background: rgb(44,44,44);
                 border-top: 1px solid rgb(12,12,12);
                 border-bottom: 1px solid rgb(12,12,12);
                 border-radius: 3px 3px 0px 0px;
                 `;
 
-                var textIn_hover = `inset 0px 0px 0px 1px rgba(100, 100, 100, 1)`;
-
-                var textIn_leave = `inset 1px 0px 1px 0px rgba(12, 12, 12, 1)`;
+                var textIn_hover = `inset 0px 0px 2px 0px rgba(84, 84, 84, 1)`;
+                var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
 
               // background-color: rgb(17, 17, 18);
               makeElement(addDiv,
@@ -1769,16 +1745,18 @@ makeElement(addDiv,
                   // background: rgba(159, 144, 75, 0.8);
                   // box-shadow: inset 1px -1px 1px 0px rgba(16, 16, 16, 1);
 
+                  // Check box checked style
                   var cbx_myStyle_checked =
                   `
                   background: rgba(122,122,122, 0.8);
-                  box-shadow: inset 1px -1px 1px 0px rgba(16, 16, 16, 1);
+                  box-shadow: inset 0px 0px 1px 0px rgba(16, 16, 16, 1);
                   border: 0px;
                   `;
 
+                  // Check box hover style
                   var cbx_myStyle_hover =
                   `
-                  box-shadow: inset 1px -1px 1px 0px rgba(255, 255, 255, 0.2);
+                  box-shadow: inset 0px 0px 2px 0px rgba(84, 84, 84, 1);
                   border: 0px;
                   `;
 
@@ -1787,10 +1765,11 @@ makeElement(addDiv,
                   border-top: 1px solid rgb(12,12,12);
                   */
 
+                  // Check box default styles
                   var cbx_myStyle =
                   `
                   float: right;
-                  box-shadow: inset 1px -1px 1px 0px rgba(12, 12, 12, 1);
+                  box-shadow: inset 0px 0px 1px 0px rgba(14, 14, 14, 1);
                   border: 0px;
                   cursor: pointer;
                   appearance: none;
@@ -2223,7 +2202,7 @@ makeElement(addDiv,
             makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [10, 10, 10],
+                settings: [8, 8, 8],
                 rootStyle: rootStyle + detail_menu_box_half
             });
 
@@ -2520,43 +2499,11 @@ makeElement(addDiv,
       rootStyle: rootStyle + menu_status_style_r2 + _textLeft
     });
 
-var _leftRadius =
-`
-border-radius: 3px 0px 0px 3px;
-`;
+// Wpn selector ind
 
-var _rightRadius =
-`
-border-radius: 0px 3px 3px 0px;
-`;
-
-var _leftMargin =
-`
-margin-left: 4px;
-`;
-
-var _rightMargin =
-`
-margin-right: 4px;
-`;
-
-var _borderRight =
-`
-border-right: 1px solid rgb(44,44,44);
-`;
-
-var style_wpn_select =
-`
-position: absolute;
-top: 92%;
-left: 3%;
-background: rgb(13,13,13);
-height: 50px;
-border: 1px solid rgb(44,44,44);
-padding: 0px;
-margin: 0px;
-border-radius: 3px;
-`;
+var _leftRadius = `border-radius: 3px 0px 0px 3px;`;
+var _rightRadius = `border-radius: 0px 3px 3px 0px;`;
+var _borderRight = `border-right: 1px solid rgb(44,44,44);`;
 
 var style_wpn_n =
 `
@@ -2564,7 +2511,7 @@ display: inline-block;
 vertical-align: top;
 height: 40px;
 width: 70px;
-margin: 4px 0px;
+margin: 0px;
 background: rgb(13,13,13);
 border-top: 1px solid rgb(44,44,44);
 border-left: 1px solid rgb(44,44,44);
@@ -2619,13 +2566,23 @@ function updateWpnFromMenu(par)
 makeElement(addDiv,
 {
   id: "menu_wpn_select", cls: "", prnt: "html",
-  rootStyle: style_wpn_select
+  rootStyle:
+  `
+  position: absolute;
+  top: 93%;
+  left: 3%;
+  height: 40px;
+  padding: 0px;
+  margin: 0px;
+  background: rgba(13,13,13,0);
+  border: 0px solid rgb(44,44,44);
+  `
 });
 
   makeElement(addDiv,
   {
     id: "menu_wpn_1", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n + _leftMargin + _leftRadius,
+    rootStyle: style_wpn_n + _leftRadius,
     callback: updateWpnFromMenu,
     params: {i: 0}
   });
@@ -2690,7 +2647,7 @@ makeElement(addDiv,
   makeElement(addDiv,
   {
     id: "menu_wpn_4", cls: "_wpnSlct", prnt: "menu_wpn_select",
-    rootStyle: style_wpn_n + _rightMargin + _borderRight + _rightRadius,
+    rootStyle: style_wpn_n + _borderRight + _rightRadius,
     callback: updateWpnFromMenu,
     params: {i: 3}
   });
@@ -2717,60 +2674,50 @@ makeElement(addDiv,
      #tab2 #keybinds
 */              
 
-        var defaultHidden =
-        `
-        display: none;
-        `;
+var defaultHidden = `display: none;`;
 
-        var bind_menu =
-        `
-        box-sizing: border-box;
-        float: left;
-        margin: 0% 0px 0px 0%;
-        padding: 0px;
-        overflow-x: hidden;
-        border-radius: 3px;
-        `;
+makeElement(addDiv,
+{
+  id: "div_keysMenu", cls: "", prnt: "q_menu_left",
+  rootStyle: rootStyle + detail_menu + defaultHidden +
+  `
+  box-sizing: border-box;
+  float: left;
+  margin: 0% 0px 0px 0%;
+  padding: 0px;
+  overflow-x: hidden;
+  `
+});
 
-        makeElement(addDiv,
-        {
-            id: "div_keysMenu", cls: "", prnt: "q_menu_left",
-            rootStyle: rootStyle + detail_menu + defaultHidden + bind_menu
-        });
+// width: 385px;
+var listStyle =
+`
+background-color: rgba(0,0,0,0);
+padding: 0px;
+max-height: 97%;
+margin: 5px 1% 0px 1%;
+border-radius: 3px;
+border: 1px solid rgba(255,255,255,0.1);
+overflow-y: auto;
+`;
 
+var myLiStyle =
+`
+box-sizing: border-box;
+padding 0px; margin: 0px;
+border-bottom: 1px solid rgb(12,12,12);
+text-align: center;
+line-height: 2.09;
+`;
 
-            // width: 385px;
-            var listStyle =
-             `
-            background-color: rgba(0,0,0,0);
-            padding: 0px;
-
-            max-height: 97%;
-            margin: 5px 0px 0px 1%;
-
-            border: 1px solid rgba(255,255,255,0.1);
-
-            overflow-y: auto;
-            `;
-            //box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.9);
-            // width: 360px;
-            var myLiStyle =
-             `
-            box-sizing: border-box;
-            padding 0px; margin: 0px;
-            border-bottom: 1px solid rgb(12,12,12);
-            text-align: center;
-            line-height: 2.09;
-            `;
-
-            makeElement(addList,
-            {
-                id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
-                color1: list_colors.c1, color2: list_colors.c2,
-                rootStyle: rootStyle + listStyle,
-                liStyles: myLiStyle,
-                items: key_bind_info
-            });
+makeElement(addList,
+{
+    id: "list_keyBindInfo", cls: "_list", prnt: "div_keysMenu",
+    color1: list_colors.c1, color2: list_colors.c2,
+    rootStyle: rootStyle + listStyle,
+    liStyles: myLiStyle,
+    items: key_bind_info
+});
 
 
 
