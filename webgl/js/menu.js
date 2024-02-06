@@ -1347,7 +1347,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "Mirror o/ Plane \u2346",
+                text: "Mirror / Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
                 hoverStyles: _btn_hover_tool,
@@ -2215,7 +2215,7 @@ makeElement(addTextInput,
             makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [14, 14, 14],
+                settings: [18, 18, 18],
                 rootStyle: rootStyle + detail_menu_box_half
             });
 
