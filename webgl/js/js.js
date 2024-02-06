@@ -1558,7 +1558,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 
 	let _r = pi2/_d;
 	let _of = _o*pi2/360;
-  let _df = (_lim==0) ? 4*_d+4 : 4*(_lim+1); // Use limited parts for loop if non zero
+  let _df = (_lim<=0) ? 4*_d+4 : 4*(_lim+1); // Use limited parts for loop if non zero
 	let c_pnts = new Float32Array(_df);
 
 	switch(_p)
