@@ -456,6 +456,8 @@ var _touch_delta = [0,0];
 var flag_loadingObject = 0;
 var flag_inText = 0;
 
+var functionRunList = [];
+
 
 
 function updateMenuPos() // this stuff so bad jesus
@@ -1549,18 +1551,20 @@ function updateGrid()
 }
 
 
-function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe fix z later
+function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, plane : maybe fix z later
 {
 	// s = x^2 + y^2
 	// x = sqrt(s)*cos(r)	y = sqrt(s)*sin(r)
 
-	var _r = pi2/_d;
-	var _of = _o*pi2/360;
-	var c_pnts = new Float32Array(4*_d+4);
+	let _r = pi2/_d;
+	let _of = _o*pi2/360;
+  let _df = (_lim==0) ? 4*_d+4 : 4*(_lim+1); // Use limited parts for loop if non zero
+	let c_pnts = new Float32Array(_df);
+
 	switch(_p)
 	{
 		case 0:
-			for (var n = 0; n<=_d; n++)
+			for (let n=0; n<=_df; n++)
 			{
 				c_pnts[n*4+0] = _lp_world[0];
 				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
@@ -1569,7 +1573,7 @@ function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe
 			m_objs_loadPoints(c_pnts);
 			break;
 		case 1:
-			for (var n = 0; n<=_d; n++)
+			for (let n=0; n<=_df; n++)
 			{
 				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n+_of);
 				c_pnts[n*4+1] = _lp_world[1];
@@ -1578,7 +1582,7 @@ function make_cir_obj(_d, _s, _o, _p) // divisions, scale, offset, plane : maybe
 			m_objs_loadPoints(c_pnts);
 			break;
 		case 2:
-			for (var n = 0; n<=_d; n++)
+			for (let n=0; n<=_df; n++)
 			{
 				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n+_of);
 				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
@@ -2451,6 +2455,67 @@ function getctr_ghost(_i) // Get encoded 3D center point
 	return _c;
 }
 
+/*
+var translateObj =
+{
+  obj: 0,
+  lpstart: [0,0,0],
+  lpdelta: [0,0,0],
+  active: 0,
+  focus: 0,
+  runhook: 0,
+  toggle: function ()
+  {
+    switch(translateObj.active)
+    {
+      case 0:
+        translateObj.obj = obj_cyc;
+        translateObj.focus = 1;
+        translateObj.active = 1;
+        translateObj.runhook = 0;
+        break;
+      case 1:
+        translateObj.active = 0;
+        translateObj.focus = 0;
+        translateObj.runhook = 0;
+        // Apply changes to obj clones
+        arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+        translateObj.obj = 0;
+        break;
+    }
+  },
+  run: function ()
+  {
+    if (!this.runhook)
+    {
+      this.lpstart =
+      [
+        _lp_world[0],
+        _lp_world[1],
+        _lp_world[2]
+      ];
+      this.runhook = 1;
+    }
+
+    // Check for axis lock settings
+    translateObj.lpdelta =
+    [
+      (_settings[3].settings[0]) ? 0 : _lp_world[0] - this.lpstart[0],
+      (_settings[3].settings[1]) ? 0 : _lp_world[1] - this.lpstart[1],
+      (_settings[3].settings[2]) ? 0 : _lp_world[2] - this.lpstart[2]
+    ];
+
+    arScale(m_objs[this.obj], m_objs_ghost[this.obj], this.lpdelta, [0,0,0,0], [1,1,1,1]);
+
+    // need system to prevent connect to self points
+    // maybe do general check on runList and instead block m_obj and allow ghost?
+
+    // if (!key_map.lmb) {translateObj.apply(); translateObj.focus = 1;}
+  }
+};
+*/
+// functionRunList.push(translateObj);
+
 function trans_obj(_i)
 {
 	if (_i<=world_obj_count) {return;}
@@ -2507,16 +2572,6 @@ function m_obj_explode(_i)
 	}
 }
 
-// Del me
-function rotateArray(ar, n)
-{
-	const l = ar.length;
-	if (l === 0 || n % l === 0) {return ar.slice();}
-	const nn = n % l;
-	const rotatedArray = ar.slice(l - nn).concat(ar.slice(0, l - nn));
-	return rotatedArray;
-}
-
 function bond_obj(_i)
 {
 	switch(_all_lock)
@@ -2543,69 +2598,8 @@ function bond_obj(_i)
 
 			var _f = [];
 
-			// take last one out -> rotate until match x,y,z -> recreate last
-			/*
-				cut out last -> to var w/ splice
-				rotate until n: 
-				put end back into ar
-			*/
 
 			_oi.push(_oi[_oi.length-1]); // ??
-
-			// var itorLog = 0;
-
-			// var matchPoint = _oi[lap_oi]; // Can use either one
-			// var matchPoint2 = _of[lap_of]; // Can use either one
-
-			// console.log(_of);
-			// console.log(_oi);
-
-			// console.log(matchPoint);
-			// console.log(matchPoint2);
-
-			//var _oi_p = _oi.splice(-1);
-			//var _of_p = _of.splice(0, 1); // need bottom ?
-
-			// for (var i = 0; i<_oi.length; i++) // idk just use len for now
-			// {
-			// 	// if (_oi[_oi.length-1] != matchPoint) // checking if last point in array is not match point.
-			// 	if (!pIsEqual(_oi[_oi.length-1], matchPoint))
-			// 	{
-			// 		_oi = rotateArray(_oi, 1);
-			// 		itorLog++;
-			// 	}
-
-			// 	if (i == _oi.length-1) {console.log(itorLog);}
-			// }
-
-			// //_oi.push(_oi_p);
-
-			// for (var i = _of.length - 1; i >= 0; i--)
-			// {
-			// 	// if (_of[0] != matchPoint) // checking if last point in array is not match point.
-			// 	if (!pIsEqual(_of[0], matchPoint))
-			// 	{
-			// 		_of = rotateArray(_of, 1);
-			// 	}
-
-			// }
-
-			//_of.unshift(_of_p);
-
-
-			//_oi.splice(-1);
-			// for (var j = 0; j<_of.length; j++) // idk just use len for now
-			// {
-			// 	if (_of[0] != matchPoint) // checking if last point in array is not match point.
-			// 	{
-			// 		_of = rotateArray(_of, 1);
-			// 	}
-			// }
-
-			//console.log("zzzzzzzzzzzzzzzzzzzzzz------");
-
-			// console.log(_oi);
-			// console.log(_of);
 
 			_oi.forEach(e1 =>
 			{
@@ -2735,7 +2729,6 @@ function link_obj(_i)
 }
 
 
-
 function expand_obj(_i)
 {
 	switch(_all_lock)
@@ -2754,11 +2747,6 @@ function expand_obj(_i)
 			var _s = Math.pow(len3(sub(_lp_world, exp_f)),1/3);
 
 			for (var k=0; k<_w.length; k++) {if(_w[k]==0){_w[k]=1;}else{_w[k] = Math.abs(_w[k]/_s);}}
-			// for (var k=0; k<_w.length; k++) {if(_w[k]==0){_w[k]=1;}}
-
-			//console.log(_w);
-
-			//var _rs = []; var _re = []; var _rf = [];
 
 			for (var i=0; i<mem_log[_all_lock_i][1]/4; i++)
 			{
@@ -2767,22 +2755,9 @@ function expand_obj(_i)
 				//c--------------------0==========x
 				//c==========x---------0
 
-				// console.log([m_objs[_all_lock_i][i*4]-_mc[0], m_objs[_all_lock_i][i*4+1]-_mc[1], m_objs[_all_lock_i][i*4+2]-_mc[1]]);
-				// console.log(_mc);
-				//_rs = [m_objs[_all_lock_i][i*4]-_mc[0], m_objs[_all_lock_i][i*4+1]-_mc[1], m_objs[_all_lock_i][i*4+2]-_mc[1]];
-
-				// _rs = [m_objs[_all_lock_i][i*4], m_objs[_all_lock_i][i*4+1], m_objs[_all_lock_i][i*4+2]];
-				// _re = scale3(_rs, 1/len3(_rs));
-				// _rf = 
-				// console.log(_rs);
-
-				// m_objs[_all_lock_i][i*4]   = _mc[0] + _w[0]*(m_objs[_all_lock_i][i*4]  -_mc[0]);
-				// m_objs[_all_lock_i][i*4+1] = _mc[1] + _w[1]*(m_objs[_all_lock_i][i*4+1]-_mc[1]);
-				// m_objs[_all_lock_i][i*4+2] = _mc[2] + _w[2]*(m_objs[_all_lock_i][i*4+2]-_mc[2]);
 				m_objs[_all_lock_i][i*4]   = _mc[0] + _w[0]*(m_objs[_all_lock_i][i*4]  -_mc[0]);
 				m_objs[_all_lock_i][i*4+1] = _mc[1] + _w[1]*(m_objs[_all_lock_i][i*4+1]-_mc[1]);
 				m_objs[_all_lock_i][i*4+2] = _mc[2] + _w[2]*(m_objs[_all_lock_i][i*4+2]-_mc[2]);
-
 			}
 			_all_lock_i = 0; _all_lock = 0;
 			break;
@@ -2864,6 +2839,8 @@ function arClone(a, b, c, s)
   }
 }
 
+// This one does it all.
+// &a made from &b, - inner vec3 d, * outer vec3 d, + vec3 offset
 function arScale(a, b, c, d, s)
 {
   for (let i = a.length-1; i>=0; i--)
@@ -2883,19 +2860,6 @@ function writeToObjI(_ob, i)
       m_objs[i][start] = _ob[start];
       start++;
     }
-  }
-}
-
-function translateObjI(_i, _v)
-{
-  let _t_c = getctr_ghost(_i);
-  const _s = mem_log[_i][2];
-  for (let i=0; i<_s; i++)
-  {
-    m_objs[_i][i*4] = m_objs_ghost[_i][i*4] + _v[0] - _t_c[0];
-    m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] + _v[1] - _t_c[1];
-    m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] + _v[2] - _t_c[2];
-    m_objs[_i][i*4+3] = m_objs_ghost[_i][i*4+3];
   }
 }
 
@@ -3005,7 +2969,7 @@ function createCircleAtCursor()
   let _stn = _settings[0].settings;
 	if (!isNaN(_stn[1]) && !isNaN(_stn[0]) && !isNaN(_stn[2]))
 	{
-		make_cir_obj(Math.floor(_stn[1]), _stn[0], _stn[2], pln_cyc);
+		make_cir_obj(Math.floor(_stn[1]), _stn[0], _stn[2], _stn[3], pln_cyc);
 	}
 }
 
@@ -3398,8 +3362,30 @@ function drawSegment(vertices, mi)
 
 function drawPoints(_pnts, mi)
 {
+
+
+  // Here I can try and use tri dots instead
+  // Make buffers later
+  // So it still looks like krap lol
+
+  /*
+  let _dsize = 0.0015;
+  let _drnd = 200000;
+  let _s = _pnts.length/2;
+  let _ptris = new Float32Array(_s * 6);
+  for (let i=0; i<_s; i++)
+  {
+    _ptris[i*6] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd;
+    _ptris[i*6+1] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd+_dsize/2;
+    _ptris[i*6+2] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd-_dsize*(3/4-0.25);
+    _ptris[i*6+3] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd-_dsize/2;
+    _ptris[i*6+4] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd+_dsize*(3/4-0.25);
+    _ptris[i*6+5] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd-_dsize/2;
+  }
+  */
   
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  // gl.bufferData(gl.ARRAY_BUFFER, _ptris, gl.STATIC_DRAW);
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
@@ -3425,6 +3411,7 @@ function drawPoints(_pnts, mi)
     } else {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.3]);}
 
   // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
+  // gl.drawArrays(gl.TRIANGLES, 0, _ptris.length / 2);
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
 }
 
@@ -4091,7 +4078,6 @@ function mouseToWorld()
   let _testv = sub3(_vdf, player_pos)
   
   let _teste = scale(_testv, 1/len3(_testv));
-  // translateObjI(13, add3(scale3(_teste, 35), player_pos));
 
   let _d = -player_pos[1]/dot([0,1,0],norm(_teste));
   let _ff = [player_pos[0]+_d*_teste[0],player_pos[1]+_d*_teste[1],player_pos[2]+_d*_teste[2]]; // player pos + look dir * 
@@ -4125,7 +4111,6 @@ function pointerOutsideWindow()
 	return _in;
 }
 
-var functionRunList = [];
 var boundingBox =
 {
   i: 0,
@@ -4152,17 +4137,19 @@ var boundingBox =
   lp: [0,0,0],
   toggle: function ()
   {
-    if (boundingBox.enable)
+    switch(boundingBox.enable)
     {
-      boundingBox.focus = 0;
-      boundingBox.enable = 0;
-      boundingBox.obj = 0;
-    } else
-    {
-      boundingBox.enable = 1;
-      boundingBox.focus = 1;
-      boundingBox.obj = obj_cyc;
-      boundingBox.set();
+      case 0:
+        boundingBox.enable = 1;
+        boundingBox.focus = 1;
+        boundingBox.obj = obj_cyc;
+        boundingBox.set();
+        break;
+      case 1:
+        boundingBox.focus = 0;
+        boundingBox.enable = 0;
+        boundingBox.obj = 0;
+        break;
     }
   },
   set: function ()
@@ -4245,7 +4232,7 @@ var boundingBox =
       this.runhook = 1;
     }
 
-    this.lpdelta=
+    this.lpdelta =
     [
       (_settings[3].settings[0]) ? 0 : _lp_world[0] - this.lpstart[0],
       (_settings[3].settings[1]) ? 0 : _lp_world[1] - this.lpstart[1],
@@ -4356,10 +4343,6 @@ function Compute(init_dat)
   }
 
 
-  // if (key_map.j && runEvery(200)) {boundingBox.set(); boundingBox.match();}
-  // if (key_map.k && runEvery(200)) {boundingBox.apply(); boundingBox.set(); boundingBox.match();}
-
-
   for (let p = functionRunList.length-1; p>=0; p--)
   {
     if (functionRunList[p].active) {functionRunList[p].run();}
@@ -4412,7 +4395,7 @@ function Compute(init_dat)
 	}
 
 
-	if (key_map["6"] && runEvery(300)) {expand_obj(obj_cyc);}
+	if (key_map["6"] && runEvery(300)) {boundingBox.toggle();}
 
 	if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
 

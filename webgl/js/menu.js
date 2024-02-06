@@ -881,6 +881,7 @@ var key_bind_info =
 [
   "Ctrl+F5 Update Game",
   "Q(toggle menu & unlock mouse)",
+  "M(measure line or linked obj)",
   "R(switch plane)",
   "...",
   "W(move forward), S(move backwards)",
@@ -921,7 +922,7 @@ var key_bind_info =
   "Shift+T(dupe -> move cursor -> end[V] OR cont.)",
   "[GRID] 5(mirror over selected plane & point)",
   "[MOVE] 5(mirror over selected plane & object center)",
-  "6(scale by dist -> select in sequence)",
+  "6(resize object w/ bounding box corners)",
   "7(generate circle at cursor & plane)",
   "H(set cursor to object's encoded 3D center)",
   "/(print object to console)",
@@ -1538,172 +1539,189 @@ makeElement(addDiv,
             rootStyle: rootStyle + detail_menu
         });
 
-              /*
-                           ╔╗              ╔╗
-                           ║║             ╔╝╚╗
-              ╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔═╗
-              ║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗╗
-              ║╚═╗║║║║ ║╚═╗║╚╗║║═╣    ╠══║ ║╚╗║║║║
-              ╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
-              #drawsettings
-              */
+        /*
+                     ╔╗              ╔╗
+                     ║║             ╔╝╚╗
+        ╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔═╗
+        ║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗╗
+        ║╚═╗║║║║ ║╚═╗║╚╗║║═╣    ╠══║ ║╚╗║║║║
+        ╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
+        #drawsettings
+        */
 
-              var detail_menu_box =
-              `
-              box-sizing: border-box;
-              float: left;
-              width: 98%;
-              margin: 5px 0 0 1%;
-              border-radius: 3px;
-              z-index: -1;
-              border-bottom: 1px solid rgb(32,32,32);
-              `;
+var detail_menu_box =
+`
+box-sizing: border-box;
+float: left;
+width: 98%;
+margin: 5px 0 0 1%;
+border-radius: 3px;
+z-index: -1;
+border-bottom: 1px solid rgb(32,32,32);
+`;
 
-              var detail_menu_box_half =
-              `
-              box-sizing: border-box;
-              float: left;
-              width: 48.5%;
-              margin: 3px 0 0 1%;
-              border-radius: 3px;
-              z-index: -1;
-              border-bottom: 1px solid rgb(32,32,32);
-              `;
+var detail_menu_box_half =
+`
+box-sizing: border-box;
+float: left;
+width: 48.5%;
+margin: 3px 0 0 1%;
+border-radius: 3px;
+z-index: -1;
+border-bottom: 1px solid rgb(32,32,32);
+`;
 
-              var _cbxLastRad = `border-radius: 0px 0px 3px 0px;`;
-              var _detailLastRad = `border-radius: 0px 0px 3px 3px;`;
+var _cbxLastRad = `border-radius: 0px 0px 3px 0px;`;
+var _detailLastRad = `border-radius: 0px 0px 3px 3px;`;
+var _leftBorder = `border-left: 1px solid rgba(12,12,12,1);`;
+
+// For setting half size of full size box
+var div_css =
+`
+display: inline-block;
+width: 50%;
+margin: 0px 0% 0 0%;
+outline: none;
+text-align: center;
+line-height: 2.4;
+height: 26px;
+font-size: 11px;
+color: #AAA;
+text-shadow: #191919 0px 0px 2px;
+
+border-top: 0px rgba(0,0,0,0);
+border-left: 0px rgba(0,0,0,0);
+border-right: 0px rgba(0,0,0,0);
+border-bottom: 1px rgba(12,12,12,1);
+`;
+
+// Style for li's inside boxes for boxes of half size
+var div_css_half =
+`
+width: 100%;
+margin: 0px 0% 0 0%;
+outline: none;
+text-align: center;
+line-height: 2.4;
+height: 26px;
+font-size: 11px;
+color: #AAA;
+text-shadow: #191919 0px 0px 2px;
+`;
+
+// Text / Number input box styles
+var textIn_css =
+`
+padding-top: 3px;
+color: rgb(140, 140, 235);
+box-sizing: border-box;
+float: right;
+width: 50%;
+height: 100%;
+text-align: center;
+outline: none;
+border: 0px solid rgba(0,0,0,0);
+`;
+
+// Settings box title bar w/ name
+var myTitleStyle =
+`
+margin: 0px;
+width: 100%;
+height: 26px;
+line-height: 2.1;
+background: rgb(38,38,39);
+border-radius: 3px 3px 0px 0px;
+border-top: 1px solid rgb(62,62,62);
+border-bottom: 1px solid rgb(16,16,16);
+`;
+
+var textIn_hover = `inset 0px 0px 2px 0px rgba(84, 84, 84, 1)`;
+var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
+
+// background-color: rgb(17, 17, 18);
+makeElement(addDiv,
+{
+    id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
+    settings: [8, 24, 0, 0],
+    rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
+  text: `circle settings \u25CB`,
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+    id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
+    text: `scale`,
+    rootStyle: rootStyle + div_css + _btn_col1
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addTextInput,
+{
+    id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
+    rootStyle: rootStyle + textIn_css + _btn_col1,
+    hoverShadow: textIn_hover, shadow: textIn_leave,
+    callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+    id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
+    text: `divider`,
+    rootStyle: rootStyle + div_css + _btn_col1 + _leftBorder
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+    id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
+    text: `offset`,
+    rootStyle: rootStyle + div_css + _btn_col2 + _detailLastRad
+});
+
+makeElement(addTextInput,
+{
+    id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
+    rootStyle: rootStyle + textIn_css + _btn_col2,
+    hoverShadow: textIn_hover, shadow: textIn_leave,
+    callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+    id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
+    text: `n parts`,
+    rootStyle: rootStyle + div_css + _btn_col2 + _leftBorder
+});
+
+makeElement(addTextInput,
+{
+    id: "textIn_limit", cls: "_textInput", prnt: "circleTool_limit",
+    rootStyle: rootStyle + textIn_css + _btn_col2,
+    hoverShadow: textIn_hover, shadow: textIn_leave,
+    callback: updateSetting
+});
 
 
-                // For setting half size of full size box
-                var div_css =
-                `
-                width: 50%;
-                margin: 0px 0% 0 0%;
-                outline: none;
-                text-align: center;
-                line-height: 2.4;
-                height: 26px;
-                font-size: 11px;
-                color: #AAA;
-                text-shadow: #191919 0px 0px 2px;
-
-                border-top: 0px rgba(0,0,0,0);
-                border-left: 0px rgba(0,0,0,0);
-                border-right: 0px rgba(0,0,0,0);
-                border-bottom: 1px rgba(12,12,12,1);
-                `;
-
-                // Style for li's inside boxes for boxes of half size
-                var div_css_half =
-                `
-                width: 100%;
-                margin: 0px 0% 0 0%;
-                outline: none;
-                text-align: center;
-                line-height: 2.4;
-                height: 26px;
-                font-size: 11px;
-                color: #AAA;
-                text-shadow: #191919 0px 0px 2px;
-                `;
-
-                // Text / Number input box styles
-                var textIn_css =
-                `
-                padding-top: 3px;
-                color: rgb(140, 140, 235);
-                box-sizing: border-box;
-                float: right;
-                width: 50%;
-                height: 100%;
-                text-align: center;
-                outline: none;
-                border: 0px solid rgba(0,0,0,0);
-                `;
-
-                // Settings box title bar w/ name
-                var myTitleStyle =
-                `
-                margin: 0px;
-                width: 100%;
-                height: 26px;
-                line-height: 2.1;
-                background: rgb(38,38,39);
-                border-radius: 3px 3px 0px 0px;
-                border-top: 1px solid rgb(62,62,62);
-                border-bottom: 1px solid rgb(16,16,16);
-                `;
-
-
-                var textIn_hover = `inset 0px 0px 2px 0px rgba(84, 84, 84, 1)`;
-                var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
-
-              // background-color: rgb(17, 17, 18);
-              makeElement(addDiv,
-              {
-                  id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
-                  settings: [8, 24, 0],
-                  rootStyle: rootStyle + detail_menu_box
-              });
-
-                makeElement(addDiv,
-                {
-                  id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
-                  text: `circle settings \u25CB`,
-                  rootStyle: rootStyle + div_css + myTitleStyle
-                });
-
-                makeElement(addDiv,
-                {
-                    id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
-                    text: `scale`,
-                    rootStyle: rootStyle + div_css + _btn_col1
-                });
-
-                /*
-                  ╔╗╔═╗ 
-                  ╠╣║╔╗╗
-                  ║║║║║║
-                  ╚╝╚╝╚╝
-                */    
-
-                  makeElement(addTextInput,
-                  {
-                      id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
-                      rootStyle: rootStyle + textIn_css + _btn_col1,
-                      hoverShadow: textIn_hover, shadow: textIn_leave,
-                      callback: updateSetting
-                  });
-
-                makeElement(addDiv,
-                {
-                    id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
-                    text: `divider`,
-                    rootStyle: rootStyle + div_css + _btn_col2
-                });
-
-                  makeElement(addTextInput,
-                  {
-                    id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
-                    rootStyle: rootStyle + textIn_css + _btn_col2,
-                    hoverShadow: textIn_hover, shadow: textIn_leave,
-                    callback: updateSetting
-                  });
-
-                makeElement(addDiv,
-                {
-                    id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
-                    text: `offset`,
-                    rootStyle: rootStyle + div_css + _btn_col1 + _detailLastRad
-                });
-
-                  makeElement(addTextInput,
-                  {
-                      id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
-                      rootStyle: rootStyle + textIn_css + _btn_col1,
-                      hoverShadow: textIn_hover, shadow: textIn_leave,
-                      callback: updateSetting
-                  });
               /*
                 ╔╗                       ╔╗
                 ║║                      ╔╝╚╗
@@ -1935,7 +1953,7 @@ makeElement(addDiv,
               makeElement(addDiv,
               {
                   id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
-                  text: 'lock settings \u0466',
+                  text: 'axis lock \u0466',
                   rootStyle: rootStyle + div_css + myTitleStyle
               });
 
