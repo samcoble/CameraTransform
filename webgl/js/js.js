@@ -413,7 +413,7 @@ var in_win_clip;
 
 var _preview_scaler;
 
-var menu_q_size = [531, 548];
+var menu_q_size = [400, 500];
 var menu_q_pos = [30, 240];
 var menu_obj_pos = [0, 0]; // fix me entire system wacked
 var menu_objpreview_pos = [0, 0]; // fix me
@@ -467,7 +467,7 @@ function updateMenuPos() // this stuff so bad jesus
   menu_obj_pos = [in_win_w-200-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
 
-	menu_q_pos = [in_win_w*0.015, in_win_h*0.5 - 0.5*menu_q_size[1]];
+	menu_q_pos = [in_win_w*0.01, in_win_h*0.5 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
 	// Updating new menu script.

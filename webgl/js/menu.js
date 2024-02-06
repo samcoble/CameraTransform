@@ -1198,8 +1198,8 @@ makeElement(addDiv,
   `
   box-sizing: border-box;
   position: absolute;
-  width: 531px;
-  height: 548px;
+  width: 400px;
+  height: 500px;
   left: 30px;
   top: 190px;
   user-select: none;
@@ -1219,9 +1219,9 @@ makeElement(addDiv,
   rootStyle: rootStyle +
   `
   box-sizing: border-box;
-  width: 29.25%;
+  width: 32%;
   float: right;
-  margin: 50px 13px 0px 0px;
+  margin: 34px 0px 0px 0px;
   padding: 0px;
   background-color: rgba(0, 0, 0, 0);
   border-top: 0px solid rgba(120,120,120, 0.3);
@@ -1311,7 +1311,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "Cursor to Ground \u2356",
+                text: "Ground Cursor \u2356",
                 id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
                 hoverStyles: _btn_hover_tool,
@@ -1329,7 +1329,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "Duplicate Object \u26FC",
+                text: "Duplicate \u26FC",
                 id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
                 hoverStyles: _btn_hover_tool,
@@ -1347,7 +1347,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "Mirror over Plane \u2346",
+                text: "Mirror o/ Plane \u2346",
                 id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
                 hoverStyles: _btn_hover_tool,
@@ -1401,7 +1401,7 @@ makeElement(addDiv,
 
             makeElement(addButton,
             {
-                text: "\u2421 Delete Object \u2421",
+                text: "Delete Object \u2421",
                 id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
                 rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
                 hoverStyles: _btn_hover_tool,
@@ -1444,13 +1444,14 @@ makeElement(addDiv,
         */
 
 
+        // WIDTH OF ALL HERE
         var q_menu_left =
         `
         background: rgba(0,0,0,0);
         position: absolute;
         left: 0px;
         top: 0px;
-        width: 360px;
+        width: 272px;
         height: 95%;
         margin: 0 0% 0 0%;
         padding-top: 0%;
@@ -1468,7 +1469,6 @@ makeElement(addDiv,
       background: rgba(0,0,0,0);
       box-sizing: border-box;
       margin: 0; padding: 0;
-      float: top;
       z-index: -1;
       `;
 
@@ -1480,7 +1480,7 @@ makeElement(addDiv,
       });
 
 
-        var _btn_hover = `background-color: rgb(38, 38, 39);`;
+        var _btn_hover = `box-shadow: inset 0px 0px 2px 0px rgba(255, 255, 255, 0.6);`;
 
         var _btn_tab =
         `
@@ -1489,17 +1489,17 @@ makeElement(addDiv,
         text-align: center;
         border-top: 1px solid rgba(222, 222, 222, 0.1);
         border-bottom: 0px;
-        border-right: 1px solid rgba(222, 222, 222, 0.1);
+        border-right: 0px solid rgba(222, 222, 222, 0.1);
         border-left: 1px solid rgba(222, 222, 222, 0.1);
         outline: none;
-        width: 38%;
+        width: 44%;
         height: 66%;
         padding: 0px;
-        border-radius: 2px;
+        margin: 0px;
         `;
 
-        var _btn_tab0 = `margin: 0px 0% 0% 1%;`;
-        var _btn_tabn = `margin: 0px 0% 0% 1%;`;
+        var _btn_tab0 = `margin: 0px 0% 0% 1%; border-radius: 3px 0px 0px 3px;`;
+        var _btn_tabn = `border-left: 1px solid rgb(12,12,12); border-radius: 0px 3px 3px 0px; border-right: 1px solid rgba(222, 222, 222, 0.1);`;
 
         makeElement(addButton,
         {
@@ -2187,7 +2187,7 @@ makeElement(addTextInput,
                   makeElement(addDiv,
                   {
                       id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
-                      text: `face culling`,
+                      text: `culling`,
                       rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
                   });
 
@@ -2215,14 +2215,14 @@ makeElement(addTextInput,
             makeElement(addDiv,
             {
                 id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [20, 20, 20],
+                settings: [14, 14, 14],
                 rootStyle: rootStyle + detail_menu_box_half
             });
 
                 makeElement(addDiv,
                 {
                     id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
-                    text: 'color settings (0:255)',
+                    text: 'world color [255]',
                     rootStyle: rootStyle + div_css_half + myTitleStyle
                 });
 
@@ -2302,7 +2302,7 @@ makeElement(addTextInput,
               makeElement(addDiv,
               {
                   id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
-                  text: 'rotation settings \u2B6E',
+                  text: 'rotation \u2B6E',
                   rootStyle: rootStyle + div_css + myTitleStyle
               });
 
