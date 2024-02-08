@@ -10,7 +10,7 @@ Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.
 
 Ctrl+F5 to clear cache and load the updated version.
 
-Old 2D Canvas: [memspc.xyz](https://memspc.xyz/2dcanvas)
+Old 2D Canvas: [memspc.xyz/2dcanvas](https://memspc.xyz/2dcanvas)
 
 So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
 
