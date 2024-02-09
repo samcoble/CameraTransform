@@ -804,7 +804,7 @@ function delFolder(_i)
   _s = obj_folders[_i].length;
   for (let i=0; i<_s; i++)
   {
-    obj_folders[3].push(obj_folders[_i][i]);
+    obj_folders[(folder_parents[folder_selected]==-1) ? 3 : folder_parents[folder_selected]].push(obj_folders[_i][i]);
   }
 
   folder_parents.splice(_i, 1);
@@ -3662,8 +3662,6 @@ var _si_d = 0;
 var _od = 0;
 var _h = 0;
 
-function drawLines()
-{
   // updateZMap();
   
   // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
@@ -3682,6 +3680,8 @@ function drawLines()
   
   // #linesandtris
 
+function drawLines()
+{
   start = size = end = 0;
 
   for (let i = m_objs.length-1; i >= 0; i--)
