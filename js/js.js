@@ -3090,7 +3090,7 @@ function deleteFolderObjs()
 
 function dupeFolderObjs()
 {
-  if (folder_selected < 4) {return;}
+  if (folder_selected < 3) {return;}
   const _folder = Array.from(obj_folders[folder_selected]);
   const _ti = Date.now();
   const _delay = 30;
