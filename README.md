@@ -41,7 +41,6 @@ I have ported a lot to webgl and the performance improvements are quite insane a
 
 ![MENY](https://github.com/samcoble/CameraTransform/assets/32228102/f6675d65-0056-447a-8483-7591e8a6e30b)
 ![BFC](https://github.com/samcoble/CameraTransform/assets/32228102/f3017d83-86d5-4826-8cdd-adaad4742197)
-![fldrs](https://github.com/samcoble/CameraTransform/assets/32228102/2a1dea5f-7a53-49a5-aa2e-15a9420ef840)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
 ![NVIDIA](https://github.com/samcoble/CameraTransform/assets/32228102/5796f7f6-e08a-4e15-a02f-085735bfa242)
 ![webgl](https://github.com/samcoble/CameraTransform/assets/32228102/d6daf04d-05c5-4484-a0c9-5047fe041b75)
