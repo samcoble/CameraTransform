@@ -3062,7 +3062,7 @@ function moveObject()
 
 function deleteFolderObjs()
 {
-  if (folder_selected < 4) {return;}
+  if (folder_selected < 3) {return;}
   const _folder = Array.from(obj_folders[folder_selected]);
   const _ti = Date.now();
   _folder.sort((a, b) => b - a);
