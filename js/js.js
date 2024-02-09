@@ -1080,7 +1080,7 @@ function loadFile0(_fi)
       {
         if (i==0)
         {
-          let _s3 = offsetArray(_r[3][i], -(_sml)+_s1); // change here for more world objects I think subtract from world count
+          let _s3 = offsetArray(_r[3][i], -(_sml)+_s1);
           let _s4 = _s3.length;
           for (let j=0; j<_s4; j++)
           {
@@ -1123,7 +1123,6 @@ function loadFile0(_fi)
     _settings[8].settings[1] = fileName;
     updateTextByPar("menu_status_r2", _fn.slice(_si+1, _fn.length));
   }
-  // flag_loadingObject = 0;
   updateTree(tree_allObjects);
 }
 
@@ -1897,7 +1896,7 @@ function updateNormalMaps()
 					obj_normalMaps[i][4*k+1] = _cr[1];
 					obj_normalMaps[i][4*k+2] = _cr[2];
 
-					// Unreal it works lol.
+					// Unreal man it works unlike unreal man
 					// Now to update updateRayInters with all results from lpi w/ by paralleling with m_objs again to query both m_objs and obj_normalMaps into the lpi that updates a list of points. Dynamic list for this one.
 					// 2d mean could point to nearest 3 points as well making this a lot faster than doing this lol. or combine both and use the 2d to determine if it's center and if the planes are equal.??
 					// if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
@@ -2477,7 +2476,6 @@ var translateObj =
           _lp_world[1],
           _lp_world[2]
         ];
-        console.log("should be dfasf");
         translateObj.lpdelta = [0,0,0];
         translateObj.folder = Array.from(obj_folders[folder_selected]);
         translateObj.obj = obj_cyc;
@@ -2740,41 +2738,6 @@ function link_obj(_i)
 }
 
 
-function expand_obj(_i)
-{
-	switch(_all_lock)
-	{
-		case 0:
-			_all_lock_i = _i;
-			_all_lock = 3;
-			exp_f[0] = _lp_world[0];
-			exp_f[1] = _lp_world[1];
-			exp_f[2] = _lp_world[2];
-			break;
-		case 3:
-			var _mc = getctr_obj(_all_lock_i);
-			var _d = sub(_lp_world, _mc);
-			var _w = sub(_lp_world, exp_f);
-			var _s = Math.pow(len3(sub(_lp_world, exp_f)),1/3);
-
-			for (var k=0; k<_w.length; k++) {if(_w[k]==0){_w[k]=1;}else{_w[k] = Math.abs(_w[k]/_s);}}
-
-			for (var i=0; i<mem_log[_all_lock_i][1]/4; i++)
-			{
-				//c=====x--------------0
-				//c--------------------0=====x
-				//c--------------------0==========x
-				//c==========x---------0
-
-				m_objs[_all_lock_i][i*4]   = _mc[0] + _w[0]*(m_objs[_all_lock_i][i*4]  -_mc[0]);
-				m_objs[_all_lock_i][i*4+1] = _mc[1] + _w[1]*(m_objs[_all_lock_i][i*4+1]-_mc[1]);
-				m_objs[_all_lock_i][i*4+2] = _mc[2] + _w[2]*(m_objs[_all_lock_i][i*4+2]-_mc[2]);
-			}
-			_all_lock_i = 0; _all_lock = 0;
-			break;
-	}
-}
-
 // Remove center option? nah keeps cursor in right place.
 // @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
 function rotateObject(_op, _r) // _op determines if rotation uses point or center, _r radians.
@@ -3013,6 +2976,7 @@ function mirrorOverPlane()
 				}
 			}
 		}
+    arScale(m_objs_ghost[obj_cyc], m_objs[obj_cyc], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 	}
 }
 
