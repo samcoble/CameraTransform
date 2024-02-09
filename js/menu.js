@@ -717,43 +717,46 @@ function updateList(_item, _id) // pass data as an obj of items & ul id. li's go
 // bad name fix
 function objListConst()
 {
-    var _l = [];
-    // m_objs
-    for (var i = 0; i<m_objs.length; i++)
-    {
-        _l[i] = mem_log[i][2];
-    }
-    return _l;
+  var _l = [];
+  // m_objs
+  for (var i = 0; i<m_objs.length; i++)
+  {
+      _l[i] = mem_log[i][2];
+  }
+  return _l;
 }
 
 function hideElementById(elementId)
 {
+  if (elementId != '')
+  {
     element = document.getElementById(elementId);
     if (element) { element.style.display = 'none'; }
+  }
 }
 
 function unhideElementById(elementId)
 {
+  if (elementId != '')
+  {
     element = document.getElementById(elementId);
     if (element) { element.style.display = 'block'; }
+  }
 }
 
 function setVisibility(p) // Fix looping of this being called eventually
 {
-    if (p.hide != "") {hideElementById(p.hide);}
-    if (p.show != "") {unhideElementById(p.show);}
+  if (p.hide.length > 0) {p.hide.forEach(function(item) {hideElementById(item);});}
+  if (p.show.length > 0) {p.show.forEach(function(item) {unhideElementById(item);});}
 }
 
-function getInputById(id)
-{return document.getElementById(id).value;}
-
-function getCheckedById(id)
-{return document.getElementById(id).checked;}
+function getInputById(id) {return document.getElementById(id).value;}
+function getCheckedById(id) {return document.getElementById(id).checked;}
 
 function setChecked(id, setbool)
 {
-    var _cbx = document.getElementById(id);
-    _cbx.checked = setbool;
+  var _cbx = document.getElementById(id);
+  _cbx.checked = setbool;
 }
 
 function updateTextByPar(id, _v)
@@ -971,7 +974,7 @@ var _error_info =
 
 // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 
-let _fixthis = menu_q_size[1]-208;
+let _fixthis = menu_q_size[1];
 var menu_obj_style =
 `
 box-sizing: border-box;
@@ -999,50 +1002,48 @@ border-radius: 3px;
 
 makeElement(addDiv,
 {
-    id: "menu_obj", cls: "", prnt: "html",
-    rootStyle: rootStyle + menu_obj_style
+  id: "menu_obj", cls: "", prnt: "html",
+  rootStyle: rootStyle + menu_obj_style
 });
 
-  makeElement(addDiv,
-  {
-      id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
-      rootStyle: rootStyle + menu_objPreview_style + justOuter
-  });
+makeElement(addDiv,
+{
+  id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
+  rootStyle: rootStyle + menu_objPreview_style + justOuter
+});
 
-  var listStyle2 =
-  `
-  background-color: rgba(0,0,0,0);
-  width: 96%;
-  padding: 0px;
-  margin: 3px;
-  border: 1px solid rgba(255,255,255,0.1);
-  max-height: `+_fixthis+`px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  `;
+var listStyle2 =
+`
+background-color: rgba(0,0,0,0);
+width: 96%;
+padding: 0px;
+margin: 3px;
+border: 1px solid rgba(255,255,255,0.1);
+max-height: `+_fixthis+`px;
+overflow-y: auto;
+overflow-x: hidden;
+`;
 
-  var myLiStyle2 =
-   `
-  box-sizing: border-box;
-  width: 100%;
-  height: 20px;
-  padding: 0px; margin: 0px;
-  border-bottom: 1px solid rgb(12,12,12);
-  text-align: center;
-  line-height: 1.8;
-  `;
+var myLiStyle2 =
+ `
+box-sizing: border-box;
+width: 100%;
+height: 20px;
+padding: 0px; margin: 0px;
+border-bottom: 1px solid rgb(12,12,12);
+text-align: center;
+line-height: 1.8;
+`;
 
-  var list_objectSelect =
-  {
-      id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
-      color1: list_colors.c1, color2: list_colors.c2,
-      rootStyle: rootStyle + listStyle2,
-      liStyles: myLiStyle2,
-      items: _error_info
-  };
-  addList(list_objectSelect);
-
-  //overflow-y: auto;
+var list_objectSelect =
+{
+  id: "list_objectSelect", cls: "_list", prnt: "menu_obj",
+  color1: list_colors.c1, color2: list_colors.c2,
+  rootStyle: rootStyle + listStyle2,
+  liStyles: myLiStyle2,
+  items: _error_info
+};
+addList(list_objectSelect);
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -1059,6 +1060,7 @@ makeElement(addDiv,
 left: 700px;
 top: 190px;
 position: absolute;
+background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 */
 
 // var menu_tree_wrap
@@ -1075,7 +1077,6 @@ color: #CCC;
 overflow-y: auto;
 overflow-x: hidden;
 `;
-
 
 var menu_tree_ulStyle =
 `
@@ -1108,80 +1109,80 @@ left: 1px;
 //   rootStyle: rootStyle + menu_tree_style
 // });
 
-  // almost converted but no li style
-  var tree_allObjects =
-  {
-    id: "tree_allObjects", cls: "_list", prnt: "menu_obj",
-    color1: list_colors.c1, color2: list_colors.c2, color3: list_colors.c3,
-    rootStyle: rootStyle + menu_tree_style,
-    liStyles: menu_tree_liStyle,
-    myUlStyle: menu_tree_ulStyle
-  }; addTree(tree_allObjects);
+// almost converted but no li style
+var tree_allObjects =
+{
+  id: "tree_allObjects", cls: "_list", prnt: "menu_obj",
+  color1: list_colors.c1, color2: list_colors.c2, color3: list_colors.c3,
+  rootStyle: rootStyle + menu_tree_style,
+  liStyles: menu_tree_liStyle,
+  myUlStyle: menu_tree_ulStyle
+}; addTree(tree_allObjects);
 
-  var tree_btn_l =
-  `
-  border-radius: 3px 0px 0px 3px;
-  `;
+var tree_btn_l =
+`
+border-radius: 3px 0px 0px 3px;
+`;
 
-  var tree_btn_r =
-  `
-  border-radius: 0px 3px 3px 0px;
-  border-left: 0px solid black;
-  `;
+var tree_btn_r =
+`
+border-radius: 0px 3px 3px 0px;
+border-left: 0px solid black;
+`;
 
-  var tree_btn =
-  `
-  color: #DDD;
-  margin: 10px 0px 0px 0px;
-  width: 15%;
-  height: 26px;
-  text-align: center;
-  border: 1px solid rgba(200, 200, 200, 0.1);
-  line-height: 2.06;
-  float: right;
-  outline: none;
-  ` + _btn_col2;
+var tree_btn =
+`
+color: #DDD;
+margin: 10px 0px 0px 0px;
+width: 15%;
+height: 26px;
+text-align: center;
+border: 1px solid rgba(200, 200, 200, 0.1);
+line-height: 2.06;
+float: right;
+outline: none;
+` + _btn_col2;
 
-  makeElement(addButton,
-  {
-    text: ` + `,
-    id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
-    rootStyle: rootStyle + tree_btn + tree_btn_r,
-    // hoverStyles: tree_btn_addFolder,
-    callback: treeModify,
-    params: {func:1}
-  });
+makeElement(addButton,
+{
+  text: ` + `,
+  id: "tree_btn_addFolder", cls: "tree_btn", prnt: "menu_obj",
+  rootStyle: rootStyle + tree_btn + tree_btn_r,
+  // hoverStyles: tree_btn_addFolder,
+  callback: treeModify,
+  params: {func:1}
+});
 
-  makeElement(addButton,
-  {
-    text: ` - `,
-    id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
-    rootStyle: rootStyle + tree_btn + tree_btn_l,
-    // hoverStyles: tree_btn_addFolder,
-    callback: treeModify,
-    params: {func:2}
-  });
+makeElement(addButton,
+{
+  text: ` - `,
+  id: "tree_btn_delFolder", cls: "tree_btn", prnt: "menu_obj",
+  rootStyle: rootStyle + tree_btn + tree_btn_l,
+  // hoverStyles: tree_btn_addFolder,
+  callback: treeModify,
+  params: {func:2}
+});
 
-  var treeTextInStyle =
-  `
-  color: #DDD;
-  margin: 10px 0px 0px 1%;
-  padding: 4px 0px 0px 10px;
-  width: 68%;
-  height: 26px;
-  outline: none;
-  border-radius: 3px;
-  border: 1px solid rgba(200, 200, 200, 0.1);
-  ` + _btn_col2;
+var treeTextInStyle =
+`
+color: #DDD;
+margin: 10px 0px 0px 1%;
+padding: 4px 0px 0px 10px;
+width: 68%;
+height: 26px;
+outline: none;
+border-radius: 3px;
+border: 1px solid rgba(200, 200, 200, 0.1);
+` + _btn_col2;
 
-  makeElement(addTextInput,
-  {
-    id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
-    rootStyle: rootStyle + treeTextInStyle,
-    value: "",
-    callback: treeTextInUpdate,
-    params: {id:"tree_textIn"}
-  });
+makeElement(addTextInput,
+{
+  id: "tree_textIn", cls: "_textInput", prnt: "menu_obj",
+  rootStyle: rootStyle + treeTextInStyle,
+  value: "",
+  callback: treeTextInUpdate,
+  params: {id:"tree_textIn"}
+});
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1208,10 +1209,68 @@ makeElement(addDiv,
   `
 });
 
-// background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
-// position: absolute;
-// left: 379px;
-// top: 50px;
+makeElement(addDiv,
+{
+  id: "menu_tabs", cls: "", prnt: "menu_q",
+  rootStyle: rootStyle +
+  `
+  width: 100%;
+  background: rgba(0,0,0,0);
+  box-sizing: border-box;
+  margin: 0px 0px 4px 0px;
+  padding: 0px;
+  `
+});
+
+var _btn_hover = `box-shadow: inset 0px 0px 2px 0px rgba(255, 255, 255, 0.6);`;
+var _btn_tab =
+`
+display: inline-block;
+line-height: 2.4;
+text-align: center;
+border-top: 1px solid rgba(222, 222, 222, 0.1);
+border-right: 0px solid rgba(222, 222, 222, 0.1);
+border-bottom: 0px;
+border-left: 1px solid rgb(12,12,12); 
+background-color: rgb(38, 38, 39);
+outline: none;
+padding: 0px;
+margin: 0px;
+width: 31%;
+`;
+
+var _btn_tab0 = `border-left: 1px solid rgba(222, 222, 222, 0.1); margin: 0px 0px 0px 2px; border-radius: 3px 0px 0px 3px;`;
+var _btn_tabn = `border-radius: 0px 3px 3px 0px; border-right: 1px solid rgba(222, 222, 222, 0.1);`;
+
+makeElement(addButton,
+{
+  text: "Tool Settings",
+  id: "tab1", cls: "_btn", prnt: "menu_tabs",
+  rootStyle: rootStyle + _btn_tab + _btn_tab0,
+  hoverStyles: _btn_hover,
+  callback: setVisibility,
+  params: { hide:["div_keysMenu", "div_spawnMenu"], show:["menu_detail"] },
+});
+
+makeElement(addButton,
+{
+  text: "Objects \u3004",
+  id: "tab3", cls: "_btn", prnt: "menu_tabs",
+  rootStyle: rootStyle + _btn_tab,
+  hoverStyles: _btn_hover,
+  callback: setVisibility,
+  params: { hide:["menu_detail", "div_keysMenu"], show:["div_spawnMenu"] },
+});
+
+makeElement(addButton,
+{
+  text: "Key Binds \u1CC4",
+  id: "tab2", cls: "_btn", prnt: "menu_tabs",
+  rootStyle: rootStyle + _btn_tab + _btn_tabn,
+  hoverStyles: _btn_hover,
+  callback: setVisibility,
+  params: { hide:["menu_detail", "div_spawnMenu"], show:["div_keysMenu"] },
+});
 
 makeElement(addDiv,
 {
@@ -1221,7 +1280,7 @@ makeElement(addDiv,
   box-sizing: border-box;
   width: 32%;
   float: right;
-  margin: 34px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
   padding: 0px;
   background-color: rgba(0, 0, 0, 0);
   border-top: 0px solid rgba(120,120,120, 0.3);
@@ -1233,328 +1292,286 @@ makeElement(addDiv,
   `
 });
 
-            /*
-             ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
-            ╔╝╚╗        ║║     ║║      ╔╝╚╗╔╝╚╗
-            ╚╗╔╝╔══╗╔══╗║║     ║╚═╗╔╗╔╗╚╗╔╝╚╗╔╝╔══╗╔═╗ ╔══╗
-             ║║ ║╔╗║║╔╗║║║     ║╔╗║║║║║ ║║  ║║ ║╔╗║║╔╗╗║══╣
-             ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝║ ║╚╗ ║╚╗║╚╝║║║║║╠══║
-             ╚═╝╚══╝╚══╝╚═╝    ╚══╝╚══╝ ╚═╝ ╚═╝╚══╝╚╝╚╝╚══╝
-            #toolbuttons
-            */
+// WIDTH OF ALL HERE
+makeElement(addDiv,
+{
+  id: "q_menu_left", cls: "", prnt: "menu_q",
+  rootStyle: rootStyle +
+  `
+  background: rgba(0,0,0,0);
+  width: 272px;
+  height: 95%;
+  margin: 0px;
+  padding-top: 0%;
+  `
+});
 
-            /*
-                Fqking spooky bugs AHHHHHHH
-                    -- can't apply border here after
-                            : rootStyle + _btn + _btn_tool_border,
-                benzene ring
-                \u232C
-            */
+/*
+ ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
+╔╝╚╗        ║║     ║║      ╔╝╚╗╔╝╚╗
+╚╗╔╝╔══╗╔══╗║║     ║╚═╗╔╗╔╗╚╗╔╝╚╗╔╝╔══╗╔═╗ ╔══╗
+ ║║ ║╔╗║║╔╗║║║     ║╔╗║║║║║ ║║  ║║ ║╔╗║║╔╗╗║══╣
+ ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝║ ║╚╗ ║╚╗║╚╝║║║║║╠══║
+ ╚═╝╚══╝╚══╝╚═╝    ╚══╝╚══╝ ╚═╝ ╚═╝╚══╝╚╝╚╝╚══╝
+#toolbuttons
+*/
 
-            var _btn_tool0 =
-            `
-            margin: 0px;
-            border-radius: 3px 3px 0px 0px;
-            border-top: 1px solid #282828;
-            `;
+/*
+    Fqking spooky bugs AHHHHHHH
+        -- can't apply border here after
+                : rootStyle + _btn + _btn_tool_border,
+    benzene ring
+    \u232C
+*/
 
-            var _btn_toolf =
-            `
-            margin: 0px 0px 3px 0px;
-            border-radius: 0px 0px 3px 3px;
-            `;
+var _btn_tool0 =
+`
+margin: 0px;
+border-radius: 3px 3px 0px 0px;
+border-top: 1px solid #282828;
+`;
 
-            var _btn_tooln =
-            `
-            margin: 0px 0% 0px 0px;
-            `;
+var _btn_toolf =
+`
+margin: 0px 0px 3px 0px;
+border-radius: 0px 0px 3px 3px;
+`;
 
-            var _btn =
-             `
-            text-align: right;
-            border-bottom: 1px solid rgb(12,12,12);
-            border-top: 0px solid #FFF;
-            border-left: 0px solid #FFF;
-            border-right: 0px solid #FFF;
-            outline: none;
-            width: 100%;
-            height: 26px;
-            line-height: 2.2;
-            `;
-            // color: rgb(195, 123, 0);
+var _btn_tooln =
+`
+margin: 0px 0% 0px 0px;
+`;
 
-
-            var _btn_hover_tool =
-            `
-            background-color: rgb(38, 38, 39);
-            box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
-            `;
-
-            // border-radius: 0px 2px 2px 2px;
-            makeElement(addButton,
-            {
-                text: `Lock Planar \u26C7`,
-                id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tool0 + _btn_col1,
-                hoverStyles: _btn_hover_tool,
-                callback: playerChangeMovementMode
-            });
-
-            makeElement(addButton,
-            {
-                text: "Get Center \u22A1",
-                id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: setCursorToObjCenter
-            });
-
-            makeElement(addButton,
-            {
-                text: "Ground Cursor \u2356",
-                id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-                hoverStyles: _btn_hover_tool,
-                callback: returnCursorToGround
-            });
-
-            makeElement(addButton,
-            {
-                text: "Create Circle \u25EF",
-                id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: createCircleAtCursor
-            });
-
-            makeElement(addButton,
-            {
-                text: "Duplicate \u26FC",
-                id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
-                hoverStyles: _btn_hover_tool,
-                callback: cloneObjSelected
-            });
-
-            makeElement(addButton,
-            {
-                text: "Resize Object \u2922",
-                id: "tool_resizeObject", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
-                hoverStyles: _btn_hover_tool,
-                callback: boundingBox.toggle
-            });
-
-            makeElement(addButton,
-            {
-                text: "Mirror / Plane \u2346",
-                id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-                hoverStyles: _btn_hover_tool,
-                callback: mirrorOverPlane
-            });
-
-            makeElement(addButton,
-            {
-                text: "Apply Rotation \u2B6E",
-                id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: applyRotation
-            });
-
-            makeElement(addButton,
-            {
-                text: "Move Object \u2933",
-                id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-                hoverStyles: _btn_hover_tool,
-                callback: moveObject
-            });
-
-            makeElement(addButton,
-            {
-                text: "Edit Object \u2188",
-                id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: editSelectedObject
-            });
-
-            makeElement(addButton,
-            {
-                text: "Finish Object \u07F7",
-                id: "tool_finishObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-                hoverStyles: _btn_hover_tool,
-                callback: mem_t_mov
-            });
-
-            makeElement(addButton,
-            {
-                text: "Link Object \u2366",
-                id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
-                hoverStyles: _btn_hover_tool,
-                callback: menuLinkObj
-            });
-
-            makeElement(addButton,
-            {
-                text: "Delete Object \u2421",
-                id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
-                hoverStyles: _btn_hover_tool,
-                callback: deleteObjectSelected
-            });
-
-            makeElement(addButton,
-            {
-                text: `\u05D0 Clear World \u05D0`,
-                id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-                hoverStyles: _btn_hover_tool,
-                callback: del_world
-            });
-
-            makeElement(addButton,
-            {
-                text: `Close Menu`,
-                id: "tool_closeMenu", cls: "_btn", prnt: "menu_tools",
-                rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
-                hoverStyles: _btn_hover_tool,
-                callback: pointerLockSwap 
-            });
+var _btn =
+ `
+text-align: right;
+border-bottom: 1px solid rgb(12,12,12);
+border-top: 0px solid #FFF;
+border-left: 0px solid #FFF;
+border-right: 0px solid #FFF;
+outline: none;
+width: 100%;
+height: 26px;
+line-height: 2.2;
+`;
+// color: rgb(195, 123, 0);
 
 
-        /*
-         ╔╗         ╔╗                      ╔╗
-        ╔╝╚╗        ║║                      ║║
-        ╚╗╔╝╔══╗╔══╗║║     ╔══╗╔══╗ ╔═╗ ╔══╗║║ ╔══╗
-         ║║ ║╔╗║║╔╗║║║     ║╔╗║╚ ╗║ ║╔╗╗║╔╗║║║ ║══╣
-         ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝╚╗║║║║║║═╣║╚╗╠══║
-         ╚═╝╚══╝╚══╝╚═╝    ║╔═╝╚═══╝╚╝╚╝╚══╝╚═╝╚══╝
-                           ║║
-                           ╚╝
-        #toolpanels
-        overflow-y: auto;
+var _btn_hover_tool =
+`
+background-color: rgb(38, 38, 39);
+box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+`;
 
-        box-sizing: border-box;
-        float: left;
-        */
+// border-radius: 0px 2px 2px 2px;
+makeElement(addButton,
+{
+  text: `Lock Planar \u26C7`,
+  id: "tool_moveMode", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tool0 + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: playerChangeMovementMode
+});
 
+makeElement(addButton,
+{
+  text: "Get Center \u22A1",
+  id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: setCursorToObjCenter
+});
 
-        // WIDTH OF ALL HERE
-        var q_menu_left =
-        `
-        background: rgba(0,0,0,0);
-        position: absolute;
-        left: 0px;
-        top: 0px;
-        width: 272px;
-        height: 95%;
-        margin: 0 0% 0 0%;
-        padding-top: 0%;
-        `;
-        // height: 663px;
+makeElement(addButton,
+{
+  text: "Ground Cursor \u2356",
+  id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: returnCursorToGround
+});
 
-        makeElement(addDiv,
-        {
-            id: "q_menu_left", cls: "", prnt: "menu_q",
-            rootStyle: rootStyle + q_menu_left
-        });
+makeElement(addButton,
+{
+  text: "Create Circle \u25EF",
+  id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: createCircleAtCursor
+});
 
-      var tabs_menu =
-      `
-      background: rgba(0,0,0,0);
-      box-sizing: border-box;
-      margin: 0; padding: 0;
-      z-index: -1;
-      `;
+makeElement(addButton,
+{
+  text: "Dupe Folder \u20AA",
+  id: "tool_dupeFld", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: dupeFolderObjs
+});
 
-      // height: 7%;
-      makeElement(addDiv,
-      {
-          id: "menu_tabs", cls: "", prnt: "q_menu_left",
-          rootStyle: rootStyle + tabs_menu
-      });
+makeElement(addButton,
+{
+  text: "Dupe Object \u26FC",
+  id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: cloneObjSelected
+});
 
+makeElement(addButton,
+{
+  text: "Resize Object \u2922",
+  id: "tool_resizeObject", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  hoverStyles: _btn_hover_tool,
+  callback: boundingBox.toggle
+});
 
-        var _btn_hover = `box-shadow: inset 0px 0px 2px 0px rgba(255, 255, 255, 0.6);`;
+makeElement(addButton,
+{
+  text: "Mirror / Plane \u2346",
+  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: mirrorOverPlane
+});
 
-        var _btn_tab =
-        `
-        line-height: 2.4;
-        background-color: rgb(38, 38, 39);
-        text-align: center;
-        border-top: 1px solid rgba(222, 222, 222, 0.1);
-        border-bottom: 0px;
-        border-right: 0px solid rgba(222, 222, 222, 0.1);
-        border-left: 1px solid rgba(222, 222, 222, 0.1);
-        outline: none;
-        width: 44%;
-        height: 66%;
-        padding: 0px;
-        margin: 0px;
-        `;
+makeElement(addButton,
+{
+  text: "Apply Rotation \u2B6E",
+  id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: applyRotation
+});
 
-        var _btn_tab0 = `margin: 0px 0% 0% 1%; border-radius: 3px 0px 0px 3px;`;
-        var _btn_tabn = `border-left: 1px solid rgb(12,12,12); border-radius: 0px 3px 3px 0px; border-right: 1px solid rgba(222, 222, 222, 0.1);`;
+makeElement(addButton,
+{
+  text: "Move Folder \u2933",
+  id: "tool_moveFld", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: translateObj.toggle
+});
 
-        makeElement(addButton,
-        {
-            text: "Tool Settings",
-            id: "tab1", cls: "_btn", prnt: "menu_tabs",
-            rootStyle: rootStyle + _btn_tab + _btn_tab0,
-            hoverStyles: _btn_hover,
-            callback: setVisibility,
-            params: { hide:"div_keysMenu", show:"menu_detail" }, // Update me later
-        });
+makeElement(addButton,
+{
+  text: "Move Object \u2933",
+  id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: moveObject
+});
 
-        makeElement(addButton,
-        {
-            text: "Key Binds \u1CC4",
-            id: "tab2", cls: "_btn", prnt: "menu_tabs",
-            rootStyle: rootStyle + _btn_tab + _btn_tabn,
-            hoverStyles: _btn_hover,
-            callback: setVisibility,
-            params: { hide:"menu_detail", show:"div_keysMenu" }, // Update me later
-        });
+makeElement(addButton,
+{
+  text: "Edit Object \u2188",
+  id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: editSelectedObject
+});
 
-        var detail_menu =
-        `
-        width: 100%;
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-        border: 0px;
-        background-color: rgba(0, 0, 0, 0);
-        overflow-y: auto;
-        z-index: -1;
-        `;
+makeElement(addButton,
+{
+  text: "Finish Object \u07F7",
+  id: "tool_finishObj", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: mem_t_mov
+});
 
-        makeElement(addDiv,
-        {
-            id: "menu_detail", cls: "", prnt: "q_menu_left",
-            rootStyle: rootStyle + detail_menu
-        });
+makeElement(addButton,
+{
+  text: "Link Object \u2366",
+  id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: menuLinkObj
+});
 
-        /*
-                     ╔╗              ╔╗
-                     ║║             ╔╝╚╗
-        ╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔═╗
-        ║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗╗
-        ║╚═╗║║║║ ║╚═╗║╚╗║║═╣    ╠══║ ║╚╗║║║║
-        ╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
-        #drawsettings
-        */
+makeElement(addButton,
+{
+  text: "Delete Object \u2421",
+  id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  hoverStyles: _btn_hover_tool,
+  callback: deleteObjectSelected
+});
+
+makeElement(addButton,
+{
+  text: "Empty Folder \u2672",
+  id: "tool_delFldObjs", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: deleteFolderObjs
+});
+
+makeElement(addButton,
+{
+  text: `\u05D0 Clear World \u05D0`,
+  id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: del_world
+});
+
+makeElement(addButton,
+{
+  text: `Close Menu`,
+  id: "tool_closeMenu", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: pointerLockSwap 
+});
+
+/*
+ ╔╗         ╔╗                      ╔╗
+╔╝╚╗        ║║                      ║║
+╚╗╔╝╔══╗╔══╗║║     ╔══╗╔══╗ ╔══╗╔══╗║║ ╔══╗
+ ║║ ║╔╗║║╔╗║║║     ║╔╗║║╔╗║ ║╔╗║║╔╗║║║ ║══╣
+ ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝╚╗║║║║║╚═╣║╚╗╠══║
+ ╚═╝╚══╝╚══╝╚═╝    ║╔═╝╚═══╝╚╝╚╝╚══╝╚═╝╚══╝
+                   ║║
+                   ╚╝
+#toolpanels
+*/
+
+var detail_menu =
+`
+width: 100%;
+height: 100%;
+margin: 0px;
+padding: 0px;
+border: 0px;
+background-color: rgba(0, 0, 0, 0);
+overflow-y: auto;
+z-index: -1;
+`;
+
+makeElement(addDiv,
+{
+  id: "menu_detail", cls: "", prnt: "q_menu_left",
+  rootStyle: rootStyle + detail_menu
+});
+
+/*
+             ╔╗              ╔╗
+             ║║             ╔╝╚╗
+╔══╗╔╗╔═╗╔══╗║║ ╔══╗    ╔══╗╚╗╔╝╔══╗
+║╔═╝╠╣║╔╝║╔═╝║║ ║╔╗║    ║══╣ ║║ ║╔╗║
+║╚═╗║║║║ ║╚═╗║╚╗║╚═╣    ╠══║ ║╚╗║║║║
+╚══╝╚╝╚╝ ╚══╝╚═╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
+#drawsettings
+*/
 
 var detail_menu_box =
 `
 box-sizing: border-box;
 float: left;
 width: 98%;
-margin: 5px 0 0 1%;
+margin: 0px 0 0 1%;
 border-radius: 3px;
 z-index: -1;
 border-bottom: 1px solid rgb(32,32,32);
@@ -1642,9 +1659,9 @@ var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
 // background-color: rgb(17, 17, 18);
 makeElement(addDiv,
 {
-    id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
-    settings: [8, 24, 0, 0],
-    rootStyle: rootStyle + detail_menu_box
+  id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
+  settings: [8, 24, 0, 0],
+  rootStyle: rootStyle + detail_menu_box
 });
 
 makeElement(addDiv,
@@ -1656,9 +1673,9 @@ makeElement(addDiv,
 
 makeElement(addDiv,
 {
-    id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
-    text: `scale`,
-    rootStyle: rootStyle + div_css + _btn_col1
+  id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
+  text: `scale`,
+  rootStyle: rootStyle + div_css + _btn_col1
 });
 
 /*
@@ -1670,17 +1687,17 @@ makeElement(addDiv,
 
 makeElement(addTextInput,
 {
-    id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
-    rootStyle: rootStyle + textIn_css + _btn_col1,
-    hoverShadow: textIn_hover, shadow: textIn_leave,
-    callback: updateSetting
+  id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
 });
 
 makeElement(addDiv,
 {
-    id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
-    text: `divider`,
-    rootStyle: rootStyle + div_css + _btn_col1 + _leftBorder
+  id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
+  text: `divider`,
+  rootStyle: rootStyle + div_css + _btn_col1 + _leftBorder
 });
 
 makeElement(addTextInput,
@@ -1693,642 +1710,624 @@ makeElement(addTextInput,
 
 makeElement(addDiv,
 {
-    id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
-    text: `offset`,
-    rootStyle: rootStyle + div_css + _btn_col2 + _detailLastRad
+  id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
+  text: `offset`,
+  rootStyle: rootStyle + div_css + _btn_col2 + _detailLastRad
 });
 
 makeElement(addTextInput,
 {
-    id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
-    rootStyle: rootStyle + textIn_css + _btn_col2,
-    hoverShadow: textIn_hover, shadow: textIn_leave,
-    callback: updateSetting
+  id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
 });
 
 makeElement(addDiv,
 {
-    id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
-    text: `n parts`,
-    rootStyle: rootStyle + div_css + _btn_col2 + _leftBorder
+  id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
+  text: `n parts`,
+  rootStyle: rootStyle + div_css + _btn_col2 + _leftBorder
 });
 
 makeElement(addTextInput,
 {
-    id: "textIn_limit", cls: "_textInput", prnt: "circleTool_limit",
-    rootStyle: rootStyle + textIn_css + _btn_col2,
-    hoverShadow: textIn_hover, shadow: textIn_leave,
-    callback: updateSetting
+  id: "textIn_limit", cls: "_textInput", prnt: "circleTool_limit",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
 });
 
 
-              /*
-                ╔╗                       ╔╗
-                ║║                      ╔╝╚╗
-              ╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
-              ║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
-              ║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
-              ╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
-              #drawsettings
-              */
-
-
-              makeElement(addDiv,
-              {
-                  id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-                  settings: [true, true, false],
-                  rootStyle: rootStyle + detail_menu_box_half
-              });
-
-                makeElement(addDiv,
-                {
-                    id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
-                    text: 'draw settings \u03BB',
-                    rootStyle: rootStyle + div_css + myTitleStyle
-                });
-
-
-                makeElement(addDiv,
-                {
-                    id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
-                    text: `lines`,
-                    rootStyle: rootStyle + div_css_half + _btn_col1
-                });
-
-
-                  // background: rgba(159, 144, 75, 0.8);
-                  // box-shadow: inset 1px -1px 1px 0px rgba(16, 16, 16, 1);
-
-                  // Check box checked style
-                  var cbx_myStyle_checked =
-                  `
-                  background: rgba(122,122,122, 0.8);
-                  box-shadow: inset 0px 0px 1px 0px rgba(16, 16, 16, 1);
-                  border: 0px;
-                  `;
-
-                  // Check box hover style
-                  var cbx_myStyle_hover =
-                  `
-                  box-shadow: inset 0px 0px 2px 0px rgba(84, 84, 84, 1);
-                  border: 0px;
-                  `;
-
-                  /*
-                  box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
-                  border-top: 1px solid rgb(12,12,12);
-                  */
-
-                  // Check box default styles
-                  var cbx_myStyle =
-                  `
-                  float: right;
-                  box-shadow: inset 0px 0px 2px -1px rgba(0, 0, 0, 1);
-                  border: 0px;
-                  cursor: pointer;
-                  appearance: none;
-                  outline: 0;
-                  width: 40px;
-                  height:100%;
-                  color: rgba(1, 1, 1, 0);
-                  margin: 0% 0% 0 0%;
-                  padding: 0px;
-                  ` + _btn_col2;
-
-                  /*
-                    ╔╗╔═╗ 
-                    ╠╣║╔╗╗
-                    ║║║║║║
-                    ╚╝╚╝╚╝
-                  */    
-      
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
-                      rootStyle: rootStyle + cbx_myStyle,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      callback: updateSetting,
-                      defaultChecked: true
-                  });
-
-
-                makeElement(addDiv,
-                {
-                    id: "div_drawSurfaces", cls: "", prnt: "detail_box_drawSettings",
-                    text: `surfaces`,
-                    rootStyle: rootStyle + div_css_half + _btn_col2
-                });
-
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
-                      rootStyle: rootStyle + cbx_myStyle,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      callback: updateSetting,
-                      defaultChecked: true
-                  });
-
-
-                makeElement(addDiv,
-                {
-                    id: "div_drawOpacity", cls: "", prnt: "detail_box_drawSettings",
-                    text: `opacity`,
-                    rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-                });
-
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
-                      rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      callback: updateSetting,
-                  });
-
-
-            /*
-            ╔╗       ╔╗           ╔╗
-            ║║       ║║          ╔╝╚╗
-            ║║ ╔╗╔═╗ ║║╔╗    ╔══╗╚╗╔╝╔═╗
-            ║║ ╠╣║╔╗╗║╚╝╝    ║══╣ ║║ ║╔╗╗
-            ║╚╗║║║║║║║╔╗╗    ╠══║ ║╚╗║║║║
-            ╚═╝╚╝╚╝╚╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
-            #linksettings
-            */
-
-            makeElement(addDiv,
-            {
-                id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
-                settings: [{0:false}, {0:true}, {0:false}], // pass numbers as objects to enable radio
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-              makeElement(addDiv,
-              {
-                  id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
-                  text: 'link settings \u2366',
-                  rootStyle: rootStyle + div_css + myTitleStyle
-              });
-
-              makeElement(addDiv,
-              {
-                  id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
-                  text: `linear`,
-                  rootStyle: rootStyle + div_css_half + _btn_col1
-              });
-
-              /*
-                ╔╗╔═╗ 
-                ╠╣║╔╗╗
-                ║║║║║║
-                ╚╝╚╝╚╝
-              */    
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
-                  rootStyle: rootStyle+cbx_myStyle,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  callback: updateSetting
-              });
-
-
-            makeElement(addDiv,
-            {
-                id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
-                text: `zigzag`,
-                rootStyle: rootStyle + div_css_half + _btn_col2
-            });
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
-                  rootStyle: rootStyle + cbx_myStyle,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  defaultChecked: true,
-                  callback: updateSetting
-              });
-
-
-            makeElement(addDiv,
-            {
-                id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
-                text: `poly`,
-                rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-            });
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_poly", cls: "cbx_linkSettings", prnt: "div_linkPoly",
-                  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  callback: updateSetting
-              });
-
-
-
-
-            /*
-            ╔╗         ╔╗           ╔╗
-            ║║         ║║          ╔╝╚╗
-            ║║ ╔══╗╔══╗║║╔╗    ╔══╗╚╗╔╝╔═╗
-            ║║ ║╔╗║║╔═╝║╚╝╝    ║══╣ ║║ ║╔╗╗
-            ║╚╗║╚╝║║╚═╗║╔╗╗    ╠══║ ║╚╗║║║║
-            ╚═╝╚══╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
-            #locksettings
-            */
-
-            makeElement(addDiv,
-            {
-                id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
-                settings: [false, false, false],
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-              makeElement(addDiv,
-              {
-                  id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
-                  text: 'axis lock \u0466',
-                  rootStyle: rootStyle + div_css + myTitleStyle
-              });
-
-              var div_lockSettings_r =
-              `
-                  color: rgb(120,40,40);
-                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
-              `;
-                  // text-shadow: 0px 0px 7px #000;
-              var div_lockSettings_g =
-              `
-                  color: rgb(40,120,40);
-                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
-              `;
-              var div_lockSettings_b =
-              `
-                  color: rgb(60,60,180);
-                  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
-              `;
-
-              makeElement(addDiv,
-              {
-                  id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
-                  text: `X`,
-                  rootStyle: rootStyle + div_css_half + div_lockSettings_r + _btn_col1
-              });
-
-              /*
-                ╔╗╔═╗ 
-                ╠╣║╔╗╗
-                ║║║║║║
-                ╚╝╚╝╚╝
-              */    
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
-                  rootStyle: rootStyle+cbx_myStyle,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  callback: updateSetting
-              });
-
-
-            makeElement(addDiv,
-            {
-                id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
-                text: `Y`,
-                rootStyle: rootStyle + div_css_half + div_lockSettings_g + _btn_col2
-            });
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_locky", cls: "cbx_lockSettings", prnt: "div_lockySettings",
-                  rootStyle: rootStyle+cbx_myStyle,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  callback: updateSetting
-              });
-
-
-            makeElement(addDiv,
-            {
-                id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
-                text: `Z`,
-                rootStyle: rootStyle + div_css_half + div_lockSettings_b + _btn_col1 + _detailLastRad
-            });
-
-              makeElement(addCheckbox,
-              {
-                  id: "cbx_lockz", cls: "cbx_lockSettings", prnt: "div_lockzSettings",
-                  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-                  hoverStyles: cbx_myStyle_hover,
-                  checkedStyles: cbx_myStyle_checked,
-                  callback: updateSetting
-              });
-
-
-
-            /*
-                            ╔╗          ╔╗
-                           ╔╝╚╗        ╔╝╚╗
-            ╔══╗╔══╗ ╔╗╔═╗ ╚╗╔╝    ╔══╗╚╗╔╝╔═╗ 
-            ║╔╗║╚ ╗║ ╠╣║╔╗╗ ║║     ║══╣ ║║ ║╔╗╗
-            ║╚╝║║╚╝╚╗║║║║║║ ║╚╗    ╠══║ ║╚╗║║║║
-            ║╔═╝╚═══╝╚╝╚╝╚╝ ╚═╝    ╚══╝ ╚═╝╚╝╚╝
-            ║║
-            ╚╝
-            #paintsettings
-            */
-
-            makeElement(addDiv,
-            {
-                id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
-                settings: [true, 1, 8],
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-                makeElement(addDiv,
-                {
-                    id: "div_paintSettings", cls: "", prnt: "detail_box_paintSettings",
-                    text: 'paint settings \u06A9',
-                    rootStyle: rootStyle + div_css + myTitleStyle
-                });
-
-                makeElement(addDiv,
-                {
-                    id: "div_paintInf", cls: "", prnt: "detail_box_paintSettings",
-                    text: `infinite &#8734;`,
-                    rootStyle: rootStyle + div_css_half + _btn_col1
-                });
-
-                  /*
-                    ╔╗╔═╗ 
-                    ╠╣║╔╗╗
-                    ║║║║║║
-                    ╚╝╚╝╚╝
-                  */    
-
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
-                      rootStyle: rootStyle+cbx_myStyle,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      defaultChecked: true,
-                      callback: updateSetting
-                  });
-
-
-                makeElement(addDiv,
-                {
-                    id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
-                    text: `dist`,
-                    rootStyle: rootStyle + div_css_half + _btn_col2
-                });
-
-                  makeElement(addTextInput,
-                  {
-                      id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
-                      rootStyle: rootStyle + textIn_css + _btn_col2,
-                      hoverShadow: textIn_hover, shadow: textIn_leave,
-                      callback: updateSetting
-                  });
-
-
-
-                makeElement(addDiv,
-                {
-                    id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
-                    text: `nodes`,
-                    rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-                });
-
-                  makeElement(addTextInput,
-                  {
-                      id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
-                      rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
-                      hoverShadow: textIn_hover, shadow: textIn_leave,
-                      callback: updateSetting
-                  });
-
-
-
-            /*
-                       ╔╗         ╔╗
-                       ║║        ╔╝╚╗
-            ╔══╗╔═╗╔╗╔═╝║    ╔══╗╚╗╔╝╔═╗ 
-            ║╔╗║║╔╝╠╣║╔╗║    ║══╣ ║║ ║╔╗╗
-            ║╚╝║║║ ║║║╚╝║    ╠══║ ║╚╗║║║║
-            ╚═╗║╚╝ ╚╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
-            ╔═╝║
-            ╚══╝
-            #gridsettings
-            */
-            makeElement(addDiv,
-            {
-                id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-                settings: [8, true, false],
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-              makeElement(addDiv,
-              {
-                  id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
-                  text: 'grid settings \u2637',
-                  rootStyle: rootStyle + div_css + myTitleStyle
-              });
-
-                makeElement(addDiv,
-                {
-                    id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
-                    text: `scale`,
-                    rootStyle: rootStyle + div_css_half + _btn_col1
-                });
-
-                makeElement(addDiv,
-                {
-                    id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
-                    text: `map walls`,
-                    rootStyle: rootStyle + div_css_half + _btn_col2
-                });
-
-
-                  /*
-                    ╔╗╔═╗ 
-                    ╠╣║╔╗╗
-                    ║║║║║║
-                    ╚╝╚╝╚╝
-                  */    
-
-                  makeElement(addTextInput,
-                  {
-                      id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
-                      rootStyle: rootStyle + textIn_css + _btn_col1,
-                      hoverShadow: textIn_hover, shadow: textIn_leave,
-                      callback: updateSetting,
-                      niladic: updateGrid
-                  });
-
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
-                      rootStyle: rootStyle+cbx_myStyle,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      defaultChecked: true,
-                      callback: updateSetting
-                  });
-
-                  makeElement(addDiv,
-                  {
-                      id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
-                      text: `culling`,
-                      rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-                  });
-
-                  makeElement(addCheckbox,
-                  {
-                      id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
-                      rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-                      hoverStyles: cbx_myStyle_hover,
-                      checkedStyles: cbx_myStyle_checked,
-                      defaultChecked: false,
-                      callback: updateSetting
-                  });
-            /*
-            ╔╗                  ╔╗                 ╔╗
-            ║║                  ║║                ╔╝╚╗
-            ║╚═╗╔══╗    ╔══╗╔══╗║║ ╔══╗╔═╗    ╔══╗╚╗╔╝╔═╗
-            ║╔╗║║╔╗║    ║╔═╝║╔╗║║║ ║╔╗║║╔╝    ║══╣ ║║ ║╔╗╗
-            ║╚╝║║╚╝║    ║╚═╗║╚╝║║╚╗║╚╝║║║     ╠══║ ║╚╗║║║║
-            ╚══╝╚═╗║    ╚══╝╚══╝╚═╝╚══╝╚╝     ╚══╝ ╚═╝╚╝╚╝
-                ╔═╝║
-                ╚══╝
-            #colorsettings
-            */
-
-            makeElement(addDiv,
-            {
-                id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
-                settings: [18, 18, 18],
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-                makeElement(addDiv,
-                {
-                    id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
-                    text: 'world color [255]',
-                    rootStyle: rootStyle + div_css_half + myTitleStyle
-                });
-
-                  makeElement(addDiv,
-                  {
-                      id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
-                      text: `red`,
-                      rootStyle: rootStyle + div_css_half + _btn_col1
-                  });
-
-                    /*
-                      ╔╗╔═╗ 
-                      ╠╣║╔╗╗
-                      ║║║║║║
-                      ╚╝╚╝╚╝
-                    */    
-
-                    makeElement(addTextInput,
-                    {
-                        id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
-                        rootStyle: rootStyle + textIn_css + _btn_col1,
-                        hoverShadow: textIn_hover, shadow: textIn_leave,
-                        callback: updateSetting,
-                        niladic: setBackgroundColor
-                    });
-
-                  makeElement(addDiv,
-                  {
-                      id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
-                      text: `green`,
-                      rootStyle: rootStyle + div_css_half + _btn_col2
-                  });
-
-                    makeElement(addTextInput,
-                    {
-                        id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
-                        rootStyle: rootStyle + textIn_css + _btn_col2,
-                        hoverShadow: textIn_hover, shadow: textIn_leave,
-                        callback: updateSetting,
-                        niladic: setBackgroundColor
-                    });
-
-                  makeElement(addDiv,
-                  {
-                      id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
-                      text: `blue`,
-                      rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-                  });
-
-                    makeElement(addTextInput,
-                    {
-                        id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
-                        rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
-                        hoverShadow: textIn_hover, shadow: textIn_leave,
-                        callback: updateSetting,
-                        niladic: setBackgroundColor
-                    });
-
-
-            /*
-                    ╔╗      ╔╗                    ╔╗
-                   ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
-            ╔═╗╔══╗╚╗╔╝╔══╗╚╗╔╝╔╗╔══╗╔═╗     ╔══╗╚╗╔╝╔═╗ 
-            ║╔╝║╔╗║ ║║ ╚ ╗║ ║║ ╠╣║╔╗║║╔╗╗    ║══╣ ║║ ║╔╗╗
-            ║║ ║╚╝║ ║╚╗║╚╝╚╗║╚╗║║║╚╝║║║║║    ╠══║ ║╚╗║║║║
-            ╚╝ ╚══╝ ╚═╝╚═══╝╚═╝╚╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
-            #rotationsettings
-            */
-                            
-            makeElement(addDiv,
-            {
-                id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
-                settings: [45],
-                rootStyle: rootStyle + detail_menu_box_half
-            });
-
-              makeElement(addDiv,
-              {
-                  id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
-                  text: 'rotation \u2B6E',
-                  rootStyle: rootStyle + div_css + myTitleStyle
-              });
-
-                  makeElement(addDiv,
-                  {
-                      id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
-                      text: `deg`,
-                      rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-                  });
-
-                    /*
-                      ╔╗╔═╗ 
-                      ╠╣║╔╗╗
-                      ║║║║║║
-                      ╚╝╚╝╚╝
-                    */    
-
-                    makeElement(addTextInput,
-                    {
-                        id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
-                        rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
-                        hoverShadow: textIn_hover, shadow: textIn_leave,
-                        callback: updateSetting
-                    });
-
-
+/*
+  ╔╗                       ╔╗
+  ║║                      ╔╝╚╗
+╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
+║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
+║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
+╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
+#drawsettings
+*/
+
+
+makeElement(addDiv,
+{
+  id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
+  settings: [true, true, false],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
+  text: 'draw settings \u03BB',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+
+makeElement(addDiv,
+{
+  id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
+  text: `lines`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+
+// background: rgba(159, 144, 75, 0.8);
+// box-shadow: inset 1px -1px 1px 0px rgba(16, 16, 16, 1);
+
+// Check box checked style
+var cbx_myStyle_checked =
+`
+background: rgba(122,122,122, 0.8);
+box-shadow: inset 0px 0px 1px 0px rgba(16, 16, 16, 1);
+border: 0px;
+`;
+
+// Check box hover style
+var cbx_myStyle_hover =
+`
+box-shadow: inset 0px 0px 2px 0px rgba(84, 84, 84, 1);
+border: 0px;
+`;
+
+/*
+box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
+border-top: 1px solid rgb(12,12,12);
+*/
+
+// Check box default styles
+var cbx_myStyle =
+`
+float: right;
+box-shadow: inset 0px 0px 2px -1px rgba(0, 0, 0, 1);
+border: 0px;
+cursor: pointer;
+appearance: none;
+outline: 0;
+width: 40px;
+height:100%;
+color: rgba(1, 1, 1, 0);
+margin: 0% 0% 0 0%;
+padding: 0px;
+` + _btn_col2;
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addCheckbox,
+{
+  id: "cbx_lines", cls: "cbx_drawSettings", prnt: "div_drawLines",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting,
+  defaultChecked: true
+});
+
+
+makeElement(addDiv,
+{
+  id: "div_drawSurfaces", cls: "", prnt: "detail_box_drawSettings",
+  text: `surfaces`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_surfaces", cls: "cbx_drawSettings", prnt: "div_drawSurfaces",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting,
+  defaultChecked: true
+});
+
+makeElement(addDiv,
+{
+  id: "div_drawOpacity", cls: "", prnt: "detail_box_drawSettings",
+  text: `opacity`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting,
+});
+
+/*
+╔╗       ╔╗           ╔╗
+║║       ║║          ╔╝╚╗
+║║ ╔╗╔═╗ ║║╔╗    ╔══╗╚╗╔╝╔═╗
+║║ ╠╣║╔╗╗║╚╝╝    ║══╣ ║║ ║╔╗╗
+║╚╗║║║║║║║╔╗╗    ╠══║ ║╚╗║║║║
+╚═╝╚╝╚╝╚╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
+#linksettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
+  settings: [{0:false}, {0:true}, {0:false}], // pass numbers as objects to enable radio
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_linkSettings", cls: "", prnt: "detail_box_linkSettings",
+  text: 'link settings \u2366',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_linkLinear", cls: "", prnt: "detail_box_linkSettings",
+  text: `linear`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+  /*
+    ╔╗╔═╗ 
+    ╠╣║╔╗╗
+    ║║║║║║
+    ╚╝╚╝╚╝
+  */    
+
+makeElement(addCheckbox,
+{
+  id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
+  text: `zigzag`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: true,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
+  text: `poly`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_poly", cls: "cbx_linkSettings", prnt: "div_linkPoly",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting
+});
+
+/*
+╔╗         ╔╗           ╔╗
+║║         ║║          ╔╝╚╗
+║║ ╔══╗╔══╗║║╔╗    ╔══╗╚╗╔╝╔═╗
+║║ ║╔╗║║╔═╝║╚╝╝    ║══╣ ║║ ║╔╗╗
+║╚╗║╚╝║║╚═╗║╔╗╗    ╠══║ ║╚╗║║║║
+╚═╝╚══╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
+#locksettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
+  settings: [false, false, false],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_lockSettings", cls: "", prnt: "detail_box_lockSettings",
+  text: 'axis lock \u0466',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+var div_lockSettings_r =
+`
+  color: rgb(120,40,40);
+  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+`;
+    // text-shadow: 0px 0px 7px #000;
+var div_lockSettings_g =
+`
+  color: rgb(40,120,40);
+  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+`;
+var div_lockSettings_b =
+`
+  color: rgb(60,60,180);
+  text-shadow: rgb(34, 34, 34) 0px 0px 2px;
+`;
+
+makeElement(addDiv,
+{
+  id: "div_lockxSettings", cls: "", prnt: "detail_box_lockSettings",
+  text: `X`,
+  rootStyle: rootStyle + div_css_half + div_lockSettings_r + _btn_col1
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addCheckbox,
+{
+  id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_lockySettings", cls: "", prnt: "detail_box_lockSettings",
+  text: `Y`,
+  rootStyle: rootStyle + div_css_half + div_lockSettings_g + _btn_col2
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_locky", cls: "cbx_lockSettings", prnt: "div_lockySettings",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_lockzSettings", cls: "", prnt: "detail_box_lockSettings",
+  text: `Z`,
+  rootStyle: rootStyle + div_css_half + div_lockSettings_b + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_lockz", cls: "cbx_lockSettings", prnt: "div_lockzSettings",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  callback: updateSetting
+});
+
+/*
+                ╔╗          ╔╗
+               ╔╝╚╗        ╔╝╚╗
+╔══╗╔══╗ ╔╗╔═╗ ╚╗╔╝    ╔══╗╚╗╔╝╔═╗ 
+║╔╗║╚ ╗║ ╠╣║╔╗╗ ║║     ║══╣ ║║ ║╔╗╗
+║╚╝║║╚╝╚╗║║║║║║ ║╚╗    ╠══║ ║╚╗║║║║
+║╔═╝╚═══╝╚╝╚╝╚╝ ╚═╝    ╚══╝ ╚═╝╚╝╚╝
+║║
+╚╝
+#paintsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
+  settings: [true, 1, 8],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_paintSettings", cls: "", prnt: "detail_box_paintSettings",
+  text: 'paint settings \u06A9',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_paintInf", cls: "", prnt: "detail_box_paintSettings",
+  text: `infinite &#8734;`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addCheckbox,
+{
+  id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: true,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
+  text: `dist`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
+  text: `nodes`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
+  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
+
+/*
+           ╔╗         ╔╗
+           ║║        ╔╝╚╗
+╔══╗╔═╗╔╗╔═╝║    ╔══╗╚╗╔╝╔═╗ 
+║╔╗║║╔╝╠╣║╔╗║    ║══╣ ║║ ║╔╗╗
+║╚╝║║║ ║║║╚╝║    ╠══║ ║╚╗║║║║
+╚═╗║╚╝ ╚╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
+╔═╝║
+╚══╝
+#gridsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
+  settings: [8, true, false],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
+  text: 'grid settings \u2637',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
+  text: `scale`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
+  text: `map walls`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addTextInput,
+{
+  id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: updateGrid
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: true,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
+  text: `culling`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+/*
+╔╗                  ╔╗                 ╔╗
+║║                  ║║                ╔╝╚╗
+║╚═╗╔══╗    ╔══╗╔══╗║║ ╔══╗╔═╗    ╔══╗╚╗╔╝╔═╗
+║╔╗║║╔╗║    ║╔═╝║╔╗║║║ ║╔╗║║╔╝    ║══╣ ║║ ║╔╗╗
+║╚╝║║╚╝║    ║╚═╗║╚╝║║╚╗║╚╝║║║     ╠══║ ║╚╗║║║║
+╚══╝╚═╗║    ╚══╝╚══╝╚═╝╚══╝╚╝     ╚══╝ ╚═╝╚╝╚╝
+    ╔═╝║
+    ╚══╝
+#colorsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
+  settings: [18, 18, 18],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_colorSettings", cls: "", prnt: "detail_box_colorSettings",
+  text: 'world color [255]',
+  rootStyle: rootStyle + div_css_half + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_colorSettings_r", cls: "", prnt: "detail_box_colorSettings",
+  text: `red`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addTextInput,
+{
+  id: "textIn_colorSettings_r", cls: "textIn_colorSettings", prnt: "div_colorSettings_r",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: setBackgroundColor
+});
+
+makeElement(addDiv,
+{
+  id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
+  text: `green`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: setBackgroundColor
+});
+
+makeElement(addDiv,
+{
+  id: "div_colorSettings_b", cls: "", prnt: "detail_box_colorSettings",
+  text: `blue`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_colorSettings_b", cls: "textIn_colorSettings", prnt: "div_colorSettings_b",
+  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: setBackgroundColor
+});
+
+/*
+        ╔╗      ╔╗                    ╔╗
+       ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
+╔═╗╔══╗╚╗╔╝╔══╗╚╗╔╝╔╗╔══╗╔═╗     ╔══╗╚╗╔╝╔═╗ 
+║╔╝║╔╗║ ║║ ╚ ╗║ ║║ ╠╣║╔╗║║╔╗╗    ║══╣ ║║ ║╔╗╗
+║║ ║╚╝║ ║╚╗║╚╝╚╗║╚╗║║║╚╝║║║║║    ╠══║ ║╚╗║║║║
+╚╝ ╚══╝ ╚═╝╚═══╝╚═╝╚╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
+#rotationsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
+  settings: [45],
+  rootStyle: rootStyle + detail_menu_box_half
+});
+
+makeElement(addDiv,
+{
+  id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
+  text: 'rotation \u2B6E',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
+  text: `deg`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
+
+makeElement(addTextInput,
+{
+  id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
+  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
 
 /*
                            ╔╗       ╔╗
@@ -2338,7 +2337,6 @@ makeElement(addTextInput,
   ║║║║║║═╣║║║║║╚╝║    ╠══║ ║╚╗║╚╝╚╗ ║╚╗║╚╝║╠══║
   ╚╩╩╝╚══╝╚╝╚╝╚══╝    ╚══╝ ╚═╝╚═══╝ ╚═╝╚══╝╚══╝
 */
-
 
 var menu_status_style =
 `
@@ -2368,15 +2366,8 @@ height: 100%;
 float: right;
 ` + _btn_col1;
 
-var _textLeft =
-`
-text-align: left;
-`;
-
-var _textRight =
-`
-text-align: right;
-`;
+var _textLeft = `text-align: left;`;
+var _textRight = `text-align: right;`;
 
 var menu_status_style_l0 =
 `
@@ -2429,7 +2420,6 @@ color: #555;
 line-height: 2.2;
 ` + _btn_col1;
 
-
 makeElement(addDiv,
 {
   id: "menu_status", cls: "", prnt: "html",
@@ -2437,75 +2427,73 @@ makeElement(addDiv,
   rootStyle: rootStyle + menu_status_style
 });
 
-  makeElement(addDiv,
-  {
-    id: "menu_status_l", cls: "", prnt: "menu_status",
-    rootStyle: rootStyle + menu_status_style_l
-  });
+makeElement(addDiv,
+{
+  id: "menu_status_l", cls: "", prnt: "menu_status",
+  rootStyle: rootStyle + menu_status_style_l
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_status_l0", cls: "", prnt: "menu_status_l",
-      rootStyle: rootStyle + menu_status_style_l0 + _textLeft
-    });
+makeElement(addDiv,
+{
+  id: "menu_status_l0", cls: "", prnt: "menu_status_l",
+  rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_status_l1", cls: "", prnt: "menu_status_l",
-      rootStyle: rootStyle + menu_status_style_l0 + _textLeft
-    });
+makeElement(addDiv,
+{
+  id: "menu_status_l1", cls: "", prnt: "menu_status_l",
+  rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+});
 
-    /*
-      ╔╗╔═╗ 
-      ╠╣║╔╗╗
-      ║║║║║║
-      ╚╝╚╝╚╝
-    */    
+/*
+  ╔╗╔═╗ 
+  ╠╣║╔╗╗
+  ║║║║║║
+  ╚╝╚╝╚╝
+*/    
 
+// fix this area: can use settingUpdate and niladic -> var fileName -> loadSelect()
 
-    // fix this area: can use settingUpdate and niladic -> var fileName -> loadSelect()
+makeElement(addFileInput,
+{
+  id: "menu_status_l2", cls: "", prnt: "menu_status_l",
+  text: "Open file",
+  rootStyle: rootStyle + menu_status_style_l2,
+  callback: loadSelect
+});
 
-    makeElement(addFileInput,
-    {
-      id: "menu_status_l2", cls: "", prnt: "menu_status_l",
-      text: "Open file",
-      rootStyle: rootStyle + menu_status_style_l2,
-      callback: loadSelect
-    });
+makeElement(addTextInput,
+{
+  id: "menu_status_l3", cls: "", prnt: "menu_status_l",
+  value: "memspc_",
+  rootStyle: rootStyle + menu_status_style_l3,
+  callback: updateSetting
+});
 
-    makeElement(addTextInput,
-    {
-      id: "menu_status_l3", cls: "", prnt: "menu_status_l",
-      value: "memspc_",
-      rootStyle: rootStyle + menu_status_style_l3,
-      callback: updateSetting
-    });
+makeElement(addDiv,
+{
+  id: "menu_status_r", cls: "", prnt: "menu_status",
+  rootStyle: rootStyle + menu_status_style_r
+});
 
+makeElement(addDiv,
+{
+  id: "menu_status_r0", cls: "", prnt: "menu_status_r",
+  rootStyle: rootStyle + menu_status_style_l0 + _textRight
+});
 
-  makeElement(addDiv,
-  {
-    id: "menu_status_r", cls: "", prnt: "menu_status",
-    rootStyle: rootStyle + menu_status_style_r
-  });
+makeElement(addDiv,
+{
+  id: "menu_status_r1", cls: "", prnt: "menu_status_r",
+  rootStyle: rootStyle + menu_status_style_l0 + _textRight
+});
 
-    makeElement(addDiv,
-    {
-      id: "menu_status_r0", cls: "", prnt: "menu_status_r",
-      rootStyle: rootStyle + menu_status_style_l0 + _textRight
-    });
-
-    makeElement(addDiv,
-    {
-      id: "menu_status_r1", cls: "", prnt: "menu_status_r",
-      rootStyle: rootStyle + menu_status_style_l0 + _textRight
-    });
-
-    makeElement(addDiv,
-    {
-      id: "menu_status_r2", cls: "", prnt: "menu_status_r",
-      text: "",
-      rootStyle: rootStyle + menu_status_style_r2 + _textLeft
-    });
+makeElement(addDiv,
+{
+  id: "menu_status_r2", cls: "", prnt: "menu_status_r",
+  text: "",
+  rootStyle: rootStyle + menu_status_style_r2 + _textLeft
+});
 
 // Wpn selector ind
 
@@ -2711,7 +2699,7 @@ var listStyle =
 background-color: rgba(0,0,0,0);
 padding: 0px;
 max-height: 97%;
-margin: 5px 1% 0px 1%;
+margin: 0px 1% 0px 1%;
 border-radius: 3px;
 border: 1px solid rgba(255,255,255,0.1);
 overflow-y: auto;
@@ -2735,8 +2723,30 @@ makeElement(addList,
   items: key_bind_info
 });
 
+/*
+    ╔════╗╔═══╗╔══╗    ╔═══╗
+    ║╔╗╔╗║║╔═╗║║╔╗║    ║╔═╗║
+    ╚╝║║╚╝║║ ║║║╚╝╚╗   ╚╝╔╝║
+      ║║  ║╚═╝║║╔═╗║   ╔╗╚╗║
+     ╔╝╚╗ ║╔═╗║║╚═╝║   ║╚═╝║
+     ╚══╝ ╚╝ ╚╝╚═══╝   ╚═══╝
+     #tab3 #spawnmenu
+*/              
 
-
+makeElement(addDiv,
+{
+  id: "div_spawnMenu", cls: "", prnt: "q_menu_left",
+  rootStyle: rootStyle + detail_menu + defaultHidden +
+  `
+  background: rgba(0,0,0,0.05);
+  box-sizing: border-box;
+  float: left;
+  margin: 0px;
+  padding: 0px;
+  overflow-x: hidden;
+  border-radius: 3px;
+  `
+});
 
 
 

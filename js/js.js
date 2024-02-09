@@ -80,8 +80,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 
 			-- generate dir vec curves
 
-			-- js typeof implies overloaded fn w/ type
-
 			-- nested point sequences at overlap point should be fairly easy. take note of logic
 				- think i got it here
 
@@ -127,8 +125,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-- distribute heights using 20% remainder to make hover to settings
 
 			--  edit obj
-
-			--  menu scrollbar hide ???
 
 			--  Correctly log changed information that can be applied to reverse.
 
@@ -360,9 +356,9 @@ var fileName = "";
 const pi = 3.1415926538; // High definition PI makes a visible difference
 const pi2 = 6.2831853071;
 
-var player_speed = 0.5;
-var player_speed_vert = 0.3; // Vertical travel speed
-var player_speed_mult = 4; // Shift key
+const player_speed = 0.5;
+const player_speed_vert = 0.3; // Vertical travel speed
+const player_speed_mult = 4; // Shift key
 
 var player_look_dir = [0, 0, 0];
 var player_look_dir_i = [0, 0, 0];
@@ -463,8 +459,10 @@ var functionRunList = [];
 function updateMenuPos() // this stuff so bad jesus
 {
 
-  menu_obj_size = [200, 500, 216]; // default & modified to include margins	
-  menu_obj_pos = [in_win_w-200-in_win_w*0.02, in_win_h*0.5 - 0.5*menu_q_size[1]];
+  let _tempMe = document.getElementById("tree_allObjects").clientHeight;
+
+  menu_obj_size = [200, 500, _tempMe+300]; // default & modified to include margins	
+  menu_obj_pos = [in_win_w-200-in_win_w*0.01, in_win_h*0.5 - 0.5*menu_obj_size[2]];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
 
 	menu_q_pos = [in_win_w*0.01, in_win_h*0.5 - 0.5*menu_q_size[1]];
@@ -841,8 +839,9 @@ function treeModify(par)
     case 1:
       folder_parents.push(-1); // set to root
       folder_toggle.push(1); // set open
-      folder_names.push("New Folder"); // store name
+      folder_names.push((typeof par.n!="undefined") && par.n!="" ? par.n : "New Folder"); // store name
       obj_folders.push([]); // assign array for indices
+      folder_selected = obj_folders.length-1;
       updateTree(tree_allObjects);
       break;
   }
@@ -2252,23 +2251,24 @@ function del_obj(_i)
 	{
 		trns_lock = 0;
 		_all_lock = 0; _all_lock = 0;
-		if (obj_cyc == m_objs.length-1) // If last delete last
+		if (_i == m_objs.length-1) // If last delete last
 		{
-      obj_cyc = obj_cyc-1;
+      // if (obj_cyc < m_objs.length-2) {obj_cyc = m_objs.length-3;}
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); m_draw.splice(-1);
       m_center2d.splice(-1); m_center2d_buffer.splice(-1); z_map.splice(-1);
       obj_normalMaps.splice(-1);
+      obj_cyc = m_objs.length-1;
 
 		} else // Delete specific
 		{
-			var _ts = mem_log[obj_cyc][1];
-			for (var i = obj_cyc+1; i<mem_log.length; i++)
+			var _ts = mem_log[_i][1];
+			for (var i = _i+1; i<mem_log.length; i++)
 			{
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
-			m_objs.splice(obj_cyc, 1); mem_log.splice(obj_cyc, 1); m_obj_offs.splice(obj_cyc, 1); m_objs_ghost.splice(obj_cyc, 1); m_draw.splice(obj_cyc, 1);
-      m_center2d.splice(obj_cyc, 1); m_center2d_buffer.splice(obj_cyc, 1); z_map.splice(obj_cyc, 1);
-      obj_normalMaps.splice(obj_cyc, 1);
+			m_objs.splice(_i, 1); mem_log.splice(_i, 1); m_obj_offs.splice(_i, 1); m_objs_ghost.splice(_i, 1); m_draw.splice(_i, 1);
+      m_center2d.splice(_i, 1); m_center2d_buffer.splice(_i, 1); z_map.splice(_i, 1);
+      obj_normalMaps.splice(_i, 1);
 		}
 		updateList(objListConst(), "list_objectSelect");
     foldersDel(_i);
@@ -2455,7 +2455,7 @@ function getctr_ghost(_i) // Get encoded 3D center point
 	return _c;
 }
 
-/*
+
 var translateObj =
 {
   obj: 0,
@@ -2464,57 +2464,68 @@ var translateObj =
   active: 0,
   focus: 0,
   runhook: 0,
+  folder: Object,
   toggle: function ()
   {
+    if (folder_selected < 4) {return;}
     switch(translateObj.active)
     {
       case 0:
+        translateObj.lpstart =
+        [
+          _lp_world[0],
+          _lp_world[1],
+          _lp_world[2]
+        ];
+        console.log("should be dfasf");
+        translateObj.lpdelta = [0,0,0];
+        translateObj.folder = Array.from(obj_folders[folder_selected]);
         translateObj.obj = obj_cyc;
+
         translateObj.focus = 1;
         translateObj.active = 1;
         translateObj.runhook = 0;
         break;
+
       case 1:
         translateObj.active = 0;
         translateObj.focus = 0;
-        translateObj.runhook = 0;
         // Apply changes to obj clones
-        arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+        let _s = translateObj.folder.length;
+        for (let i=0; i<_s; i++)
+        {
+          arScale(m_objs_ghost[translateObj.folder[i]], m_objs[translateObj.folder[i]], [0,0,0], [0,0,0,0], [1,1,1,1]);
+        }
+        // arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
         translateObj.obj = 0;
         break;
     }
   },
   run: function ()
   {
-    if (!this.runhook)
-    {
-      this.lpstart =
-      [
-        _lp_world[0],
-        _lp_world[1],
-        _lp_world[2]
-      ];
-      this.runhook = 1;
-    }
-
     // Check for axis lock settings
     translateObj.lpdelta =
     [
-      (_settings[3].settings[0]) ? 0 : _lp_world[0] - this.lpstart[0],
-      (_settings[3].settings[1]) ? 0 : _lp_world[1] - this.lpstart[1],
-      (_settings[3].settings[2]) ? 0 : _lp_world[2] - this.lpstart[2]
+      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateObj.lpstart[0],
+      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateObj.lpstart[1],
+      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateObj.lpstart[2]
     ];
 
-    arScale(m_objs[this.obj], m_objs_ghost[this.obj], this.lpdelta, [0,0,0,0], [1,1,1,1]);
+    let _s = translateObj.folder.length;
+    for (let i=0; i<_s; i++)
+    {
+      arScale(m_objs[translateObj.folder[i]], m_objs_ghost[translateObj.folder[i]], translateObj.lpdelta, [0,0,0,0], [1,1,1,1]);
+    }
 
+    // arScale(m_objs[this.obj], m_objs_ghost[this.obj], this.lpdelta, [0,0,0,0], [1,1,1,1]);
     // need system to prevent connect to self points
     // maybe do general check on runList and instead block m_obj and allow ghost?
 
     // if (!key_map.lmb) {translateObj.apply(); translateObj.focus = 1;}
   }
 };
-*/
-// functionRunList.push(translateObj);
+
+functionRunList.push(translateObj);
 
 function trans_obj(_i)
 {
@@ -3049,6 +3060,61 @@ function moveObject()
 	trans_obj(obj_cyc);
 }
 
+function deleteFolderObjs()
+{
+  if (folder_selected < 4) {return;}
+  const _folder = Array.from(obj_folders[folder_selected]);
+  const _ti = Date.now();
+  _folder.sort((a, b) => b - a);
+  const _delay = 30;
+  let _finished = 1;
+  let _h1 = -1;
+
+  while (_finished)
+  {
+    let _dt = (Date.now() - _ti);
+    let _it = Math.floor(_dt/_delay);
+    if (_it != _h1)
+    {
+      _h1 = _it;
+      del_obj(_folder[_h1]);
+      obj_cyc = 2;
+    }
+    if (_dt >= _delay*(_folder.length-1))
+    {
+      _finished = 0;
+    }
+  }
+}
+
+function dupeFolderObjs()
+{
+  if (folder_selected < 4) {return;}
+  const _folder = Array.from(obj_folders[folder_selected]);
+  const _ti = Date.now();
+  const _delay = 30;
+  let _finished = 1;
+  let _h1 = -1;
+
+  treeModify({func:1, n:folder_names[folder_selected]});
+
+  while (_finished)
+  {
+    let _dt = (Date.now() - _ti);
+    let _it = Math.floor(_dt/_delay);
+    if (_it != _h1)
+    {
+      _h1 = _it;
+      m_objs_loadPoints(cloneObj(m_objs[_folder[_h1]]));
+      // obj_cyc = 2;
+    }
+    if (_dt >= _delay*(_folder.length-1))
+    {
+      _finished = 0;
+    }
+  }
+}
+
 
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -3189,10 +3255,10 @@ function drawOverlay()
 	// While in menu with low call rate i'll set values here:
 
 	// This needs to be fixed. Temp as I port menu to new script.
-	if (mouseLock) {setVisibility({hide:"menu_1", show:""});} else {setVisibility({hide:"", show:"menu_1"});}
+	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
 
   // temp until I move it to new menu in obj menu !!!
-  setVisibility({hide:"list_objectSelect", show:""});
+  setVisibility({hide:["list_objectSelect"], show:[""]});
 
 	//console.log(init_dat.data[mem_log[9][0]+3]); // Z dist test
 
@@ -3914,7 +3980,7 @@ function drawLines()
 
 
   // move all this back into fn to make good reverse fn
-  _2d_previewBack = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.02)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
+  _2d_previewBack = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.01)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_obj_size[2]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
 
 
   // Draw the triangles after setting the color
@@ -3951,8 +4017,8 @@ function drawLines()
     _np[1] = in_win_wh * _np[1];
 
     vertices.push(
-    _np[0]*menu_obj_size[0]/in_win_w+(menu_obj_pos[0]-in_win_w*0.02)/in_win_w,
-    _np[1]*menu_obj_size[0]/in_win_h*in_win_hw+0.5-(menu_obj_pos[1]-0-menu_q_size[1]/2+menu_obj_size[0]+8)/in_win_h
+    _np[0]*menu_obj_size[0]/in_win_w+(menu_obj_pos[0]-in_win_w*0.01)/in_win_w,
+    _np[1]*menu_obj_size[0]/in_win_h*in_win_hw+0.5-(menu_obj_pos[1]-0-menu_obj_size[2]/2+menu_obj_size[0]+8)/in_win_h
     );
 
   }
@@ -3983,6 +4049,11 @@ function drawLines()
   else
   {
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
+  }
+
+  if (translateObj.active)
+  {
+    if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -3);}
   }
 
   if (boundingBox.active)
@@ -4281,26 +4352,29 @@ functionRunList.push(boundingBox);
 		
 function getMinMaxPairs(ar)
 {
-	// set the initial values to the first point.
-	let ar_x_max = ar[0]; let ar_x_min = ar[0];
-	let ar_y_max = ar[1]; let ar_y_min = ar[1];
-	let ar_z_max = ar[2]; let ar_z_min = ar[2];
+  if (typeof ar != "undefined")
+  {
+    // set the initial values to the first point.
+    let ar_x_max = ar[0]; let ar_x_min = ar[0];
+    let ar_y_max = ar[1]; let ar_y_min = ar[1];
+    let ar_z_max = ar[2]; let ar_z_min = ar[2];
 
-	// loop through ar and max/min -logic-> update val
-	for (var i = 0; i<ar.length/4-1; i++) // divide by 4 to get point and remove encoded center
-	{
-		// if ar x > var max set var max to ar x, then do the min
-		if (ar[i*4] > ar_x_max) {ar_x_max = ar[i*4];} 
-		if (ar[i*4] < ar_x_min) {ar_x_min = ar[i*4];}
+    // loop through ar and max/min -logic-> update val
+    for (var i = 0; i<ar.length/4-1; i++) // divide by 4 to get point and remove encoded center
+    {
+      // if ar x > var max set var max to ar x, then do the min
+      if (ar[i*4] > ar_x_max) {ar_x_max = ar[i*4];} 
+      if (ar[i*4] < ar_x_min) {ar_x_min = ar[i*4];}
 
-		// same shiz for y & z vals
-		if (ar[i*4+1] > ar_y_max) {ar_y_max = ar[i*4+1];} 
-		if (ar[i*4+1] < ar_y_min) {ar_y_min = ar[i*4+1];}
-		
-		if (ar[i*4+2] > ar_z_max) {ar_z_max = ar[i*4+2];} 
-		if (ar[i*4+2] < ar_z_min) {ar_z_min = ar[i*4+2];}
-	}
-	return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
+      // same shiz for y & z vals
+      if (ar[i*4+1] > ar_y_max) {ar_y_max = ar[i*4+1];} 
+      if (ar[i*4+1] < ar_y_min) {ar_y_min = ar[i*4+1];}
+      
+      if (ar[i*4+2] > ar_z_max) {ar_z_max = ar[i*4+2];} 
+      if (ar[i*4+2] < ar_z_min) {ar_z_min = ar[i*4+2];}
+    }
+    return [ar_x_max-ar_x_min, ar_y_max-ar_y_min, ar_z_max-ar_z_min];
+  }
 }
 
 var _tp, _np, _2dp_boundingBox0, _2dp_boundingBox1;
