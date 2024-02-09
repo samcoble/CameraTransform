@@ -2953,6 +2953,7 @@ function deleteObjectSelected()
 
 function del_world()
 {
+  folder_selected = 3;
   obj_folders[3].length = 0;
   mem_sum = 7408;
 
