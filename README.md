@@ -4,7 +4,7 @@
 Experimentation with the Camera Transform.
 Inspired by Professor Kenneth Joy, and his lecture series: [https://www.youtube.com/watch?v=mpTl003EXCY](https://www.youtube.com/playlist?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g)
 
-<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" style="float:right" width="381" height="323">
+<img src="https://github.com/samcoble/CameraTransform/assets/32228102/35ffb154-4b81-4399-8141-a4e5f34d405c" style="float:right" width="381" height="313">
 
 [memspc.xyz](https://memspc.xyz/)
 
@@ -39,9 +39,8 @@ Finally I have a poor man's painter's algorithm! Hopefully I can come up with a 
 
 I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better.
 
-![MENY](https://github.com/samcoble/CameraTransform/assets/32228102/f6675d65-0056-447a-8483-7591e8a6e30b)
+![Screenshot 2024-02-09 060020](https://github.com/samcoble/CameraTransform/assets/32228102/4e895c71-b2c4-468d-a513-4e322be2b9a5)
 ![BFC](https://github.com/samcoble/CameraTransform/assets/32228102/f3017d83-86d5-4826-8cdd-adaad4742197)
-![fldrs](https://github.com/samcoble/CameraTransform/assets/32228102/2a1dea5f-7a53-49a5-aa2e-15a9420ef840)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
 ![NVIDIA](https://github.com/samcoble/CameraTransform/assets/32228102/5796f7f6-e08a-4e15-a02f-085735bfa242)
 ![webgl](https://github.com/samcoble/CameraTransform/assets/32228102/d6daf04d-05c5-4484-a0c9-5047fe041b75)
