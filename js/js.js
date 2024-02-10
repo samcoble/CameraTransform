@@ -375,7 +375,7 @@ var s_fov = fov_slide*fov_slide*fov_slide/20;
 
 var cursor_helper = 0;
 
-var player_pos = [0.0,-14.0,0];
+var player_pos = [0.0,-14, 30];
 var _inter_rnd = [0.0, 0.0, 0.0];
 var _paint_track = [0.0, 0.0, 0.0];
 
@@ -565,11 +565,22 @@ var key_map_prevent =
 	q: false
 };
 
+var player_pos_i = [];
+var mScreenMode = 0;
+
 const handleTouchStart = (event) =>
 {
-    _touch_i[0] = event.touches[0].clientX;
-    _touch_i[1] = event.touches[0].clientY;
-    player_look_dir_i = player_look_dir;
+  mScreenMode = 0;
+  _touch_i[0] = event.touches[0].clientX;
+  _touch_i[1] = event.touches[0].clientY;
+ if (event.touches[0].clientX > in_win_wc)
+ {
+ } else
+ {
+  mScreenMode = 1;
+  player_look_dir_i = player_look_dir;
+  setPoint(player_pos_i, player_pos);
+ }
 }
 
 const handleTouchMove = (event) =>
@@ -578,10 +589,22 @@ const handleTouchMove = (event) =>
 
     _touch_f[0] = event.touches[0].clientX;
     _touch_f[1] = event.touches[0].clientY;
-
     _touch_delta = sub2(_touch_f, _touch_i);
-    player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
+
+    let inplayer_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
     console.log(_touch_delta);
+
+  switch(mScreenMode)
+  {
+    case 0:
+      setPoint(player_look_dir, inplayer_look_dir)
+    break;
+
+    case 1:
+      let _np = rot_y_pln(sub3(player_pos_i, _lp_world), inplayer_look_dir[0]);
+      setPoint(player_pos, add3(_np, _lp_world));
+    break;
+  }
 };
 
 const handleTouchEnd = () =>
@@ -863,7 +886,7 @@ function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
 // set parent function attach to drag and drop.
 function folderSetParent(_i, _k) // folder _i parent -> folder _k
 {
-  // allowing use of default folders to store folders
+  // not allowing use of default folders to store folders
   // prevent change of parent of default folders here
   if (_i<4 || _k<4) {return false;}
 
@@ -1021,7 +1044,6 @@ function returnSmallestInArrays(ar)
   }
   return _t;
 }
-
 
 function loadFile0(_fi)
 {
@@ -1316,6 +1338,9 @@ function setTitle()
 	title = makeTitle(title);
 	document.title = title;
 }
+
+// Could have used this for most of the simple code sooner
+function setPoint(a, b) { a[0]=b[0]; a[1]=b[1]; a[2]=b[2]; } // set a to b 
 
 function dot4(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];}
 function dot(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];}
@@ -1669,7 +1694,10 @@ function m_objs_loadPoints(ar) // Adds objects
 
     var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
     m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
-    
+    var ar_z = new Float32Array( ar_t.length/6 + 1 );
+    var ar_k = new Float32Array( ar_t.length/6 + 1 );
+    z_map.push([ar_z, ar_k, ar_t.length/6 + 1]);
+
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -1679,7 +1707,10 @@ function m_objs_loadPoints(ar) // Adds objects
 		obj_normalMaps.push(new Float32Array([0.0, 0.0, 0.0, 0.0]));
 
     var ar_t = new Float32Array( 6 );
+    var ar_z = new Float32Array( 1 );
+    var ar_k = new Float32Array( 1 );
     m_draw.push([ar_t, 1, ar_t.length]); // Make space for webgl tris
+    z_map.push([ar_z, ar_k, 1]);
 	}
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 
@@ -3211,6 +3242,8 @@ function drawOverlay()
 
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
+
+  // updateZMap();
   
   updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
   updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
@@ -3748,7 +3781,6 @@ function drawLines()
             else
             {
               _si_f = 0;
-
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
                   if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
@@ -3767,7 +3799,44 @@ function drawLines()
                     m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
                     _si_f++;
                   }
-               }
+              }
+
+              /*
+              for (let k = 0; k < m_draw[d_i][1]; k++)
+              {
+                if (m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
+                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 7] > 0 &&
+                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 11] > 0)
+                {
+                  // z_map[d_i][1][k]
+                  switch(z_map[d_i][1][k]%2)
+                  {
+                    case 0:
+                      m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
+                      m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+
+                      m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
+                      m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
+
+                      m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
+                      m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
+                    break;
+
+                    case 1:
+                      m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
+                      m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
+
+                      m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
+                      m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
+
+                      m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
+                      m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+                    break;
+                  }
+                  _si_f++;
+                  }
+              }
+              */
             }
 
             // console.log(_si_d + " : " + _si_f + " : " + _od);
@@ -3789,9 +3858,6 @@ function drawLines()
             {
               gl.enable(gl.CULL_FACE);
 
-              // I just realized now this is free dynamic color!!!!!!!!!!!!!!!
-              // i can split tri's into shared color groupings
-
               gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
               gl.frontFace(gl.CCW);
               gl.cullFace(gl.BACK);
@@ -3807,6 +3873,7 @@ function drawLines()
 
               // if (gl.getParameter(gl.CULL_FACE)) {gl.disable(gl.CULL_FACE);}
               gl.disable(gl.CULL_FACE);
+              // gl.enable(gl.CULL_FACE);
               gl.drawArrays(gl.TRIANGLES, 0,  (_si_f * 6) / 2);
             }
 
@@ -4388,6 +4455,12 @@ function Compute(init_dat)
   }
 
 
+
+  // if (key_map.j && runEvery(50))
+  // {
+  //   let _np = rot_y_pln(sub3(player_pos, _lp_world), 0.05);
+  //   setPoint(player_pos, add3(_np, _lp_world));
+  // }
 
   // need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
   // _settings[5].settings[0]
