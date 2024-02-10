@@ -568,51 +568,59 @@ var key_map_prevent =
 var player_pos_i = [];
 var mScreenMode = 0;
 var mTimer = 0;
+var dragCatch = 0;
 
 const handleTouchStart = (event) =>
 {
   mTimer = Date.now();
   mScreenMode = 0;
-  _touch_i[0] = event.touches[0].clientX;
-  _touch_i[1] = event.touches[0].clientY;
+  dragCatch = 1;
  if (event.touches[0].clientX > in_win_wc)
  {
   select2dpoint(0,0);
  } else
  {
   mScreenMode = 1;
-  player_look_dir_i = player_look_dir;
-  setPoint(player_pos_i, player_pos);
  }
 }
 
 const handleTouchMove = (event) =>
 {
+  if (dragCatch)
+  {
+    _touch_i[0] = event.touches[0].clientX;
+    _touch_i[1] = event.touches[0].clientY;
+    setPoint(player_look_dir_i, player_look_dir);
+    setPoint(player_pos_i, player_pos);
+    dragCatch = 0;
+  }
+
     event.preventDefault();
 
     _touch_f[0] = event.touches[0].clientX;
     _touch_f[1] = event.touches[0].clientY;
     _touch_delta = sub2(_touch_f, _touch_i);
 
-    let inplayer_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
-    // console.log(_touch_delta);
+  // console.log(_touch_delta);
 
   switch(mScreenMode)
   {
     case 0:
-      player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
+      setPoint(player_look_dir, [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]);
     break;
 
     case 1:
-      let _np = rot_y_pln(sub3(player_pos_i, _lp_world), inplayer_look_dir[0]);
+      let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
       setPoint(player_pos, add3(_np, _lp_world));
+      player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
+      setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
     break;
   }
 };
 
 const handleTouchEnd = () =>
 {
-  lookToggle = 0;
+  dragCatch = 0;
 }
 
 if (isMobile)
