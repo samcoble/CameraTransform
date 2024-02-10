@@ -1375,9 +1375,18 @@ makeElement(addButton,
 
 makeElement(addButton,
 {
+  text: "Teleport \u27AB",
+  id: "tool_curTp", cls: "_btn", prnt: "menu_tools",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: teleport_plr
+});
+
+makeElement(addButton,
+{
   text: "Get Center \u22A1",
   id: "tool_curToCtr", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: setCursorToObjCenter
 });
@@ -1386,7 +1395,7 @@ makeElement(addButton,
 {
   text: "Ground Cursor \u2356",
   id: "tool_curToGrnd", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: returnCursorToGround
 });
@@ -1395,7 +1404,7 @@ makeElement(addButton,
 {
   text: "Create Circle \u25EF",
   id: "tool_createCircle", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: createCircleAtCursor
 });
@@ -1404,7 +1413,7 @@ makeElement(addButton,
 {
   text: "Dupe Folder \u20AA",
   id: "tool_dupeFld", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: dupeFolderObjs
 });
@@ -1413,7 +1422,7 @@ makeElement(addButton,
 {
   text: "Dupe Object \u26FC",
   id: "tool_dupeObj", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: cloneObjSelected
 });
@@ -1422,7 +1431,7 @@ makeElement(addButton,
 {
   text: "Resize Object \u2922",
   id: "tool_resizeObject", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: boundingBox.toggle
 });
@@ -1431,7 +1440,7 @@ makeElement(addButton,
 {
   text: "Mirror / Plane \u2346",
   id: "tool_mirrorOverPlane", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: mirrorOverPlane
 });
@@ -1440,7 +1449,7 @@ makeElement(addButton,
 {
   text: "Apply Rotation \u2B6E",
   id: "tool_applyRotation", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: applyRotation
 });
@@ -1449,7 +1458,7 @@ makeElement(addButton,
 {
   text: "Move Folder \u2933",
   id: "tool_moveFld", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: translateObj.toggle
 });
@@ -1458,7 +1467,7 @@ makeElement(addButton,
 {
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1467,7 +1476,7 @@ makeElement(addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1476,7 +1485,7 @@ makeElement(addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1485,7 +1494,7 @@ makeElement(addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
@@ -1494,7 +1503,7 @@ makeElement(addButton,
 {
   text: "Delete Object \u2421",
   id: "tool_delObj", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
 });
@@ -1503,7 +1512,7 @@ makeElement(addButton,
 {
   text: "Empty Folder \u2672",
   id: "tool_delFldObjs", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: deleteFolderObjs
 });
@@ -1512,7 +1521,7 @@ makeElement(addButton,
 {
   text: `\u05D0 Clear World \u05D0`,
   id: "tool_clearWorld", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: del_world
 });
@@ -1521,7 +1530,7 @@ makeElement(addButton,
 {
   text: `Close Menu`,
   id: "tool_closeMenu", cls: "_btn", prnt: "menu_tools",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: pointerLockSwap 
 });
@@ -2557,6 +2566,7 @@ function updateWpnFromMenu(par)
 {
   wpn_select = par.i;
   updateWpnSelect();
+  pointerLockSwap();
 }
 
 makeElement(addDiv,

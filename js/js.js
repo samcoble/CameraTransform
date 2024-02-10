@@ -567,14 +567,17 @@ var key_map_prevent =
 
 var player_pos_i = [];
 var mScreenMode = 0;
+var mTimer = 0;
 
 const handleTouchStart = (event) =>
 {
+  mTimer = Date.now();
   mScreenMode = 0;
   _touch_i[0] = event.touches[0].clientX;
   _touch_i[1] = event.touches[0].clientY;
  if (event.touches[0].clientX > in_win_wc)
  {
+  select2dpoint(0,0);
  } else
  {
   mScreenMode = 1;
@@ -592,12 +595,12 @@ const handleTouchMove = (event) =>
     _touch_delta = sub2(_touch_f, _touch_i);
 
     let inplayer_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
-    console.log(_touch_delta);
+    // console.log(_touch_delta);
 
   switch(mScreenMode)
   {
     case 0:
-      setPoint(player_look_dir, inplayer_look_dir)
+      player_look_dir = [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
     break;
 
     case 1:
@@ -2044,14 +2047,14 @@ function teleport_plr()
 	switch(lock_vert_mov)
 	{
 		case false:
-			player_pos[0] = _inter[0];
-			player_pos[1] = _inter[1]-14;
-			player_pos[2] = _inter[2];
+			player_pos[0] = _lp_world[0];
+			player_pos[1] = _lp_world[1]-14;
+			player_pos[2] = _lp_world[2];
 			break;
 
 		case true:
-			player_pos[0] = _inter[0];
-			player_pos[2] = _inter[2];
+			player_pos[0] = _lp_world[0];
+			player_pos[2] = _lp_world[2];
 			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero broken.
 			break;
 	}
