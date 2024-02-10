@@ -621,14 +621,14 @@ const handleTouchMove = (event) =>
 const handleTouchEnd = () =>
 {
   dragCatch = 0;
-  window.onload = requestFullscreen();
+  // window.onload = requestFullscreen();
 }
 
-function requestFullscreen()
-{
-  const elem = document.documentElement;
-  if (elem.requestFullscreen) { elem.requestFullscreen(); }
-}
+// function requestFullscreen()
+// {
+//   const elem = document.documentElement;
+//   if (elem.requestFullscreen) { elem.requestFullscreen(); }
+// }
 
 if (isMobile)
 {
