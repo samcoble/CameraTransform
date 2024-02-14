@@ -251,8 +251,8 @@ modulo distributes with switch with for loop ez wow for ex:
 						\--------------*/
 
 // !
-const menuTime_int = 170;
-const title_int = 350;
+const menuTime_int = 220;
+const title_int = 420;
 // !
 
 // Timer
@@ -274,9 +274,9 @@ var fileName = "";
 const pi = 3.1415926538; // High definition PI makes a visible difference
 const pi2 = 6.2831853071;
 
-const player_speed = 0.5;
-const player_speed_vert = 0.3; // Vertical travel speed
-const player_speed_mult = 4; // Shift key
+const player_speed = 0.5*0.7;
+const player_speed_vert = 0.3*0.7; // Vertical travel speed
+const player_speed_mult = 4*0.7; // Shift key
 
 var player_look_dir = [0, 0, 0];
 var player_look_dir_i = [0, 0, 0];
@@ -3085,11 +3085,9 @@ function dupeFolderObjs()
 
 function drawOverlay()
 {
-
+	// While in menu with low call rate i'll set values here:
 	updateMenuPos();
 
-  
-  
   if (!mouseLock && wpn_select==3) // in menu
   {
     updateLook();
@@ -3131,14 +3129,11 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
 
-  // updateZMap();
-  
   updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
   updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
   updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
-  updateTextByPar("menu_status_r1", "grid_scale[" + _settings[5].settings[0]+"]");
+  updateTextByPar("menu_status_r1", "grid_scale[" + grid_scale + " : " + _settings[5].settings[0]+"]");
 
-	// While in menu with low call rate i'll set values here:
 
 	// This needs to be fixed. Temp as I port menu to new script.
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
@@ -3285,30 +3280,8 @@ function drawSegment(vertices, mi)
 
 function drawPoints(_pnts, mi)
 {
-
-
-  // Here I can try and use tri dots instead
-  // Make buffers later
-  // So it still looks like krap lol
-
-  /*
-  let _dsize = 0.0015;
-  let _drnd = 200000;
-  let _s = _pnts.length/2;
-  let _ptris = new Float32Array(_s * 6);
-  for (let i=0; i<_s; i++)
-  {
-    _ptris[i*6] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd;
-    _ptris[i*6+1] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd+_dsize/2;
-    _ptris[i*6+2] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd-_dsize*(3/4-0.25);
-    _ptris[i*6+3] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd-_dsize/2;
-    _ptris[i*6+4] = Math.floor(_pnts[(i*2)]*_drnd)/_drnd+_dsize*(3/4-0.25);
-    _ptris[i*6+5] = Math.ceil(_pnts[(i*2)+1]*_drnd)/_drnd-_dsize/2;
-  }
-  */
   
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  // gl.bufferData(gl.ARRAY_BUFFER, _ptris, gl.STATIC_DRAW);
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
@@ -3333,7 +3306,6 @@ function drawPoints(_pnts, mi)
     } else {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.3]);}
 
   // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
-  // gl.drawArrays(gl.TRIANGLES, 0, _ptris.length / 2);
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
 }
 
@@ -3390,25 +3362,6 @@ function ar2Dmod(a, b, c, s)
   }
   return b;
 }
-
-/*
-function z_buffer()
-{
-
-  // Going to add a float32array 0 to len list first
-  for (let i = m_objs.length-1; i>=0; i--)
-  {
-    if (z_map[i] != 0)
-    {
-     z_map[i][1].sort((a, b) => z_map[i][0][b] - z_map[i][0][a]);
-    }
-  } // End of i:obj
-
-
-  // if (stn_link_tool == 0) {console.log(z_map[i][1]);}
-}
-*/
-
 
 function updateZMap()
 {
@@ -3563,6 +3516,10 @@ var _2d_previewBack;
 
 // python3 -m http.server  
 
+// If I sort obj tri's by dist w/ fast set table reorganize
+// not really that bad it's 1 check per tri.
+// i can disable by center.
+// the order I pack them will be the pipe
 
 function drawLines()
 {
@@ -3571,14 +3528,8 @@ function drawLines()
   for (let i = m_objs.length-1; i >= 0; i--)
   {
     d_i = modIndex[i];
-    // vertices = [];
 
-    // If I sort obj tri's by dist w/ fast set table reorganize
-    // not really that bad it's 1 check per tri.
-    // i can disable by center.
-    // the order I pack them will be the pipe
-
-    if (_settings[1].settings[1]) //&& d_i > world_obj_count && mem_log[d_i][2]>3 && m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0
+    if (_settings[1].settings[1])
     {
       if (d_i > world_obj_count)
       {
@@ -4086,7 +4037,6 @@ var boundingBox =
     let _s = m_cube.length;
     for (let i=0; i<_s; i++)
     {
-      let _;
       if (Math.abs(_lp_world[0] - m_objs[15][i * 4]) < this.ep
           && Math.abs(_lp_world[1] - m_objs[15][i * 4 + 1]) < this.ep
           && Math.abs(_lp_world[2] - m_objs[15][i * 4 + 2]) < this.ep)

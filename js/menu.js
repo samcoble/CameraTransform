@@ -2447,6 +2447,13 @@ color: #555;
 line-height: 2.2;
 ` + _btn_col1;
 
+var _textScaleFix =
+`
+width: 300px;
+position: relative;
+left: -187px;
+`;
+
 makeElement(addDiv,
 {
   id: "menu_status", cls: "", prnt: "html",
@@ -2512,7 +2519,7 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "menu_status_r1", cls: "", prnt: "menu_status_r",
-  rootStyle: rootStyle + menu_status_style_l0 + _textRight
+  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _textScaleFix
 });
 
 makeElement(addDiv,
