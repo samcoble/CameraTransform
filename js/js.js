@@ -15,12 +15,10 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 // Make a pistol that shoots green lasers that bounce!
 // Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections. This would look cool inside a sphere! w/ no limit it'd probably crash lmao.
 
-
 /*
   
   #todolist
   
-
     -- physics engine should be possible but first I need to fix my triangles
     -- collision detections will need to borrow from the same idea of culling back faces
     -- but I will replace the tri actually with a bounding box
@@ -39,45 +37,23 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
     -- box collision function and tests
     -- 
     -- 13.25, 13.625, 74.875
-
-    -- 
-    -- my current poly generation algs do not create a winding effect for back face culling,
-    -- but my alternating sequence could be separated into two groupings and one gets flipped.
-    -- 
-    -- 
-    -- 
-    -- 
-    -- 
     -- 
 
-@?@?@
-?@?@?
-@?@?@
+  @?@?@
+  ?@?@?
+  @?@?@
+
       -- Ray tracing used for z buffer must be parallelized 
-
       -- finish center inds?
-
       -- need parallel array manager to auto manage all the krap
-
       -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
-
       -- Float32Array already contains byteLength and byteOffset.
-
       -- Match all of my data structure to use Float32Array to remove all type conversions
-
       -- fix preview image to offset w/ 2d forced square w/ check
-
 			-- rewrite the select2dpoint function
         - needs system to provide hologram ui
-
 			-- if encoded center is within plane of poly's captures some overlap
-	
 			-- engine space
-
-			-- manual method for scroll boxes
-
-			-- translate ghost lol idk remember where
-
 			-- generate dir vec curves
 
 			-- nested point sequences at overlap point should be fairly easy. take note of logic
@@ -97,17 +73,11 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 				- doesn't have to be run all the time if the purpose is to model
 				- line's checked for intersection within some range of it's len.
 
-			-- ray trace teleport
-			-- fix teleport flip to use quaternions
-
-			-- multi select
-
 			-- just noticed save data corrupted by single point data
 				- fuqk
         - temp fix is making all 1 point objs 2 equal points w/ center ig
 
 			-- string dat find sys or mem addr sys?
-
 			-- all my functions relative to the plane can be replaced with a general obj orient fn.
 
 			-- Overlapping point issues BREOKEKN
@@ -121,12 +91,8 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
             might have the answer to this now with the new manual 2d gen circles
 
 			-- unit vector line conversion method for arc len
-
-			-- distribute heights using 20% remainder to make hover to settings
-
-			--  edit obj
-
-			--  Correctly log changed information that can be applied to reverse.
+			-- edit obj
+			-- Correctly log changed information that can be applied to reverse.
 
 @?@?@
 ?@?@?
@@ -137,7 +103,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 			-> i could then display them at two different fov's creating a zoomed region for scopes/sights
 
 	So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
-	W/ new menu script I can provide a better sense of what tools are.
 
 	Wrap data increase to hold more layers
 		r g b a comes first
@@ -150,34 +115,27 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 		i need to implement geometric obj creation.
 			with more layers of encoded data i can keep logs of what obj's are fundamentally
 
-	Mover should show bounding box w/ corners to drag size
 	All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
 	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet. Do I really need to interp packed data??
 
-
-I can make real physgun by compounding quaternions and ray trace AYYYYYYYYYYYYYYYYYYYYYYY
+I can make real physgun by compounding quaternions and ray trace
 Make the planetary ico 
 Assault cube old code
-*/
 
-/*
 .reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
- Use this to push to top stack? ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
-*/
 
-//  @?@?@?@?@ If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
-//				this raises the question: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
-//					maybe try reversing the process.
-//					if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
-//					if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
-//					the procedure of rotation around an arbitrary axis applies to many things,
-//						conclusion: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
+If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
+  ?: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
+    maybe try reversing the process.
+    if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
+    if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
+    the procedure of rotation around an arbitrary axis applies to many things,
+      ?: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
 
+Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
+  for a lil extra travel just offset
 
-//  @?@?@?@?@ Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
-//		for a lil extra travel just offset
-
-/* modulo distributes with switch with for loop ez wow for ex:
+modulo distributes with switch with for loop ez wow for ex:
 
 	for (i)
 	{
@@ -191,8 +149,6 @@ Assault cube old code
 	rayIMap[] populates data for poly loop to loop through allowing for poly color changes / indicators. Leading to a colorMap for tris.
 		colors mapped as numbers converted by static array of colors.
 
-*/
-/*
 	starting with 1 call to trace
 
 	3 sides 3 vec a b c omni order thus equally in sign implies within poly
@@ -223,31 +179,19 @@ Assault cube old code
 	v13 = b - (a-c)/2         ->        sub(b, scale(sub(a,c),0.5))
 	if     sign(a) == sign(b) || sign(b) == sign(c)   =>   push point to rayInterMap[] && rayIMap[]. wat
 
-*/
-/*
-- DO NOW
+	- Make ray trace fn use inputs so I can call it to get data anywhere.
 
-	= Return nearest & in front of 
-		First dot(sub(p, player_pos),f_look)
-		getNearest(array of float32array(4), point testing from) -> nearest point
-			or combine point to test from w/ a tiny offset to give it direction so first dot points w/ that plane
-
-	= Make ray trace fn use inputs so I can call it to get data anywhere.
-
-	= Strange some polys not detected by rays..?? may come from zigzag gen? should be considering it's visually parallel w/ data
-		- probably caused by ghost obj ??? not translated ??
-
-	= Cut obj in half by plane!
+	- Cut obj in half by plane!
 		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
 
-	= Bezier tool!!!!!!!!!!!!!!!!!!! ASAP.
+	- Bezier tool
 
-	= interpolation framework for anim -> prerender
+	- interpolation framework for anim -> prerender
 
-	= For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
-	= Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
+	- For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
+	- Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
 
-	= Enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
+	- Enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
 		- and "link.k=l" rebinds link(); activator key to l. And if already bound swap. Block some keys maybe.
 		- if any part of text is contained by a list of syntax display those options below and what options exist after the dot operator
 		- find obj by would be amazing. by dist returns array of i's that will be modified w/ function 
@@ -264,21 +208,11 @@ Assault cube old code
 - use a time delta for interpolation and player translation to avoid runtime speed fluctuations. so I need a timer for w a s d up down. 6 timers
 
 - research k-d tree / octree
-- ken joy probably made a lecture about it?
 
-- Make obj spawn list !!!!
-- Need two tabs
-- Need square tool
-- Need rect cube tool
-- Circle tool also needs to have options for half or n parts
+- Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
 
-*/
+- The tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
 
-// Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
-
-// the tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
-
-/*
 	Badly need to implement a struct system for tools generally such that every tool overrides some keys.
 		Points should be a point tool (Place point - F)
 		Circle tool (Place circle - F) (I need a later formula to compress a 4 point circle to align with the grid)
@@ -286,27 +220,11 @@ Assault cube old code
 		Dynamic Expand (Applies compression/expansion with 3 input numbers)
 		Rotate around Axis (For now input into box with deg. Use point and plane line)
 		Stacker tool (Accepts distance and stacks) (Two input boxes)
-*/
 
-/*
-
-	// [[ PROBABLY GOING TO DO SOON ]]:
-
-	-	Obj explode needs update.
-			explode with c is done.
-			if an obj has been exploded or one is drawn (m_t_objs.length > 0) then c now gets sku from point finder and allows (split obj, delete point, add point in sequence)
-
-	-	Sphere generation
-	-	Surface generation
-	-	Shift + Tab for multi selection. Also make mouse selector
-
-	// [[ PROBABLY NOT SO SOON ]]
-
-	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&&&!!!! the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
+	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&& the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
 	-	Maybe a separate self made api for handling the screen interface would be wise.
-	-	It really needs 3d/2d simple text obj generation for real notepad capacity. Idk how to edit something like that other than detecting the objects vertices relative and essentially making a hash table. Easier to just store the string in the bg. More arrays...
+	-	It really needs 3d/2d simple text obj generation for real notepad capacity. Easier to just store the string in the bg.
 	-	Effects and sounds.
-
 
 	// MAYBE SOME TIME IN 2053 (after christ)
 
@@ -1712,9 +1630,11 @@ function m_objs_loadPoints(ar) // Adds objects
 
     var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
     m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
-    var ar_z = new Float32Array( ar_t.length/6 + 1 );
-    var ar_k = new Float32Array( ar_t.length/6 + 1 );
-    z_map.push([ar_z, ar_k, ar_t.length/6 + 1]);
+
+    // z-map shit I think fixed now?
+    var ar_z = new Float32Array( ar_t.length/6 );
+    var ar_k = new Float32Array( ar_t.length/6 );
+    z_map.push([ar_z, ar_k, ar_t.length/6]);
 
 	} else
   {
@@ -1737,23 +1657,6 @@ function m_objs_loadPoints(ar) // Adds objects
   let _count = Math.floor( (ar.length + 4)/4 ); 
   _si = (Math.floor((_count - 1) / 2) - _count%2) - 1;
 
-  // if (ar.length >= (3*4))
-  // {
-  //   var ar_r = new Float32Array( _si * 6 + 6 );
-  //   var ar_z = new Float32Array( _si + 1 );
-  //   var ar_k = new Float32Array( _si + 1 );
-  //   m_draw.push([ar_r, _si, ar_r.length]); // Make space for webgl tris
-  //   z_map.push([ar_z, ar_k, _si + 1]);
-  //
-  // } else
-  // {
-  //   var ar_r = new Float32Array( 6 );
-  //   var ar_z = new Float32Array( 1 );
-  //   var ar_k = new Float32Array( 1 );
-  //   m_draw.push([ar_r, 1, 6]); // Make space for webgl tris
-  //   z_map.push([ar_z, ar_k, 1]);
-  // }
-  //
   m_center2d_buffer.push(new Float32Array(33*2));
   m_center2d.push(new Float32Array(2));
 
@@ -2942,7 +2845,6 @@ function updateCursor()
 
 function planeCycle()
 {
-
   if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}
   updateCursor();
 }
@@ -3310,7 +3212,6 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 
  */
 
-const vertexBuffer = gl.createBuffer();
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
 
@@ -3580,7 +3481,7 @@ function updateZMap()
       let _sk = m_draw[i][1];
       for (let k = _sk; k>=0; k--)
       {
-        z_map[i][0][k] = m1.data[8 * k + mem_log[i][0] + 6];
+        z_map[i][0][k] = (m1.data[8 * k + mem_log[i][0] + 3] + m1.data[8 * k + mem_log[i][0] + 7] + m1.data[8 * k + mem_log[i][0] + 11])/3;
         z_map[i][1][k] = k;
       }
        z_map[i][1].sort((a, b) => z_map[i][0][b] - z_map[i][0][a]);
@@ -3709,27 +3610,26 @@ function drawThinLines(vertices)
 */
 
 var _2d_previewBack;
-var _si_d = 0;
-var _od = 0;
-var _h = 0;
 
-  // updateZMap();
-  
-  // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
-  // would it be worth it even chunk draw last draw remainder?
-  // this may not work in every instance but marked objects may provide a tremendous performance bump
+// updateZMap();
 
-  // can try compare each 2d surface near to far and stop pushing tri to draw when overlap occurs
-  // maybe because if already sorted the first to create overlap indicates end of top of surface
-  // this may only work with the average z dist.
+// crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
+// would it be worth it even chunk draw last draw remainder?
+// this may not work in every instance but marked objects may provide a tremendous performance bump
 
-  // Now I have z's ready in z_map by object i and [0]
-  // so far sorting tri's within objs. forgot has to be all tris at once.
-  
-  // Now make a set of data of 2d center points to feed this and scale w/ z from shader
-  // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
-  
-  // #linesandtris
+// Now make a set of data of 2d center points to feed this and scale w/ z from shader
+// drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
+
+// #linesandtris
+
+// python3 -m http.server  
+
+const colorMap =
+[
+  [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
+  [0.2, 0.5, 0.5, 0.2, 0.5, 0.5, 0.2, 0.5, 0.5],
+  [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+];
 
 function drawLines()
 {
@@ -3737,8 +3637,8 @@ function drawLines()
 
   for (let i = m_objs.length-1; i >= 0; i--)
   {
-   d_i = modIndex[i];
-   // vertices = [];
+    d_i = modIndex[i];
+    // vertices = [];
 
     // If I sort obj tri's by dist w/ fast set table reorganize
     // not really that bad it's 1 check per tri.
@@ -3753,165 +3653,150 @@ function drawLines()
         {
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
-            _si_f = _si_d = 0;
             vertices = [];
-
-            // I can try mod 2 to also save tri?
-            if (_settings[5].settings[2])
+            if (!_settings[5].settings[2])
             {
-              _od = m_draw[d_i][1]%2;
-              _h = (m_draw[d_i][1]-_od)/2;
-
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
-                if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
+                if(
+                  m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
                 {
-                  
-                  if (k%2 != 0)
-                  {
-                    m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * k + mem_log[d_i][0]];
-                    m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
+                  m_draw[d_i][0][(k) * 6] = m1.data[8 * k + mem_log[d_i][0]];
+                  m_draw[d_i][0][(k) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
-                    m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
-                    m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
+                  m_draw[d_i][0][(k) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
+                  m_draw[d_i][0][(k) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
 
-                    m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
-                    m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
-                    _si_f++;
-                  }
-                  else
-                  {
-                    m_draw[d_i][0][(_si_d+_h) * 6] = m1.data[8 * k + mem_log[d_i][0]];
-                    m_draw[d_i][0][(_si_d+_h) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
+                  m_draw[d_i][0][(k) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
+                  m_draw[d_i][0][(k) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
+                } else {
+                  m_draw[d_i][0][(k) * 6] = 0;
+                  m_draw[d_i][0][(k) * 6 + 1] = 0;
 
-                    m_draw[d_i][0][(_si_d+_h) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
-                    m_draw[d_i][0][(_si_d+_h) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
+                  m_draw[d_i][0][(k) * 6 + 2] = 0;
+                  m_draw[d_i][0][(k) * 6 + 3] = 0;
 
-                    m_draw[d_i][0][(_si_d+_h) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
-                    m_draw[d_i][0][(_si_d+_h) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
-                    _si_d++;
-                  }
+                  m_draw[d_i][0][(k) * 6 + 4] = 0;
+                  m_draw[d_i][0][(k) * 6 + 5] = 0;
                 }
-               } // end of k loop
-            }
-            else
-            {
-              _si_f = 0;
+              } // end of k loop
+            } else {
+
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
-                  if (m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
-                    m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
-                    m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
-                  {
-                   // z_map[d_i][1][k]
-                  
-                    m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * k + mem_log[d_i][0]];
-                    m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
-
-                    m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * k + mem_log[d_i][0] + 4];
-                    m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * k + mem_log[d_i][0] + 5];
-
-                    m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
-                    m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
-                    _si_f++;
-                  }
-              }
-
-              /*
-              for (let k = 0; k < m_draw[d_i][1]; k++)
-              {
-                if (m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
+                if (
+                  m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 11] > 0)
                 {
-                  // z_map[d_i][1][k]
                   switch(z_map[d_i][1][k]%2)
                   {
                     case 0:
-                      m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
-                      m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+                      m_draw[d_i][0][(k) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
+                      m_draw[d_i][0][(k) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
 
-                      m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
-                      m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
+                      m_draw[d_i][0][(k) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
+                      m_draw[d_i][0][(k) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
 
-                      m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
-                      m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
+                      m_draw[d_i][0][(k) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
+                      m_draw[d_i][0][(k) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
                     break;
 
                     case 1:
-                      m_draw[d_i][0][(_si_f) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
-                      m_draw[d_i][0][(_si_f) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
+                      m_draw[d_i][0][(k) * 6] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0]];
+                      m_draw[d_i][0][(k) * 6 + 1] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 1];
 
-                      m_draw[d_i][0][(_si_f) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
-                      m_draw[d_i][0][(_si_f) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
+                      m_draw[d_i][0][(k) * 6 + 2] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 4];
+                      m_draw[d_i][0][(k) * 6 + 3] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 5];
 
-                      m_draw[d_i][0][(_si_f) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
-                      m_draw[d_i][0][(_si_f) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
+                      m_draw[d_i][0][(k) * 6 + 4] = m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 8];
+                      m_draw[d_i][0][(k) * 6 + 5] = -m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 9];
                     break;
                   }
-                  _si_f++;
-                  }
+                } else {
+                  m_draw[d_i][0][(k) * 6] = 0;
+                  m_draw[d_i][0][(k) * 6 + 1] = 0;
+
+                  m_draw[d_i][0][(k) * 6 + 2] = 0;
+                  m_draw[d_i][0][(k) * 6 + 3] = 0;
+
+                  m_draw[d_i][0][(k) * 6 + 4] = 0;
+                  m_draw[d_i][0][(k) * 6 + 5] = 0;
+                }
               }
-              */
             }
 
             // console.log(_si_d + " : " + _si_f + " : " + _od);
-          
-            switch(_settings[1].settings[2])
-            {
-              case true:
-                gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
-                break;
-              case false:
-                gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
-                break;
-            }
-
-            gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
-            gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-
-            if (_settings[5].settings[2])
+            var triangleColors = [];
+        
+            if (_settings[5].settings[3])
             {
               gl.enable(gl.CULL_FACE);
-
-              gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
-              gl.frontFace(gl.CCW);
               gl.cullFace(gl.BACK);
-              gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
+            } else {gl.disable(gl.CULL_FACE);}
 
-              gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
-              gl.frontFace(gl.CW);
-              gl.cullFace(gl.BACK);
-              gl.drawArrays(gl.TRIANGLES, ( (_h) * 6 ) / 2, ( (_si_d) * 6 ) / 2);
+
+            if (!_settings[5].settings[2])
+            {
+              switch(!_settings[1].settings[2])
+              {
+                case true:
+                  gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
+                  break;
+                case false:
+                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
+                  break;
+              }
+              gl.uniform1i(renderModeUniform, 1);
+              gl.disableVertexAttribArray(colorAttribLocation);
+
+              gl.enableVertexAttribArray(positionAttrib);
+              gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
+              gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+              gl.drawArrays(gl.TRIANGLES, 0, m_draw[d_i][1]*3);
             }
             else
             {
+              
+              // for (let l = 0; l < m_draw[d_i][0].length; l++)
+              // {
+              //   triangleColors[4*l] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
+              //   triangleColors[4*l+1] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
+              //   triangleColors[4*l+2] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
+              //   triangleColors[4*l+3] = 0.5;
+              // }
 
-              // if (gl.getParameter(gl.CULL_FACE)) {gl.disable(gl.CULL_FACE);}
-              gl.disable(gl.CULL_FACE);
-              // gl.enable(gl.CULL_FACE);
-              gl.drawArrays(gl.TRIANGLES, 0,  (_si_f * 6) / 2);
+              // let _fuckyou = (m_draw[d_i][2]+0+(1+m_objs[d_i].length/4-1)%2)*6;
+              let _fuckyou = (m_draw[d_i][1]+3)*12*5;
+              for (let l=0; l<_fuckyou; l++)
+              {
+                triangleColors.push(1/_fuckyou*l*8+0.2, 1/_fuckyou*l*8+0.2, 1/_fuckyou*l*8+0.2, 1-_settings[1].settings[2]*0.5);
+              }
+              gl.uniform1i(renderModeUniform, 0); // Should need this right
+
+              // Bind the vertex buffer and set up attribute pointers for position data
+              gl.enableVertexAttribArray(positionAttrib);
+              gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
+              gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+              gl.enableVertexAttribArray(colorAttribLocation);
+              gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleColors), gl.STATIC_DRAW);
+              gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
+
+              gl.drawArrays(gl.TRIANGLES, 0, m_draw[d_i][1]*3);
             }
-
-            // Draw the triangles after setting the color
-            // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-            // gl.enableVertexAttribArray(positionAttrib);
-
-            // gl.drawArrays(gl.TRIANGLES, 0, ( _si_f * 6 ) / 2);
-            //
-            // // if (d_i == 2) {
-            // // was going to check the sizes here
-            // }
-
-            // drawSegment(m_draw[d_i][0], (_si_f * 6) / 2);
-            // drawSegment(vertices, vertices.length/2);
           }
         }
       }       
     }
+
+    gl.uniform1i(renderModeUniform, 1);
 
     /* // last
     // var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
@@ -4007,18 +3892,18 @@ function drawLines()
     
     for (let j = start; j < end; j += 4)
     {
-        if (m1.data[j + 3] < 0) {
-            if (vertices.length > 0)
-            {
-                drawSegment(vertices, -1);
-                // drawThinLines(vertices);
-                vertices.length = 0;
-            }
-        } else
+      if (m1.data[j + 3] < 0) {
+        if (vertices.length > 0)
         {
-            // x y
-            vertices.push(m1.data[j], -m1.data[j + 1]);
+          drawSegment(vertices, -1);
+          // drawThinLines(vertices);
+          vertices.length = 0;
         }
+      } else
+      {
+        // x y
+        vertices.push(m1.data[j], -m1.data[j + 1]);
+      }
     }
     // last segment
     if (vertices.length > 0)
@@ -4453,6 +4338,9 @@ function updateRefLog()
 
 function Compute(init_dat)
 {
+  if (_settings[5].settings[2]) {updateZMap();}
+
+
 	m_obj_offs[12][0] = _lp_world[0];
 	m_obj_offs[12][1] = _lp_world[1];
 	m_obj_offs[12][2] = _lp_world[2];
@@ -4466,23 +4354,16 @@ function Compute(init_dat)
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
 
-
   for (let p = functionRunList.length-1; p>=0; p--)
   {
     if (functionRunList[p].active) {functionRunList[p].run();}
   }
-
-
 
   // if (key_map.j && runEvery(50))
   // {
   //   let _np = rot_y_pln(sub3(player_pos, _lp_world), 0.05);
   //   setPoint(player_pos, add3(_np, _lp_world));
   // }
-
-  // need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
-  // _settings[5].settings[0]
-
 
            /*@?@
            ?@?@?
@@ -4699,7 +4580,6 @@ function Compute(init_dat)
 		}
 	}
 
-
 		if (wpn_select==3)
 		{
 			_c =
@@ -4741,7 +4621,6 @@ function Compute(init_dat)
   if (key_map["2"] && runEvery(100)) {wpn_select = 1; updateWpnSelect();}
   if (key_map["3"] && runEvery(100)) {wpn_select = 2; updateWpnSelect();}
   if (key_map["4"] && runEvery(100)) {wpn_select = 3; updateWpnSelect();}
-	
 
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
@@ -4758,7 +4637,6 @@ function Compute(init_dat)
 			grid_scale_ar[1] = _settings[5].settings[0];
 			break
 	}
-
 
  	// check nan other place? like lpi?
  	if (mouseLock == 1)

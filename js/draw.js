@@ -1,61 +1,60 @@
 const ctx_gl = document.getElementById('cv_gl');
 const gl = ctx_gl.getContext("webgl", { antialias: true, preserveDrawingBuffer: true, alpha:true });
 
+var shaderProgram, shaderProgram2, positionAttrib, colorUniformLocation;
+var vertices, _pts, _si, _si2, colorAttrib, renderModeUniform, _triverts, colorAttribLocation;
 
-var shaderProgram, shaderProgram2;
-var positionAttrib;
-var colorUniformLocation;
-
-var vertices, _pts, _si, _si2, colorBuffer, colorAttrib;
-
-var _triverts;
+const vertexBuffer = gl.createBuffer();
+const colorBuffer = gl.createBuffer();
 
 function resizeCanvas(w, h)
 {
   ctx_gl.width = w;
   ctx_gl.height = h;
-
-  // Refresh the WebGL context
   gl.viewport(0, 0, w, h);
 }
 
 function initWebGL()
 {
+	in_win_w = document.getElementsByTagName("html")[0].clientWidth;
+	in_win_h = document.getElementsByTagName("html")[0].clientHeight;
 
   const vertexShaderSource =
   `
   attribute vec2 aPosition;
+  attribute vec4 aColor;
+
+  uniform int uRenderMode;
+  uniform vec4 uColor;
 
   varying vec4 vColor;
-  attribute vec4 aColor;
 
   void main(void)
   {
     gl_Position = vec4(aPosition, 0.0, 1.0);
-    gl_PointSize = 1.6; // point size
-    vColor = aColor;
+    gl_PointSize = 1.6;
+
+    if (uRenderMode == 0)
+    {
+      vColor = aColor;
+    } else
+    {
+      vColor = uColor;
+    }
   }
   `;
+
   const fragmentShaderSource0 =
   `
   precision mediump float;
-  uniform vec4 uColor;
+  varying vec4 vColor;
+
   void main()
   {
-      gl_FragColor = uColor;
+    gl_FragColor = vColor;
   }
   `;
-  
-  // const fragmentShaderSource1 =
-  // `
-  // precision mediump float;
-  // varying vec4 vColor;
-  // void main()
-  // {
-  //     gl_FragColor = vColor;
-  // }
-  // `;
-  
+
   const vertexShader = createShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
   const fragmentShader0 = createShader(gl, fragmentShaderSource0, gl.FRAGMENT_SHADER);
   //const fragmentShader1 = createShader(gl, fragmentShaderSource1, gl.FRAGMENT_SHADER);
@@ -66,10 +65,14 @@ function initWebGL()
   shaderProgram = createProgram(gl, vertexShader, fragmentShader0);
   //shaderProgram2 = createProgram(gl, vertexShader, fragmentShader1);
 
-  colorUniformLocation = gl.getUniformLocation(shaderProgram, 'uColor');
+  renderModeUniform = gl.getUniformLocation(shaderProgram, 'uRenderMode');
+  gl.uniform1i(renderModeUniform, 1);
 
   positionAttrib = gl.getAttribLocation(shaderProgram, 'aPosition');
   gl.enableVertexAttribArray(positionAttrib);
+
+  colorUniformLocation = gl.getUniformLocation(shaderProgram, 'uColor');
+  colorAttribLocation = gl.getAttribLocation(shaderProgram, 'aColor');
 
   //positionAttrib = gl.getAttribLocation(shaderProgram2, 'aPosition');
   //gl.enableVertexAttribArray(positionAttrib);

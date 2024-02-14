@@ -1344,6 +1344,7 @@ margin: 0px 0% 0px 0px;
 
 var _btn =
  `
+color: #AAA;
 text-align: right;
 border-bottom: 1px solid rgb(12,12,12);
 border-top: 0px solid #FFF;
@@ -2143,7 +2144,7 @@ makeElement(addTextInput,
 makeElement(addDiv,
 {
   id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-  settings: [8, true, false],
+  settings: [8, true, false, false],
   rootStyle: rootStyle + detail_menu_box_half
 });
 
@@ -2197,13 +2198,30 @@ makeElement(addCheckbox,
 makeElement(addDiv,
 {
   id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
-  text: `culling`,
+  text: `depth`,
   rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
 });
 
 makeElement(addCheckbox,
 {
   id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_drawDepth", cls: "", prnt: "detail_box_gridSettings",
+  text: `culling`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_drawDepth", cls: "cbx_gridSettings", prnt: "div_gridSettings_drawDepth",
   rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
