@@ -2360,7 +2360,7 @@ var translateObj =
   folder: Object,
   toggle: function ()
   {
-    if (folder_selected < 4) {return;}
+    if (folder_selected < 3) {return;}
     switch(translateObj.active)
     {
       case 0:
