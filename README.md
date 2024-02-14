@@ -12,7 +12,7 @@ Ctrl+F5 to clear cache and load the updated version.
 
 Old 2D Canvas: [memspc.xyz/2dcanvas](https://memspc.xyz/2dcanvas)
 
-So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome.
+So far Google Chrome performs the best. Google's javascript compiler V8 is superbly fast. 
 
 WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility allowing all platforms to be supported.
 
@@ -24,7 +24,7 @@ I have limited folder names to use the following characters: A-Z, 0-9, period an
 
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
 
-I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create the transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I will probably end up using my z-buffer to manually filter out triangles rather than relying on webgl back face culling because even when it prevents a draw it does not free up any memory. This should reduce VRAM memory usage enough for me to implement more GPU powered data manipulation such as individual object properties of acceleration, velocity, and translation. Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense so far leaving me headroom to make further optimizations at the earlier stage in the memory pipeline. I find this to quite exciting in a way because I am really not too far from supporting a fairly flexible environment for a 3D game.
+I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create the transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss !? Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense leaving me headroom to make further optimizations at an earlier stage in the memory pipeline.
 
 ![Screenshot 2024-02-13 204436](https://github.com/samcoble/CameraTransform/assets/32228102/75e57ec2-d004-4c47-b40f-996907ebe937)
 ![Screenshot 2024-02-14 104800](https://github.com/samcoble/CameraTransform/assets/32228102/ffe0bcf8-8ea0-4ca3-ab79-39fedb6bfd04)
@@ -43,11 +43,6 @@ I have ported a lot to webgl and the performance improvements are quite insane a
 ![cirsets](https://github.com/samcoble/CameraTransform/assets/32228102/d3bb6839-7c86-48b3-aea0-10174655bfce)
 ![undo](https://github.com/samcoble/CameraTransform/assets/32228102/8d8362cc-caba-48fb-939d-2366f96e08e5)
 ![great](https://github.com/samcoble/CameraTransform/assets/32228102/6fae7623-2369-4245-98fd-bbb6a218ba52)
-
-
-
-New wallpaper ayyo
-
 ![yemane](https://github.com/samcoble/CameraTransform/assets/32228102/9776e7f2-9d8e-444a-8106-3f9477ebd680)
 
 
