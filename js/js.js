@@ -246,133 +246,130 @@ modulo distributes with switch with for loop ez wow for ex:
 */
 
 
+	// ctx.imageSmoothingEnabled = false;
+	// ctx.lineCap = "butt";
 
-						/*-- Var Decs --\
-						\--------------*/
+const pi = 3.1415926538, // High definition PI makes a visible difference
+      pi2 = 6.2831853071,
+      menuTime_int = 220,
+      title_int = 420,
+      player_speed = 0.5 * 0.7,
+      player_speed_vert = 0.3 * 0.7, // Vertical travel speed
+      player_speed_mult = 4 * 0.7; // Shift key
 
-// !
-const menuTime_int = 220;
-const title_int = 420;
-// !
+var fileName = "";
+var world_obj_count = 0;
+var _preview_scaler;
+var _s_ratio;
+var cursor_helper = 0;
+var flag_loadingObject = 0;
+var flag_inText = 0;
+var functionRunList = [];
 
-// Timer
-var date_now = 0;
-var date_now_after = 0;
-var date_now_preview = 0;
+var obj_folders = [],
+    folder_names = [],
+    folder_parents = [-1, 0, 0, -1], // -1 is no parent
+    folder_toggle = [1, 0, 0, 1],
+    folder_selected = 3; // Default folder
+
+var keyVec = [],
+    lookToggle = 0,
+    player_pos = [0.0, -14, 30],
+    hover_h = 11.5,
+    lock_vert_mov = false,
+    player_look_dir = [0, 0, 0],
+    player_look_dir_i = [0, 0, 0],
+    mouseData = [0.0, 0.0],  // rt data
+    mouseDataS = [0.0, 0.0], // saved state
+    mouseDataI = [0.0, 0.0], // initial
+    mouseDataD = [0.0, 0.0], // delta
+    mouseLock = 0,
+    fov_slide = 1.1,
+    s_fov = fov_slide * fov_slide * fov_slide / 20;
+
+var wpn_select = 0,
+    wpn_1,
+    wpn_1_d,
+    wpn_1_mc = [];
+
+var del_obj_lock = 0,
+    trns_lock = 0,
+    trns_obj_i = 0, // replace w/ all lock
+    _all_lock = 0, // Pass through color
+    _all_lock_i = 0;
+
+var paint_d = 0,
+    paint_n = 0,
+    _paint_track = [0.0, 0.0, 0.0];
 
 // FPS
-var _frames = 0;
-var _date_now_fps = 0;
-var _fps = 0;
+var _frames = 0,
+    _date_now_fps = 0,
+    _fps = 0;
 
-var in_win_wh, in_win_hw, in_win_w, in_win_h, in_win_wc, in_win_hc;
-var _s_ratio;
+var _epsilon = 300,
+    in_win_clip,
+    in_win_wh,
+    in_win_hw,
+    in_win_w,
+    in_win_h,
+    in_win_wc,
+    in_win_hc;
 
-var screen_width, screen_height;
-var fileName = "";
+// Timer
+var date_now = 0,
+    date_now_after = 0,
+    date_now_preview = 0;
 
-const pi = 3.1415926538; // High definition PI makes a visible difference
-const pi2 = 6.2831853071;
+var pln_cyc = 1,
+    obj_cyc = 0, // Selector
+    obj_cyc_i = 0;
 
-const player_speed = 0.5*0.7;
-const player_speed_vert = 0.3*0.7; // Vertical travel speed
-const player_speed_mult = 4*0.7; // Shift key
+var grid_scale = 3,
+    grid_scale_f = 8,
+    grid_scale_ar = [8, 8, 8],
+    grid_scale_d = 8;
 
-var player_look_dir = [0, 0, 0];
-var player_look_dir_i = [0, 0, 0];
-var mouseData = [0.0, 0.0];  // rt data
-var mouseDataS = [0.0, 0.0]; // saved state
-var mouseDataI = [0.0, 0.0]; // initial
-var mouseDataD = [0.0, 0.0]; // delta
-var mouseLock = 0; 
-var lookToggle = 0;
-var keyVec = [];
+var menu_q_size = [400, 500],
+    menu_q_pos = [30, 240],
+    menu_obj_pos = [0, 0],
+    menu_obj_size = [],
+    menu_objpreview_pos = [0, 0],
+    menu_tab = 0,
+    menu_wpn_pos = [155, 10];
 
-var fov_slide = 1.1;
-var s_fov = fov_slide*fov_slide*fov_slide/20;
+var indices = [],
+    distances = [],
+    indexMapping = [],
+    originalIndices = [],
+    newIndex = {},
+    modIndex = [],
+    d_i = 0;
 
-var cursor_helper = 0;
+var _inter_rnd = [0.0, 0.0, 0.0],
+    _oh = [0, 0, 0, 0],
+    f_look = [0, 0, 0, 0],
+    f_dist = [0, 0, 0, 0],
+    _inter = [0, 0, 0, 0],
+    _nplns = [0, 1, 0],
+    _plr_dtp = [0, 0, 0];
 
-var player_pos = [0.0,-14, 30];
-var _inter_rnd = [0.0, 0.0, 0.0];
-var _paint_track = [0.0, 0.0, 0.0];
+var obj_normalMaps = [],
+    rayInterMap = [],
+    _rayLast = [];
 
-var wpn_select = 0; 
-var wpn_1, wpn_1_d;
-var wpn_1_mc = [];
+var _gp = [0, 0, 0],
+    _nps,
+    tse = 11,
+    _viewq = [];
 
-var hover_h = 11.5;
-var lock_vert_mov = false;
-var pln_cyc = 1;
-var obj_cyc = 0; // Selector
-var obj_cyc_i = 0;
+var _touch_i = [0, 0],
+    _touch_f = [0, 0],
+    _touch_delta = [0, 0];
 
-var grid_scale = 3;
-var grid_scale_f = 8;
-var grid_scale_ar = [8, 8, 8];
-var grid_scale_d = 8;
-
-var del_obj_lock = 0;
-
-var trns_lock = 0; var trns_obj_i = 0; // replace w/ all lock
-var world_obj_count = 0;
-
-var _all_lock = 0; // Pass through color
-var _all_lock_i = 0;
-
-var paint_d = 0; var paint_n = 0;
-
-var _epsilon = 300;
-var in_win_clip;
-
-var _preview_scaler;
-
-var menu_q_size = [400, 500];
-var menu_q_pos = [30, 240];
-var menu_obj_pos = [0, 0]; // fix me entire system wacked
-var menu_objpreview_pos = [0, 0]; // fix me
-var menu_wpn_pos = [155, 10];
-
-var menu_tab = 0;
-
-// Sorting algorithm provided by js. 
-// Mapping indicies in a table is a useful concept
-var indices = [];
-var distances = [];
-var indexMapping = [];
-var originalIndices = [];
-var newIndex = {};
-var modIndex = [];
-var d_i = 0;
-
-
-var _oh = [0,0,0,0];
-var f_look = [0,0,0,0];
-var f_dist = [0,0,0,0];
-var _inter = [0,0,0,0];
-var _nplns = [0,1,0];
-var _plr_dtp = [0,0,0];
-
-var obj_normalMaps = [];
-var rayInterMap = [];
-var _rayLast = [];
-
-// Junk needs to be organized
-var _gp = [0,0,0]; var _nps; var tse = 11; var _viewq = [];
 
 // IEMobile and BlackBerry users I got you fam.
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-var _touch_i = [0,0];
-var _touch_f = [0,0];
-var _touch_delta = [0,0];
-
-var flag_loadingObject = 0;
-var flag_inText = 0;
-
-var functionRunList = [];
-
-
 
 function updateMenuPos() // this stuff so bad jesus
 {
@@ -483,10 +480,10 @@ var key_map_prevent =
 	q: false
 };
 
-var player_pos_i = [];
-var mScreenMode = 0;
-var mTimer = 0;
-var dragCatch = 0;
+var player_pos_i = [],
+    mScreenMode = 0,
+    mTimer = 0,
+    dragCatch = 0;
 
 const handleTouchStart = (event) =>
 {
@@ -608,13 +605,6 @@ function namesToArrays(n)
   return _r;
 }
 
-var obj_folders = [];
-var folder_names = [];
-var folder_parents = [-1,0,0,-1]; // -1 is no parent
-var folder_toggle =[1,0,0,1];
-
-var folder_selected = 3;
-
 folder_names.push("World Objects");
 folder_names.push("Planes");
 folder_names.push("Indicator");
@@ -625,23 +615,12 @@ obj_folders.push([]);
 obj_folders.push([]);
 obj_folders.push([]);
 
-
-// i realize now to draw wire frame you can ray trace each vertex and when veretex shows behind remove connected lines.
-// faces seem to be efficient. 
-// maybe try texture and color again
-
 // 58 & 1:28:00
 // tau 9
 
 // going to need a function maybe later auto reorganize internal data structure
 // and folders get essentially reset to 0 1 2 3 4 5 in folder order in obj ref order linearized again.
 // useless but a clean up essentially.
-
-// text bar update to cur folder name
-// edit text changes name
-// toggle visibility
-
-// new should go to folder folder_selected anyway
 
 // delete object ref and remove from parallel arrays
 function foldersDel(_i)
@@ -889,11 +868,11 @@ function unpackArray(ar)
   
 function makeSave()
 {
-  let _r = [];
-  let _t = [];
-  let _o = [];
-  let _s;
-  let _c = 4; // default folder count
+  let _r = [],
+      _t = [],
+      _o = [],
+      _s,
+      _c = 4; // default folder count
 
   // folder toggle
   _s = folder_toggle.length;
@@ -1190,10 +1169,18 @@ window.addEventListener('blur', () =>
   mouseLock = 0;
 });
 
-
 function pointerLockSwap()
-{if (document.pointerLockElement !== null) {document.exitPointerLock(); mouseLock = 0;} else {ctx_gl.requestPointerLock(); mouseLock = 1;}}
-
+{
+  if (document.pointerLockElement !== null)
+  {
+    document.exitPointerLock();
+    mouseLock = 0;
+  } else
+  {
+    ctx_gl.requestPointerLock();
+    mouseLock = 1;
+  }
+}
 
 window.addEventListener('resize', function()
 {
@@ -1243,7 +1230,8 @@ window.addEventListener("wheel", function(e)
 			if (obj_cyc<0) {obj_cyc=m_objs.length-1};
 		}
 
-	} else if (runEvery(200)) {
+	} else if (runEvery(200))
+  {
 			grid_scale += -e.deltaY/Math.abs(e.deltaY);
 			_settings[5].settings[0] = Math.pow(2, grid_scale);
 	}
@@ -1337,11 +1325,11 @@ function pIsEqual(p1, p2)
 
 function hasDuplicate(set, point)
 {
-    for (var existingPoint of set)
-    {
-        if (pIsEqual(existingPoint, point)) {return true;}
-    }
-    return false;
+  for (var existingPoint of set)
+  {
+    if (pIsEqual(existingPoint, point)) {return true;}
+  }
+  return false;
 }
 
 function roundTo(value, n) {return Math.round(value / n) * n;}
@@ -1387,12 +1375,10 @@ function updateFPS()
   }
 }
 
-
 function checkNumber(n)
 {
 	if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;}
 }
-
 
 function meanctr_obj(ar) // I think this work. I hope so.
 {
@@ -1401,12 +1387,12 @@ function meanctr_obj(ar) // I think this work. I hope so.
     var _pm = [0, 0, 0, 0];
     for (var i = 0; i < _ob.length; i++)
     {
-        var point = _ob[i];
-        if (!hasDuplicate(uniquePoints, point))
-        {
-            _pm = add3(point, _pm);
-            uniquePoints.add(point);
-        }
+      var point = _ob[i];
+      if (!hasDuplicate(uniquePoints, point))
+      {
+          _pm = add3(point, _pm);
+          uniquePoints.add(point);
+      }
     }
     var uniqueCount = uniquePoints.size;
     _pm[3] = 1;
@@ -1468,23 +1454,23 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 			switch (_p)
 			{
 				case 0:
-						_ob[(i*_l+j)*4] = _o[1];
-						_ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[1];
-						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
-						_ob[(i*_l+j)*4+3] = 1;
-						break;
+          _ob[(i*_l+j)*4] = _o[1];
+          _ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[1];
+          _ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
+          _ob[(i*_l+j)*4+3] = 1;
+        break;
 				case 1:
-						_ob[(i*_l+j)*4]   = _s*i - _l/2*_s +_s/2 + _o[0];
-						_ob[(i*_l+j)*4+1] = _o[1];
-						_ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
-						_ob[(i*_l+j)*4+3] = 1;
-						break;
+          _ob[(i*_l+j)*4]   = _s*i - _l/2*_s +_s/2 + _o[0];
+          _ob[(i*_l+j)*4+1] = _o[1];
+          _ob[(i*_l+j)*4+2] = _s*j - _l/2*_s +_s/2 + _o[2];
+          _ob[(i*_l+j)*4+3] = 1;
+        break;
 				case 2:
-						_ob[(i*_l+j)*4] = _s*j - _l/2*_s +_s/2 + _o[1];
-						_ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[2];
-						_ob[(i*_l+j)*4+2] = _o[2];
-						_ob[(i*_l+j)*4+3] = 1;
-						break;
+          _ob[(i*_l+j)*4] = _s*j - _l/2*_s +_s/2 + _o[1];
+          _ob[(i*_l+j)*4+1] = _s*i - _l/2*_s +_s/2 + _o[2];
+          _ob[(i*_l+j)*4+2] = _o[2];
+          _ob[(i*_l+j)*4+3] = 1;
+        break;
 			}
 		}
 	}
@@ -1505,7 +1491,6 @@ function updateGrid()
 		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
 		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
 	}
-
   grid_scale_d = _settings[5].settings[0];
 }
 
@@ -1530,7 +1515,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+2] = _lp_world[2]+_s*Math.cos(_r*n+_of);
 			}
 			m_objs_loadPoints(c_pnts);
-			break;
+    break;
 		case 1:
 			for (let n=0; n<=_df; n++)
 			{
@@ -1539,7 +1524,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+2] = _lp_world[2]+_s*Math.sin(_r*n+_of);
 			}
 			m_objs_loadPoints(c_pnts);
-			break;
+    break;
 		case 2:
 			for (let n=0; n<=_df; n++)
 			{
@@ -1548,34 +1533,34 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+2] = _lp_world[2];
 			}
 			m_objs_loadPoints(c_pnts);
-			break;
+    break;
 	}
 }
 
 function splitObj(ar) // Accepts linear : outputs array of 4d points
 {
-    const r = [];
-    const _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
-    for (let i = 0; i < _s; i++)
-    {
-        const end = Math.min(i*4 + 4, ar.length);
-        const chunk = ar.subarray(i*4, end);
-        r.push(new Float32Array(chunk));
-    }
-    return r;
+  const r = [];
+  const _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
+  for (let i = 0; i < _s; i++)
+  {
+    const end = Math.min(i*4 + 4, ar.length);
+    const chunk = ar.subarray(i*4, end);
+    r.push(new Float32Array(chunk));
+  }
+  return r;
 }
 
 function splitObjS(ar) // special function for splitting obj w/ no center
 {
-    const r = [];
-    const _s = Math.ceil(ar.length / 4); // - 1 cntr
-    for (let i = 0; i < _s; i++)
-    {
-        const end = Math.min(i*4 + 4, ar.length);
-        const chunk = ar.subarray(i*4, end);
-        r.push(new Float32Array(chunk));
-    }
-    return r;
+  const r = [];
+  const _s = Math.ceil(ar.length / 4); // - 1 cntr
+  for (let i = 0; i < _s; i++)
+  {
+    const end = Math.min(i*4 + 4, ar.length);
+    const chunk = ar.subarray(i*4, end);
+    r.push(new Float32Array(chunk));
+  }
+  return r;
 }
 
 // grid: side length, scale, plane, offset
@@ -1587,18 +1572,18 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 
 
 
-	/*
-		__/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\_______________/\\\\\\\\\\\\\\\__/\\\\\_____/\\\_____/\\\\\\\\\\\___        
-		 _\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\____________\/\\\///////////__\/\\\\\\___\/\\\___/\\\/////////\\\_       
-		  _\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\___________\/\\\_____________\/\\\/\\\__\/\\\__\//\\\______\///__      
-		   _\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\\\\\\\\\_____\/\\\//\\\_\/\\\___\////\\\_________     
-		    _\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\___________\/\\\///////______\/\\\\//\\\\/\\\______\////\\\______    
-		     _\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\___________\/\\\_____________\/\\\_\//\\\/\\\_________\////\\\___   
-		      _\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\_____________\/\\\__\//\\\\\\__/\\\______\//\\\__  
-		       _\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\_____________\/\\\___\//\\\\\_\///\\\\\\\\\\\/___ 
-		        _\////////////_____\///________\///________\///________\///________\///____________\///______________\///_____\/////____\///////////_____
-	*/
-	// #DATAFNS
+/*
+  __/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\_______________/\\\\\\\\\\\\\\\__/\\\\\_____/\\\_____/\\\\\\\\\\\___        
+   _\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\____________\/\\\///////////__\/\\\\\\___\/\\\___/\\\/////////\\\_       
+    _\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\___________\/\\\_____________\/\\\/\\\__\/\\\__\//\\\______\///__      
+     _\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\\\\\\\\\_____\/\\\//\\\_\/\\\___\////\\\_________     
+      _\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\___________\/\\\///////______\/\\\\//\\\\/\\\______\////\\\______    
+       _\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\___________\/\\\_____________\/\\\_\//\\\/\\\_________\////\\\___   
+        _\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\_____________\/\\\__\//\\\\\\__/\\\______\//\\\__  
+         _\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\___________\/\\\_____________\/\\\___\//\\\\\_\///\\\\\\\\\\\/___ 
+          _\////////////_____\///________\///________\///________\///________\///____________\///______________\///_____\/////____\///////////_____
+*/
+// #DATAFNS
 
 
 shaderModule.init();
@@ -1623,8 +1608,6 @@ function m_objs_loadPoints(ar) // Adds objects
 		mem_log.push([mem_sum, ar_f.length, Math.floor(ar_f.length/4), Math.floor(ar_f.length/12)]);
 		mem_sum += ar_f.length;
 
-		// obj_normalMaps.push(new Float32Array(ar.length + 4)); // Idk this works for now??
-    
     let _t_tris = Math.floor((Math.floor(ar_f.length/12)-1)/2)-Math.floor(ar_f.length/12)%2;
 		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // Idk this works for now??
 
@@ -1756,17 +1739,17 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 }
 
 
-	/*
-		__/\\\___________________/\\\\\__________/\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
-		 _\/\\\_________________/\\\///\\\______/\\\\\\\\\\\\\__\/\\\////////\\\____________\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\__       
-		  _\/\\\_______________/\\\/__\///\\\___/\\\/////////\\\_\/\\\______\//\\\___________\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\_      
-		   _\/\\\______________/\\\______\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_     
-		    _\/\\\_____________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\_    
-		     _\/\\\_____________\//\\\______/\\\__\/\\\/////////\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\_   
-		      _\/\\\______________\///\\\__/\\\____\/\\\_______\/\\\_\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
-		       _\/\\\\\\\\\\\\\\\____\///\\\\\/_____\/\\\_______\/\\\_\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
-		        _\///////////////_______\/////_______\///________\///__\////////////_______________\////////////_____\///________\///________\///________\///________\///__
-	*/ // #loaddata
+/*
+  __/\\\___________________/\\\\\__________/\\\\\\\\\_____/\\\\\\\\\\\\_______________/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\____        
+   _\/\\\_________________/\\\///\\\______/\\\\\\\\\\\\\__\/\\\////////\\\____________\/\\\////////\\\____/\\\\\\\\\\\\\__\///////\\\/////____/\\\\\\\\\\\\\__       
+    _\/\\\_______________/\\\/__\///\\\___/\\\/////////\\\_\/\\\______\//\\\___________\/\\\______\//\\\__/\\\/////////\\\_______\/\\\________/\\\/////////\\\_      
+     _\/\\\______________/\\\______\//\\\_\/\\\_______\/\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_     
+      _\/\\\_____________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_______\/\\\\\\\\\\\\\\\_    
+       _\/\\\_____________\//\\\______/\\\__\/\\\/////////\\\_\/\\\_______\/\\\___________\/\\\_______\/\\\_\/\\\/////////\\\_______\/\\\_______\/\\\/////////\\\_   
+        _\/\\\______________\///\\\__/\\\____\/\\\_______\/\\\_\/\\\_______/\\\____________\/\\\_______/\\\__\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_  
+         _\/\\\\\\\\\\\\\\\____\///\\\\\/_____\/\\\_______\/\\\_\/\\\\\\\\\\\\/_____________\/\\\\\\\\\\\\/___\/\\\_______\/\\\_______\/\\\_______\/\\\_______\/\\\_ 
+          _\///////////////_______\/////_______\///________\///__\////////////_______________\////////////_____\///________\///________\///________\///________\///__
+*/ // #loaddata
 
 
 m_objs_loadPoints(plr_aim);      // 0
@@ -1800,27 +1783,23 @@ function updateNormalMaps()
 		{
 			for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++)
 			{
-					p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
-					p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
-					p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
-					
+        p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
+        p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
+        p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
 
-					//console.log(p1);
-					// p1-p2, p3-p2
-					//if (i==1) {console.log(p1 + " : " + p2 + " : " + p3);}
-					v1 = sub3(p1,p2);
-					v2 = sub3(p3,p2);
-					// var _cr = cross(v1, v2); // Fix?
-					_cr = cross(v1, v2); // Fix?
-					//console.log(_cr);
-					obj_normalMaps[i][4*k+0] = _cr[0];
-					obj_normalMaps[i][4*k+1] = _cr[1];
-					obj_normalMaps[i][4*k+2] = _cr[2];
+        // p1-p2, p3-p2
+        //if (i==1) {console.log(p1 + " : " + p2 + " : " + p3);}
+        v1 = sub3(p1,p2);
+        v2 = sub3(p3,p2);
+        _cr = cross(v1, v2); // Fix?
+        obj_normalMaps[i][4*k+0] = _cr[0];
+        obj_normalMaps[i][4*k+1] = _cr[1];
+        obj_normalMaps[i][4*k+2] = _cr[2];
 
-					// Unreal man it works unlike unreal man
-					// Now to update updateRayInters with all results from lpi w/ by paralleling with m_objs again to query both m_objs and obj_normalMaps into the lpi that updates a list of points. Dynamic list for this one.
-					// 2d mean could point to nearest 3 points as well making this a lot faster than doing this lol. or combine both and use the 2d to determine if it's center and if the planes are equal.??
-					// if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
+        // Unreal man it works unlike unreal man
+        // Now to update updateRayInters with all results from lpi w/ by paralleling with m_objs again to query both m_objs and obj_normalMaps into the lpi that updates a list of points. Dynamic list for this one.
+        // 2d mean could point to nearest 3 points as well making this a lot faster than doing this lol. or combine both and use the 2d to determine if it's center and if the planes are equal.??
+        // if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
 			}
 		}
     // console.log("Normal map update complete...");
@@ -1832,25 +1811,25 @@ function updateNormalMaps()
 // I could just split each tri into two and still do it my way but this is good enough I guess.
 function isPointInsideTriangle(p, p1, p2, p3)
 {
-    // Calculate vectors
-    const v0 = sub3(p3, p1);
-    const v1 = sub3(p2, p1);
-    const v2 = sub3(p, p1);
+  // Calculate vectors
+  const v0 = sub3(p3, p1);
+  const v1 = sub3(p2, p1);
+  const v2 = sub3(p, p1);
 
-    // Calculate dot products
-    const dot00 = dot(v0, v0);
-    const dot01 = dot(v0, v1);
-    const dot02 = dot(v0, v2);
-    const dot11 = dot(v1, v1);
-    const dot12 = dot(v1, v2);
+  // Calculate dot products
+  const dot00 = dot(v0, v0);
+  const dot01 = dot(v0, v1);
+  const dot02 = dot(v0, v2);
+  const dot11 = dot(v1, v1);
+  const dot12 = dot(v1, v2);
 
-    // Calculate barycentric coordinates
-    const invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
-    const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-    const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+  // Calculate barycentric coordinates
+  const invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+  const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
-    // Check if point is inside the triangle
-    return u >= 0 && v >= 0 && u + v <= 1;
+  // Check if point is inside the triangle
+  return u >= 0 && v >= 0 && u + v <= 1;
 }
 
 var interKOut = [];
@@ -2021,7 +2000,6 @@ function rot_aa(_p, _v, _r) // _p must be local
 	var _a1 = Math.atan(_v[0]/_v[2]); // x/z ang that moves to y pln
 	var _d2 = Math.sqrt(_v[0]*_v[0] + _v[2]*_v[2]);
 	var _a2 = Math.atan(_v[1]/_d2);	// ang that moves to z pln
-
 	var _op1 = rot_y_pln(_p, -_a1);
 	var _opz = rot_x_pln(_op1, -_a2);
 	var _op4 = rot_z_pln(_opz, _r); // Apply our radians
@@ -2036,11 +2014,11 @@ function rot_aa(_p, _v, _r) // _p must be local
 
 function multiplyQuaternions(q1, q2) // The scaler part of the quaternion comes first here ***
 {
-    const w = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3];
-    const x = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2];
-    const y = q1[0] * q2[2] - q1[1] * q2[3] + q1[2] * q2[0] + q1[3] * q2[1];
-    const z = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
-    return [w, x, y, z];
+  const w = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3],
+        x = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2],
+        y = q1[0] * q2[2] - q1[1] * q2[3] + q1[2] * q2[0] + q1[3] * q2[1],
+        z = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
+  return [w, x, y, z];
 }
 
 
@@ -2224,7 +2202,6 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 		var _lt;
 		var _i = world_obj_count+1;
 		var _l = Number.MAX_VALUE;
-		//var _l = len2fast([m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-4]+x/in_win_hc*(in_win_h/in_win_w), m1.data[mem_log[world_obj_count+1][0]+mem_log[world_obj_count+1][1]-3]+y/in_win_hc]);
 
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
@@ -2302,7 +2279,6 @@ function select2dpoint(x, y) // 2D find
     }
   }
 
-
 	switch(_d)
 	{
 		case 0:
@@ -2373,7 +2349,6 @@ function getctr_ghost(_i) // Get encoded 3D center point
 	_c[3] = 1;
 	return _c;
 }
-
 
 var translateObj =
 {
@@ -3309,14 +3284,13 @@ function drawPoints(_pnts, mi)
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
 }
 
-var _km = 0;
-var _si_f = 0;
 var start, size, end;
 var skipDat = 1;
 var i0 = 0;
 var j0 = 0;
-var dataIndex = 0;
+var pointIndex = 0;
 
+var _2d_previewBack;
 var _2dis = [];
 var _2dis_buffers = [];
 
@@ -3501,7 +3475,6 @@ function drawThinLines(vertices)
 }
 */
 
-var _2d_previewBack;
 
 // updateZMap();
 
@@ -3612,8 +3585,6 @@ function drawLines()
               }
             }
 
-            // console.log(_si_d + " : " + _si_f + " : " + _od);
-        
             if (_settings[5].settings[3])
             {
               gl.enable(gl.CULL_FACE);
@@ -3729,17 +3700,17 @@ function drawLines()
       // Experiment using while instead of for. Irrelevant performance difference?
       i0 = 0;
       j0 = 0;
-      dataIndex = mem_log[d_i][0];
+      pointIndex = mem_log[d_i][0];
 
       while (i0 < _si2 * 4)
       {
-        if (m1.data[dataIndex + 3] >= 0)
+        if (m1.data[pointIndex + 3] >= 0)
         {
-          _pts[j0] = m1.data[dataIndex];           // x
-          _pts[j0 + 1] = -m1.data[dataIndex + 1];  // y
+          _pts[j0] = m1.data[pointIndex];           // x
+          _pts[j0 + 1] = -m1.data[pointIndex + 1];  // y
           j0 += 2;
         }
-         dataIndex += 4;
+         pointIndex += 4;
          i0 += 4;
       }
       _pts[_si2] = 0.0;
@@ -4193,19 +4164,16 @@ function updateRefLog()
 	// m_ref_objs[0] = new Float32Array(m_objs[obj_cyc].length);
 	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
+           /*@?@
+           ?@?@?
+           @?@*/
 
 function Compute(init_dat)
 {
-  if (_settings[5].settings[2]) {updateZMap();}
 
+
+  if (_settings[5].settings[2]) {updateZMap();}
 
 	m_obj_offs[12][0] = _lp_world[0];
 	m_obj_offs[12][1] = _lp_world[1];
@@ -4231,13 +4199,6 @@ function Compute(init_dat)
   //   setPoint(player_pos, add3(_np, _lp_world));
   // }
 
-           /*@?@
-           ?@?@?
-           @?@*/
-
-	// ctx.imageSmoothingEnabled = false;
-	// ctx.lineCap = "butt";
-
   // This needs to be replaced with menu script providing multiple callback functions.
   // Shared and specific callback functions need differentiation
 
@@ -4255,22 +4216,20 @@ function Compute(init_dat)
     updateGrid();
   }
 
-
   if(document.activeElement.type ==  "text")
   {
     flag_inText = 1;
   } else {flag_inText = 0;}
   
-	if (key_map.shift && key_map.r) // Move to fn later
+	if (key_map.shift && key_map.r)
 	{
 		rotateObject(0, _settings[7].settings[0]);
 	}
 
-	if (key_map["5"] && runEvery(150)) // Move to fn later
+	if (key_map["5"] && runEvery(150))
 	{
 		mirrorOverPlane();
 	}
-
 
 	if (key_map["6"] && runEvery(300)) {boundingBox.toggle();}
 
@@ -4328,9 +4287,7 @@ function Compute(init_dat)
     planeCycle();
   }
 
-
 	if (key_map.i && runEvery(350)) {bond_obj(obj_cyc);}
-
 
 	keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 	if (keyVec[1] != 0)
@@ -4358,16 +4315,15 @@ function Compute(init_dat)
 
 	if ((key_map.mmb && !mouseLock) || document.ready) // ? wha
 	{
-			if (!lookToggle)
-			{
-				mouseDataS[0] = mouseData[0]; mouseDataS[1] = mouseData[1];
-				player_look_dir_i = player_look_dir;
-			}
-			lookToggle = 1;
-			var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
-			mouseDataD[0] = dX; mouseDataD[1] = dY;
-			player_look_dir = [ player_look_dir_i[0]+(dX/in_win_w * pi * 2) , player_look_dir_i[1]+(dY/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
-
+    if (!lookToggle)
+    {
+      mouseDataS[0] = mouseData[0]; mouseDataS[1] = mouseData[1];
+      player_look_dir_i = player_look_dir;
+    }
+    lookToggle = 1;
+    var dX = -mouseDataS[0]+mouseData[0]; var dY = mouseDataS[1]-mouseData[1]; // Temp flip of viewing movement
+    mouseDataD[0] = dX; mouseDataD[1] = dY;
+    player_look_dir = [ player_look_dir_i[0]+(dX/in_win_w * pi * 2) , player_look_dir_i[1]+(dY/in_win_w * pi * 2) , 0 ]; // ! width 4 both !
 	} else 
 	{
 		if (lookToggle!=0)
@@ -4659,7 +4615,7 @@ function Compute(init_dat)
 								paint_n++;
 							}
 						} else {mem_t_mov();}
-						break;
+          break;
 					case true:
 						paint_d = len3(sub(_inter, _paint_track));
 						if (paint_d > _settings[4].settings[1])
@@ -4669,7 +4625,7 @@ function Compute(init_dat)
 							_paint_track[1] = _inter[1];
 							_paint_track[2] = _inter[2];
 						}
-						break;
+          break;
 				}
 			}
 			if (_settings[4].settings[0] && key_map.lmb == false) {mem_t_mov();} // Finish draw !
@@ -4887,17 +4843,13 @@ shaderModule.run(
 } // End of Compute()
 
 
-document.addEventListener("DOMContentLoaded", function()
-{
 						/*-- GET&SET SCREEN DIMENSIONS --\
 						\-------------------------------*/
 
-	screen_width = window.screen.width * window.devicePixelRatio;
-	screen_height = window.screen.height * window.devicePixelRatio;
-
+document.addEventListener("DOMContentLoaded", function()
+{
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
-
 
 	updateNormalMaps();
 
@@ -4910,7 +4862,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 	Compute(m1);
 	updateGrid();
-
 
 	m_obj_offs[tse] = [0,-400,0,1]; // Move gun to above
 
@@ -4925,7 +4876,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 	setInterval(drawOverlay, menuTime_int); 
 	setInterval(setTitle, title_int); 
-
 });
 
 
