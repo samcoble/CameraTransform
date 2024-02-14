@@ -245,12 +245,11 @@ modulo distributes with switch with for loop ez wow for ex:
 
 */
 
+// ctx.imageSmoothingEnabled = false;
+// ctx.lineCap = "butt";
 
-	// ctx.imageSmoothingEnabled = false;
-	// ctx.lineCap = "butt";
-
-const pi = 3.1415926538, // High definition PI makes a visible difference
-      pi2 = 6.2831853071,
+const pi = 3.141592653589793, // High definition PI makes a visible difference
+      pi2 = 6.283185307179586,
       menuTime_int = 220,
       title_int = 420,
       player_speed = 0.5 * 0.7,
