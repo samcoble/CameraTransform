@@ -16,29 +16,17 @@ So far Google Chrome performs the best. I'm surprised Edge is slower than Chrome
 
 WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility allowing all platforms to be supported.
 
-This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline. 
+This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline.
 It will be interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space.
-
-
-- Move objects with (V) or (Shift+T) as well. (Shift-T) works in sequence with translation (V)
-- Tab finds nearest obj and right click will find nearest point in the obj. Right click also finds any points you have placed that are not made into an obj yet.
-- (L) links two objects of equal size linearly.
 
 Save & load now work for all unique data created. The folder tree state is saved as well. Open/closed states are also saved!
 I have limited folder names to use the following characters: A-Z, 0-9, period and spaces.
 
-
-I'm starting to get distracted using this rather than writing any code lol.
-There's no limit here. Make any tool you can dream of. I'm hoping to generate moldable meshes and explore procedural noise at some point
-
-So far ray tracing is working but I noticed in one test instance a surface would not be detected. It was detectable after saving and loading that save.
-
-Finally I have a poor man's painter's algorithm! Hopefully I can come up with a combination of algorithms to provide adequate clipping. If I can reduce the amount of draws by removing out of sight poly's it should be possible to start generating a real world map. Then comes color mapping and finally ~~simple sun light.~~ Maybe shaded slightly but I will eventually start over in a webgl environment.
-
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
 
-I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library which I really prefer. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better.
+I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create the transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss. I realize now my code structure has worked out the way I wanted it to. I haven't taken advantage of what the vertex shaders can really do either. Memory management could be a lot better. I will probably end up using my z-buffer to manually filter out triangles rather than relying on webgl back face culling because even when it prevents a draw it does not free up any memory. This should reduce VRAM memory usage enough for me to implement more GPU powered data manipulation such as individual object properties of acceleration, velocity, and translation. Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense so far leaving me headroom to make further optimizations at the earlier stage in the memory pipeline. I find this to quite exciting in a way because I am really not too far from supporting a fairly flexible environment for a 3D game.
 
+![Screenshot 2024-02-13 204436](https://github.com/samcoble/CameraTransform/assets/32228102/75e57ec2-d004-4c47-b40f-996907ebe937)
 ![Screenshot 2024-02-09 060020](https://github.com/samcoble/CameraTransform/assets/32228102/4e895c71-b2c4-468d-a513-4e322be2b9a5)
 ![BFC](https://github.com/samcoble/CameraTransform/assets/32228102/f3017d83-86d5-4826-8cdd-adaad4742197)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
