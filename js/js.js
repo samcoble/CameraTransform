@@ -1629,7 +1629,7 @@ function m_objs_loadPoints(ar) // Adds objects
 		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // Idk this works for now??
 
     var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
-    m_draw.push([ar_t, ar_t.length/6, ar_t.length]); // Make space for webgl tris
+    m_draw.push([ar_t, ar_t.length/6, ar_t.length, (ar_t.length/6+3)*12*5, new Float32Array( (ar_t.length/6+3)*12*5 * 4)]); // Make space for webgl tris
 
     // z-map shit I think fixed now?
     var ar_z = new Float32Array( ar_t.length/6 );
@@ -1653,9 +1653,6 @@ function m_objs_loadPoints(ar) // Adds objects
 	m_obj_offs.push([0.0, 0.0, 0.0, 1]);
 
 	if (typeof updateList == 'function') {updateList(objListConst(), "list_objectSelect");}
-
-  let _count = Math.floor( (ar.length + 4)/4 ); 
-  _si = (Math.floor((_count - 1) / 2) - _count%2) - 1;
 
   m_center2d_buffer.push(new Float32Array(33*2));
   m_center2d.push(new Float32Array(2));
@@ -1741,36 +1738,8 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
   {
     _nextSize = m_objs[j].length;
 
-    for (let i=0; i<_nextSize; i++)
-    {
-
-        // switch (i%4)
-        // {
-        //   case 0:
-        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
-        //     break;
-        //   case 1:
-        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
-        //     break;
-        //   case 2:
-        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
-        //     break;
-        //   case 3:
-        //     m1.data[i+mem_log[j][0]] = m_objs[j][i]*m_obj_offs[j][3];
-        //     break;
-        // }
-
-      // I swear one line is smoother lol
-      m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4];
-    }
-
-    // for (let i = 0; i < _nextSize; i += 4)
-    // {
-    //   m1.data[i+mem_log[j][0]]   = m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][0];
-    //   m1.data[i+1+mem_log[j][0]] = m_objs[j][i+1]*m_obj_offs[j][3] + m_obj_offs[j][1];
-    //   m1.data[i+2+mem_log[j][0]] = m_objs[j][i+2]*m_obj_offs[j][3] + m_obj_offs[j][2];
-    //   m1.data[i+3+mem_log[j][0]] = m_objs[j][i+3]*m_obj_offs[j][3];
-    // }
+    // I swear one line is smoother lol
+    for (let i=0; i<_nextSize; i++) { m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4]; }
   }
 
   for (let j = m_t_objs.length-1; j>=0; j--)
@@ -1892,7 +1861,6 @@ function updateRayInters(_dp, _p)
 {
 	if (m_objs.length>world_obj_count+1) // Remove?
 	{
-		// updateNormalMaps(); 
 		rayInterMap.length = 0;
     interKOut.length = 0;
     interIOut.length = 0;
@@ -2184,12 +2152,12 @@ function updateDrawMap(priorityObjects)
 
 	for (var i = 0; i < priorityObjects.length; i++)
 	{
-	    let priorityIndex = modIndex.indexOf(priorityObjects[i]);
-	    if (priorityIndex !== -1)
-	    {
-	        let entry = modIndex.splice(priorityIndex, 1)[0];
-	        modIndex.unshift(entry);
-	    }
+    let priorityIndex = modIndex.indexOf(priorityObjects[i]);
+    if (priorityIndex !== -1)
+    {
+      let entry = modIndex.splice(priorityIndex, 1)[0];
+      modIndex.unshift(entry);
+    }
 	}
 
 	//console.log(init_dat.data[mem_log[i][0]+mem_log[i][1]-1]); // Z dist test
@@ -3194,24 +3162,16 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
       _______\/\\\_____\/\\\_____\//\\\______\/\\\_____\/\\\____________\/\\\_____\/\\\__\//\\\\\\_\/\\\___________\/\\\_____/\\\___\///\\\__/\\\_________\/\\\_______  
        _______\/\\\_____\/\\\______\//\\\__/\\\\\\\\\\\_\/\\\\\\\\\\__/\\\\\\\\\\\_\/\\\___\//\\\\\_\/\\\\\\\\\\\\\_\/\\\\\\\\\\/______\///\\\\\/__________\/\\\_______ 
         _______\///______\///________\///__\///////////__\//////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
-*/ 
-// #trilinedot
-
-		// only draw when length > 2
-		// every second point draws a tri from ith to previous and ahead
-		// i is offset by len%2, so at 4th do -1. (len-1)%2
-		// if obj is static pat could be pregen
-		// after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
-
-
-		// I could only do a 2d alg ig
-		// maybe clip objs entire inside?
-		// hardest of them all
+*/ // #trilinedot
 
 /*
-
- */
-
+  only draw when length > 2
+  every second point draws a tri from ith to previous and ahead
+  i is offset by len%2, so at 4th do -1. (len-1)%2
+  if obj is static pat could be pregen
+  after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
+  hardest of them all
+*/
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
 
@@ -3227,25 +3187,6 @@ function drawSegment(vertices, mi)
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
 
   gl.lineWidth = 1;
-
-  /*
-  if (_settings[1].settings[2] && mi > world_obj_count && m1.data[mem_log[mi][0]+mem_log[mi][1]-1] > 0)
-  {
-
-    switch(_settings[1].settings[2])
-    {
-      case true:
-        gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.2]);
-        break;
-      case false:
-        gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1.0]); 
-        break;
-    }
-
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 2);
-
-  }
-  */
 
 	if (mi >= 0)
 	{
@@ -3338,7 +3279,6 @@ function drawSegment(vertices, mi)
       break;
   }
 
-
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
 }
 
@@ -3372,7 +3312,6 @@ function drawPoints(_pnts, mi)
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-  // gl.enableVertexAttribArray(positionAttrib);
 
     if (mi > 2 && mi < 6)
     {
@@ -3481,10 +3420,10 @@ function updateZMap()
       let _sk = m_draw[i][1];
       for (let k = _sk; k>=0; k--)
       {
-        z_map[i][0][k] = (m1.data[8 * k + mem_log[i][0] + 3] + m1.data[8 * k + mem_log[i][0] + 7] + m1.data[8 * k + mem_log[i][0] + 11])/3;
+        z_map[i][0][k] = (m1.data[8 * k + mem_log[i][0] + 2] + m1.data[8 * k + mem_log[i][0] + 6] + m1.data[8 * k + mem_log[i][0] + 10])/3;
         z_map[i][1][k] = k;
       }
-       z_map[i][1].sort((a, b) => z_map[i][0][b] - z_map[i][0][a]);
+       z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]);
     } else
     {
       z_map[i] = 0; // Later check if not zero. Or doesn't matter.
@@ -3624,12 +3563,6 @@ var _2d_previewBack;
 
 // python3 -m http.server  
 
-const colorMap =
-[
-  [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
-  [0.2, 0.5, 0.5, 0.2, 0.5, 0.5, 0.2, 0.5, 0.5],
-  [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
-];
 
 function drawLines()
 {
@@ -3729,7 +3662,6 @@ function drawLines()
             }
 
             // console.log(_si_d + " : " + _si_f + " : " + _od);
-            var triangleColors = [];
         
             if (_settings[5].settings[3])
             {
@@ -3743,7 +3675,7 @@ function drawLines()
               switch(!_settings[1].settings[2])
               {
                 case true:
-                  gl.uniform4fv(colorUniformLocation, [0.3, 0.3, 0.3, 1.0]); 
+                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]); 
                   break;
                 case false:
                   gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
@@ -3762,23 +3694,10 @@ function drawLines()
             else
             {
               
-              // for (let l = 0; l < m_draw[d_i][0].length; l++)
-              // {
-              //   triangleColors[4*l] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
-              //   triangleColors[4*l+1] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
-              //   triangleColors[4*l+2] = 0.3+0.05*( l%2 ? Math.floor(l/3)%5 : Math.ceil(l/3)%5 );
-              //   triangleColors[4*l+3] = 0.5;
-              // }
+              for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-_settings[1].settings[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
 
-              // let _fuckyou = (m_draw[d_i][2]+0+(1+m_objs[d_i].length/4-1)%2)*6;
-              let _fuckyou = (m_draw[d_i][1]+3)*12*5;
-              for (let l=0; l<_fuckyou; l++)
-              {
-                triangleColors.push(1/_fuckyou*l*8+0.2, 1/_fuckyou*l*8+0.2, 1/_fuckyou*l*8+0.2, 1-_settings[1].settings[2]*0.5);
-              }
               gl.uniform1i(renderModeUniform, 0); // Should need this right
 
-              // Bind the vertex buffer and set up attribute pointers for position data
               gl.enableVertexAttribArray(positionAttrib);
               gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
               gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][0], gl.STATIC_DRAW);
@@ -3786,7 +3705,7 @@ function drawLines()
 
               gl.enableVertexAttribArray(colorAttribLocation);
               gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleColors), gl.STATIC_DRAW);
+              gl.bufferData(gl.ARRAY_BUFFER, m_draw[d_i][4], gl.STATIC_DRAW);
               gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
 
               gl.drawArrays(gl.TRIANGLES, 0, m_draw[d_i][1]*3);
@@ -4028,10 +3947,7 @@ function drawIt()
   gl.clear(gl.COLOR_BUFFER_BIT);	
 
 	drawLines();
-
   updateFPS();
-	
-
 	requestAnimationFrame(drawIt);
 
 } // END OF drawIt()
@@ -4810,11 +4726,9 @@ function Compute(init_dat)
 			break;
 		case 3:
 
-
-
       if (key_map.lmb && !mouseLock && runEvery(20))
       {
-			// let _p = lpi(mouseToWorld, player_pos, _lp_world, [0,1,0]);
+        // let _p = lpi(mouseToWorld, player_pos, _lp_world, [0,1,0]);
         // could get this to work if I made _plr_dtp use mouseToWorld dir vec
         // but might work out easier to ray to new obj?
 
