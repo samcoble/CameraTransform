@@ -24,7 +24,7 @@ I have limited folder names to use the following characters: A-Z, 0-9, period an
 I have ported a lot to webgl and the performance improvements are quite insane but far from a native application. The perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create a transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss !? Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense leaving me headroom to make further optimizations at an earlier stage in the memory pipeline.
 
 ![Screenshot 2024-02-13 204436](https://github.com/samcoble/CameraTransform/assets/32228102/75e57ec2-d004-4c47-b40f-996907ebe937)
-![Screenshot 2024-02-14 104800](https://github.com/samcoble/CameraTransform/assets/32228102/ffe0bcf8-8ea0-4ca3-ab79-39fedb6bfd04)
+![Screenshot 2024-02-17 220450](https://github.com/samcoble/CameraTransform/assets/32228102/6161a4a4-5c90-438f-927b-74b33588f122)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
 ![NVIDIA](https://github.com/samcoble/CameraTransform/assets/32228102/5796f7f6-e08a-4e15-a02f-085735bfa242)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
