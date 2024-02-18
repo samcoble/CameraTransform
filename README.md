@@ -14,17 +14,14 @@ Old 2D Canvas: [memspc.xyz/2dcanvas](https://memspc.xyz/2dcanvas)
 
 So far Google Chrome performs the best. Google's javascript compiler V8 is superbly fast. 
 
-WebGL shader functions have access to the GPU and it's unique ability to process data in parallel. I'm sure that my use of WebGL here is not taking advantage of all that it can provide. I have kept things simple to follow along with Ken's lectures. Javascript and WebGL provide tremendous accessibility allowing all platforms to be supported.
-
-This project is meant to be an endless exercise with the goal of developing intuition for the camera transform and the corresponding pipeline.
-It will be interesting to experiment with a 3D 'notepad' per se. One that can take on any idea and put it in 3D space.
+Everything needs to be rewritten using WebAssembly & C++ before I continue improving the performance.
 
 Save & load now work for all unique data created. The folder tree state is saved as well. Open/closed states are also saved!
 I have limited folder names to use the following characters: A-Z, 0-9, period and spaces.
 
 [ 2D CANVAS ] -> [ WEBGL-CANVAS ]
 
-I have ported a lot to webgl and the performance improvements are quite insane already. I am far from optimized. My perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create the transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss !? Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense leaving me headroom to make further optimizations at an earlier stage in the memory pipeline.
+I have ported a lot to webgl and the performance improvements are quite insane but far from a native application. The perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create a transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss !? Ultimately the z-buffer should be a shader to reduce a future workload. I have yet to put Javascript (CPU) to work in any significant way. This application is not very CPU intense leaving me headroom to make further optimizations at an earlier stage in the memory pipeline.
 
 ![Screenshot 2024-02-13 204436](https://github.com/samcoble/CameraTransform/assets/32228102/75e57ec2-d004-4c47-b40f-996907ebe937)
 ![Screenshot 2024-02-14 104800](https://github.com/samcoble/CameraTransform/assets/32228102/ffe0bcf8-8ea0-4ca3-ab79-39fedb6bfd04)
