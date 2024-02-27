@@ -14,8 +14,6 @@ Old 2D Canvas: [memspc.xyz/2dcanvas](https://memspc.xyz/2dcanvas)
 
 So far Google Chrome performs the best. Google's javascript compiler V8 is superbly fast. 
 
-Everything needs to be rewritten using WebAssembly & C++ before I continue improving the performance.
-
 Save & load now work for all unique data created. The folder tree state is saved as well. Open/closed states are also saved!
 I have limited folder names to use the following characters: A-Z, 0-9, period and spaces.
 
