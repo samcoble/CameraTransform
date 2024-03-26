@@ -264,6 +264,7 @@ var cursor_helper = 0;
 var flag_loadingObject = 0;
 var flag_inText = 0;
 var functionRunList = [];
+var flag_objModif = false;
 
 var obj_folders = [],
     folder_names = [],
@@ -329,7 +330,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [400, 500],
+var menu_q_size = [400, 800],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
@@ -1618,6 +1619,7 @@ function m_objs_loadPoints(ar) // Adds objects
     var ar_k = new Float32Array( ar_t.length/6 );
     z_map.push([ar_z, ar_k, ar_t.length/6]);
 
+    //DATAFNS
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -2141,9 +2143,11 @@ function updateDrawMap(priorityObjects)
 	return indexMapping;
 }
 
+// here I add filter for anything being modified?
+// as long as all obj funcs reset their obj to -1 or 0 then this works just checking _i inside array
 function del_obj(_i)
 {
-	if (_i > world_obj_count)
+	if (_i > world_obj_count && _i != boundingBox.obj)
 	{
 		trns_lock = 0;
 		_all_lock = 0; _all_lock = 0;
@@ -2349,7 +2353,7 @@ function getctr_ghost(_i) // Get encoded 3D center point
 	return _c;
 }
 
-var translateObj =
+var translateFolder =
 {
   obj: 0,
   lpstart: [0,0,0],
@@ -2361,63 +2365,77 @@ var translateObj =
   toggle: function ()
   {
     if (folder_selected < 3) {return;}
-    switch(translateObj.active)
+    switch(translateFolder.active)
     {
       case 0:
-        translateObj.lpstart =
+        translateFolder.lpstart =
         [
           _lp_world[0],
           _lp_world[1],
           _lp_world[2]
         ];
-        translateObj.lpdelta = [0,0,0];
-        translateObj.folder = Array.from(obj_folders[folder_selected]);
-        translateObj.obj = obj_cyc;
+        translateFolder.lpdelta = [0,0,0];
+        translateFolder.folder = Array.from(obj_folders[folder_selected]);
+        translateFolder.obj = obj_cyc;
 
-        translateObj.focus = 1;
-        translateObj.active = 1;
-        translateObj.runhook = 0;
+        translateFolder.focus = 1;
+        translateFolder.active = 1;
+        translateFolder.runhook = 0;
         break;
 
       case 1:
-        translateObj.active = 0;
-        translateObj.focus = 0;
+        translateFolder.active = 0;
+        translateFolder.focus = 0;
         // Apply changes to obj clones
-        let _s = translateObj.folder.length;
+        let _s = translateFolder.folder.length;
         for (let i=0; i<_s; i++)
         {
-          arScale(m_objs_ghost[translateObj.folder[i]], m_objs[translateObj.folder[i]], [0,0,0], [0,0,0,0], [1,1,1,1]);
+          arScale(m_objs_ghost[translateFolder.folder[i]], m_objs[translateFolder.folder[i]], [0,0,0], [0,0,0,0], [1,1,1,1]);
         }
         // arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
-        translateObj.obj = 0;
+        translateFolder.obj = 0;
         break;
     }
   },
   run: function ()
   {
     // Check for axis lock settings
-    translateObj.lpdelta =
+    translateFolder.lpdelta =
     [
-      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateObj.lpstart[0],
-      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateObj.lpstart[1],
-      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateObj.lpstart[2]
+      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateFolder.lpstart[0],
+      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateFolder.lpstart[1],
+      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateFolder.lpstart[2]
     ];
 
-    let _s = translateObj.folder.length;
+    let _s = translateFolder.folder.length;
     for (let i=0; i<_s; i++)
     {
-      arScale(m_objs[translateObj.folder[i]], m_objs_ghost[translateObj.folder[i]], translateObj.lpdelta, [0,0,0,0], [1,1,1,1]);
+      arScale(m_objs[translateFolder.folder[i]], m_objs_ghost[translateFolder.folder[i]], translateFolder.lpdelta, [0,0,0,0], [1,1,1,1]);
     }
 
     // arScale(m_objs[this.obj], m_objs_ghost[this.obj], this.lpdelta, [0,0,0,0], [1,1,1,1]);
     // need system to prevent connect to self points
     // maybe do general check on runList and instead block m_obj and allow ghost?
 
-    // if (!key_map.lmb) {translateObj.apply(); translateObj.focus = 1;}
+    // if (!key_map.lmb) {translateFolder.apply(); translateFolder.focus = 1;}
+  }
+}; functionRunList.push(translateFolder);
+
+var rotateFolder =
+{
+  folder: Object,
+  run: function ()
+  {
+    if (folder_selected < 3) {return;}
+    rotateFolder.folder = Array.from(obj_folders[folder_selected]);
+
+    let _s = rotateFolder.folder.length;
+    for (let i=0; i<_s; i++) // loop through folders
+    {
+      rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i])
+    }
   }
 };
-
-functionRunList.push(translateObj);
 
 function trans_obj(_i)
 {
@@ -2634,12 +2652,12 @@ function link_obj(_i)
 
 // Remove center option? nah keeps cursor in right place.
 // @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
-function rotateObject(_op, _r) // _op determines if rotation uses point or center, _r radians.
+function rotateObject(_op, _r, _obj) // _op determines if rotation uses point or center, _r radians.
 {
-	if (obj_cyc>world_obj_count && runEvery(150))
+	if (_obj>world_obj_count)
 	{
-		var _to = splitObjS(m_objs[obj_cyc]);
-		var _c = getctr_obj(obj_cyc);
+		var _to = splitObjS(m_objs[_obj]);
+		var _c = getctr_obj(_obj);
 		var _rf = _r * pi/180;
 
 		// for now I use this. code is getting skrambled
@@ -2686,13 +2704,13 @@ function rotateObject(_op, _r) // _op determines if rotation uses point or cente
 			}
 			if (i==_to.length-1)
 			{
-				for (var j=0; j<mem_log[obj_cyc][2]; j++)
+				for (var j=0; j<mem_log[_obj][2]; j++)
 				{
-					m_objs[obj_cyc][j*4+0] = _to[j][0];
-					m_objs[obj_cyc][j*4+1] = _to[j][1];
-					m_objs[obj_cyc][j*4+2] = _to[j][2];
+					m_objs[_obj][j*4+0] = _to[j][0];
+					m_objs[_obj][j*4+1] = _to[j][1];
+					m_objs[_obj][j*4+2] = _to[j][2];
 				}
-        arScale(m_objs_ghost[obj_cyc], m_objs[obj_cyc], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+        arScale(m_objs_ghost[_obj], m_objs[_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 			}
 		}
 	}
@@ -2809,6 +2827,10 @@ function deleteObjectSelected()
 
 function del_world()
 {
+  // Terminate all running data manipulation
+  for (let i = functionRunList.length-1; i>=0; i--)
+  { if (functionRunList[i].enable) {functionRunList[i].toggle();} }
+
   folder_selected = 3;
   obj_folders[3].length = 0;
   mem_sum = 7408;
@@ -2910,7 +2932,7 @@ function editSelectedObject()
 
 function applyRotation()
 {
-	rotateObject(0, _settings[7].settings[0]);
+	rotateObject(0, _settings[7].settings[0], obj_cyc);
 }
 
 function moveObject()
@@ -3542,7 +3564,7 @@ function drawLines()
 
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
-                if (
+                if ( // drawLines()
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 11] > 0)
@@ -3599,7 +3621,7 @@ function drawLines()
                   gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]); 
                   break;
                 case false:
-                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);
+                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]);
                   break;
               }
               gl.uniform1i(renderModeUniform, 1);
@@ -3826,7 +3848,7 @@ function drawLines()
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
   }
 
-  if (translateObj.active)
+  if (translateFolder.active)
   {
     if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -3);}
   }
@@ -3983,6 +4005,7 @@ var boundingBox =
     switch(boundingBox.enable)
     {
       case 0:
+        if (obj_cyc <= world_obj_count) {break;}
         boundingBox.enable = 1;
         boundingBox.focus = 1;
         boundingBox.obj = obj_cyc;
@@ -4187,10 +4210,14 @@ function Compute(init_dat)
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
 
+  // RUN LIST HERE
+  let _run_check = false;
   for (let p = functionRunList.length-1; p>=0; p--)
   {
     if (functionRunList[p].active) {functionRunList[p].run();}
+    if (functionRunList[p].enable) {_run_check = true;}
   }
+  flag_objModif = _run_check;
 
   // if (key_map.j && runEvery(50))
   // {
@@ -4213,16 +4240,16 @@ function Compute(init_dat)
   if (_settings[5].settings[0] != grid_scale_d)
   {
     updateGrid();
-  }
+  } // Compute()
 
   if(document.activeElement.type ==  "text")
   {
     flag_inText = 1;
   } else {flag_inText = 0;}
   
-	if (key_map.shift && key_map.r)
+	if (key_map.shift && key_map.r && runEvery(150))
 	{
-		rotateObject(0, _settings[7].settings[0]);
+		rotateObject(0, _settings[7].settings[0], obj_cyc);
 	}
 
 	if (key_map["5"] && runEvery(150))
