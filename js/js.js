@@ -330,7 +330,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [400, 800],
+var menu_q_size = [400, 720],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
