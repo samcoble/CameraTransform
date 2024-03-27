@@ -37,78 +37,68 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
     -- box collision function and tests
     -- 
     -- 13.25, 13.625, 74.875
-    -- 
 
   @?@?@
   ?@?@?
-  @?@?@
 
-      -- Ray tracing used for z buffer must be parallelized 
-      -- finish center inds?
-      -- need parallel array manager to auto manage all the krap
-      -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
-      -- Float32Array already contains byteLength and byteOffset.
-      -- Match all of my data structure to use Float32Array to remove all type conversions
-      -- fix preview image to offset w/ 2d forced square w/ check
-			-- rewrite the select2dpoint function
-        - needs system to provide hologram ui
-			-- if encoded center is within plane of poly's captures some overlap
-			-- engine space
-			-- generate dir vec curves
+  -- finish center inds?
+  -- need parallel array manager to auto manage all the krap
+  -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
+  -- Float32Array already contains byteLength and byteOffset.
+  -- Match all of my data structure to use Float32Array to remove all type conversions
+  -- fix preview image to offset w/ 2d forced square w/ check
+  -- rewrite the select2dpoint function
+    - needs system to provide hologram ui
+  -- if encoded center is within plane of poly's captures some overlap
+  -- engine space
+  -- generate dir vec curves
 
-			-- nested point sequences at overlap point should be fairly easy. take note of logic
-				- think i got it here
+  -- nested point sequences at overlap point should be fairly easy. take note of logic
+    - think i got it here
 
-					- placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
-					- len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
-					- logic diagram could provide more direct code struct
+      - placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
+      - len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
+      - logic diagram could provide more direct code struct
 
-			-- unique ids for objs will help w/ identical objs in future?
+  -- unique ids for objs will help w/ identical objs in future?
 
-			-- lock point offsets grid? could fix a lot of things w/ rmb select
-			-- lmb in free mode is setting plane to inter_rnd for some reason..
-				- when point locked the lpi is not being calculated with the arbitrary offset essentially
+  -- lock point offsets grid? could fix a lot of things w/ rmb select
+  -- lmb in free mode is setting plane to inter_rnd for some reason..
+    - when point locked the lpi is not being calculated with the arbitrary offset essentially
 
-			-- ? intersection reveal
-				- doesn't have to be run all the time if the purpose is to model
-				- line's checked for intersection within some range of it's len.
+  -- ? intersection reveal
+    - doesn't have to be run all the time if the purpose is to model
+    - line's checked for intersection within some range of it's len.
 
-			-- just noticed save data corrupted by single point data
-				- fuqk
-        - temp fix is making all 1 point objs 2 equal points w/ center ig
+  -- just noticed save data corrupted by single point data
+    - fuqk
+    - temp fix is making all 1 point objs 2 equal points w/ center ig
 
-			-- string dat find sys or mem addr sys?
-			-- all my functions relative to the plane can be replaced with a general obj orient fn.
+  -- string dat find sys or mem addr sys?
+  -- all my functions relative to the plane can be replaced with a general obj orient fn.
 
-			-- Overlapping point issues BREOKEKN
-				- fuqk
-					take circle size and make size a fn
-						fn sets rel to z AND index
-						goal here is to have circle size data that maps to the screen
-							use data to reveal bounding areas to hover over to select overlapping selection of objs
-								don't i already have a good z buffer.. wait
+  -- Overlapping point issues BREOKEKN
+    - fuqk
+      take circle size and make size a fn
+        fn sets rel to z AND index
+        goal here is to have circle size data that maps to the screen
+          use data to reveal bounding areas to hover over to select overlapping selection of objs
+            don't i already have a good z buffer.. wait
 
-            might have the answer to this now with the new manual 2d gen circles
+        might have the answer to this now with the new manual 2d gen circles
 
-			-- unit vector line conversion method for arc len
-			-- edit obj
-			-- Correctly log changed information that can be applied to reverse.
+  -- unit vector line conversion method for arc len
+  -- edit obj
+  -- Correctly log changed information that can be applied to reverse.
 
 @?@?@
 ?@?@?
-@?@?@
 
 	Random idea ::
 		if I can clip a region of polygon's in 2d space creating two sets
 			-> i could then display them at two different fov's creating a zoomed region for scopes/sights
 
 	So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
-
-	Wrap data increase to hold more layers
-		r g b a comes first
-		move groups after
-
-	Push to top of stack function
 
 	Obj cut hole { i could try using the link script on to the hole... }
 		i keep reusing my linear link. need to learn poly fill alg
@@ -150,7 +140,6 @@ modulo distributes with switch with for loop ez wow for ex:
 		colors mapped as numbers converted by static array of colors.
 
 	starting with 1 call to trace
-
 	3 sides 3 vec a b c omni order thus equally in sign implies within poly
 
 	sign is a/|a| , a/Math.abs(a) , Math.sign will be fastest? least ops w/ js calc sign
@@ -184,10 +173,6 @@ modulo distributes with switch with for loop ez wow for ex:
 	- Cut obj in half by plane!
 		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
 
-	- Bezier tool
-
-	- interpolation framework for anim -> prerender
-
 	- For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
 	- Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
 
@@ -206,11 +191,10 @@ modulo distributes with switch with for loop ez wow for ex:
 - just noticed flying toward a point w/ crosshair doesn't bring you to that point... Aim down fly backwards ends up on a 45?? can't remember if intentional
 
 - use a time delta for interpolation and player translation to avoid runtime speed fluctuations. so I need a timer for w a s d up down. 6 timers
+  - after trying this i got the rubberbanding effect lol. client-server sync can fix.
 
 - research k-d tree / octree
-
 - Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
-
 - The tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
 
 	Badly need to implement a struct system for tools generally such that every tool overrides some keys.
@@ -223,7 +207,7 @@ modulo distributes with switch with for loop ez wow for ex:
 
 	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&& the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
 	-	Maybe a separate self made api for handling the screen interface would be wise.
-	-	It really needs 3d/2d simple text obj generation for real notepad capacity. Easier to just store the string in the bg.
+	-	3d/2d simple text obj generation for real notepad capacity. Easier to just store the string in the bg.
 	-	Effects and sounds.
 
 	// MAYBE SOME TIME IN 2053 (after christ)
@@ -244,9 +228,6 @@ modulo distributes with switch with for loop ez wow for ex:
 	Use bounding boxes on objs 4 physics
 
 */
-
-// ctx.imageSmoothingEnabled = false;
-// ctx.lineCap = "butt";
 
 const pi = 3.141592653589793, // High definition PI makes a visible difference
       pi2 = 6.283185307179586,
@@ -1111,23 +1092,24 @@ function makeValidFileName(_i)
 
 function downloadSaveFile()
 {
-    let arrayBuffer = makeSave();
-    let _l = arrayBuffer.length;
+  if (mouseLock) {pointerLockSwap();} 
+  let arrayBuffer = makeSave();
+  let _l = arrayBuffer.length;
 
-    // blob binary large object
-    const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
-    const _url = URL.createObjectURL(blob);
+  // blob binary large object
+  const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+  const _url = URL.createObjectURL(blob);
 
-    // temp anchor
-    const anchor = document.createElement('a');
-    anchor.href = _url;
+  // temp anchor
+  const anchor = document.createElement('a');
+  anchor.href = _url;
 
-    anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
+  anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
 
-    // use .click() to trigger download
-    anchor.click();
-    URL.revokeObjectURL(_url);
-    key_map.p = false;
+  // use .click() to trigger download
+  anchor.click();
+  URL.revokeObjectURL(_url);
+  key_map.p = false;
 }
 
 window.addEventListener('keydown', (event) =>
@@ -2282,6 +2264,7 @@ function select2dpoint(x, y) // 2D find
     }
   }
 
+  // Fix this area. Replace the 3's w/ a set function? I don't remember
 	switch(_d)
 	{
 		case 0:
@@ -4303,8 +4286,7 @@ function Compute(init_dat)
 
 	if (key_map.e && runEvery(120)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
 	
-	if (key_map.p && runEvery(350)) {if (mouseLock) {pointerLockSwap();} downloadSaveFile();}
-
+	if (key_map.p && runEvery(350)) {downloadSaveFile();}
 
 	if (key_map.n && runEvery(500)) {playerChangeMovementMode();}
 	if (lock_vert_mov) {player_pos[1] = -hover_h;}

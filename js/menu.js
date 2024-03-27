@@ -1685,9 +1685,18 @@ makeElement(addButton,
 {
   text: `Close Menu`,
   id: "tool_closeMenu", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: pointerLockSwap 
+});
+
+makeElement(addButton,
+{
+  text: `Save World`,
+  id: "tool_saveWorld", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: downloadSaveFile
 });
 
 // new tool location
@@ -1739,7 +1748,7 @@ makeElement(addDiv,
 {
   id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
   text: `offset`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addTextInput,
@@ -1754,7 +1763,7 @@ makeElement(addDiv,
 {
   id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
   text: `n parts`,
-  rootStyle: rootStyle + div_css_half + _btn_col2
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
 });
 
 makeElement(addTextInput,
@@ -2226,7 +2235,7 @@ makeElement(addDiv,
 {
   id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
   text: `depth`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addCheckbox,
