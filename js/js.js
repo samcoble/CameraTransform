@@ -12,223 +12,6 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 */ // You exist in a .bin of floating point numbers.
 
 
-// Make a pistol that shoots green lasers that bounce!
-// Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections. This would look cool inside a sphere! w/ no limit it'd probably crash lmao.
-
-/*
-  
-  #todolist
-  
-    -- physics engine should be possible but first I need to fix my triangles
-    -- collision detections will need to borrow from the same idea of culling back faces
-    -- but I will replace the tri actually with a bounding box
-    -- so I first do check if they are close together then use dist to plane w/ dot simple
-    -- if anything checks in adjust the objects velocities (rotational and position)
-    -- collision's determine the angular velocity by distance from center
-    -- apply standard gravity ticks
-    -- collisions must always result in energy lost
-    -- maybe all velocities and acceleration can be computed on the gpu or in a worker or both.
-    -- a worker's latency may not matter if only left to manage some layers not visually noticeable
-    -- the ground is defined by a positional min/max (no loop if below threshold)
-    -- the ground can apply more dampening than obj to obj
-    -- default amount of inverse angular velocity
-    --
-    -- to get started setup the buffers
-    -- box collision function and tests
-    -- 
-    -- 13.25, 13.625, 74.875
-
-  @?@?@
-  ?@?@?
-
-  -- finish center inds?
-  -- need parallel array manager to auto manage all the krap
-  -- Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
-  -- Float32Array already contains byteLength and byteOffset.
-  -- Match all of my data structure to use Float32Array to remove all type conversions
-  -- fix preview image to offset w/ 2d forced square w/ check
-  -- rewrite the select2dpoint function
-    - needs system to provide hologram ui
-  -- if encoded center is within plane of poly's captures some overlap
-  -- engine space
-  -- generate dir vec curves
-
-  -- nested point sequences at overlap point should be fairly easy. take note of logic
-    - think i got it here
-
-      - placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
-      - len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
-      - logic diagram could provide more direct code struct
-
-  -- unique ids for objs will help w/ identical objs in future?
-
-  -- lock point offsets grid? could fix a lot of things w/ rmb select
-  -- lmb in free mode is setting plane to inter_rnd for some reason..
-    - when point locked the lpi is not being calculated with the arbitrary offset essentially
-
-  -- ? intersection reveal
-    - doesn't have to be run all the time if the purpose is to model
-    - line's checked for intersection within some range of it's len.
-
-  -- just noticed save data corrupted by single point data
-    - fuqk
-    - temp fix is making all 1 point objs 2 equal points w/ center ig
-
-  -- string dat find sys or mem addr sys?
-  -- all my functions relative to the plane can be replaced with a general obj orient fn.
-
-  -- Overlapping point issues BREOKEKN
-    - fuqk
-      take circle size and make size a fn
-        fn sets rel to z AND index
-        goal here is to have circle size data that maps to the screen
-          use data to reveal bounding areas to hover over to select overlapping selection of objs
-            don't i already have a good z buffer.. wait
-
-        might have the answer to this now with the new manual 2d gen circles
-
-  -- unit vector line conversion method for arc len
-  -- edit obj
-  -- Correctly log changed information that can be applied to reverse.
-
-@?@?@
-?@?@?
-
-	Random idea ::
-		if I can clip a region of polygon's in 2d space creating two sets
-			-> i could then display them at two different fov's creating a zoomed region for scopes/sights
-
-	So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
-
-	Obj cut hole { i could try using the link script on to the hole... }
-		i keep reusing my linear link. need to learn poly fill alg
-		i need to implement geometric obj creation.
-			with more layers of encoded data i can keep logs of what obj's are fundamentally
-
-	All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
-	Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet. Do I really need to interp packed data??
-
-I can make real physgun by compounding quaternions and ray trace
-Make the planetary ico 
-Assault cube old code
-
-.reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
-
-If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
-  ?: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
-    maybe try reversing the process.
-    if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
-    if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
-    the procedure of rotation around an arbitrary axis applies to many things,
-      ?: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
-
-Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
-  for a lil extra travel just offset
-
-modulo distributes with switch with for loop ez wow for ex:
-
-	for (i)
-	{
-		switch(i%3)
-			case 0:
-			case 1:
-			case 2:
-	}
-
-	rayInterMap[] containing [Float32Array(4), Float32Array(4), ...] : clear entries upon calling another trace for now
-	rayIMap[] populates data for poly loop to loop through allowing for poly color changes / indicators. Leading to a colorMap for tris.
-		colors mapped as numbers converted by static array of colors.
-
-	starting with 1 call to trace
-	3 sides 3 vec a b c omni order thus equally in sign implies within poly
-
-	sign is a/|a| , a/Math.abs(a) , Math.sign will be fastest? least ops w/ js calc sign
-	for every entry, later refine to shorten loop. for ex: dot all [largest obj point from center (lrgp-ctr) premapped] w/ look_f (look dir)
-
-		tri in order a b c (points) 
-
-              b
-             /|\         n from dataset: obj_normalMaps
-            / n \
-           a     c
-
-               b                     b                                     b
-              /|\         =>        /|        <SHARED => SWAP SIGN>        |\
-             / | \                 / |                                     | \
-           a       c             a    (a-c)/2                       (a-c)/2    c
-
-	maybe this is related in a sense to the barycentric coordinates. say I have a middle vector 
-	point on poly can be on either one to confirm that it is inside 3 points
-	two instances of comparing a series of signs IF the first one misses. So sometimes there is only one call! wow
-	v01 = b-a                 ->        sub(b,a)
-	v02 = (a-c)/2 - b         ->        sub(scale(sub(a,c),0.5),b)
-	v03 = a - (a-c)/2         ->        sub(a, scale(sub(a,c),0.5))
-	v11 = c-b                 ->        sub(c,b)
-	v12 = (a-c)/2 - b         ->        sub(scale(sub(a,c),0.5),b)
-	v13 = b - (a-c)/2         ->        sub(b, scale(sub(a,c),0.5))
-	if     sign(a) == sign(b) || sign(b) == sign(c)   =>   push point to rayInterMap[] && rayIMap[]. wat
-
-	- Make ray trace fn use inputs so I can call it to get data anywhere.
-
-	- Cut obj in half by plane!
-		intersect/ray trace w/ plane between pairs. Just remove any other points and keep the intersections. Not sure if I can do this so easily w/ point order being critical
-
-	- For linking lines a tool to collapse a line into one axis would be fantastic. For a dynamic tool: use start & end to define the line and move points to that line.
-	- Spiral tool OR line gen tool w/ inputs => same as spiral w/ the right settings
-
-	- Enter key opens text overlay to search for function. goes like: [ENTER] type "link" [ENTER] -> link is member of table call it's function. Function stored in switch case calls obj_link();
-		- and "link.k=l" rebinds link(); activator key to l. And if already bound swap. Block some keys maybe.
-		- if any part of text is contained by a list of syntax display those options below and what options exist after the dot operator
-		- find obj by would be amazing. by dist returns array of i's that will be modified w/ function 
-		- this could provide the in game scripting w/o eval of js directly.
-		- goTo(findBy).. bring(findBy).. scale(findBy)
-
-	= Encode obj means into sectors by itor over x,y,z type loop with some set size by dividing size up into some number (4*4*4) => 64 sectors. Like a 2d grid but 3d.
-		find their centers by excluding end and offset by half of number (2). map to table
-			table
-				[center pos, array of _i's]
-
-- just noticed flying toward a point w/ crosshair doesn't bring you to that point... Aim down fly backwards ends up on a 45?? can't remember if intentional
-
-- use a time delta for interpolation and player translation to avoid runtime speed fluctuations. so I need a timer for w a s d up down. 6 timers
-  - after trying this i got the rubberbanding effect lol. client-server sync can fix.
-
-- research k-d tree / octree
-- Button to output linear obj to console. Model gun with game -> put into game -> model game with gun -> put into gun
-- The tab alg can be applied compression relative to center. like a 3d mesh impacting the screen creating a focal lense. this would actually slightly help differentiate object's that are close together IN 2D. maybe..
-
-	Badly need to implement a struct system for tools generally such that every tool overrides some keys.
-		Points should be a point tool (Place point - F)
-		Circle tool (Place circle - F) (I need a later formula to compress a 4 point circle to align with the grid)
-		Center Expand (Start/Finish applied as delta - F)
-		Dynamic Expand (Applies compression/expansion with 3 input numbers)
-		Rotate around Axis (For now input into box with deg. Use point and plane line)
-		Stacker tool (Accepts distance and stacks) (Two input boxes)
-
-	-	Use a bezier function of n points. Dynamic integral function to find the arc length. arc_l/n provides the sections to be influenced by perp vectors &&& the actual vertices of the curve. Divide by n and n/2. Go to n-n/2
-	-	Maybe a separate self made api for handling the screen interface would be wise.
-	-	3d/2d simple text obj generation for real notepad capacity. Easier to just store the string in the bg.
-	-	Effects and sounds.
-
-	// MAYBE SOME TIME IN 2053 (after christ)
-
-	-	CLIPPING
-	-	Add dancing stick figures to every vertex immediately. I will do this. Don't fuck with me.
-
-	add clipping sides & what happens if 3 points where 1 is out ?
-		total points goes from 3 to 4. This can happen n times per poly. How deal w/ data??????
-
-	obj_select(_r); where _r is radius from center screen to screen space points. Same dot sequence to sort?
-		how about auto group points to 3d sectors and a single ray trace reveals some any quantity of data within the block.
-		inconclusive. Math implies computation. blocks can't fail. 
-
-	Holy shit there's an algorithm for this lmao. This always happens to me.
-	https://en.wikipedia.org/wiki/Octree
-
-	Use bounding boxes on objs 4 physics
-
-*/
-
 const pi = 3.141592653589793, // High definition PI makes a visible difference
       pi2 = 6.283185307179586,
       menuTime_int = 220,
@@ -2030,7 +1813,7 @@ function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
     var _fq = [1, 0, 0, 0]; // Initial quaternion for rotation accumulation
     for (var i = 0; i < _q_ar.length; i++)
     {
-        _fq = multiplyQuaternions(_q_ar[i], _fq);
+      _fq = multiplyQuaternions(_q_ar[i], _fq);
     }
 	// Normalize it. Makes sense when you are adding many together.
 	const _nq = norm4(_fq);
@@ -2053,7 +1836,7 @@ function arHasC(ar, c) // Useless?
     var _r = false;
     for (var i = 0; i < ar.length; i++)
     {
-        if (ar[i] === c) {_r = true;break;}
+      if (ar[i] === c) {_r = true;break;}
     }
     //console.log(_r);
     return _r;
@@ -2160,14 +1943,14 @@ function del_obj(_i)
 
 function updateLook() // Quat view rot
 {
-		_viewq = [makeQuaternion(-player_look_dir[1], [1,0,0]),
-				  makeQuaternion(-player_look_dir[0], [0,1,0])];
-		f_look = quatRot( [0,0,1], _viewq );
+  _viewq = [makeQuaternion(-player_look_dir[1], [1,0,0]),
+        makeQuaternion(-player_look_dir[0], [0,1,0])];
+  f_look = quatRot( [0,0,1], _viewq );
 
-		_oh = dot(player_pos,[0,1,0,1]);
-		f_dist = -_oh/dot([0,1,0],norm(f_look));
-		_nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
-		_plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
+  _oh = dot(player_pos,[0,1,0,1]);
+  f_dist = -_oh/dot([0,1,0],norm(f_look));
+  _nplns = [[1,0,0],[0,1,0],[0,0,1]][pln_cyc]; // use pln_cyc to select norm vec from array of norm vecs
+  _plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
 }
 
 function finishTrnsAnim(_i) // Maybe make this a system

@@ -4,28 +4,29 @@
 // very noob level implementation here though. I just wan't absolute freedom.
 
 /*
-      -- check number on getInput function
+  -- check number on getInput function
 
-      -- js so funny man
-          - 1*"2" = 2
-          - 2+"" = "2"
+  -- js so funny man
+      - 1*"2" = 2
+      - 2+"" = "2"
 
-      -- i can't tell if i'm on the right track.
-          - maybe i can design it such that
-              [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
+  -- i can't tell if i'm on the right track.
+      - maybe i can design it such that
+          [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
 
-          i'll learn how if I properly create a windowDraggable feature that's automatic per section.
-          or use table with string id's to make one update function convert menu code to a settings array.
+      i'll learn how if I properly create a windowDraggable feature that's automatic per section.
+      or use table with string id's to make one update function convert menu code to a settings array.
 
-     log box needs to be reloadable 
-     basically make push fn also perform js text load
+  log box needs to be reloadable 
+  basically make push fn also perform js text load
 
-     -- super key here to put that fn inside the listener assigned to text boxes.
-     -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
+  -- super key here to put that fn inside the listener assigned to text boxes.
+  -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
 
-     -- not needed to pass params or callback. okay because of new params for functions not using secondary params
-     -- now add second callback par for check boxes and textinputs and file open?
+  -- not needed to pass params or callback. okay because of new params for functions not using secondary params
+  -- now add second callback par for check boxes and textinputs and file open?
 
+  -- finish removing old menu
 */
 
 var _this; // ez pointer for params
@@ -147,7 +148,7 @@ function appendFilter(p, e)
   else {document.body.appendChild(e);}
 }
 
-function addDiv(par)
+function addDiv(par) // ------------------------ Div
 {
   const div = document.createElement("div");
   div.id = par.id;
@@ -175,7 +176,7 @@ function addDiv(par)
   return div;
 }
 
-function addButton(par)
+function addButton(par) // ------------------------ Button
 {
   const button = document.createElement("button");
   button.textContent = par.text;
@@ -193,7 +194,7 @@ function addButton(par)
   return button;
 }
 
-function addCheckbox(par)
+function addCheckbox(par) // ------------------------ Checkbox
 {
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -214,7 +215,7 @@ function addCheckbox(par)
   return checkbox;
 }
 
-function addTextInput(par)
+function addTextInput(par) // ------------------------ Text input
 {
   const input = document.createElement("input");
   input.type = "text";
@@ -260,7 +261,7 @@ function addTextInput(par)
   return input;
 }
 
-function addFileInput(par)
+function addFileInput(par) // ------------------------ File input
 {
   const fileLabel = document.createElement("label");
   fileLabel.id = par.id;
@@ -313,7 +314,7 @@ const tree_colors_d =
   "rgba(65, 46, 38, 1)"
 ];
 
-function updateTree(par)
+function updateTree(par) // ------------------------ Update tree
 {
   const _t = document.getElementById(par.id);
   document.getElementById(par.id).innerHTML = "";
@@ -321,18 +322,14 @@ function updateTree(par)
   // _m = makeTree(tree_allObjects);
   _m = makeTree(par);
 
-  // tree_allObjects_ul_0
   const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
 
   // append allows event listener creation. innerHTML is like text = text. not same. must query to be able to append
-  _e.forEach(function(e)
-  {
-    _t.appendChild(e);
-  });
+  _e.forEach(function(e) { _t.appendChild(e); });
 }
 
-// the key here is query selector using direct parent ! lmao
-function makeTree(par) // output my tree in form of total html structure
+// the key here is query selector using direct parent ! lmao. Not good.
+function makeTree(par) // output tree in the form of html structure
 {
   // for now use length of itself. not entirely synced yet.
   const _r = document.createElement("div");
@@ -620,7 +617,7 @@ function makeTree(par) // output my tree in form of total html structure
   return _r;
 }
 
-function addTree(par)
+function addTree(par) // ------------------------ Adds the tree ig
 {
   let _r = makeTree(par);
 
@@ -1306,63 +1303,6 @@ makeElement(addDiv,
   `
 });
 
-/*
- ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
-╔╝╚╗        ║║     ║║      ╔╝╚╗╔╝╚╗
-╚╗╔╝╔══╗╔══╗║║     ║╚═╗╔╗╔╗╚╗╔╝╚╗╔╝╔══╗╔═╗ ╔══╗
- ║║ ║╔╗║║╔╗║║║     ║╔╗║║║║║ ║║  ║║ ║╔╗║║╔╗╗║══╣
- ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝║ ║╚╗ ║╚╗║╚╝║║║║║╠══║
- ╚═╝╚══╝╚══╝╚═╝    ╚══╝╚══╝ ╚═╝ ╚═╝╚══╝╚╝╚╝╚══╝
-#toolbuttons
-*/
-
-/*
-    Fqking spooky bugs AHHHHHHH
-        -- can't apply border here after
-                : rootStyle + _btn + _btn_tool_border,
-    benzene ring
-    \u232C
-*/
-
-var _btn_tool0 =
-`
-margin: 0px;
-border-radius: 3px 3px 0px 0px;
-border-top: 1px solid #282828;
-`;
-
-var _btn_toolf =
-`
-margin: 0px 0px 3px 0px;
-border-radius: 0px 0px 3px 3px;
-`;
-
-var _btn_tooln =
-`
-margin: 0px 0% 0px 0px;
-`;
-
-var _btn =
- `
-color: #AAA;
-text-align: right;
-border-bottom: 1px solid rgb(12,12,12);
-border-top: 0px solid #FFF;
-border-left: 0px solid #FFF;
-border-right: 0px solid #FFF;
-outline: none;
-width: 100%;
-height: 26px;
-line-height: 2.2;
-`;
-// color: rgb(195, 123, 0);
-
-
-var _btn_hover_tool =
-`
-background-color: rgb(38, 38, 39);
-box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
-`;
 
 /*
  ╔╗         ╔╗                      ╔╗
@@ -1495,6 +1435,58 @@ border-bottom: 1px solid rgb(16,16,16);
 var textIn_hover = `inset 0px 0px 2px 0px rgba(84, 84, 84, 1)`;
 var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
 
+/*
+ ╔╗         ╔╗     ╔╗       ╔╗  ╔╗
+╔╝╚╗        ║║     ║║      ╔╝╚╗╔╝╚╗
+╚╗╔╝╔══╗╔══╗║║     ║╚═╗╔╗╔╗╚╗╔╝╚╗╔╝╔══╗╔═╗ ╔══╗
+ ║║ ║╔╗║║╔╗║║║     ║╔╗║║║║║ ║║  ║║ ║╔╗║║╔╗╗║══╣
+ ║╚╗║╚╝║║╚╝║║╚╗    ║╚╝║║╚╝║ ║╚╗ ║╚╗║╚╝║║║║║╠══║
+ ╚═╝╚══╝╚══╝╚═╝    ╚══╝╚══╝ ╚═╝ ╚═╝╚══╝╚╝╚╝╚══╝
+#toolbuttons
+*/
+
+/*
+    Fqking spooky bugs AHHHHHHH
+        -- can't apply border here after
+                : rootStyle + _btn + _btn_tool_border,
+    benzene ring
+    \u232C
+*/
+
+var _btn_tool0 =
+`
+margin: 0px;
+border-radius: 3px 3px 0px 0px;
+border-top: 1px solid #282828;
+`;
+
+var _btn_toolf =
+`
+margin: 0px 0px 3px 0px;
+border-radius: 0px 0px 3px 3px;
+`;
+
+var _btn_tooln = `margin: 0px 0% 0px 0px;`;
+
+var _btn =
+ `
+color: #AAA;
+text-align: right;
+border-bottom: 1px solid rgb(12,12,12);
+border-top: 0px solid #FFF;
+border-left: 0px solid #FFF;
+border-right: 0px solid #FFF;
+outline: none;
+width: 100%;
+height: 26px;
+line-height: 2.2;
+`;
+
+var _btn_hover_tool =
+`
+background-color: rgb(38, 38, 39);
+box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+`;
 // background-color: rgb(17, 17, 18);
 makeElement(addDiv,
 {
@@ -1557,54 +1549,28 @@ makeElement(addButton,
 
 makeElement(addButton,
 {
+  text: "Dupe Object \u26FC",
+  id: "tool_dupeObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: cloneObjSelected
+});
+
+// partition
+makeElement(addButton,
+{
   text: "Dupe Folder \u20AA",
   id: "tool_dupeFld", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: dupeFolderObjs
 });
 
 makeElement(addButton,
 {
-  text: "Dupe Object \u26FC",
-  id: "tool_dupeObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
-  hoverStyles: _btn_hover_tool,
-  callback: cloneObjSelected
-});
-
-makeElement(addButton,
-{
-  text: "Resize Object \u2922",
-  id: "tool_resizeObject", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
-  hoverStyles: _btn_hover_tool,
-  callback: boundingBox.toggle
-});
-
-makeElement(addButton,
-{
-  text: "Mirror / Plane \u2346",
-  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-  hoverStyles: _btn_hover_tool,
-  callback: mirrorOverPlane
-});
-
-makeElement(addButton,
-{
-  text: "Apply Rotation \u2B6E",
-  id: "tool_applyRotation", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-  hoverStyles: _btn_hover_tool,
-  callback: applyRotation
-});
-
-makeElement(addButton,
-{
   text: "Rotate Folder \u2B6E",
   id: "tool_rotateFolder", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: rotateFolder.run
 });
@@ -1613,16 +1579,52 @@ makeElement(addButton,
 {
   text: "Move Folder \u2933",
   id: "tool_moveFld", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: translateFolder.toggle
 });
 
 makeElement(addButton,
 {
+  text: "Empty Folder \u2672",
+  id: "tool_delFldObjs", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: deleteFolderObjs
+});
+
+makeElement(addButton,
+{
+  text: "Resize Object \u2922",
+  id: "tool_resizeObject", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  hoverStyles: _btn_hover_tool,
+  callback: boundingBox.toggle
+});
+
+makeElement(addButton,
+{
+  text: "Mirror / Plane \u2346",
+  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: mirrorOverPlane
+});
+
+makeElement(addButton,
+{
+  text: "Apply Rotation \u2B6E",
+  id: "tool_applyRotation", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: applyRotation
+});
+
+makeElement(addButton,
+{
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1631,7 +1633,7 @@ makeElement(addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1640,7 +1642,7 @@ makeElement(addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1649,7 +1651,7 @@ makeElement(addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
@@ -1658,18 +1660,9 @@ makeElement(addButton,
 {
   text: "Delete Object \u2421",
   id: "tool_delObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
-});
-
-makeElement(addButton,
-{
-  text: "Empty Folder \u2672",
-  id: "tool_delFldObjs", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
-  hoverStyles: _btn_hover_tool,
-  callback: deleteFolderObjs
 });
 
 makeElement(addButton,
@@ -1700,12 +1693,6 @@ makeElement(addButton,
 });
 
 // new tool location
-/*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
 
 makeElement(addDiv,
 {
@@ -1843,11 +1830,6 @@ var cbx_myStyle_hover =
 box-shadow: inset 0px 0px 2px 0px rgba(84, 84, 84, 1);
 border: 0px;
 `;
-
-/*
-box-shadow:inset 0px 0px 0px 1px rgba(70, 70, 70, 0.1);
-border-top: 1px solid rgb(12,12,12);
-*/
 
 // Check box default styles
 var cbx_myStyle =
