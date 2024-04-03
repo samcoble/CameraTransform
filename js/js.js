@@ -34,6 +34,7 @@ var obj_folders = [],
     folder_names = [],
     folder_parents = [-1, 0, 0, -1], // -1 is no parent
     folder_toggle = [1, 0, 0, 1],
+    folder_selected_objs = [],
     folder_selected = 3; // Default folder
 
 var keyVec = [],
@@ -2931,6 +2932,7 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 */
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
+// folder_selected_objs
 
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi)
@@ -2977,7 +2979,13 @@ function drawSegment(vertices, mi)
 		}
 	}
 
-	if (_all_lock!=0)
+  let _fs = folder_selected_objs.length;
+  for (let f = 0; f<_fs; f++)
+  {
+    if (mi == folder_selected_objs[f] && mi != obj_cyc && mi != _all_lock_i) {gl.uniform4fv(colorUniformLocation, [0.60, 0.55, 1.0, 1.0]);}
+  }
+
+	if (_all_lock!=0) // Object modification color select
 	{
 		if (mi == obj_cyc || mi == _all_lock_i)
 		{
@@ -3152,7 +3160,7 @@ function updateZMap()
 
 function triMean(a, b, c)
 {
-    return new Float32Array([(a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3]);
+  return new Float32Array([(a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3]);
 }
 
 var triCtr_map = [];
@@ -4294,7 +4302,6 @@ function Compute(init_dat)
 				if (pointerOutsideWindow()[0])
 				{
 					select2dpoint(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
-
 				}
 			}
 
@@ -4308,15 +4315,11 @@ function Compute(init_dat)
 
 			//if ((key_map.rmb && mouseLock) || (key_map.lmb && !mouseLock)) {cursor_helper = 1;} else {cursor_helper = 0;}
 
-			if (key_map.lmb && mouseLock)
+			if (key_map.lmb && mouseLock) // Here where MENU CLOSED apply lpi
       {	
 				cursor_helper = 0;
-				_lp[0] = _inter[0];
-				_lp[1] = _inter[1];
-				_lp[2] = _inter[2];
-				_lp_world[0] = _inter_rnd[0];
-				_lp_world[1] = _inter_rnd[1];
-				_lp_world[2] = _inter_rnd[2];
+        setPoint(_lp, _inter);
+        setPoint(_lp_world, _inter_rnd);
 
         // here one time pass to ez connect resize tool
         if (!boundingBox.fpshook)
@@ -4400,9 +4403,7 @@ function Compute(init_dat)
 							if (paint_d > _settings[4].settings[1])
 							{
 								m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
-								_paint_track[0] = _inter[0];
-								_paint_track[1] = _inter[1];
-								_paint_track[2] = _inter[2];
+                setPoint(_paint_track, _inter);
 								paint_n++;
 							}
 						} else {mem_t_mov();}
@@ -4412,9 +4413,7 @@ function Compute(init_dat)
 						if (paint_d > _settings[4].settings[1])
 						{
 							m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
-							_paint_track[0] = _inter[0];
-							_paint_track[1] = _inter[1];
-							_paint_track[2] = _inter[2];
+              setPoint(_paint_track, _inter);
 						}
           break;
 				}
@@ -4434,9 +4433,7 @@ function Compute(init_dat)
         {
           let _p = rayInterMap[_rayLast];
           m_t_objs_loadPoint(_p);
-          _lp_world[0] = _p[0];
-          _lp_world[1] = _p[1];
-          _lp_world[2] = _p[2];
+          setPoint(_lp_world, _p);
           // console.log(rayInterMap[_rayLast]);
         }
         // obj_cyc = _tc;

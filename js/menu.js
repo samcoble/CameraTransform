@@ -326,6 +326,7 @@ function updateTree(par) // ------------------------ Update tree
 
   // append allows event listener creation. innerHTML is like text = text. not same. must query to be able to append
   _e.forEach(function(e) { _t.appendChild(e); });
+  folder_selected_objs = Array.from(obj_folders[folder_selected]); // I should make this call an after file load fn instead?
 }
 
 // the key here is query selector using direct parent ! lmao. Not good.
@@ -421,6 +422,7 @@ function makeTree(par) // output tree in the form of html structure
         {
           document.getElementById("tree_textIn").value = folder_names[_root[i][j]];
           folder_selected = _root[i][j];
+          folder_selected_objs = Array.from(obj_folders[_root[i][j]]);
           updateTree(par);
         }
       });
@@ -883,27 +885,27 @@ var key_bind_info =
   "Q(toggle menu & unlock mouse)",
   "M(measure line or linked obj)",
   "R(switch plane)",
+  "F(place point at cursor)",
+  "Z(undo last point placed)",
+  "E(make object from points)",
   "...",
   "W(move forward), S(move backwards)",
   "A(move left), D(move right)",
   "Space(up), B(down)",
   "Shift(speed up movement & deletion)",
   "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
+  "TAB(select obj by aiming at 3D center)",
   "...",
-  "[IN GAME] LMB(move 3D cursor to aim location)",
-  "[IN GAME] TAB(select obj by aiming at 3D center)",
-  "[IN MENU] LMB(select points in grid & obj & placed)",
-  "[IN MENU] RMB(select object)",
-  "[IN MENU] TAB(select by hovering over 3D center)",
-  "[IN MENU] Click to select object from list",
-  "[IN MENU] Scroll(object selection)",
+  "[MENU CLOSED] LMB(move 3D cursor to aim location)",
+  "...",
+  "[MENU OPEN] LMB(select points in grid & obj & placed)",
+  "[MENU OPEN] RMB(select object)",
+  "[MENU OPEN] Click to select object from list",
+  "[MENU OPEN] Scroll(object selection)",
   "Scroll+Shift(grid size) 2^n",
   "RMB(move cursor to near point in selected object)",
-  "MMB(show point indices & rotate camera from menu)",
+  "MMB(rotate camera from menu)",
   "G(send cursor to ground)",
-  "F(place point at cursor)",
-  "Z(undo last point placed)",
-  "E(make object from points)",
   "C(edit object -> converts to points)",
   "L(link objects -> select in sequence)",
   "I(join objects -> select in sequence) [BUGGY]",
@@ -2223,7 +2225,7 @@ makeElement(addDiv,
 makeElement(addCheckbox,
 {
   id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
-  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  rootStyle: rootStyle + cbx_myStyle,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   defaultChecked: false,
