@@ -4011,36 +4011,16 @@ function Compute(init_dat)
 	}
 
   // will have to look on my git to find history bring this back in to remove
-  if (_settings[5].settings[0] != grid_scale_d)
-  {
-    updateGrid();
-  } // Compute()
-
-  if(document.activeElement.type ==  "text")
-  {
-    flag_inText = 1;
-  } else {flag_inText = 0;}
-  
-	if (key_map.shift && key_map.r && runEvery(150))
-	{
-		rotateObject(0, _settings[7].settings[0], obj_cyc);
-	}
-
-	if (key_map["5"] && runEvery(150))
-	{
-		mirrorOverPlane();
-	}
-
-	if (key_map["6"] && runEvery(300)) {boundingBox.toggle();}
-
-	if (key_map.l && runEvery(300)) {link_obj(obj_cyc);}
-
-	if ((key_map.q || key_map.enter) && runEvery(220)) {pointerLockSwap();}
-
-	if (key_map["7"] && runEvery(300))
-	{
-		createCircleAtCursor();
-	}
+  if (_settings[5].settings[0] != grid_scale_d) { updateGrid(); }
+  if(document.activeElement.type ==  "text") { flag_inText = 1; } else {flag_inText = 0;}
+	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, _settings[7].settings[0], obj_cyc); }
+  if (key_map.shift && key_map.v && !trns_lock && runEvery(150)) { translateFolder.toggle(); }
+	if (key_map["5"] && runEvery(150)) { mirrorOverPlane(); }
+	if (key_map["6"] && runEvery(300)) { boundingBox.toggle(); }
+	if (key_map.l && runEvery(300)) { link_obj(obj_cyc); }
+	if ((key_map.q || key_map.enter) && runEvery(220)) { pointerLockSwap(); }
+	if (key_map["7"] && runEvery(300)) { createCircleAtCursor(); }
+	if (key_map.h && runEvery(200)) { setCursorToObjCenter(); }
 
 	// This needs a system wtf
 	if (trns_lock)
@@ -4057,43 +4037,30 @@ function Compute(init_dat)
 		}
 	}
 
-	if (key_map.h && runEvery(200))
-	{
-		setCursorToObjCenter();
-	}
-
 	// Delete obj by obj cycle & fix memory
 	if (!trns_lock)
 	{
 		if (key_map.shift) //320
-		{if (key_map.x && runEvery(320)) {del_obj(obj_cyc);}
+		{if (key_map.x && runEvery(320)) { del_obj(obj_cyc); }
 		} else if (key_map.x && !del_obj_lock)
-		{del_obj(obj_cyc); del_obj_lock = 1;}
-
-		if (key_map.c && runEvery(300)) {editSelectedObject();}
+		{ del_obj(obj_cyc); del_obj_lock = 1; }
+		if (key_map.c && runEvery(300)) { editSelectedObject(); }
 	}
 
-	if (key_map.x == false) {del_obj_lock = 0;}
-
-	if (key_map.e && runEvery(120)) {mem_t_mov(); key_map.e = false;} // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
-	
-	if (key_map.p && runEvery(350)) {downloadSaveFile();}
-
-	if (key_map.n && runEvery(500)) {playerChangeMovementMode();}
-	if (lock_vert_mov) {player_pos[1] = -hover_h;}
-	if (key_map.r && !key_map.shift && runEvery(150))
-  {
-    planeCycle();
-  }
-
-	if (key_map.i && runEvery(350)) {bond_obj(obj_cyc);}
+	if (key_map.x == false) { del_obj_lock = 0; }
+	if (key_map.e && runEvery(120)) { mem_t_mov(); key_map.e = false; } // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+	if (key_map.p && runEvery(350)) { downloadSaveFile(); }
+	if (key_map.n && runEvery(500)) { playerChangeMovementMode(); }
+	if (lock_vert_mov) {player_pos[1] = -hover_h; }
+	if (key_map.r && !key_map.shift && runEvery(150)) { planeCycle(); }
+	if (key_map.i && runEvery(350)) { bond_obj(obj_cyc); }
 
 	keyVec = [key_map.d-key_map.a, key_map.w-key_map.s];
 	if (keyVec[1] != 0)
 	{
 		player_pos[0] += Math.sin(-player_look_dir[0])*keyVec[1]*player_speed * -1*(1+key_map.shift*player_speed_mult); // -1 temp ig
 		player_pos[2] += Math.cos(-player_look_dir[0])*keyVec[1]*player_speed * -1*(1+key_map.shift*player_speed_mult);
-		if (!lock_vert_mov) {player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*player_speed * (1+key_map.shift*player_speed_mult);} // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
+		if (!lock_vert_mov) { player_pos[1] -= Math.sin(player_look_dir[1])*keyVec[1]*player_speed * (1+key_map.shift*player_speed_mult); } // Lmao one line for vertical travel w/ yaw(rads) from player_look_dir
 	}
 
 	if (keyVec[0] != 0)
@@ -4102,8 +4069,8 @@ function Compute(init_dat)
 		player_pos[2] += Math.sin(player_look_dir[0])*keyVec[0]*player_speed * (1+key_map.shift*player_speed_mult);
 	}
 
-	if (key_map[" "]) {player_pos[1] -= player_speed_vert * (1+key_map.shift*player_speed_mult);}  // r u 4? srs mane key_map[" "]
-	if (key_map.b) {player_pos[1] += player_speed_vert * (1+key_map.shift*player_speed_mult);}
+	if (key_map[" "]) { player_pos[1] -= player_speed_vert * (1+key_map.shift*player_speed_mult); }  // r u 4? srs mane key_map[" "]
+	if (key_map.b) { player_pos[1] += player_speed_vert * (1+key_map.shift*player_speed_mult); }
 	
 	if (key_map.control || key_map.alt || key_map.meta)
 	{
@@ -4335,7 +4302,7 @@ function Compute(init_dat)
         boundingBox.fpshook = 0;
       }
 
-			if (key_map.v && runEvery(150)) {trans_obj(obj_cyc);}
+			if (key_map.v && !translateFolder.active && runEvery(150)) {trans_obj(obj_cyc);}
 
 			if (key_map.t && obj_cyc>world_obj_count && runEvery(350)) // Fix this area needs to check obj_cyc or in fn
 			{
