@@ -2762,6 +2762,13 @@ function dupeFolderObjs()
   }
 }
 
+function measureLine()
+{
+  var _t_obj = splitObj(m_objs[obj_cyc]);
+  var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
+  console.log(_t_d);
+  _settings[5].settings[0] = _t_d;
+}
 
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
@@ -3597,7 +3604,7 @@ function drawLines()
   // Draw the lines for the last segment
   if (vertices.length > 0)
   {
-      drawSegment(vertices, -2);
+    drawSegment(vertices, -2);
   }
 
 
@@ -4432,22 +4439,13 @@ function Compute(init_dat)
 	if (key_map.f && runEvery(150)) {m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));}
 
 	// Return to ground
-	if (key_map.g && runEvery(200))
-	{
-		returnCursorToGround();
-	}
+	if (key_map.g && runEvery(200)) { returnCursorToGround(); }
 
 	// Teleport
-	if (key_map.y && runEvery(350)) {teleport_plr();}
+	if (key_map.y && runEvery(350)) { teleport_plr(); }
 
   // Measure line length
-	if (key_map.m && runEvery(200))
-	{
-		var _t_obj = splitObj(m_objs[obj_cyc]);
-		var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
-		console.log(_t_d);
-		_settings[5].settings[0] = _t_d;
-	}
+	if (key_map.m && runEvery(200)) { measureLine(); }
 
 	// Send array as easy to copy for float32array
 	if (key_map["/"] && runEvery(150))

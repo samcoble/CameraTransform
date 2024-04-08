@@ -14,8 +14,10 @@
 ______|___________________________________________________________________________________________________________
       |
       |
-      | - Line color change for objs in folder selected
-      | - Shift-V to move folder. Shift modifier for folder short cuts.
+      | - manually implement scroll boxes to circumvent the shitty looking browser scroll bars
+      | - dupe folder should also dupe inner folders. Oh god help.
+      | - fix opacity for line color change for objs in folder selected
+      | - shift modifier for folder short cuts
       | - twist applied along axis by a sum of rotation
       | - connecting multiple lines or lines of different sizes ??? EDGE CONNECT
       | - point modification system
@@ -24,6 +26,7 @@ ______|_________________________________________________________________________
       | - measure angle (F to confirm 3 points)
       | - m_t_objs mem temp objects needs to be shown in tree as purple entry if points > 0
       | - mode for all lines / some lines / no lines
+      | - paint still needs to be fixed so it doesn't continue a second line until key release
       |
       | - add C-s and C-o for files.
       | - need a temp 3d mem space for objects to be drawn as holos. color passed in for lines (keep simple?)
@@ -37,13 +40,11 @@ ______|_________________________________________________________________________
       | - nominal lumber list ( need geo name for line objs )
       | - more fn obj conversion (doing trns obj) (fn done now fix rest of code)
       |
-      |
       | - quat look at
       | - add an animated world (floating cubes?)
       | - animations/physics ticks must be parallelizable for GPU or bad performance in the end
       |
       | - obj select scroll in folder
-      |
       |
       | - multi select... ? already going via folder
       | -   so..
@@ -60,7 +61,7 @@ ______|_________________________________________________________________________
       | - ideally i use proper inverse to find mouse to world and I can use an offset/rounded lpi instead as well
       | - this help performance, reduce complexity, help clean up essentially.
       | -  
-      | - i realize now to draw wire frame you can ray trace each vertex and when veretex shows behind remove connected lines.
+      | - i realize now to draw wire frame you can ray trace each vertex and when vertex shows behind remove connected lines.
       | -  
       | - need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
       | -  
