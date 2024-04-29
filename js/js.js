@@ -1031,10 +1031,11 @@ function setTitle()
 
 // Could have used this for most of the simple code sooner
 function setPoint(a, b) { a[0]=b[0]; a[1]=b[1]; a[2]=b[2]; } // set a to b 
+function multPoint(a, b) { return [a[0]*b[0], a[1]*b[1], a[2]*b[2]]; }
 
-function dot4(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];}
-function dot(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];}
 function dot2(a,b) {return a[0]*b[0] + a[1]*b[1];}
+function dot(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];}
+function dot4(a,b) {return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];}
 
 function add2(a,b) {return [a[0]+b[0], a[1]+b[1]];}
 function add3(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];}
@@ -1044,14 +1045,14 @@ function sub2(a,b) {return [a[0]-b[0], a[1]-b[1]];}
 function sub3(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];}
 function sub(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];} // Must keep last 1 to make it easy to push. Keep in mind..
 
-function len3(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);}
+function len2fast(a) {return a[0]*a[0]+a[1]*a[1];} // no root needed for sorting
 function len2(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]);}
-function len2fast(a) {return a[0]*a[0]+a[1]*a[1];}
+function len3(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);} // the real norm function
 
-function scalew1(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
-function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s];} // Removed last 1 take note
-function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
 function scale2(a,s) {return [a[0]*s, a[1]*s];}
+function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
+function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s];} // Removed last 1 take note
+function scalew1(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
 
 function makeDir(_p)
 {
@@ -1059,7 +1060,7 @@ function makeDir(_p)
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
 }
 
-function norm(_p)
+function norm(_p) // this is not the correct norm lol... this converts vec to unit vec
 {
 	let _l = dot(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
@@ -1071,7 +1072,7 @@ function norm4(_p) // Quaternion
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
 }
 
-function lpi(p1,p2,pp,n)
+function lpi(p1,p2,pp,n) // line plane intersection from Ken Joy
 {
 	var d1 = dot(n,sub(p1,pp));
 	var d2 = dot(n,sub(p2,pp));
@@ -1128,7 +1129,6 @@ function runEveryPreview(_ms)
 
 function updateFPS()
 {
-
   let _dt = Date.now() - _date_now_fps;
   if (_dt > 250)
   {
@@ -1143,7 +1143,7 @@ function updateFPS()
 
 function checkNumber(n)
 {
-	if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;}
+	if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;} // regex aka swagex
 }
 
 function meanctr_obj(ar) // I think this work. I hope so.
@@ -2145,14 +2145,14 @@ var translateFolder =
         translateFolder.folder = Array.from(obj_folders[folder_selected]);
         translateFolder.obj = obj_cyc;
 
-        translateFolder.focus = 1;
+        // translateFolder.focus = 1;
         translateFolder.active = 1;
         translateFolder.runhook = 0;
         break;
 
       case 1:
         translateFolder.active = 0;
-        translateFolder.focus = 0;
+        // translateFolder.focus = 0;
         // Apply changes to obj clones
         let _s = translateFolder.folder.length;
         for (let i=0; i<_s; i++)
@@ -2199,7 +2199,7 @@ var rotateFolder =
     let _s = rotateFolder.folder.length;
     for (let i=0; i<_s; i++) // loop through folders
     {
-      rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i])
+      rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i]);
     }
   }
 };
@@ -2416,20 +2416,42 @@ function link_obj(_i)
 	}
 }
 
+// Rotate data direct
+function rotateObjectData(_dat, _rad)
+{
+  for (var i=0; i<_dat.length; i++)
+  {
+    // fix later
+    // rotation required moving back to origin
+    // and the axis to rotate about needs to be passed in, rot around arbitrary axis then? or simple xyz
 
+    _dat[i]
+    _to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
+  }
+}
+
+// _op is not good should receive points directly
 // Remove center option? nah keeps cursor in right place.
 // @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
-function rotateObject(_op, _r, _obj) // _op determines if rotation uses point or center, _r radians.
+function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, center, or pivot w/ _r radians.
 {
-	if (_obj>world_obj_count)
+  let rot_obj = (_op == 2) ? pivotAlign.obj : _obj;
+	if (rot_obj>world_obj_count)
 	{
-		var _to = splitObjS(m_objs[_obj]);
-		var _c = getctr_obj(_obj);
+    console.log(_op);
+    console.log(rot_obj);
+
+		var _to = splitObjS(m_objs[rot_obj]); // supa bad kode
+		var _c = getctr_obj(rot_obj);
 		var _rf = _r * pi/180;
 
 		// for now I use this. code is getting skrambled
-		if (wpn_select == 1) {_op = 1;}
-		if (!mouseLock) {_op = 0;}
+    if (_op < 2)
+    {
+      if (wpn_select == 1) {_op = 1;}
+      if (!mouseLock) {_op = 0;}
+    }
+
 
 		for (var i=0; i<_to.length; i++)
 		{
@@ -2444,6 +2466,10 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point or
 					case 1:
 						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
 						break;
+					case 2:
+						_to[i] = add3(pivotAlign.pivot, rot_x_pln(sub(_to[i], pivotAlign.pivot), _rf));
+            console.log("Rot applied");
+						break;
 					}
 					break;
 				case 1:
@@ -2454,6 +2480,10 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point or
 						break;
 					case 1:
 						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), _rf));
+						break;
+					case 2:
+						_to[i] = add3(pivotAlign.pivot, rot_y_pln(sub(_to[i], pivotAlign.pivot), _rf));
+            console.log("Rot applied");
 						break;
 					}
 					break;
@@ -2466,18 +2496,22 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point or
 					case 1:
 						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), _rf));
 						break;
+					case 2:
+						_to[i] = add3(pivotAlign.pivot, rot_z_pln(sub(_to[i], pivotAlign.pivot), _rf));
+            console.log("Rot applied");
+						break;
 					}
 					break;
 			}
 			if (i==_to.length-1)
 			{
-				for (var j=0; j<mem_log[_obj][2]; j++)
+				for (var j=0; j<mem_log[rot_obj][2]; j++)
 				{
-					m_objs[_obj][j*4+0] = _to[j][0];
-					m_objs[_obj][j*4+1] = _to[j][1];
-					m_objs[_obj][j*4+2] = _to[j][2];
+					m_objs[rot_obj][j*4+0] = _to[j][0];
+					m_objs[rot_obj][j*4+1] = _to[j][1];
+					m_objs[rot_obj][j*4+2] = _to[j][2];
 				}
-        arScale(m_objs_ghost[_obj], m_objs[_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+        arScale(m_objs_ghost[rot_obj], m_objs[rot_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 			}
 		}
 	}
@@ -3919,12 +3953,99 @@ var boundingBox =
 
 functionRunList.push(boundingBox);
 
+// must use 4 points or the direction of the object will be unknown
+// i can't recall the purpose of focus but it will be required if this is dynamic
+// this is difficult without simply using the quat functions so ig review quat fns
+// for now i publish this theory fn
+
+// to finish rotate the obj dir vec and check angle. do for both. use smallest.
+var pivotAlign =
+{
+  obj: 0,
+  active: 0,
+  focus: 0,
+  enable: 0,
+  pivot: [0,0,0], // first point capture w/ key (f)
+  p0: [0,0,0],
+  p1: [0,0,0], // p1 & p2 make the second reference line
+  p2: [0,0,0],
+  pn: 0, // track what point has been logged
+  toggle: function ()
+  {
+    switch(pivotAlign.enable)
+    {
+      case 0:
+        if (obj_cyc <= world_obj_count) {break;}
+        pivotAlign.enable = 1;
+        pivotAlign.focus = 1;
+        pivotAlign.obj = obj_cyc;
+        // console.log("Pivot enable"); // useful for log box later
+        break;
+      case 1:
+        pivotAlign.focus = 0;
+        pivotAlign.enable = 0;
+        pivotAlign.obj = 0;
+        // console.log("Pivot disable"); // useful for log box later
+        break;
+    }
+  },
+  align: function ()
+  {
+    let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc]; // remove corresponding axis
+    let _l1 = multPoint(sub(pivotAlign.p0, pivotAlign.pivot), _plane);
+    let _l2 = multPoint(sub(pivotAlign.p2, pivotAlign.p1), _plane);
+    let _rad = -Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ); // so the sign is the real problemo w/ no quats
+
+    // console.log(_rad);
+
+    // need to make a function to rotate object data directly
+    rotateObject(2, _rad*180/pi, rotateObject.obj);
+  },
+  logPoint: function ()
+  {
+    switch(pivotAlign.pn)
+    {
+      case 0:
+        setPoint(pivotAlign.pivot, _lp_world);
+        pivotAlign.pn++;
+        // console.log("Poi1");
+        break;
+      case 1:
+        setPoint(pivotAlign.p0, _lp_world);
+        pivotAlign.pn++;
+        // console.log("Poi2");
+        break;
+      case 2:
+        setPoint(pivotAlign.p1, _lp_world);
+        pivotAlign.pn++;
+        // console.log("Poi3");
+        break;
+      case 3:
+        setPoint(pivotAlign.p2, _lp_world);
+        // console.log("Poi4");
+        pivotAlign.align();
+        pivotAlign.pn = 0;
+        if (pivotAlign.enable) {pivotAlign.toggle();} // terminate after 4 points
+        // some code as finish
+        break;
+    }
+    // boundingBox.focus = 1;
+  },
+  run: function ()
+  {
+    // applies position/translation w/ ghost
+    // apply visual guides here
+  }
+}
+
+functionRunList.push(pivotAlign);
+
 
 // scale a unit cube to the size of min/max
 // really 6 pieces of information
 // min & max of each axis so 3*2 querys
 // while itor over w/ 4*i take min/max as two loops or do both for each axis at the same time.
-		
+
 function getMinMaxPairs(ar)
 {
   if (typeof ar != "undefined")
@@ -3958,7 +4079,6 @@ var _preview_obj;
 
 function updateRefLog()
 {
-
 	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]));
 	_preview_ctr = meanctr_obj(m_objs[obj_cyc]);
 	_preview_obj = new Float32Array(m_objs[obj_cyc].length);
@@ -3999,7 +4119,7 @@ function Compute(init_dat)
     if (functionRunList[p].enable) {_run_check = true;}
   }
   flag_objModif = _run_check;
-
+  
   // if (key_map.j && runEvery(50))
   // {
   //   let _np = rot_y_pln(sub3(player_pos, _lp_world), 0.05);
@@ -4009,13 +4129,15 @@ function Compute(init_dat)
   // This needs to be replaced with menu script providing multiple callback functions.
   // Shared and specific callback functions need differentiation
 
-	if (obj_cyc != obj_cyc_i)
+	if (obj_cyc != obj_cyc_i) // I think this is what updates the tree upon selection change ???
 	{
 		updateList(objListConst(), "list_objectSelect");
     updateTree(tree_allObjects);
     updateRefLog();
 		obj_cyc_i = obj_cyc;
 	}
+
+  if (key_map.f && pivotAlign.enable && runEvery(150)) {pivotAlign.logPoint();} // this hard coded poop needs system
 
   // will have to look on my git to find history bring this back in to remove
   if (_settings[5].settings[0] != grid_scale_d) { updateGrid(); }
@@ -4436,7 +4558,10 @@ function Compute(init_dat)
 
 
 	// Place point
-	if (key_map.f && runEvery(150)) {m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));}
+  if (key_map.f && !flag_objModif && runEvery(150)) // no longer allow during any runtime function
+  {
+    m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));
+  }
 
 	// Return to ground
 	if (key_map.g && runEvery(200)) { returnCursorToGround(); }

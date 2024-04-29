@@ -910,6 +910,7 @@ var key_bind_info =
   "C(edit object -> converts to points)",
   "L(link objects -> select in sequence)",
   "I(join objects -> select in sequence) [BUGGY]",
+  "Pivot Align enable -> logs selected obj -> use F key to mark 4 points -> V2-V1 & V2-V1 -> aligns first vector to second",
   "...",
   "N(LOCK movement planar)",
   "[PLANAR LOCK] Scroll(vertical movement)",
@@ -1617,9 +1618,18 @@ makeElement(addButton,
 
 makeElement(addButton,
 {
+  text: "Pivot Align \u15D2",
+  id: "tool_pivotAlign", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  hoverStyles: _btn_hover_tool,
+  callback: pivotAlign.toggle
+});
+
+makeElement(addButton,
+{
   text: "Resize Object \u2922",
   id: "tool_resizeObject", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: boundingBox.toggle
 });
@@ -1628,7 +1638,7 @@ makeElement(addButton,
 {
   text: "Mirror / Plane \u2346",
   id: "tool_mirrorOverPlane", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mirrorOverPlane
 });
@@ -1637,7 +1647,7 @@ makeElement(addButton,
 {
   text: "Apply Rotation \u2B6E",
   id: "tool_applyRotation", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: applyRotation
 });
@@ -1646,7 +1656,7 @@ makeElement(addButton,
 {
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1655,7 +1665,7 @@ makeElement(addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1664,7 +1674,7 @@ makeElement(addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1673,16 +1683,25 @@ makeElement(addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
 
 makeElement(addButton,
 {
+  text: `Save World \u213B`,
+  id: "tool_saveWorld", cls: "_btn", prnt: "detail_box_circleSettings",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  hoverStyles: _btn_hover_tool,
+  callback: downloadSaveFile
+});
+
+makeElement(addButton,
+{
   text: "Delete Object \u2421",
   id: "tool_delObj", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
 });
@@ -1691,28 +1710,19 @@ makeElement(addButton,
 {
   text: `\u05D0 Clear World \u05D0`,
   id: "tool_clearWorld", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: del_world
 });
 
-makeElement(addButton,
-{
-  text: `Close Menu`,
-  id: "tool_closeMenu", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
-  hoverStyles: _btn_hover_tool,
-  callback: pointerLockSwap 
-});
-
-makeElement(addButton,
-{
-  text: `Save World`,
-  id: "tool_saveWorld", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
-  hoverStyles: _btn_hover_tool,
-  callback: downloadSaveFile
-});
+// makeElement(addButton,
+// {
+//   text: `Close Menu`,
+//   id: "tool_closeMenu", cls: "_btn", prnt: "detail_box_circleSettings",
+//   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+//   hoverStyles: _btn_hover_tool,
+//   callback: pointerLockSwap 
+// });
 
 // new tool location
 
