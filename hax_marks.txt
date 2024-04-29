@@ -1,0 +1,13 @@
+{ {
+    marks = { 1041, 1378, 1414, 2003, 2179, 2197, 2421, 2449, 2598, 2923, 3342, 3803, 3999, 4049, 4088, 4262, 4443 },
+    names = { "Math Functions", "// #DATAFNS", "function Compute(init_dat)", "select2dpoint", "Translate Folder", "var rotateFolder =", "Rotate Direct", "Rotate Object", "#MENUFNS", "TRILINEDOT Colors", "if ( // drawLines()", "Bounding box", "Pivot Align", "// This needs a system wtf", "Compute", "// New attempt w/ quaternions", "// Measure line length" },
+    path = "C:\\Users\\samco\\Desktop\\Engine v1\\js\\js.js"
+  }, {
+    marks = { 423, 1368, 1386, 1407, 1702 },
+    names = { "folder_selected = _root[i][j];", "makeElement(addButton,", "makeElement(addButton,", "var detail_menu_box =", "new tool location" },
+    path = "C:\\Users\\samco\\Desktop\\Engine v1\\js\\menu.js"
+  }, {
+    marks = { 15 },
+    names = { "TODO" },
+    path = "C:\\Users\\samco\\Desktop\\Engine v1\\todo.txt"
+  } }
