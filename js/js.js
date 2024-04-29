@@ -2417,6 +2417,7 @@ function link_obj(_i)
 }
 
 // Rotate data direct
+/*
 function rotateObjectData(_dat, _rad)
 {
   for (var i=0; i<_dat.length; i++)
@@ -2429,6 +2430,7 @@ function rotateObjectData(_dat, _rad)
     _to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
   }
 }
+*/
 
 // _op is not good should receive points directly
 // Remove center option? nah keeps cursor in right place.
