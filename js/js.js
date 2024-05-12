@@ -26,16 +26,21 @@ var _preview_scaler;
 var _s_ratio;
 var cursor_helper = 0;
 var flag_loadingObject = 0;
+var flag_loadTemp = 0;
 var flag_inText = 0;
 var functionRunList = [];
 var flag_objModif = false;
+var e_log = [];
 
 var obj_folders = [],
+    obj_last = 0, // last obj created id
     folder_names = [],
-    folder_parents = [-1, 0, 0, -1], // -1 is no parent
-    folder_toggle = [1, 0, 0, 1],
+    folder_parents = [-1, 0, 0, 0, -1], // -1 is no parent
+    folder_toggle = [0, 0, 0, 0, 1],
     folder_selected_objs = [],
-    folder_selected = 3; // Default folder
+    folder_selected = 4, // default folder
+    folder_cwd = 4, // default folder
+    folder_last= 0; // last used
 
 var keyVec = [],
     lookToggle = 0,
@@ -95,7 +100,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [400, 720],
+var menu_q_size = [280, 780],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
@@ -304,6 +309,7 @@ const handleTouchEnd = () =>
   // window.onload = requestFullscreen();
 }
 
+
 // function requestFullscreen()
 // {
 //   const elem = document.documentElement;
@@ -327,6 +333,12 @@ onmousemove = function(e)
 	if (player_look_dir[0] > pi) [player_look_dir[0] = -pi]; // This is kinda wack need to refactor entire system for this
 	if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
 }
+
+function eLog(_id, _f, _i) // i
+{ e_log.push([_id, _f, _i]); }
+
+// Folder functions
+// bad naming schema : (
 
 function isAlphaNumeric(c)
 {
@@ -373,12 +385,10 @@ function namesToArrays(n)
 folder_names.push("World Objects");
 folder_names.push("Planes");
 folder_names.push("Indicator");
+folder_names.push("Temporary");
 folder_names.push("Objects");
 
-obj_folders.push([]);
-obj_folders.push([]);
-obj_folders.push([]);
-obj_folders.push([]);
+for (let i=0; i<5; i++) { obj_folders.push([]); } // loop 5x
 
 // 58 & 1:28:00
 // tau 9
@@ -491,7 +501,7 @@ function getFolders(_i, _d) // folder _i -> every subfolder's index, _d -> retur
 
 function delFolder(_i)
 {
-  if (_i<4) {return false;}
+  if (_i<=folder_cwd) {return false;} // do not allow default folder deletion
 
   // get folders at ring 0
   let _f = getFolders(_i, 0)[0];
@@ -503,11 +513,11 @@ function delFolder(_i)
     folder_parents[_f[i]] = -1;
   }
 
-  // move folder content to user working dir obj_folders[3]
+  // move folder content to user working dir
   _s = obj_folders[_i].length;
   for (let i=0; i<_s; i++)
   {
-    obj_folders[(folder_parents[folder_selected]==-1) ? 3 : folder_parents[folder_selected]].push(obj_folders[_i][i]);
+    obj_folders[(folder_parents[folder_selected]==-1) ? folder_cwd : folder_parents[folder_selected]].push(obj_folders[_i][i]);
   }
 
   folder_parents.splice(_i, 1);
@@ -526,7 +536,7 @@ function delFolder(_i)
   obj_folders.splice(_i, 1);
   folder_names.splice(_i, 1);
   folder_toggle.splice(_i, 1);
-  folder_selected = 3;
+  folder_selected = folder_cwd;
   updateTree(tree_allObjects);
 }
 
@@ -566,9 +576,8 @@ function inFolder(_k, _i) // check if folder _i is 'inside' folder _k
 // set parent function attach to drag and drop.
 function folderSetParent(_i, _k) // folder _i parent -> folder _k
 {
-  // not allowing use of default folders to store folders
-  // prevent change of parent of default folders here
-  if (_i<4 || _k<4) {return false;}
+  // prevent change of parent of default folders here - not allowing use of default folders to store folders
+  if (_i<=folder_cwd || _k<=folder_cwd) {return false;}
 
   if (!inFolder(_k, _i) && _k != _i)
   {
@@ -637,7 +646,7 @@ function makeSave()
       _t = [],
       _o = [],
       _s,
-      _c = 4; // default folder count
+      _c = 5; // default folder count
 
   // folder toggle
   _s = folder_toggle.length;
@@ -786,7 +795,7 @@ function loadFile0(_fi)
           let _s4 = _s3.length;
           for (let j=0; j<_s4; j++)
           {
-            obj_folders[3].push( _s3[j] );
+            obj_folders[folder_cwd].push( _s3[j] );
           }
         } else
         {
@@ -1410,17 +1419,19 @@ function m_objs_loadPoints(ar) // Adds objects
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 16) {_fp = 2;}
-  if (m_objs.length > 16)
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 16) {_fp = 2;} // I think this is the default objs?
+
+  if (m_objs.length > 16) // all none default objs?
   {
-    _fp = (folder_selected < 4) ? 3 : folder_selected;
+    _fp = (folder_selected <= folder_cwd) ? folder_cwd : folder_selected;
   }
 
-  if (flag_loadingObject == 0)
+  if (flag_loadTemp) {_fp = 3; flag_loadTemp = 0;} // swap to temp obj folder if flagged
+  if (flag_loadingObject == 0) // I don't even know anymore
   {
-    obj_folders[_fp].push(m_objs.length-1);
+    obj_folders[_fp].push(m_objs.length-1); // must be obj id
   }
-
+  folder_last = _fp; obj_last = (m_objs.length-1);
 
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
@@ -1945,7 +1956,8 @@ function del_obj(_i)
 function updateLook() // Quat view rot
 {
   _viewq = [makeQuaternion(-player_look_dir[1], [1,0,0]),
-        makeQuaternion(-player_look_dir[0], [0,1,0])];
+            makeQuaternion(-player_look_dir[0], [0,1,0])];
+
   f_look = quatRot( [0,0,1], _viewq );
 
   _oh = dot(player_pos,[0,1,0,1]);
@@ -2131,7 +2143,7 @@ var translateFolder =
   folder: Object,
   toggle: function ()
   {
-    if (folder_selected < 3) {return;}
+    if (folder_selected < folder_cwd) {return;}
     switch(translateFolder.active)
     {
       case 0:
@@ -2193,7 +2205,7 @@ var rotateFolder =
   folder: Object,
   run: function ()
   {
-    if (folder_selected < 3) {return;}
+    if (folder_selected < folder_cwd) {return;}
     rotateFolder.folder = Array.from(obj_folders[folder_selected]);
 
     let _s = rotateFolder.folder.length;
@@ -2634,11 +2646,11 @@ function del_world()
   for (let i = functionRunList.length-1; i>=0; i--)
   { if (functionRunList[i].enable) {functionRunList[i].toggle();} }
 
-  folder_selected = 3;
-  obj_folders[3].length = 0;
+  folder_selected = folder_cwd;
+  obj_folders[folder_cwd].length = 0;
   mem_sum = 7408;
 
-  let _c = 4;
+  let _c = folder_cwd+1; //let _c = 4;
   folder_parents.splice(_c);
   folder_toggle.splice(_c);
   folder_names.splice(_c);
@@ -2745,7 +2757,7 @@ function moveObject()
 
 function deleteFolderObjs()
 {
-  if (folder_selected < 3) {return;}
+  if (folder_selected < folder_cwd) {return;}
   const _folder = Array.from(obj_folders[folder_selected]);
   const _ti = Date.now();
   _folder.sort((a, b) => b - a);
@@ -2772,7 +2784,7 @@ function deleteFolderObjs()
 
 function dupeFolderObjs()
 {
-  if (folder_selected < 3) {return;}
+  if (folder_selected < folder_cwd) {return;}
   const _folder = Array.from(obj_folders[folder_selected]);
   const _ti = Date.now();
   const _delay = 30;
@@ -3625,7 +3637,7 @@ function drawLines()
 
     _np = rot_x_pln(_tp, 0.2);
     _np = rot_z_pln(_np, 0.2);
-    _np = rot_y_pln(_np, 0.001*Date.now()%10000);
+    _np = rot_y_pln(_np, 0.0006*Date.now()%10000);
 
     _np[0] = _np[0];
     _np[1] = in_win_wh * _np[1];
@@ -3958,12 +3970,13 @@ functionRunList.push(boundingBox);
 // must use 4 points or the direction of the object will be unknown
 // i can't recall the purpose of focus but it will be required if this is dynamic
 // this is difficult without simply using the quat functions so ig review quat fns
-// for now i publish this theory fn
+// for now i publish this theory fn - very bad unfinished
 
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
   obj: 0,
+  e_id: 'pivotAlign',
   active: 0,
   focus: 0,
   enable: 0,
@@ -3993,10 +4006,10 @@ var pivotAlign =
   },
   align: function ()
   {
-    let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc]; // remove corresponding axis
-    let _l1 = multPoint(sub(pivotAlign.p0, pivotAlign.pivot), _plane);
-    let _l2 = multPoint(sub(pivotAlign.p2, pivotAlign.p1), _plane);
-    let _rad = -Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ); // so the sign is the real problemo w/ no quats
+    let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc], // remove corresponding axis
+        _l1 = multPoint(sub(pivotAlign.p0, pivotAlign.pivot), _plane),
+        _l2 = multPoint(sub(pivotAlign.p2, pivotAlign.p1), _plane),
+        _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ); // so the sign is the real problemo w/ no quats
 
     // console.log(_rad);
 
@@ -4005,30 +4018,41 @@ var pivotAlign =
   },
   logPoint: function ()
   {
+    let _tv = [], lw = [];
     switch(pivotAlign.pn)
     {
       case 0:
         setPoint(pivotAlign.pivot, _lp_world);
         pivotAlign.pn++;
-        // console.log("Poi1");
+
         break;
       case 1:
+        flag_loadTemp = 1; // flag to send temp
+        _tv = pivotAlign.pivot; _tw = _lp_world; // simple format
+        // m_objs_loadPoints(new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]));
+        // eLog(pivotAlign.e_id, folder_last, obj_last);
+
         setPoint(pivotAlign.p0, _lp_world);
         pivotAlign.pn++;
-        // console.log("Poi2");
+
         break;
       case 2:
         setPoint(pivotAlign.p1, _lp_world);
         pivotAlign.pn++;
-        // console.log("Poi3");
+
         break;
       case 3:
+        flag_loadTemp = 1;
+        _tv = pivotAlign.p1; _tw = _lp_world; // simple format
+        // m_objs_loadPoints(new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]));
+        // eLog(pivotAlign.e_id, folder_last, obj_last);
+
         setPoint(pivotAlign.p2, _lp_world);
-        // console.log("Poi4");
         pivotAlign.align();
         pivotAlign.pn = 0;
         if (pivotAlign.enable) {pivotAlign.toggle();} // terminate after 4 points
         // some code as finish
+
         break;
     }
     // boundingBox.focus = 1;

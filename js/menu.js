@@ -53,10 +53,10 @@ function applyStyles(element, par)
   */
   if (par.rootStyle && par.rootStyle.trim() !== "")
   {
-      const _temp_str = `#${element.id} {${par.rootStyle}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `#${element.id} {${par.rootStyle}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }
 
   /*
@@ -69,10 +69,10 @@ function applyStyles(element, par)
   */
   if (par.hoverStyles && par.hoverStyles.trim() !== "")
   {
-      const _temp_str = `#${element.id}:hover {${par.hoverStyles}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `#${element.id}:hover {${par.hoverStyles}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }
 
   //input[type="text"]:hover
@@ -87,10 +87,10 @@ function applyStyles(element, par)
   */
   if (par.clickStyles && par.clickStyles.trim() !== "") // I think supposed to be click not checked
   {
-      const _temp_str = `#${element.id}:checked {${par.clickStyles}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `#${element.id}:checked {${par.clickStyles}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }
 
   /*
@@ -103,10 +103,10 @@ function applyStyles(element, par)
   */
   if ((par.checkedStyles && par.checkedStyles.trim() !== "") && (element.type === "checkbox"))
   {
-      const _temp_str = `#${element.id}:checked {${par.checkedStyles}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `#${element.id}:checked {${par.checkedStyles}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }
 
   /*
@@ -119,10 +119,10 @@ function applyStyles(element, par)
   */
   if (par.liStyles && par.liStyles.trim() !== "")
   {
-      const _temp_str = `.${element.id+"_li"} {${par.liStyles}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `.${element.id+"_li"} {${par.liStyles}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }    
 
   /*
@@ -135,10 +135,10 @@ function applyStyles(element, par)
   */
   if (par.myUlStyle && par.myUlStyle.trim() !== "")
   {
-      const _temp_str = `.${element.className+"_ul"} {${par.myUlStyle}}`;
-      const styleElement = document.createElement('style');
-      styleElement.textContent = _temp_str;
-      document.head.appendChild(styleElement);
+    const _temp_str = `.${element.className+"_ul"} {${par.myUlStyle}}`;
+    const styleElement = document.createElement('style');
+    styleElement.textContent = _temp_str;
+    document.head.appendChild(styleElement);
   }
 }
 
@@ -294,6 +294,7 @@ var _attr_fi = 'data-folderIndex';
 var _attr_t = 'data-type';
 var _attr_k = 'data-k';
 
+// should just be taking advantage of opacity here with light and dark overlays instead of color specific
 
 const tree_colors =
 [
@@ -303,8 +304,7 @@ const tree_colors =
   "rgba(60, 101, 115, 1)",
   "rgba(94, 66, 55, 1)"
 ];
-// 69, 43, 72
-  // "rgba(46, 66, 39, 1)",
+
 const tree_colors_d =
 [
   "rgba(55, 39, 57, 1)",
@@ -313,6 +313,16 @@ const tree_colors_d =
   "rgba(42, 71, 80, 1)",
   "rgba(65, 46, 38, 1)"
 ];
+
+const tree_colors_l =
+[
+  "rgba(117, 97, 118, 1)",
+  "rgba(100, 88, 143, 1)",
+  "rgba(101, 121, 87, 1)",
+  "rgba(103, 130, 144, 1)",
+  "rgba(131, 106, 97, 1)"
+];
+
 
 function updateTree(par) // ------------------------ Update tree
 {
@@ -359,9 +369,21 @@ function makeTree(par) // output tree in the form of html structure
       _ul.style.textShadow = '0px 0px 3px #111';
 
       // simple math to generate folder border width
-      let _pxl = (_s-i+1)*2+3;
-      let _c = _pxl+'px solid ' + tree_colors_d[(_root[i][j]+1)%tree_colors_d.length];
+      let _pxl = (_s-i+1)*2+3; // need fix
+
+      let _c; // color constructed
+      _c = _pxl+'px solid ' + tree_colors_d[(_root[i][j]+1)%tree_colors_d.length]; // where dark tree col set
+
+      let _obj_count = obj_folders[_root[i][j]].length;
+      for (let p=0; p<_obj_count; p++) // there's a lot of ways to do this: real issue is checking every folder now for no rason
+      {
+        if (obj_folders[_root[i][j]][p] == obj_cyc)
+        {
+          _c = _pxl+'px solid ' + tree_colors_l[(_root[i][j]+1)%tree_colors_d.length]; // where light tree col set
+        }
+      }
       _ul.style.borderRight = _c;
+
 
       if (i==0)
       {_ul.style.borderRadius = '0px '+_s_radius+'px '+_s_radius+'px 0px';}
@@ -397,12 +419,13 @@ function makeTree(par) // output tree in the form of html structure
         _li_fld.style.borderRadius = _s_radius+'px 0px 0px 0px';
       }
 
-      if (folder_selected == _root[i][j] && folder_selected > 2)
+      if (folder_selected == _root[i][j] && folder_selected > (folder_cwd-1)) // ????????????????????????????????????
       {
-        _li_fld.style.borderLeft = "6px solid rgba(180,180,180,0.4)";
+        _li_fld.style.borderLeft = "6px solid rgba(180,180,180,0.5)";
+        // _li_fld.style.boxShadow = "inset 6px -3px 14px -7px rgba(255, 255, 255, 0.6)";
       }
 
-      if (folder_selected < 3 && _root[i][j] == 3)
+      if (folder_selected < folder_cwd && _root[i][j] == folder_cwd)
       {
         _li_fld.style.borderLeft = "6px solid rgba(180,180,180,0.4)";
       }
@@ -475,11 +498,12 @@ function makeTree(par) // output tree in the form of html structure
           }
         }
 
-        if (draggedElement.getAttribute(_attr_t) == 2) // of type obj
+        if (draggedElement.getAttribute(_attr_t) == 2 && event.target.getAttribute(_attr_fi) >= folder_cwd) // of type obj
         {
           if (event.target != draggedElement) // not dropping on self
           {
             moveK(draggedElement.getAttribute(_attr_fi), draggedElement.getAttribute(_attr_k), event.target.getAttribute(_attr_fi));
+            console.log(event.target.getAttribute(_attr_fi));
             updateTree(par);
           }
         }
@@ -1492,6 +1516,7 @@ var _btn_hover_tool =
 background-color: rgb(38, 38, 39);
 box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
 `;
+
 // background-color: rgb(17, 17, 18);
 makeElement(addDiv,
 {
@@ -2422,11 +2447,11 @@ position: absolute;
 left: 12px;
 top: 12px;
 width: 400px;
-height: 90px;
+height: 80px;
 border-radius: 3px;
-border: 1px solid rgb(44,44,44);
+border: 1px solid rgb(34,34,34);
 color: #DDD;
-padding: 12px;
+padding: 10px 12px 12px 12px;
 ` + _btn_col1;
 
 var menu_status_style_l =
@@ -2450,8 +2475,8 @@ var menu_status_style_l0 =
 `
 width: 100%;
 height: 23%;
-padding: 1px 0px 0px 1px;
-margin: 0px 0px 1px 0px;
+padding: 0px 0px 0px 1px;
+margin: 0px 0px 2px 0px;
 background: none;
 `;
 
@@ -2490,7 +2515,7 @@ var menu_status_style_r2 =
 padding: 0px 0px 0px 12px;
 width: 100%;
 height: 26px;
-margin: 6px 0px 0px 0px;
+margin: 7px 0px 0px 0px;
 border: 1px solid rgb(44,44,44);
 border-left: none;
 border-radius: 0px 3px 3px 0px;
@@ -2504,6 +2529,8 @@ width: 300px;
 position: relative;
 left: -187px;
 `;
+
+var _menu_status_text_col = ` color: #AAA; `;
 
 makeElement(addDiv,
 {
@@ -2521,13 +2548,13 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "menu_status_l0", cls: "", prnt: "menu_status_l",
-  rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+  rootStyle: rootStyle + menu_status_style_l0 + _textLeft + _menu_status_text_col
 });
 
 makeElement(addDiv,
 {
   id: "menu_status_l1", cls: "", prnt: "menu_status_l",
-  rootStyle: rootStyle + menu_status_style_l0 + _textLeft
+  rootStyle: rootStyle + menu_status_style_l0 + _textLeft + _menu_status_text_col
 });
 
 /*
@@ -2543,7 +2570,7 @@ makeElement(addFileInput,
 {
   id: "menu_status_l2", cls: "", prnt: "menu_status_l",
   text: "Open file",
-  rootStyle: rootStyle + menu_status_style_l2,
+  rootStyle: rootStyle + menu_status_style_l2 + _menu_status_text_col,
   callback: loadSelect
 });
 
@@ -2564,13 +2591,13 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "menu_status_r0", cls: "", prnt: "menu_status_r",
-  rootStyle: rootStyle + menu_status_style_l0 + _textRight
+  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _menu_status_text_col
 });
 
 makeElement(addDiv,
 {
   id: "menu_status_r1", cls: "", prnt: "menu_status_r",
-  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _textScaleFix
+  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _textScaleFix + _menu_status_text_col
 });
 
 makeElement(addDiv,
