@@ -337,13 +337,34 @@ onmousemove = function(e)
 function eLog(_id, _f, _i) // i
 { e_log.push([_id, _f, _i]); }
 
+function eLogClear(_id) // remove all entries with matching _id
+{
+  let _new_log = [];
+  let _ls = e_log.length; // loop size
+
+  if (_ls> 0) // nothing if nothing
+  {
+    for (var _q=_ls - 1; _q >= 0; _q--) // loop -> e_log
+    {
+      if (e_log[_q][0] != _id)
+      { _new_log.push(e_log[_q]); } else { del_obj(e_log[_q][2]); }
+    }
+  }
+
+  e_log.length = 0;
+  _ls = _new_log.length;
+
+  if (_new_log.length > 0)
+  {
+    for (var _q=_ls - 1; _q >= 0; _q--) // loop -> _new_log
+    { e_log.push(_new_log[_q]); }
+  }
+}
+
 // Folder functions
 // bad naming schema : (
 
-function isAlphaNumeric(c)
-{
-  return /^[a-zA-Z0-9\s.]$/.test(c);
-}
+function isAlphaNumeric(c) { return /^[a-zA-Z0-9\s.]$/.test(c); }
 
 // make fn to convert string to Float32Array
 function stringToFloat32Array(s)
@@ -2452,8 +2473,8 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
   let rot_obj = (_op == 2) ? pivotAlign.obj : _obj;
 	if (rot_obj>world_obj_count)
 	{
-    console.log(_op);
-    console.log(rot_obj);
+    // console.log(_op);
+    // console.log(rot_obj);
 
 		var _to = splitObjS(m_objs[rot_obj]); // supa bad kode
 		var _c = getctr_obj(rot_obj);
@@ -2466,6 +2487,7 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
       if (!mouseLock) {_op = 0;}
     }
 
+    // SOOOOOOOO BAD FIX
 
 		for (var i=0; i<_to.length; i++)
 		{
@@ -2482,7 +2504,6 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 						break;
 					case 2:
 						_to[i] = add3(pivotAlign.pivot, rot_x_pln(sub(_to[i], pivotAlign.pivot), _rf));
-            console.log("Rot applied");
 						break;
 					}
 					break;
@@ -2497,7 +2518,6 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 						break;
 					case 2:
 						_to[i] = add3(pivotAlign.pivot, rot_y_pln(sub(_to[i], pivotAlign.pivot), _rf));
-            console.log("Rot applied");
 						break;
 					}
 					break;
@@ -2512,7 +2532,6 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 						break;
 					case 2:
 						_to[i] = add3(pivotAlign.pivot, rot_z_pln(sub(_to[i], pivotAlign.pivot), _rf));
-            console.log("Rot applied");
 						break;
 					}
 					break;
@@ -3006,7 +3025,7 @@ function drawSegment(vertices, mi)
 	{
 	    if (mi == obj_cyc && mi > world_obj_count) //
 	    {
-	    	gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 1.0]);
+	    	gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 1.0]); // set color yellow line
 	    } else
 	    {
           switch(_settings[1].settings[2])
@@ -3034,11 +3053,18 @@ function drawSegment(vertices, mi)
 		}
 	}
 
+  // here set color of selected objects (probably slow)
   let _fs = folder_selected_objs.length;
   for (let f = 0; f<_fs; f++)
-  {
-    if (mi == folder_selected_objs[f] && mi != obj_cyc && mi != _all_lock_i) {gl.uniform4fv(colorUniformLocation, [0.60, 0.55, 1.0, 1.0]);}
-  }
+  { if (mi == folder_selected_objs[f] && mi != obj_cyc && mi != _all_lock_i) {gl.uniform4fv(colorUniformLocation, [0.60, 0.55, 1.0, 1.0]);} }
+
+  // here set color of pivot align vectors
+  let _ft = obj_folders[3].length;
+  for (let f = 0; f<_ft; f++)
+  { if (mi == obj_folders[3][f]) {gl.uniform4fv(colorUniformLocation, [0.90, 0.33, 0.33, 1.0]);} }
+
+  // set pivoting obj color
+  if (mi == pivotAlign.obj) { gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 0.6]); }
 
 	if (_all_lock!=0) // Object modification color select
 	{
@@ -3714,7 +3740,14 @@ function drawLines()
 function drawIt()
 {
 	Compute(m1);
-	updateDrawMap([obj_cyc,12,15,3,4,5]);
+
+  let _dm = [obj_cyc,12,15,3,4,5]; // static entries
+
+  let _l = obj_folders[3].length; // get len
+  for (var i=0; i<_l; i++) // loop through all temp objs and add to drap map _dm
+  { _dm.push(obj_folders[3][i]); }
+
+	updateDrawMap(_dm);
 
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT);	
@@ -3973,6 +4006,13 @@ functionRunList.push(boundingBox);
 // this is difficult without simply using the quat functions so ig review quat fns
 // for now i publish this theory fn - very bad unfinished
 
+function loadTempObj(_ar, _id) // bad to use _last, should refactor
+{
+  flag_loadTemp = 1; // flag to send temp
+  m_objs_loadPoints(_ar);
+  eLog(_id, folder_last, obj_last);
+}
+
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
@@ -3990,18 +4030,19 @@ var pivotAlign =
   {
     switch(pivotAlign.enable)
     {
-      case 0:
+      case 0: // pivot align enabled
         if (obj_cyc <= world_obj_count) {break;}
         pivotAlign.enable = 1;
         pivotAlign.focus = 1;
         pivotAlign.obj = obj_cyc;
-        // console.log("Pivot enable"); // useful for log box later
+        // log box
         break;
-      case 1:
+      case 1: // pivot align disabled
         pivotAlign.focus = 0;
         pivotAlign.enable = 0;
         pivotAlign.obj = 0;
-        // console.log("Pivot disable"); // useful for log box later
+        eLogClear(pivotAlign.e_id);
+        // log box
         break;
     }
   },
@@ -4028,11 +4069,11 @@ var pivotAlign =
 
         break;
       case 1:
-        flag_loadTemp = 1; // flag to send temp
         _tv = pivotAlign.pivot; _tw = _lp_world; // simple format
-        // m_objs_loadPoints(new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]));
-        // eLog(pivotAlign.e_id, folder_last, obj_last);
-
+        loadTempObj(
+          new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
+          pivotAlign.e_id
+        );
         setPoint(pivotAlign.p0, _lp_world);
         pivotAlign.pn++;
 
@@ -4043,17 +4084,19 @@ var pivotAlign =
 
         break;
       case 3:
-        flag_loadTemp = 1;
         _tv = pivotAlign.p1; _tw = _lp_world; // simple format
-        // m_objs_loadPoints(new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]));
-        // eLog(pivotAlign.e_id, folder_last, obj_last);
-
+        loadTempObj(
+          new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
+          pivotAlign.e_id
+        );
         setPoint(pivotAlign.p2, _lp_world);
+        pivotAlign.pn++;
+
+        break;
+      case 4:
         pivotAlign.align();
         pivotAlign.pn = 0;
         if (pivotAlign.enable) {pivotAlign.toggle();} // terminate after 4 points
-        // some code as finish
-
         break;
     }
     // boundingBox.focus = 1;
