@@ -3077,7 +3077,7 @@ function drawSegment(vertices, mi)
 
     case -3:
       gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform4fv(colorUniformLocation, [0.5, (Date.now()%500)/500, 0.5, 1.0]);
+      gl.uniform4fv(colorUniformLocation, [0.5, (Date.now()%500)/600, 0.5, 1.0]);
       break;
 
     case -4:
@@ -3605,7 +3605,7 @@ function drawLines()
   }
 
 
-  // move all this back into fn to make good reverse fn
+  // move all this back into fn to make good reverse fn - noticed percentile here relative to other dims?
   _2d_previewBack = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.01)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_obj_size[2]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
 
 
@@ -3677,9 +3677,10 @@ function drawLines()
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -4);}
   }
 
+  // mystery ind no work problem here
   if (translateFolder.active)
   {
-    if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -3);}
+    if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.036 ), -3);}
   }
 
   if (boundingBox.active)
