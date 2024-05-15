@@ -2441,29 +2441,18 @@ function rotateObjectData(_dat, _rad)
 }
 */
 
-// _op is not good should receive points directly
 // Remove center option? nah keeps cursor in right place.
 // @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
 function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, center, or pivot w/ _r radians.
 {
-  let rot_obj = (_op == 2) ? pivotAlign.obj : _obj;
-	if (rot_obj>world_obj_count)
+	if (_obj>world_obj_count)
 	{
-    // console.log(_op);
-    // console.log(rot_obj);
-
-		var _to = splitObjS(m_objs[rot_obj]); // supa bad kode
-		var _c = getctr_obj(rot_obj);
+		var _to = splitObjS(m_objs[_obj]);
+		var _c = getctr_obj(_obj);
 		var _rf = _r * pi/180;
 
-		// for now I use this. code is getting skrambled
-    if (_op < 2)
-    {
-      if (wpn_select == 1) {_op = 1;}
-      if (!mouseLock) {_op = 0;}
-    }
-
-    // SOOOOOOOO BAD FIX
+    if (wpn_select == 1) {_op = 1;}
+    if (!mouseLock) {_op = 0;}
 
 		for (var i=0; i<_to.length; i++)
 		{
@@ -2478,9 +2467,6 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 					case 1:
 						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
 						break;
-					case 2:
-						_to[i] = add3(pivotAlign.pivot, rot_x_pln(sub(_to[i], pivotAlign.pivot), _rf));
-						break;
 					}
 					break;
 				case 1:
@@ -2491,9 +2477,6 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 						break;
 					case 1:
 						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), _rf));
-						break;
-					case 2:
-						_to[i] = add3(pivotAlign.pivot, rot_y_pln(sub(_to[i], pivotAlign.pivot), _rf));
 						break;
 					}
 					break;
@@ -2506,21 +2489,18 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 					case 1:
 						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), _rf));
 						break;
-					case 2:
-						_to[i] = add3(pivotAlign.pivot, rot_z_pln(sub(_to[i], pivotAlign.pivot), _rf));
-						break;
 					}
 					break;
 			}
 			if (i==_to.length-1)
 			{
-				for (var j=0; j<mem_log[rot_obj][2]; j++)
+				for (var j=0; j<mem_log[_obj][2]; j++)
 				{
-					m_objs[rot_obj][j*4+0] = _to[j][0];
-					m_objs[rot_obj][j*4+1] = _to[j][1];
-					m_objs[rot_obj][j*4+2] = _to[j][2];
+					m_objs[_obj][j*4+0] = _to[j][0];
+					m_objs[_obj][j*4+1] = _to[j][1];
+					m_objs[_obj][j*4+2] = _to[j][2];
 				}
-        arScale(m_objs_ghost[rot_obj], m_objs[rot_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+        arScale(m_objs_ghost[_obj], m_objs[_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 			}
 		}
 	}
@@ -3044,7 +3024,7 @@ function drawSegment(vertices, mi)
   { if (mi == obj_folders[3][f]) {gl.uniform4fv(colorUniformLocation, [0.90, 0.33, 0.33, 1.0]);} }
 
   // set pivoting obj color
-  if (mi == pivotAlign.obj) { gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 0.6]); }
+  if (mi == pivotAlign.obj) { gl.uniform4fv(colorUniformLocation, [0.85, 0.960, 0.46, 0.6]); } // new green
 
 	if (_all_lock!=0) // Object modification color select
 	{
@@ -4079,8 +4059,6 @@ var pivotAlign =
     // let _q_f = [makeQuaternion(-player_look_dir[1], [1,0,0]),
     //             makeQuaternion(-player_look_dir[0], [0,1,0])];
 
-    // now repair this old fn
-    // rotateObject(2, _rad*180/pi, rotateObject.obj);
   },
   logPoint: function ()
   {
