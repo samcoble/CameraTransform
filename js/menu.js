@@ -85,9 +85,9 @@ function applyStyles(element, par)
   ║╚═╗║╚╗║║║╚═╗║╔╗╗
   ╚══╝╚═╝╚╝╚══╝╚╝╚╝
   */
-  if (par.clickStyles && par.clickStyles.trim() !== "") // I think supposed to be click not checked
+  if (par.clickStyles && par.clickStyles.trim() !== "")
   {
-    const _temp_str = `#${element.id}:checked {${par.clickStyles}}`;
+    const _temp_str = `#${element.id}:click {${par.clickStyles}}`;
     const styleElement = document.createElement('style');
     styleElement.textContent = _temp_str;
     document.head.appendChild(styleElement);
@@ -934,7 +934,7 @@ var key_bind_info =
   "C(edit object -> converts to points)",
   "L(link objects -> select in sequence)",
   "I(join objects -> select in sequence) [BUGGY]",
-  "Pivot Align enable -> logs selected obj -> use F key to mark 4 points -> V2-V1 & V2-V1 -> aligns first vector to second",
+  "Pivot Align enable -> logs selected obj -> use F key to mark two arrows (4 points) -> F key to apply -> aligns first vector to second",
   "...",
   "N(LOCK movement planar)",
   "[PLANAR LOCK] Scroll(vertical movement)",
@@ -2505,7 +2505,7 @@ padding: 2px 0px 0px 12px;
 width: 64%;
 height: 26px;
 margin: 5px 0px 0px 0px;
-border: 1px solid rgb(40,40,40);
+border: 1px solid rgb(34,34,34);
 border-left: none;
 outline: none;
 ` + _btn_col1;
@@ -2516,7 +2516,7 @@ padding: 0px 0px 0px 12px;
 width: 100%;
 height: 26px;
 margin: 7px 0px 0px 0px;
-border: 1px solid rgb(40,40,40);
+border: 1px solid rgb(34,34,34);
 border-left: none;
 border-radius: 0px 3px 0px 0px;
 color: #555;

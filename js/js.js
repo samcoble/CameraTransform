@@ -1763,38 +1763,23 @@ function mir_w_pln(_p,_c)
 	switch(_c)
 	{
 		case 0:
-			_f = [
-				-_p[0],
-				_p[1],
-				_p[2],
-				_p[3]
-			];
+			_f = [ -_p[0], _p[1], _p[2], _p[3] ];
 			break;
 		case 1:
-			_f = [
-				_p[0],
-				-_p[1],
-				_p[2],
-				_p[3]
-			];
+			_f = [ _p[0], -_p[1], _p[2], _p[3] ];
 			break;
 		case 2:
-			_f = [
-				_p[0],
-				_p[1],
-				-_p[2],
-				_p[3]
-			];
+			_f = [ _p[0], _p[1], -_p[2], _p[3] ];
 			break;
 	}
 	return _f;
 }
 
-// Rotation around arbitrary axis. Basically useless now that I have quats.
+// rotation around arbitrary axis. Basically useless now that I have quats.
 function rot_aa(_p, _v, _r) // _p must be local 
 {
-	// Ang from y axis must be arctan(y/x) y is literally opposite of x.
-	// Reciprocal of opposite/adjacent gives the other angle (pi - ang)
+	// ang from y axis must be arctan(y/x) y is literally opposite of x.
+	// reciprocal of opposite/adjacent gives the other angle (pi - ang)
 
 	var _a1 = Math.atan(_v[0]/_v[2]); // x/z ang that moves to y pln
 	var _d2 = Math.sqrt(_v[0]*_v[0] + _v[2]*_v[2]);
@@ -1808,8 +1793,8 @@ function rot_aa(_p, _v, _r) // _p must be local
 	return _op6;
 }
 
-// The concepts of the math seem to imply the code structure.
-// The beginning q1 0 * q2 0 - q1 1 * q2 is the beginning of the vector calc and the - q1 2 * q2 2 - q1 3 * q2 3 is the cross product
+// the concepts of the math seem to imply the code structure.
+// the beginning q1 0 * q2 0 - q1 1 * q2 is the beginning of the vector calc and the - q1 2 * q2 2 - q1 3 * q2 3 is the cross product
 
 function multiplyQuaternions(q1, q2) // The scaler part of the quaternion comes first here ***
 {
@@ -1823,8 +1808,8 @@ function multiplyQuaternions(q1, q2) // The scaler part of the quaternion comes 
 
 function makeQuaternion(_r, _a) // Radians, Axis
 {
-	// Quaternion (cos(theta/2), sin(theta/2) * V) converts to 4d array of data like this.
-	// Implied if computed w/ matrices.
+	// quaternion (cos(theta/2), sin(theta/2) * V) converts to 4d array of data like this.
+	// implied if computed w/ matrices. dont 5get / 2
 	var _q = [
 	    Math.cos(_r / 2),
 	    Math.sin(_r / 2) * _a[0],
@@ -1835,45 +1820,35 @@ function makeQuaternion(_r, _a) // Radians, Axis
 }
 
 // conjugate of a quaternion
-function conjugate(q)
+function conjugate(q) { return [q[0], -q[1], -q[2], -q[3]]; }
+
+// quat rot using matrix quat multiplier
+function quatRot(_p, _q_ar) // point to be rotated. sequence of quaternions.
 {
-  return [q[0], -q[1], -q[2], -q[3]];
+  var _fq = [1, 0, 0, 0]; // initial recursive quaternion for rotation accumulation
+  for (var i = 0; i < _q_ar.length; i++)
+  { _fq = multiplyQuaternions(_q_ar[i], _fq); }
+
+  // normalize it. makes sense when you are adding many together.
+  const _nq = norm4(_fq); // normalized quaternion
+
+  // make a vector quaternion / quaternion vector
+  const _vq = [0, _p[0], _p[1], _p[2]]; // vector quaternion w/ no scaler
+
+  // here follows rule: q_f = q(-1) * p * q, the conjugate is first though ???
+  const _rq = multiplyQuaternions(_nq, multiplyQuaternions(_vq, conjugate(_nq))); // result quaternion
+
+  return [_rq[1], _rq[2], _rq[3]];
 }
 
-// Quat rot using matrix quat multiplier
-function quatRot(_p, _q_ar) // Point to be rotated. Sequence of quaternions.
-{
-    var _fq = [1, 0, 0, 0]; // Initial quaternion for rotation accumulation
-    for (var i = 0; i < _q_ar.length; i++)
-    {
-      _fq = multiplyQuaternions(_q_ar[i], _fq);
-    }
-	// Normalize it. Makes sense when you are adding many together.
-	const _nq = norm4(_fq);
-
-	// Make a vector quaternion / quaternion vector
-    const _vq = [0, _p[0], _p[1], _p[2]]; // q w/ no scaler
-    // const _rq0 = multiplyQuaternions(_nq, _vq); // Must do this first (l2r)
-    // const _rq = multiplyQuaternions(_rq0, [
-    //      _nq[0],
-    //     -_nq[1],
-    //     -_nq[2],
-    //     -_nq[3]
-    // ]);
-   const _rq = multiplyQuaternions(_nq, multiplyQuaternions(_vq, conjugate(_nq)));
-    return [_rq[1], _rq[2], _rq[3]];
-}
-
-function arHasC(ar, c) // Useless?
-{
-    var _r = false;
-    for (var i = 0; i < ar.length; i++)
-    {
-      if (ar[i] === c) {_r = true;break;}
-    }
-    //console.log(_r);
-    return _r;
-}
+// my initial logic no good
+// const _rq0 = multiplyQuaternions(_nq, _vq); // Must do this first (l2r)
+// const _rq = multiplyQuaternions(_rq0, [
+//      _nq[0],
+//     -_nq[1],
+//     -_nq[2],
+//     -_nq[3]
+// ]);
 
 /*
 	assume objs for now are closed loop with an overlapping end point.
@@ -1997,9 +1972,10 @@ function finishTrnsAnim(_i) // Maybe make this a system
 	}
 }
 
+// a lot here i wish to intend more structured functionality. first remove ratios and use some vars
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
-	if (m_objs.length > world_obj_count+1) // I can try doing len2 as exp 4
+	if (m_objs.length > world_obj_count+1)
 	{
 		var _lt;
 		var _i = world_obj_count+1;
@@ -2081,7 +2057,7 @@ function select2dpoint(x, y) // 2D find
     }
   }
 
-  // Fix this area. Replace the 3's w/ a set function? I don't remember
+  // make entire new structure for this 2d selection logic
 	switch(_d)
 	{
 		case 0:
@@ -2133,7 +2109,7 @@ function select2dpoint(x, y) // 2D find
 	}
 }
 
-function getctr_obj(_i) // Get encoded 3D center point
+function getctr_obj(_i) // get encoded 3D center point
 {
 	var _c = new Float32Array(4);
 	_c[0] = m_objs[_i][m_objs[_i].length-4];
@@ -2143,7 +2119,7 @@ function getctr_obj(_i) // Get encoded 3D center point
 	return _c;
 }
 
-function getctr_ghost(_i) // Get encoded 3D center point
+function getctr_ghost(_i) // get encoded 3D center point from duplicate ghost set
 {
 	var _c = new Float32Array(4);
 	_c[0] = m_objs_ghost[_i][m_objs_ghost[_i].length-4];
@@ -2560,7 +2536,7 @@ function arClone(a, b, c, s)
 }
 
 // This one does it all.
-// &a made from &b, - inner vec3 d, * outer vec3 d, + vec3 offset
+// &a made from &b, - inner vec3 d, * outer vec3 s, + vec3 offset c
 function arScale(a, b, c, d, s)
 {
   for (let i = a.length-1; i>=0; i--)
@@ -2569,7 +2545,7 @@ function arScale(a, b, c, d, s)
   }
 }
 
-function writeToObjI(_ob, i)
+function writeToObjI(_ob, i) // super bad
 {
   if (_ob.length == mem_log[i][1])
   {
@@ -2583,21 +2559,25 @@ function writeToObjI(_ob, i)
   }
 }
 
-function updateViewRef(_v, _i, _q)
+function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of quaternions representing rotation around axis
 {
   let _t_c = getctr_ghost(_i);
-  const _s = mem_log[_i][2];
+  const _s = mem_log[_i][2]; // get # of points
   for (let i=0; i<_s; i++)
   {
-    _t_gp =
+    let _t_gp = // ith point * 4 per of size 4
     [
       m_objs_ghost[_i][i*4],
       m_objs_ghost[_i][i*4+1],
       m_objs_ghost[_i][i*4+2]
     ];
 
-    _t_fp = add3(_v, quatRot( sub(_t_gp, _t_c), _q ));
+    // sub _t temp ith point w/ center
+    // quat rot this ^ w/ quat _q
+    // add it onto _v ... ??!?!?
+    let _t_fp = add3(_v, quatRot( sub(_t_gp, _t_c), _q ));
 
+    // apply change per point
     m_objs[_i][i*4] = _t_fp[0];
     m_objs[_i][i*4+1] = _t_fp[1];
     m_objs[_i][i*4+2] = _t_fp[2];
@@ -2966,10 +2946,10 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
 
-  updateTextByPar("menu_status_l0", "pos[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
-  updateTextByPar("menu_status_l1", "pln_cyc[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
+  updateTextByPar("menu_status_l0", "[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
+  updateTextByPar("menu_status_l1", "[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
   updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
-  updateTextByPar("menu_status_r1", "grid_scale[" + grid_scale + " : " + _settings[5].settings[0]+"]");
+  updateTextByPar("menu_status_r1", "[" + grid_scale + " : " + _settings[5].settings[0]+"]");
 
 
 	// This needs to be fixed. Temp as I port menu to new script.
@@ -4001,12 +3981,7 @@ var boundingBox =
 
 functionRunList.push(boundingBox);
 
-// must use 4 points or the direction of the object will be unknown
-// i can't recall the purpose of focus but it will be required if this is dynamic
-// this is difficult without simply using the quat functions so ig review quat fns
-// for now i publish this theory fn - very bad unfinished
-
-function loadTempObj(_ar, _id) // bad to use _last, should refactor
+function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
   flag_loadTemp = 1; // flag to send temp
   m_objs_loadPoints(_ar);
@@ -4017,7 +3992,7 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor
 var pivotAlign =
 {
   obj: 0,
-  e_id: 'pivotAlign',
+  e_id: 'pivotAlign', // could be made any type
   active: 0,
   focus: 0,
   enable: 0,
@@ -4049,14 +4024,63 @@ var pivotAlign =
   align: function ()
   {
     let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc], // remove corresponding axis
-        _l1 = multPoint(sub(pivotAlign.p0, pivotAlign.pivot), _plane),
-        _l2 = multPoint(sub(pivotAlign.p2, pivotAlign.p1), _plane),
-        _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ); // so the sign is the real problemo w/ no quats
+        _l1 = sub(pivotAlign.p0, pivotAlign.pivot),
+        _l2 = sub(pivotAlign.p2, pivotAlign.p1),
+        _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
+        _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
+        // _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
+        _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q
 
-    // console.log(_rad);
+    let _obj_len = mem_log[pivotAlign.obj][2]; // get # of points
+    for (var i=0; i<_obj_len; i++)
+    {
+      let _vg = // extract temp point
+      [
+        m_objs_ghost[pivotAlign.obj][i*4],
+        m_objs_ghost[pivotAlign.obj][i*4+1],
+        m_objs_ghost[pivotAlign.obj][i*4+2]
+      ];
 
-    // need to make a function to rotate object data directly
-    rotateObject(2, _rad*180/pi, rotateObject.obj);
+      let _prel = sub3(_vg, pivotAlign.pivot); // remove pivot
+      let _prot = quatRot( _prel, _q_f );
+      let _pf = add3(_prot, pivotAlign.pivot); // final point add pivot
+
+      m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4] = _pf[0];
+      m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
+      m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
+    }
+
+    // okay this works great lmao got it
+    // just need to implement axis lock. _plane not used anymore.
+    // also there's no way to control the torsion as it's own alignable property
+    // for ex: with the wing of the plane and pitch of the wings
+    // difficult layer to extend to without plane relocalization & directly no recursion
+
+    // the issue now is that every point needs to be measured as relative to the pivotAlign.pivot
+    // then translated?
+
+    // swapping order of an operation implies inverse direction of rotation which
+    // maps nicely to the use of cross product
+    // must reduce the cross to unit length 1 while maintaining the sign
+
+    // if pit -> yaw is good enough for 3d then split quaternion logic into two planes
+    // ???? two operations means first free rotate around y axis but then the next axis must be derived from y-axis cross v
+    // still shitty probably use 3d algebras
+
+    // i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference
+    // to orient a vector.
+
+    // vector dot theory: given two vectors pointing away from origin
+    // it should be possible to take the delta vec d_v as p1-p2
+    // then use it to define a plane offset to p2 that gets dotted w/ p1 to determine sign ????
+
+    // function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of quaternions representing rotation around axis
+
+    // let _q_f = [makeQuaternion(-player_look_dir[1], [1,0,0]),
+    //             makeQuaternion(-player_look_dir[0], [0,1,0])];
+
+    // now repair this old fn
+    // rotateObject(2, _rad*180/pi, rotateObject.obj);
   },
   logPoint: function ()
   {
@@ -4105,6 +4129,9 @@ var pivotAlign =
   {
     // applies position/translation w/ ghost
     // apply visual guides here
+    // need a system that can designate a point moveable by the standard movement system i used previously
+    // will need to separate the two and join with this
+    // exclusion of self list not sure about this one
   }
 }
 
