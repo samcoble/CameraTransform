@@ -4021,15 +4021,18 @@ var pivotAlign =
         m_objs_ghost[pivotAlign.obj][i*4+2]
       ];
 
-      let _prel = sub3(_vg, pivotAlign.pivot); // remove pivot
+      // problem now is that things must always rotate from center.. or eulers instead two ig
+      let _pctr = getctr_ghost(pivotAlign.obj);
+      let _prel = sub3(_vg, _pctr); // remove pivot
       let _prot = quatRot( _prel, _q_f );
-      let _pf = add3(_prot, pivotAlign.pivot); // final point add pivot
+      let _pf = add3(_prot, _pctr); // final point add pivot
 
       m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4] = _pf[0];
       m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
       m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
     }
 
+    // nope broken
     // okay this works great lmao got it
     // just need to implement axis lock. _plane not used anymore.
     // also there's no way to control the torsion as it's own alignable property
