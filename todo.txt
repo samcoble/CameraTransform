@@ -13,7 +13,50 @@
       |
 ______|___________________________________________________________________________________________________________
       |
+      | - 
+      | - 
+      | - 
+      | - grid need a radial fade effect
+      | - 
+      | - soon can try simple algs like chaikin's
+      | - something that can reduce surfaces to a set of smaller surfaces can help repair the accuracy of the depth buffer
       |
+      | - fundamentally i'm missing differentation when applying tool struct w/ ui type w/ move fn w/ specific use
+      | - to avoid always write a duplicate functional representation of the fundamental task any wide task such as all tools and their purpose.
+      | - part of this is also the setup for key binds. there's no middle table.
+      | - 
+      | - one of the white square inds still does not rotate w/ planes
+      | - z should undo a step in the pivot align
+      | - 
+      | - 
+      | - elemental scroll directly w/ the div list
+      |   - loop pointer map.layer 1 and 2 are first made end to end no grouping or make conversion
+      |   - send data to array as they were passed, ex:
+
+            makeElement(addButton, // fn -> (fn, params))
+            { params }
+
+      |   - 
+      |   - 
+      |   - 
+      | - shift v should block input from all obj's in 2d query
+      | - finish eLog system
+      | - sub folders need to be considered when cursor color to folder change
+      | - short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
+      | - indicator for folder move is not always working this is critical -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
+      | - quats allow vector add/sub that; if sphereical arcing; allows preservation of direction. it's one motion. 
+      | - auto z buffer top most
+      |
+      | - small menus
+      | - start moving colors into array formats to allow pipe: load/modif col_ar sets -> col_ar set -> col_str set
+      | -   
+      |
+      | - temp objs need to be grouped with an event identifier 
+      | - try experiment w/ date now
+      |
+      | - how the fk did I set an object to a folder ??? m_objs_loadPoints(m_cube); moveK(4,0,3); not even close 2 good nuf
+      | - fix opacity not working w/ no depth
+      | - pivot using point to align with second point. amazing use of only 2 points
       | - manually implement scroll boxes to circumvent the shitty looking browser scroll bars
       | - dupe folder should also dupe inner folders. Oh god help.
       | - fix opacity for line color change for objs in folder selected
