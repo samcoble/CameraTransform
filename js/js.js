@@ -3024,7 +3024,7 @@ function drawSegment(vertices, mi)
   { if (mi == obj_folders[3][f]) {gl.uniform4fv(colorUniformLocation, [0.90, 0.33, 0.33, 1.0]);} }
 
   // set pivoting obj color
-  if (mi == pivotAlign.obj) { gl.uniform4fv(colorUniformLocation, [0.85, 0.960, 0.46, 0.6]); } // new green
+  if (pivotAlign.enable && mi == pivotAlign.obj) { gl.uniform4fv(colorUniformLocation, [0.80, 0.960, 0.41, 0.6]); } // new green
 
 	if (_all_lock!=0) // Object modification color select
 	{
@@ -3995,7 +3995,6 @@ var pivotAlign =
       case 1: // pivot align disabled
         pivotAlign.focus = 0;
         pivotAlign.enable = 0;
-        pivotAlign.obj = 0;
         eLogClear(pivotAlign.e_id);
         // log box
         break;
@@ -4021,15 +4020,14 @@ var pivotAlign =
         m_objs_ghost[pivotAlign.obj][i*4+2]
       ];
 
-      // problem now is that things must always rotate from center.. or eulers instead two ig
-      let _pctr = getctr_ghost(pivotAlign.obj);
-      let _prel = sub3(_vg, _pctr); // remove pivot
-      let _prot = quatRot( _prel, _q_f );
-      let _pf = add3(_prot, _pctr); // final point add pivot
+      let _p_rel = pivotAlign.pivot; // getctr_ghost(pivotAlign.obj);
+      let _p_o = sub3(_vg, _p_rel); // remove rel point
+      let _p_rot = quatRot( _p_o, _q_f );
+      let _pf = add3(_p_rot, _p_rel); // final point add rel point
 
       m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4] = _pf[0];
-      m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
-      m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
+      m_objs_ghost[pivotAlign.obj][i*4+1] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
+      m_objs_ghost[pivotAlign.obj][i*4+2] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
     }
 
     // nope broken
@@ -4050,17 +4048,7 @@ var pivotAlign =
     // ???? two operations means first free rotate around y axis but then the next axis must be derived from y-axis cross v
     // still shitty probably use 3d algebras
 
-    // i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference
-    // to orient a vector.
-
-    // vector dot theory: given two vectors pointing away from origin
-    // it should be possible to take the delta vec d_v as p1-p2
-    // then use it to define a plane offset to p2 that gets dotted w/ p1 to determine sign ????
-
-    // function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of quaternions representing rotation around axis
-
-    // let _q_f = [makeQuaternion(-player_look_dir[1], [1,0,0]),
-    //             makeQuaternion(-player_look_dir[0], [0,1,0])];
+    // i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference to orient a vector.
 
   },
   logPoint: function ()
@@ -4251,7 +4239,8 @@ function Compute(init_dat)
 		{if (key_map.x && runEvery(320)) { del_obj(obj_cyc); }
 		} else if (key_map.x && !del_obj_lock)
 		{ del_obj(obj_cyc); del_obj_lock = 1; }
-		if (key_map.c && runEvery(300)) { editSelectedObject(); }
+
+		if (key_map.c && !key_map.shift && !key_map.control && runEvery(300)) { editSelectedObject(); }
 	}
 
 	if (key_map.x == false) { del_obj_lock = 0; }
