@@ -3987,10 +3987,10 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
 
 function playSound(src)
 {
-  var audioPlayer = document.getElementById('audioPlayer');
-  audioPlayer.src = src;
-  audioPlayer.volume = 0.2;
-  audioPlayer.play();
+  // var audioPlayer = document.getElementById('audioPlayer');
+  // audioPlayer.src = src;
+  // audioPlayer.volume = 0.2;
+  // audioPlayer.play();
 }
 
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
