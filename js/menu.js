@@ -1543,6 +1543,7 @@ box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
 // no looping just min max
 // additional style logic to set top and bottom to 3px rad no matter what
 // when inside enable scroll wheel
+// now fix so it uses display: none; instead of deletion
 
 // background-color: rgb(17, 17, 18);
 
@@ -1572,18 +1573,17 @@ function setScrollingElements(_eset, _h)
   let _rem = _si-_h;
   let _off_top = Math.abs(Math.round(_rem*menu_scroll_c/100)); 
   let _off_bot = Math.abs(_off_top + _h);
-  let _r = []; // return
   if (_off_bot < _si) {_off_bot += 1;}
 
-  // console.log(_off_top);
-  // console.log(_off_bot);
-
-  for (var i=_off_top; i<_off_bot; i++)
-  { _r.push(_eset[i]); }
-
-  let _targ = document.getElementById('div_toolListHeader');
-  if (_targ != undefined) { _targ.innerHTML = ""; }
-  makeElements(_r);
+  for (var i=0; i<_si; i++)
+  {
+    if (i>=_off_top && i<_off_bot)
+    {
+      document.getElementById(_eset[i][1].id).style.display = 'block';
+    } else {
+      document.getElementById(_eset[i][1].id).style.display = 'none';
+    }
+  }
 }
 
 var eset_tools = [];
@@ -1791,7 +1791,7 @@ packElement(eset_tools, addButton,
 {
   text: `Save World \u213B`,
   id: "tool_saveWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0 + 'border-bottom: 0px solid #fff;', // SPOOKY BUG
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
   hoverStyles: _btn_hover_tool,
   callback: downloadSaveFile
 });
@@ -1814,7 +1814,8 @@ packElement(eset_tools, addButton,
   callback: del_world
 });
 
-setScrollingElements(eset_tools, 14);
+makeElements(eset_tools);
+// setScrollingElements(eset_tools, 14);
 // problem now is this part isn't refreshed anyway
 
 // makeElement(addButton,

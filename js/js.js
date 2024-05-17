@@ -1020,7 +1020,7 @@ window.addEventListener("wheel", function(e)
 		{
 		    if ((fov_slide-e.deltaY/2000) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/2000};
 		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14}; // fix
-		} else if(runEvery(40) && pointerOutsideWindow()[2])
+		} else if(runEvery(40) && pointerOutsideWindow()[2] && pointerOutsideWindow()[1])
 		{
 			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
 			if (obj_cyc>m_objs.length-1) {obj_cyc=0};
