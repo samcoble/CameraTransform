@@ -3067,7 +3067,7 @@ function drawSegment(vertices, mi)
   }
 
   if (mi == 15) {gl.uniform4fv(colorUniformLocation, [0.3, 0.2, 0.5, 1.0]);}
-  if (mi == 2) {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.1]);}
+  if (mi == 2) {gl.uniform4fv(colorUniformLocation, [0.34, 0.34, 0.34, 0.2]);} // map lines
 
   switch(mi)
   {
@@ -3129,7 +3129,7 @@ function drawPoints(_pnts, mi)
           gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 1.0, 1.0]);
           break;
       }
-    } else {gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.3]);}
+    } else {gl.uniform4fv(colorUniformLocation, [0.5, 0.5, 0.5, 0.3]);} // white grid points
 
   // gl.enable(gl.POINT_SPRITE); // I don't know what this does.
   gl.drawArrays(gl.POINTS, 0, _pnts.length / 2);
