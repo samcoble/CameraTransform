@@ -1226,7 +1226,7 @@ makeElement(addDiv,
   box-sizing: border-box;
   position: absolute;
   width: 400px;
-  height: 800px;
+  height: 714px;
   left: 30px;
   top: 190px;
   user-select: none;
@@ -1325,7 +1325,7 @@ makeElement(addDiv,
   rootStyle: rootStyle +
   `
   background: rgba(0,0,0,0);
-  width: 272px;
+  width: 273px;
   height: 95%;
   margin: 0px;
   padding-top: 0%;
@@ -1347,19 +1347,39 @@ makeElement(addDiv,
 
 var detail_menu =
 `
-width: 100%;
+float: left;
+width: 50%;
 height: 100%;
 margin: 0px;
 padding: 0px;
 border: 0px;
 background-color: rgba(0, 0, 0, 0);
-overflow-y: auto;
+overflow-y: hidden;
 z-index: -1;
 `;
 
 makeElement(addDiv,
 {
   id: "menu_detail", cls: "", prnt: "q_menu_left",
+  rootStyle: rootStyle + detail_menu
+});
+
+var detail_menu_right =
+`
+float: left;
+width: 50%;
+height: 100%;
+margin: 0px;
+padding: 0px;
+border: 0px;
+background-color: rgba(0, 0, 0, 0);
+overflow-y: hidden;
+z-index: -1;
+`;
+
+makeElement(addDiv,
+{
+  id: "menu_detail_right", cls: "", prnt: "q_menu_left",
   rootStyle: rootStyle + detail_menu
 });
 
@@ -1377,7 +1397,7 @@ var detail_menu_box =
 `
 box-sizing: border-box;
 float: right;
-width: 48.5%;
+width: 97%;
 border-radius: 3px;
 z-index: -1;
 margin: 0px 0px 3px 3px;
@@ -1389,7 +1409,7 @@ var detail_menu_box_half =
 `
 box-sizing: border-box;
 float: left;
-width: 48.5%;
+width: 97%;
 margin: 3px 0 0 1%;
 border-radius: 3px;
 z-index: -1;
@@ -1517,52 +1537,106 @@ background-color: rgb(38, 38, 39);
 box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
 `;
 
+// making scroll
+// load all of makeElement params into container
+// use range and offset
+// no looping just min max
+// additional style logic to set top and bottom to 3px rad no matter what
+// when inside enable scroll wheel
+
 // background-color: rgb(17, 17, 18);
+
+// document.getElementById(par.id).innerHTML = "";
+// const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
+// _e.forEach(function(e) { _t.appendChild(e); });
+
+function makeElements(ar)
+{
+  let _l = ar.length;
+  for (var i=0; i<_l; i++)
+  { makeElement(ar[i][0], ar[i][1]); }
+}
+
+function packElement(ar_ptr, _callb, _par)
+{
+  let _ar = [_callb, _par];
+  ar_ptr.push(_ar);
+}
+
+// slapped it in there total nightmare
+function setScrollingElements(_eset, _h)
+{
+  _h = 18;
+  let _si = _eset.length;
+  if (_h > _si) {_h = _si;}
+  let _rem = _si-_h;
+  let _off_top = Math.abs(Math.round(_rem*menu_scroll_c/100)); 
+  let _off_bot = Math.abs(_off_top + _h);
+  let _r = []; // return
+  if (_off_bot < _si) {_off_bot += 1;}
+
+  // console.log(_off_top);
+  // console.log(_off_bot);
+
+  for (var i=_off_top; i<_off_bot; i++)
+  { _r.push(_eset[i]); }
+
+  let _targ = document.getElementById('div_toolListHeader');
+  if (_targ != undefined) { _targ.innerHTML = ""; }
+  makeElements(_r);
+}
+
+var eset_tools = [];
+
 makeElement(addDiv,
 {
-  id: "detail_box_circleSettings", cls: "", prnt: "menu_detail",
-  settings: [8, 24, 0, 0],
-  rootStyle: rootStyle + detail_menu_box
+  id: 'detail_box_toolList', cls: '', prnt: 'menu_detail_right',
+  rootStyle: rootStyle + detail_menu_box + 'overflow: hidden; border-bottom: 0px solid #FFF;'
 });
 
 makeElement(addDiv,
 {
-  id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
-  text: `tools \u25CB`,
+  id: 'div_toolListBin', cls: '', prnt: 'detail_box_toolList',
+  text: 'tools \u25CB',
   rootStyle: rootStyle + div_css + myTitleStyle
 });
-
-makeElement(addButton,
+makeElement(addDiv,
 {
-  text: `Lock Planar \u26C7`,
-  id: "tool_moveMode", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tool0 + _btn_col1,
+  id: 'div_toolListHeader', cls: '', prnt: 'detail_box_toolList',
+  rootStyle: rootStyle + div_css + myTitleStyle + 'height: 487px; background: none; overflow: hidden;'
+});
+
+packElement(eset_tools, addButton,
+{
+  text: 'Lock Planar \u26C7',
+  id: 'tool_moveMode', cls: '_btn', prnt: 'div_toolListHeader',
+  rootStyle: rootStyle + _btn + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: playerChangeMovementMode
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
-  text: "Teleport \u27AB",
-  id: "tool_curTp", cls: "_btn", prnt: "detail_box_circleSettings",
+  text: 'Teleport \u27AB',
+  id: 'tool_curTp', cls: '_btn', prnt: 'div_toolListHeader',
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: teleport_plr
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
-  text: "Get Center \u22A1",
-  id: "tool_curToCtr", cls: "_btn", prnt: "detail_box_circleSettings",
+  text: 'Get Center \u22A1',
+  id: 'tool_curToCtr', cls: '_btn', prnt: 'div_toolListHeader',
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: setCursorToObjCenter
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Measure Line \u27F7",
-  id: "tool_measureLine", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_measureLine", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: measureLine
@@ -1571,174 +1645,177 @@ makeElement(addButton,
 // makeElement(addButton,
 // {
 //   text: "Measure Angle \u2221",
-//   id: "tool_measureAngle", cls: "_btn", prnt: "detail_box_circleSettings",
+//   id: "tool_measureAngle", cls: "_btn", prnt: "div_toolListHeader",
 //   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
 //   hoverStyles: _btn_hover_tool,
 //   callback: measureAngle
 // });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Ground Cursor \u2356",
-  id: "tool_curToGrnd", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_curToGrnd", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: returnCursorToGround
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Create Circle \u25EF",
-  id: "tool_createCircle", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_createCircle", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: createCircleAtCursor
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Dupe Object \u26FC",
-  id: "tool_dupeObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_dupeObj", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: cloneObjSelected
 });
 
 // partition
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Dupe Folder \u20AA",
-  id: "tool_dupeFld", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_dupeFld", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: dupeFolderObjs
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Rotate Folder \u2B6E",
-  id: "tool_rotateFolder", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_rotateFolder", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: rotateFolder.run
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Move Folder \u2933",
-  id: "tool_moveFld", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_moveFld", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: translateFolder.toggle
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Empty Folder \u2672",
-  id: "tool_delFldObjs", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_delFldObjs", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: deleteFolderObjs
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Pivot Align \u15D2",
-  id: "tool_pivotAlign", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_pivotAlign", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: pivotAlign.toggle
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Resize Object \u2922",
-  id: "tool_resizeObject", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_resizeObject", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: boundingBox.toggle
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Mirror / Plane \u2346",
-  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mirrorOverPlane
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Apply Rotation \u2B6E",
-  id: "tool_applyRotation", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_applyRotation", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: applyRotation
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Move Object \u2933",
-  id: "tool_moveObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_moveObj", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Edit Object \u2188",
-  id: "tool_editObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_editObj", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Finish Object \u07F7",
-  id: "tool_finishObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Link Object \u2366",
-  id: "tool_objLink", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_objLink", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: `Save World \u213B`,
-  id: "tool_saveWorld", cls: "_btn", prnt: "detail_box_circleSettings",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  id: "tool_saveWorld", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0 + 'border-bottom: 0px solid #fff;', // SPOOKY BUG
   hoverStyles: _btn_hover_tool,
   callback: downloadSaveFile
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: "Delete Object \u2421",
-  id: "tool_delObj", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_delObj", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
 });
 
-makeElement(addButton,
+packElement(eset_tools, addButton,
 {
   text: `\u05D0 Clear World \u05D0`,
-  id: "tool_clearWorld", cls: "_btn", prnt: "detail_box_circleSettings",
+  id: "tool_clearWorld", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: del_world
 });
+
+setScrollingElements(eset_tools, 14);
+// problem now is this part isn't refreshed anyway
 
 // makeElement(addButton,
 // {
@@ -1753,7 +1830,14 @@ makeElement(addButton,
 
 makeElement(addDiv,
 {
-  id: "div_circletool", cls: "", prnt: "detail_box_circleSettings",
+  id: 'detail_box_circleSettings', cls: '', prnt: 'menu_detail',
+  settings: [8, 24, 0, 0],
+  rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_circleToolHeader", cls: "", prnt: "detail_box_circleSettings",
   text: `circle settings \u25CB`,
   rootStyle: rootStyle + div_css + myTitleStyle
 });
@@ -2318,7 +2402,7 @@ makeElement(addCheckbox,
 
 makeElement(addDiv,
 {
-  id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
+  id: "detail_box_colorSettings", cls: "", prnt: "menu_detail_right",
   settings: [18, 18, 18],
   rootStyle: rootStyle + detail_menu_box
 });
@@ -2397,7 +2481,7 @@ makeElement(addTextInput,
 
 makeElement(addDiv,
 {
-  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
+  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail_right",
   settings: [45],
   rootStyle: rootStyle + detail_menu_box
 });

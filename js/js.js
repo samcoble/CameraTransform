@@ -100,13 +100,14 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [280, 780],
+var menu_q_size = [280, 714],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
     menu_objpreview_pos = [0, 0],
     menu_tab = 0,
-    menu_wpn_pos = [155, 10];
+    menu_wpn_pos = [155, 10],
+    menu_scroll_c = 0; // scroll offset, real constant
 
 var indices = [],
     distances = [],
@@ -1026,10 +1027,19 @@ window.addEventListener("wheel", function(e)
 			if (obj_cyc<0) {obj_cyc=m_objs.length-1};
 		}
 
+    // controls 0 to 100 var to be used by menu
+    if (!mouseLock && !pointerOutsideWindow()[1]) // when inside q menu
+    {
+      let _scroll_mult = 20;
+      let _new_c = menu_scroll_c + _scroll_mult*Math.sign(e.deltaY);
+      if (_new_c <= 100 && _new_c >= 0) {menu_scroll_c = _new_c;}
+      setScrollingElements(eset_tools, 14);
+    }
+
 	} else if (runEvery(200))
   {
-			grid_scale += -e.deltaY/Math.abs(e.deltaY);
-			_settings[5].settings[0] = Math.pow(2, grid_scale);
+    grid_scale += -e.deltaY/Math.abs(e.deltaY);
+    _settings[5].settings[0] = Math.pow(2, grid_scale);
 	}
 	s_fov = fov_slide*fov_slide*fov_slide/20;
 });
@@ -2157,6 +2167,7 @@ var translateFolder =
         // translateFolder.focus = 1;
         translateFolder.active = 1;
         translateFolder.runhook = 0;
+        playSound('sounds/tool.mp3')
         break;
 
       case 1:
@@ -2170,6 +2181,7 @@ var translateFolder =
         }
         // arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
         translateFolder.obj = 0;
+        playSound('sounds/finish.mp3')
         break;
     }
   },
@@ -2210,6 +2222,7 @@ var rotateFolder =
     {
       rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i]);
     }
+    playSound('sounds/finish.mp3')
   }
 };
 
@@ -2503,6 +2516,7 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
         arScale(m_objs_ghost[_obj], m_objs[_obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 			}
 		}
+    playSound('sounds/finish.mp3');
 	}
 }
 
@@ -2601,6 +2615,7 @@ function planeCycle()
 {
   if (pln_cyc==2) {pln_cyc=0;} else {pln_cyc++;}
   updateCursor();
+  playSound('sounds/chit.mp3');
 }
 
 
@@ -3773,7 +3788,7 @@ function mouseToWorld()
   return _ff;
 }
 
-function pointerOutsideWindow()
+function pointerOutsideWindow() // return [0] indicates if inside menu pane
 {
 	// #incheck
 	var _in = [0,1,1];
@@ -3782,7 +3797,7 @@ function pointerOutsideWindow()
 	{
 		if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+menu_q_size[1])))
 		{
-			_in[1] = 0;
+			_in[1] = 0; // q menu?
 		}
 	}
 
@@ -3790,7 +3805,7 @@ function pointerOutsideWindow()
 	{
 		if ((mouseData[1] > menu_obj_pos[1]) && (mouseData[1] < (menu_obj_pos[1]+menu_obj_size[1])))
 		{
-			_in[2] = 0;
+			_in[2] = 0; // obj menu
 		}
 	}
 
@@ -3833,11 +3848,13 @@ var boundingBox =
         boundingBox.focus = 1;
         boundingBox.obj = obj_cyc;
         boundingBox.set();
+        playSound('sounds/tool.mp3');
         break;
       case 1:
         boundingBox.focus = 0;
         boundingBox.enable = 0;
         boundingBox.obj = 0;
+        playSound('sounds/finish.mp3')
         break;
     }
   },
@@ -3968,6 +3985,14 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
   eLog(_id, folder_last, obj_last);
 }
 
+function playSound(src)
+{
+  var audioPlayer = document.getElementById('audioPlayer');
+  audioPlayer.src = src;
+  audioPlayer.volume = 0.2;
+  audioPlayer.play();
+}
+
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
@@ -3990,9 +4015,11 @@ var pivotAlign =
         pivotAlign.enable = 1;
         pivotAlign.focus = 1;
         pivotAlign.obj = obj_cyc;
+        playSound('sounds/tool.mp3');
         // log box
         break;
       case 1: // pivot align disabled
+        if (pivotAlign.pn == 4) {playSound('sounds/finish.mp3');} else {playSound('sounds/warn.mp3');}
         pivotAlign.focus = 0;
         pivotAlign.enable = 0;
         eLogClear(pivotAlign.e_id);
@@ -4007,8 +4034,8 @@ var pivotAlign =
         _l2 = sub(pivotAlign.p2, pivotAlign.p1),
         _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
         _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
-        // _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
-        _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q
+        _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
+        _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q // , makeQuaternion(Math.asin(_u_mag), makeDir(_l2))
 
     let _obj_len = mem_log[pivotAlign.obj][2]; // get # of points
     for (var i=0; i<_obj_len; i++)
@@ -4030,6 +4057,11 @@ var pivotAlign =
       m_objs_ghost[pivotAlign.obj][i*4+2] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
     }
 
+    // so i must apply torsion for now default from center w/ test arcsin(sin(theta)) out of curiosity
+    // can align but a more detailed fn will still be needed
+    // maybe use 3 lines per or have axis logged
+    // cross is needed to orient to plane then one more to rotate along plane
+    // this can't quite connect everything yet
     // nope broken
     // okay this works great lmao got it
     // just need to implement axis lock. _plane not used anymore.
@@ -4037,17 +4069,9 @@ var pivotAlign =
     // for ex: with the wing of the plane and pitch of the wings
     // difficult layer to extend to without plane relocalization & directly no recursion
 
-    // the issue now is that every point needs to be measured as relative to the pivotAlign.pivot
-    // then translated?
-
     // swapping order of an operation implies inverse direction of rotation which
     // maps nicely to the use of cross product
     // must reduce the cross to unit length 1 while maintaining the sign
-
-    // if pit -> yaw is good enough for 3d then split quaternion logic into two planes
-    // ???? two operations means first free rotate around y axis but then the next axis must be derived from y-axis cross v
-    // still shitty probably use 3d algebras
-
     // i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference to orient a vector.
 
   },
@@ -4059,6 +4083,7 @@ var pivotAlign =
       case 0:
         setPoint(pivotAlign.pivot, _lp_world);
         pivotAlign.pn++;
+        playSound('sounds/tick.mp3');
 
         break;
       case 1:
@@ -4069,11 +4094,13 @@ var pivotAlign =
         );
         setPoint(pivotAlign.p0, _lp_world);
         pivotAlign.pn++;
+        playSound('sounds/tick.mp3');
 
         break;
       case 2:
         setPoint(pivotAlign.p1, _lp_world);
         pivotAlign.pn++;
+        playSound('sounds/tick.mp3');
 
         break;
       case 3:
@@ -4084,12 +4111,13 @@ var pivotAlign =
         );
         setPoint(pivotAlign.p2, _lp_world);
         pivotAlign.pn++;
+        playSound('sounds/tick.mp3');
 
         break;
       case 4:
         pivotAlign.align();
-        pivotAlign.pn = 0;
         if (pivotAlign.enable) {pivotAlign.toggle();} // terminate after 4 points
+        pivotAlign.pn = 0;
         break;
     }
     // boundingBox.focus = 1;
@@ -4203,7 +4231,6 @@ function Compute(init_dat)
 		obj_cyc_i = obj_cyc;
 	}
 
-  if (key_map.f && pivotAlign.enable && runEvery(150)) {pivotAlign.logPoint();} // this hard coded poop needs system
 
   // will have to look on my git to find history bring this back in to remove
   if (_settings[5].settings[0] != grid_scale_d) { updateGrid(); }
@@ -4244,7 +4271,14 @@ function Compute(init_dat)
 	}
 
 	if (key_map.x == false) { del_obj_lock = 0; }
-	if (key_map.e && runEvery(120)) { mem_t_mov(); key_map.e = false; } // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+  if (key_map.e && runEvery(120))
+  {
+    mem_t_mov();
+    key_map.e = false;
+    playSound('sounds/finish.mp3');
+  }
+  // m_t_objs.length = 0; mem_t_log.length = 0; obj_cyc = mem_log.length-1;
+
 	if (key_map.p && runEvery(350)) { downloadSaveFile(); }
 	if (key_map.n && runEvery(500)) { playerChangeMovementMode(); }
 	if (lock_vert_mov) {player_pos[1] = -hover_h; }
@@ -4628,6 +4662,13 @@ function Compute(init_dat)
   if (key_map.f && !flag_objModif && runEvery(150)) // no longer allow during any runtime function
   {
     m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));
+    playSound('sounds/tick.mp3');
+  }
+
+  // Bad code for point placement w/ pivot align
+  if (key_map.f && pivotAlign.enable && runEvery(150))
+  {
+    pivotAlign.logPoint();
   }
 
 	// Return to ground
