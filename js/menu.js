@@ -1275,7 +1275,7 @@ makeElement(addButton,
   rootStyle: rootStyle + _btn_tab + _btn_tab0,
   hoverStyles: _btn_hover,
   callback: setVisibility,
-  params: { hide:["div_keysMenu", "div_spawnMenu"], show:["menu_detail"] },
+  params: { hide:["div_keysMenu", "div_spawnMenu"], show:["menu_detail", "menu_detail_right"] },
 });
 
 // makeElement(addButton,
@@ -1295,7 +1295,7 @@ makeElement(addButton,
   rootStyle: rootStyle + _btn_tab + _btn_tabn,
   hoverStyles: _btn_hover,
   callback: setVisibility,
-  params: { hide:["menu_detail", "div_spawnMenu"], show:["div_keysMenu"] },
+  params: { hide:["menu_detail","menu_detail_right", "div_spawnMenu"], show:["div_keysMenu"] },
 });
 
 makeElement(addDiv,
@@ -2882,6 +2882,7 @@ makeElement(addDiv,
   id: "div_keysMenu", cls: "", prnt: "q_menu_left",
   rootStyle: rootStyle + detail_menu + defaultHidden +
   `
+  width: 100%;
   box-sizing: border-box;
   float: left;
   margin: 0% 0px 0px 0%;
