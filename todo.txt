@@ -15,7 +15,12 @@ ______|_________________________________________________________________________
       |
       | - 
       | - 
+      | - get cross vec tool
+      | - ball rotate tool where you select inside surface of ball with simple line/sphere
       | - 
+      | - pivot align can work with a cross vec holo
+      | - translated objects need priority
+      | - termination of the run list should remove all eLog stuffz but not tooo fast
       | - grid need a radial fade effect
       | - 
       | - soon can try simple algs like chaikin's
@@ -40,7 +45,6 @@ ______|_________________________________________________________________________
       |   - 
       |   - 
       | - shift v should block input from all obj's in 2d query
-      | - finish eLog system
       | - sub folders need to be considered when cursor color to folder change
       | - short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
       | - indicator for folder move is not always working this is critical -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
@@ -54,10 +58,7 @@ ______|_________________________________________________________________________
       | - temp objs need to be grouped with an event identifier 
       | - try experiment w/ date now
       |
-      | - how the fk did I set an object to a folder ??? m_objs_loadPoints(m_cube); moveK(4,0,3); not even close 2 good nuf
       | - fix opacity not working w/ no depth
-      | - pivot using point to align with second point. amazing use of only 2 points
-      | - manually implement scroll boxes to circumvent the shitty looking browser scroll bars
       | - dupe folder should also dupe inner folders. Oh god help.
       | - fix opacity for line color change for objs in folder selected
       | - shift modifier for folder short cuts
@@ -78,7 +79,6 @@ ______|_________________________________________________________________________
       |
       | - maybe just for fun try an animated projectile that travels to hit location
       |
-      | - dynamic hud data : provide containers that get flagged for update??
       | - need to use objects to connect w/ run list for most animated tools
       | - nominal lumber list ( need geo name for line objs )
       | - more fn obj conversion (doing trns obj) (fn done now fix rest of code)
