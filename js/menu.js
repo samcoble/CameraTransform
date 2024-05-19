@@ -1521,6 +1521,7 @@ var _btn =
  `
 color: #AAA;
 text-align: right;
+font-size: 11.5px;
 border-bottom: 1px solid rgb(12,12,12);
 border-top: 0px solid #FFF;
 border-left: 0px solid #FFF;
@@ -1735,11 +1736,11 @@ packElement(eset_tools, addButton,
 
 packElement(eset_tools, addButton,
 {
-  text: "Mirror / Plane \u2346",
-  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "div_toolListHeader",
+  text: "Surface Normal \u21A5",
+  id: "tool_surfaceNormal", cls: "_btn", prnt: "div_toolListHeader",
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
-  callback: mirrorOverPlane
+  callback: surfaceNormal.toggle
 });
 
 packElement(eset_tools, addButton,
@@ -1753,9 +1754,18 @@ packElement(eset_tools, addButton,
 
 packElement(eset_tools, addButton,
 {
+  text: "Mirror / Plane \u2346",
+  id: "tool_mirrorOverPlane", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  hoverStyles: _btn_hover_tool,
+  callback: mirrorOverPlane
+});
+
+packElement(eset_tools, addButton,
+{
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1764,7 +1774,7 @@ packElement(eset_tools, addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1773,7 +1783,7 @@ packElement(eset_tools, addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1782,7 +1792,7 @@ packElement(eset_tools, addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
@@ -1791,7 +1801,7 @@ packElement(eset_tools, addButton,
 {
   text: `Save World \u213B`,
   id: "tool_saveWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
   hoverStyles: _btn_hover_tool,
   callback: downloadSaveFile
 });
@@ -1800,7 +1810,7 @@ packElement(eset_tools, addButton,
 {
   text: "Delete Object \u2421",
   id: "tool_delObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
 });
@@ -1809,7 +1819,7 @@ packElement(eset_tools, addButton,
 {
   text: `\u05D0 Clear World \u05D0`,
   id: "tool_clearWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: del_world
 });
@@ -1832,7 +1842,7 @@ makeElements(eset_tools);
 makeElement(addDiv,
 {
   id: 'detail_box_circleSettings', cls: '', prnt: 'menu_detail',
-  settings: [8, 24, 0, 0],
+  settings: [8, 32, 0, 0],
   rootStyle: rootStyle + detail_menu_box
 });
 

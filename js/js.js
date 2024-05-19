@@ -186,6 +186,13 @@ function setBackgroundColor()
 	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
 };
 
+function playSound(src)
+{
+  let _audio = document.getElementById('audioPlayer');
+  _audio.src = src;
+  _audio.volume = 0.1;
+  _audio.play();
+}
 
 				/*-- Key & Mouse event capture --\
 				\-------------------------------*/
@@ -3985,26 +3992,34 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
   eLog(_id, folder_last, obj_last);
 }
 
-function playSound(src)
-{
-  var audioPlayer = document.getElementById('audioPlayer');
-  audioPlayer.src = src;
-  audioPlayer.volume = 0.2;
-  audioPlayer.play();
-}
+// so i must apply torsion for now default from center w/ test arcsin(sin(theta)) out of curiosity
+// can align but a more detailed fn will still be needed
+// maybe use 3 lines per or have axis logged
+// cross is needed to orient to plane then one more to rotate along plane
+// this can't quite connect everything yet
+// nope broken
+// okay this works great lmao got it
+// just need to implement axis lock. _plane not used anymore.
+// also there's no way to control the torsion as it's own alignable property
+// for ex: with the wing of the plane and pitch of the wings
+// difficult layer to extend to without plane relocalization & directly no recursion
+
+// swapping order of an operation implies inverse direction of rotation which
+// maps nicely to the use of cross product
+// must reduce the cross to unit length 1 while maintaining the sign
+// i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference to orient a vector.
 
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
   obj: 0,
   e_id: 'pivotAlign', // could be made any type
+  sound_tick: 'sounds/tick.mp3',
   active: 0,
   focus: 0,
   enable: 0,
-  pivot: [0,0,0], // first point capture w/ key (f)
-  p0: [0,0,0],
-  p1: [0,0,0], // p1 & p2 make the second reference line
-  p2: [0,0,0],
+  pivot: [0,0,0], p0: [0,0,0], // first point capture w/ key (f)
+  p1: [0,0,0], p2: [0,0,0], // p1 & p2 make the second reference line
   pn: 0, // track what point has been logged
   toggle: function ()
   {
@@ -4034,7 +4049,7 @@ var pivotAlign =
         _l2 = sub(pivotAlign.p2, pivotAlign.p1),
         _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
         _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
-        _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
+        // _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
         _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q // , makeQuaternion(Math.asin(_u_mag), makeDir(_l2))
 
     let _obj_len = mem_log[pivotAlign.obj][2]; // get # of points
@@ -4056,35 +4071,16 @@ var pivotAlign =
       m_objs_ghost[pivotAlign.obj][i*4+1] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
       m_objs_ghost[pivotAlign.obj][i*4+2] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
     }
-
-    // so i must apply torsion for now default from center w/ test arcsin(sin(theta)) out of curiosity
-    // can align but a more detailed fn will still be needed
-    // maybe use 3 lines per or have axis logged
-    // cross is needed to orient to plane then one more to rotate along plane
-    // this can't quite connect everything yet
-    // nope broken
-    // okay this works great lmao got it
-    // just need to implement axis lock. _plane not used anymore.
-    // also there's no way to control the torsion as it's own alignable property
-    // for ex: with the wing of the plane and pitch of the wings
-    // difficult layer to extend to without plane relocalization & directly no recursion
-
-    // swapping order of an operation implies inverse direction of rotation which
-    // maps nicely to the use of cross product
-    // must reduce the cross to unit length 1 while maintaining the sign
-    // i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference to orient a vector.
-
   },
   logPoint: function ()
   {
+    if (pivotAlign.pn < 4) {playSound(pivotAlign.sound_tick);}
     let _tv = [], lw = [];
     switch(pivotAlign.pn)
     {
       case 0:
         setPoint(pivotAlign.pivot, _lp_world);
         pivotAlign.pn++;
-        playSound('sounds/tick.mp3');
-
         break;
       case 1:
         _tv = pivotAlign.pivot; _tw = _lp_world; // simple format
@@ -4094,14 +4090,10 @@ var pivotAlign =
         );
         setPoint(pivotAlign.p0, _lp_world);
         pivotAlign.pn++;
-        playSound('sounds/tick.mp3');
-
         break;
       case 2:
         setPoint(pivotAlign.p1, _lp_world);
         pivotAlign.pn++;
-        playSound('sounds/tick.mp3');
-
         break;
       case 3:
         _tv = pivotAlign.p1; _tw = _lp_world; // simple format
@@ -4111,8 +4103,6 @@ var pivotAlign =
         );
         setPoint(pivotAlign.p2, _lp_world);
         pivotAlign.pn++;
-        playSound('sounds/tick.mp3');
-
         break;
       case 4:
         pivotAlign.align();
@@ -4120,7 +4110,7 @@ var pivotAlign =
         pivotAlign.pn = 0;
         break;
     }
-    // boundingBox.focus = 1;
+    // pivotAlign.focus = 1;
   },
   run: function ()
   {
@@ -4132,12 +4122,110 @@ var pivotAlign =
   }
 }
 
-functionRunList.push(pivotAlign);
+functionRunList.push(pivotAlign); // push ref to run list
 
+// simple function to take cross and create the normal. later will use obj_normalMaps: had issues w/ torsion
+var surfaceNormal =
+{
+  enable: 0,
+  e_id: 'surfaceNormal',
+  sound_start: 'sounds/tool.mp3',
+  sound_end: 'sounds/finish.mp3',
+  sound_error: 'sounds/warn.mp3',
+  sound_tick: 'sounds/tick.mp3',
+  p0: [0,0,0], p1: [0,0,0], p2: [0,0,0], p3: [0,0,0],
+  pn: 0, // track point logged
+  toggle: function ()
+  {
+    switch(surfaceNormal.enable)
+    {
+      case 0: // enabled
+        if (obj_cyc <= world_obj_count) {break;}
+        surfaceNormal.enable = 1;
+        playSound(surfaceNormal.sound_start);
+        // log box
+        break;
+      case 1: // disabled
+        if (surfaceNormal.pn == 4) {playSound(surfaceNormal.sound_end);} else {playSound(surfaceNormal.sound_error);}
+        surfaceNormal.enable = 0;
+        eLogClear(surfaceNormal.e_id);
+        // log box
+        break;
+    }
+  },
+  calc: function ()
+  {
+    let _l1 = sub(surfaceNormal.p1, surfaceNormal.p0),
+        _l2 = sub(surfaceNormal.p3, surfaceNormal.p2),
+        _cr = cross(_l1, _l2),
+        _u_cr = makeDir(_cr), // unit cross product
+        _u_len = 0.5*(len3(_l1) + len3(_l2)); // arbitrary
 
-// scale a unit cube to the size of min/max
-// really 6 pieces of information
-// min & max of each axis so 3*2 querys
+    let _fp = add3(surfaceNormal.p0, scale3(_u_cr, _u_len));
+    let _new_line =
+      new Float32Array([
+        surfaceNormal.p0[0],
+        surfaceNormal.p0[1],
+        surfaceNormal.p0[2],
+        1,
+        _fp[0],
+        _fp[1],
+        _fp[2],
+        1
+      ]);
+
+		m_objs_loadPoints(_new_line);
+  },
+  logPoint: function ()
+  {
+    // if surfaceNormal.pn < 4 play sound
+    if (surfaceNormal.pn < 4) {playSound(surfaceNormal.sound_tick);}
+    let _tv = [], lw = [];
+    switch(surfaceNormal.pn)
+    {
+      case 0:
+
+        setPoint(surfaceNormal.p0, _lp_world);
+        surfaceNormal.pn++;
+        break;
+      case 1:
+
+        _tv = surfaceNormal.p0; _tw = _lp_world; // simple format
+        loadTempObj(
+          new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
+          surfaceNormal.e_id
+        );
+        setPoint(surfaceNormal.p1, _lp_world);
+        surfaceNormal.pn++;
+        break;
+      case 2:
+
+        setPoint(surfaceNormal.p2, _lp_world);
+        surfaceNormal.pn++;
+        break;
+      case 3:
+
+        _tv = surfaceNormal.p2; _tw = _lp_world; // simple format
+        loadTempObj(
+          new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
+          surfaceNormal.e_id
+        );
+        setPoint(surfaceNormal.p3, _lp_world);
+        surfaceNormal.pn++;
+        break;
+      case 4:
+
+        surfaceNormal.calc();
+        if (surfaceNormal.enable) {surfaceNormal.toggle();} // terminate after 4 points
+        surfaceNormal.pn = 0;
+        break;
+    }
+  }
+}
+
+functionRunList.push(surfaceNormal); // push ref to run list
+
+// scale a unit cube to the size of min/max really 6 pieces of information min & max of each axis so 3*2 querys
 // while itor over w/ 4*i take min/max as two loops or do both for each axis at the same time.
 
 function getMinMaxPairs(ar)
@@ -4659,17 +4747,15 @@ function Compute(init_dat)
 
 
 	// Place point
-  if (key_map.f && !flag_objModif && runEvery(150)) // no longer allow during any runtime function
+  if (key_map.f && !flag_objModif && !_run_check && runEvery(150)) // no longer allow during any runtime function
   {
     m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));
     playSound('sounds/tick.mp3');
   }
 
-  // Bad code for point placement w/ pivot align
-  if (key_map.f && pivotAlign.enable && runEvery(150))
-  {
-    pivotAlign.logPoint();
-  }
+  // Bad code for point placement w/ pivot align, will refactor this but good nuff4now
+  if (key_map.f && pivotAlign.enable && runEvery(150)) { pivotAlign.logPoint(); }
+  if (key_map.f && surfaceNormal.enable && runEvery(150)) { surfaceNormal.logPoint(); }
 
 	// Return to ground
 	if (key_map.g && runEvery(200)) { returnCursorToGround(); }
