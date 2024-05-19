@@ -4035,6 +4035,7 @@ var pivotAlign =
         break;
       case 1: // pivot align disabled
         if (pivotAlign.pn == 4) {playSound('sounds/finish.mp3');} else {playSound('sounds/warn.mp3');}
+        pivotAlign.pn = 0;
         pivotAlign.focus = 0;
         pivotAlign.enable = 0;
         eLogClear(pivotAlign.e_id);
@@ -4148,6 +4149,7 @@ var surfaceNormal =
       case 1: // disabled
         if (surfaceNormal.pn == 4) {playSound(surfaceNormal.sound_end);} else {playSound(surfaceNormal.sound_error);}
         surfaceNormal.enable = 0;
+        surfaceNormal.pn = 0;
         eLogClear(surfaceNormal.e_id);
         // log box
         break;
