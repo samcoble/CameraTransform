@@ -25,12 +25,15 @@ var world_obj_count = 0;
 var _preview_scaler;
 var _s_ratio;
 var cursor_helper = 0;
-var flag_loadingObject = 0;
-var flag_loadTemp = 0;
-var flag_inText = 0;
 var functionRunList = [];
-var flag_objModif = false;
 var e_log = [];
+
+var flag_objModif = false, // replace _run_check with diff sys
+    flag_loadingObject = 0,
+    flag_loadTemp = 0,
+    flag_inText = 0,
+    _run_check = false,
+    _run_objs = [];
 
 var obj_folders = [],
     obj_last = 0, // last obj created id
@@ -64,7 +67,6 @@ var wpn_select = 0,
 
 var del_obj_lock = 0,
     trns_lock = 0,
-    trns_obj_i = 0, // replace w/ all lock
     _all_lock = 0, // Pass through color
     _all_lock_i = 0;
 
@@ -138,6 +140,20 @@ var _touch_i = [0, 0],
     _touch_f = [0, 0],
     _touch_delta = [0, 0];
 
+var m_draw = [],
+    m_center2d = [],
+    m_center2d_buffer = [],
+    z_map = [];
+
+var m_obj_offs = [],
+    m_objs = [], // [[n,...,],[n,...,],...]
+    mem_log = [], // [start, size]
+    mem_sum = 0,
+    m_objs_ghost = [], // Cloned m_obj data
+    m_t_objs = [], // [[n,...,],[n,...,],...]
+    mem_t_log = [], // [start, size]
+    mem_t_sum = 0;
+
 
 // IEMobile and BlackBerry users I got you fam.
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -176,26 +192,8 @@ function updateMenuPos() // this stuff so bad jesus
 	resizeCanvas(in_win_w, in_win_h);
 }
 
-function setBackgroundColor()
-{
-  let _c = [
-   _settings[6].settings[0],
-   _settings[6].settings[1],
-   _settings[6].settings[2]
-  ];
-	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
-};
-
-function playSound(src)
-{
-  let _audio = document.getElementById('audioPlayer');
-  _audio.src = src;
-  _audio.volume = 0.1;
-  _audio.play();
-}
-
-				/*-- Key & Mouse event capture --\
-				\-------------------------------*/
+/*-- Key & Mouse event capture --\
+\-------------------------------*/
 
 //#KEYMAP
 var key_map =
@@ -249,6 +247,24 @@ var key_map =
 	arrowleft: false,
 	arrowright: false
 };
+
+function setBackgroundColor()
+{
+  let _c = [
+   _settings[6].settings[0],
+   _settings[6].settings[1],
+   _settings[6].settings[2]
+  ];
+	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
+};
+
+function playSound(src)
+{
+  let _audio = document.getElementById('audioPlayer');
+  _audio.src = src;
+  _audio.volume = 0.1;
+  _audio.play();
+}
 
 var key_map_prevent = 
 {
@@ -342,12 +358,18 @@ onmousemove = function(e)
 	if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
 }
 
+function runListTerminateAll()
+{
+  for (let p = functionRunList.length-1; p>=0; p--)
+  { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
+}
+
 function eLog(_id, _f, _i) // i
 { e_log.push([_id, _f, _i]); }
 
 function eLogClear(_id) // remove all entries with matching _id
 {
-  let _new_log = [];
+  let _new_log = []; // temp new log to be copied
   let _ls = e_log.length; // loop size
 
   if (_ls> 0) // nothing if nothing
@@ -907,13 +929,13 @@ function makeValidFileName(_i)
 {
   const _bads = /[\/:*?"<>|\.]/g;
   const _n = _i.replace(_bads, '_');
-
   if (!_n.trim()) {return "memspc_";}
   return _n;
 }
 
 function downloadSaveFile()
 {
+  runListTerminateAll();
   if (mouseLock) {pointerLockSwap();} 
   let arrayBuffer = makeSave();
   let _l = arrayBuffer.length;
@@ -940,10 +962,7 @@ window.addEventListener('keydown', (event) =>
 	if (key_map.hasOwnProperty(key))
 	{
 		if (flag_inText == 0) {key_map[key] = true;} // new change w/ flag for text input
-		if (key_map_prevent.hasOwnProperty(key))
-		{
-			event.preventDefault();
-		}
+		if (key_map_prevent.hasOwnProperty(key)) { event.preventDefault(); }
 	}
 });
 
@@ -954,22 +973,13 @@ window.addEventListener('keyup', (event) =>
   if (key_map.hasOwnProperty(key))
   {
     key_map[key] = false;
-    if (key_map_prevent.hasOwnProperty(key))
-    {
-      event.preventDefault();
-    }
+    if (key_map_prevent.hasOwnProperty(key)) { event.preventDefault(); }
 	}
 });
 
 window.addEventListener('blur', () =>
 {
-  for (const key in key_map)
-  {
-    if (key_map.hasOwnProperty(key))
-    {
-      key_map[key] = false;
-    }
-  }
+  for (const key in key_map) { if (key_map.hasOwnProperty(key)) { key_map[key] = false; } }
   mouseLock = 0;
 });
 
@@ -986,24 +996,11 @@ function pointerLockSwap()
   }
 }
 
-window.addEventListener('resize', function()
-{
-	updateMenuPos();
-});
-
-
-document.addEventListener('contextmenu', function (e)
-{
-	e.preventDefault();
-});
+window.addEventListener('resize', function() { updateMenuPos(); });
+document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 document.addEventListener('pointerlockchange', function ()
-{
-  if (document.pointerLockElement === null)
-  {
-    mouseLock = 0;
-  }
-});
+{ if (document.pointerLockElement === null) { mouseLock = 0; } });
 
 document.addEventListener('mousedown', function(e)
 {
@@ -1021,17 +1018,39 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
-	if (!key_map.shift)
+	if (!key_map.shift) // off shift
 	{
-		if (mouseLock)
+		if (mouseLock) // menu closed
 		{
 		    if ((fov_slide-e.deltaY/2000) > 0 && !lock_vert_mov) {fov_slide += -e.deltaY/2000};
 		    if (lock_vert_mov) {hover_h += -e.deltaY*(key_map.shift+0.2)/14}; // fix
-		} else if(runEvery(40) && pointerOutsideWindow()[2] && pointerOutsideWindow()[1])
+		}
+    else if(runEvery(40) && pointerOutsideWindow()[2] && pointerOutsideWindow()[1]) // when menu open and ...
 		{
-			obj_cyc += e.deltaY/Math.pow((e.deltaY)*(e.deltaY), 0.5);
-			if (obj_cyc>m_objs.length-1) {obj_cyc=0};
-			if (obj_cyc<0) {obj_cyc=m_objs.length-1};
+      let _d = Math.sign(e.deltaY),
+          _f = obj_folders[folder_selected],
+          _l = _f.length-1,
+          _i = searchFolder(obj_folders[folder_selected], obj_cyc);
+
+      if (_l>0) // prevent crash LAST
+      {
+        if (_i.length == 0)
+        {
+          let _i0 = _d>0 ? 0 : _l;
+          obj_cyc = _f[_i0];
+        } else // when already starting inside folder
+        {
+          switch(_d)
+          {
+            case -1:
+              obj_cyc = _i[0]-1>=0 ? _f[_i[0]-1] : _f[_l];
+              break;
+            case 1:
+              obj_cyc = _i[0]+1>_l ? _f[0] : _f[_i[0]+1];
+              break;
+          }
+        }
+      }
 		}
 
     // controls 0 to 100 var to be used by menu
@@ -1043,12 +1062,12 @@ window.addEventListener("wheel", function(e)
       setScrollingElements(eset_tools, 14);
     }
 
-	} else if (runEvery(200))
+	} else if (runEvery(200)) // when holding shift
   {
     grid_scale += -e.deltaY/Math.abs(e.deltaY);
     _settings[5].settings[0] = Math.pow(2, grid_scale);
 	}
-	s_fov = fov_slide*fov_slide*fov_slide/20;
+	s_fov = fov_slide*fov_slide*fov_slide/20; // event always updates s_fov last
 });
 
 
@@ -1119,6 +1138,7 @@ function norm4(_p) // Quaternion
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
 }
 
+// Chrome can probably compile this but firefox would probably benefit from reducing nested functions lol
 function lpi(p1,p2,pp,n) // line plane intersection from Ken Joy
 {
 	var d1 = dot(n,sub(p1,pp));
@@ -1144,6 +1164,14 @@ function hasDuplicate(set, point)
     if (pIsEqual(existingPoint, point)) {return true;}
   }
   return false;
+}
+
+function hasN(ar, n) // simple test for checking indices or folders etc
+{
+  let _l = ar.length,
+      _r = 0;
+  for (var i=0; i<_l; i++) {if (ar[i] == n) {_r = 1;}}
+  return _r;
 }
 
 function roundTo(value, n) {return Math.round(value / n) * n;}
@@ -1183,51 +1211,33 @@ function updateFPS()
     _frames = 0;
     _date_now_fps = Date.now();
   } else
-  {
-    _frames++;
-  }
+  { _frames++; }
 }
 
-function checkNumber(n)
-{
-	if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;} // regex aka swagex
-}
+function checkNumber(n) { if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;} }
 
 function meanctr_obj(ar) // I think this work. I hope so.
 {
-    var _ob = splitObjS(ar);
-    var uniquePoints = new Set();
-    var _pm = [0, 0, 0, 0];
-    for (var i = 0; i < _ob.length; i++)
+  let _ob = splitObjS(ar),
+    _uniques = new Set(),
+    _pm = [0, 0, 0, 0];
+  for (var i = 0; i < _ob.length; i++)
+  {
+    let _p = _ob[i];
+    if (!hasDuplicate(_uniques, _p))
     {
-      var point = _ob[i];
-      if (!hasDuplicate(uniquePoints, point))
-      {
-          _pm = add3(point, _pm);
-          uniquePoints.add(point);
-      }
+      _pm = add3(_p, _pm);
+      _uniques.add(_p);
     }
-    var uniqueCount = uniquePoints.size;
-    _pm[3] = 1;
-    return uniqueCount === 0 ? new Float32Array(_pm) : new Float32Array(scale(_pm, 1 / uniqueCount));
+  }
+  var uniqueCount = _uniques.size;
+  _pm[3] = 1;
+  return uniqueCount === 0 ? new Float32Array(_pm) : new Float32Array(scale(_pm, 1 / uniqueCount));
 }
 
 
-						/*-- Placeholder 4d data generation --\
-						\------------------------------------*/
-
-
-var m_obj_offs = [];
-
-var m_objs = []; // [[n,...,],[n,...,],...]
-var mem_log = []; // [start, size]
-var mem_sum = 0;
-
-var m_objs_ghost = []; // Cloned m_obj data
-
-var m_t_objs = []; // [[n,...,],[n,...,],...]
-var mem_t_log = []; // [start, size]
-var mem_t_sum = 0;
+/*-- Placeholder 4d data generation --\
+            \------------------------------------*/
 
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
@@ -1236,10 +1246,8 @@ var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 
 var _lp_world = new Float32Array([0.0,0.0,0.0,1]);
 var _lop_world = new Float32Array([0.0,0.0,0.0,1]);
-var trans_f = new Float32Array([0.0,0.0,0.0,1]);
-var exp_f = new Float32Array([0.0,0.0,0.0,1]);
 
-var m_rect =  new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
+const m_rect = new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
 
 const m_cube = new Float32Array([-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,-1.0,-1.0,-1.0,1.0]);
 
@@ -1350,7 +1358,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 	}
 }
 
-function splitObj(ar) // Accepts linear : outputs array of 4d points
+function splitObj(ar) // accepts linear : outputs array of 4d points
 {
   const r = [];
   const _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
@@ -1398,15 +1406,15 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 */
 // #DATAFNS
 
+/*
+[0,0,0,1.0,0,0,-1.0,1.0] // forward
+[0,0,0,1.0,-1.0,0,0,1.0] // left
+[0,0,0,1.0,0,-1.0,0,1.0] // up
+*/
 
 shaderModule.init();
 var m1 = shaderModule.alloc(80000); // Allocate memory for parallel operations
 for (i=0; i<m1.data.length; i++) {m1.data[i] = 0.0;}
-
-var m_draw = [];
-var m_center2d = [];
-var m_center2d_buffer = [];
-var z_map = []; // contains float32array
 
 function m_objs_loadPoints(ar) // Adds objects
 {
@@ -1432,7 +1440,6 @@ function m_objs_loadPoints(ar) // Adds objects
     var ar_k = new Float32Array( ar_t.length/6 );
     z_map.push([ar_z, ar_k, ar_t.length/6]);
 
-    //DATAFNS
 	} else
   {
 		m_objs[m_objs.length] = ar;
@@ -1578,7 +1585,7 @@ m_objs_loadPoints(m_x);          // 6
 m_objs_loadPoints(m_y);          // 7
 m_objs_loadPoints(m_z);          // 8
 m_objs_loadPoints(_lp_world);    // 9
-m_objs_loadPoints(_lop_world);   // 10
+m_objs_loadPoints(_lop_world);   // 10 should remove this
 m_objs_loadPoints(m_gun);        // 11
 m_objs_loadPoints(m_rect);       // 12
 m_objs_loadPoints(m_rect);       // 13
@@ -1795,7 +1802,7 @@ function mir_w_pln(_p,_c)
 // rotation around arbitrary axis. Basically useless now that I have quats.
 function rot_aa(_p, _v, _r) // _p must be local 
 {
-	// ang from y axis must be arctan(y/x) y is literally opposite of x.
+	// ang from y axis must be arctan(y/x) y is literally opposite of x
 	// reciprocal of opposite/adjacent gives the other angle (pi - ang)
 
 	var _a1 = Math.atan(_v[0]/_v[2]); // x/z ang that moves to y pln
@@ -1839,7 +1846,7 @@ function makeQuaternion(_r, _a) // Radians, Axis
 // conjugate of a quaternion
 function conjugate(q) { return [q[0], -q[1], -q[2], -q[3]]; }
 
-// quat rot using matrix quat multiplier
+// quat rot using matrix quat multiplier. const tho ? performance diff tho ?
 function quatRot(_p, _q_ar) // point to be rotated. sequence of quaternions.
 {
   var _fq = [1, 0, 0, 0]; // initial recursive quaternion for rotation accumulation
@@ -1933,11 +1940,9 @@ function updateDrawMap(priorityObjects)
 	return indexMapping;
 }
 
-// here I add filter for anything being modified?
-// as long as all obj funcs reset their obj to -1 or 0 then this works just checking _i inside array
 function del_obj(_i)
 {
-	if (_i > world_obj_count && _i != boundingBox.obj)
+	if (_i > world_obj_count && !hasN(_run_objs, _i))
 	{
 		trns_lock = 0;
 		_all_lock = 0; _all_lock = 0;
@@ -1979,46 +1984,44 @@ function updateLook() // Quat view rot
   _plr_dtp = [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]]; // player pos + look dir * 
 }
 
-function finishTrnsAnim(_i) // Maybe make this a system
-{
-	for (var i=0; i<mem_log[_i][2]; i++)
-	{
-		m_objs[_i][i*4+0] = m_objs_ghost[_i][i*4+0] = m_objs[_i][i*4+0]+roundTo(m_obj_offs[_i][0], _settings[5].settings[0]);
-		m_objs[_i][i*4+1] = m_objs_ghost[_i][i*4+1] = m_objs[_i][i*4+1]+roundTo(m_obj_offs[_i][1], _settings[5].settings[0]);
-		m_objs[_i][i*4+2] = m_objs_ghost[_i][i*4+2] = m_objs[_i][i*4+2]+roundTo(m_obj_offs[_i][2], _settings[5].settings[0]);
-	}
-}
-
-// a lot here i wish to intend more structured functionality. first remove ratios and use some vars
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
 	if (m_objs.length > world_obj_count+1)
 	{
-		var _lt;
-		var _i = world_obj_count+1;
-		var _l = Number.MAX_VALUE;
+		let _lt,
+        _i = world_obj_count+1,
+        _l = Number.MAX_VALUE,
+        _x_off = x/in_win_hc*(in_win_h/in_win_w),
+        _y_off = y/in_win_hc;
 
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
-			_lt = len2fast([m1.data[mem_log[i][0]+mem_log[i][1]-4]+x/in_win_hc*(in_win_h/in_win_w), m1.data[mem_log[i][0]+mem_log[i][1]-3]+y/in_win_hc]);
+			_lt = len2fast([m1.data[mem_log[i][0]+mem_log[i][1]-4]+_x_off, m1.data[mem_log[i][0]+mem_log[i][1]-3]+_y_off]);
 			if (_lt < _l) {_i = i; _l = _lt;}
 		}
 		return _i;
 	} else {return world_obj_count;}
 }
 
+
 function select2dpoint(x, y) // 2D find
 {
-	var _f; var _n_sku = 0; var _t1; var _d = 0; var _d2 = 0;
+	let _f = Number.MAX_VALUE,
+      _n_sku = 0,
+      _t1,
+      _d = 0,
+      _d2 = 0,
+      _x_off = x/in_win_hc*(in_win_h/in_win_w),
+      _y_off = y/in_win_hc;
 
-	_f = Number.MAX_VALUE;
+  // && obj_cyc != trns_obj_i
+  // && !hasN(_2d_exclude, obj_cyc)
 
-  
-	if (!boundingBox.focus && obj_cyc != boundingBox.obj && obj_cyc != trns_obj_i && obj_cyc>world_obj_count)
+	if (!boundingBox.focus && obj_cyc != boundingBox.obj && obj_cyc>world_obj_count && !hasN(_2d_exclude, obj_cyc)) // defocused bounding box obj is any obj selected ?
 	{
 		for (let k = 0; k<mem_log[obj_cyc][1]/4; k++)
 		{
-			_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]+y/in_win_hc, 2);
+			_t1 = Math.pow(m1.data[4*k+mem_log[obj_cyc][0]]+_x_off, 2) + Math.pow(m1.data[4*k+mem_log[obj_cyc][0]+1]+_y_off, 2);
 			if (_t1 < _f)
 			{
 				_f = _t1;
@@ -2027,11 +2030,11 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
-	for (var i = 0; i<m_t_objs.length; i++)
+	for (var i = 0; i<m_t_objs.length; i++) // this looks through the temp placed points
 	{
 		for (var j = 0; j<mem_t_log[i][1]/4; j++)
 		{
-			_t1 = Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum+1]+y/in_win_hc, 2);
+			_t1 = Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum]+_x_off, 2) + Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum+1]+_y_off, 2);
 			if (_t1 < _f)
 			{
 				_f = _t1;
@@ -2041,11 +2044,11 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
-	if (!mouseLock)
+	if (!mouseLock) // this is the 2d find for grid points
 	{
 		for (let k = 0; k<mem_log[3+pln_cyc][1]/4; k++)
 		{
-			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]+y/in_win_hc, 2);
+			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]+_x_off, 2) + Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]+_y_off, 2);
 
 			if (!isNaN(_t1) && !isNaN(_f))
 			{
@@ -2060,11 +2063,11 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
-  if (boundingBox.enable && !boundingBox.active)
+  if (boundingBox.enable && !boundingBox.active) // this should be the bounding box corners
   {
     for (let k = 0; k<mem_log[15][1]/4; k++)
     {
-      _t1 = Math.pow(m1.data[4*k+mem_log[15][0]]+x/in_win_hc*(in_win_h/in_win_w), 2) + Math.pow(m1.data[4*k+mem_log[15][0]+1]+y/in_win_hc, 2);
+      _t1 = Math.pow(m1.data[4*k+mem_log[15][0]]+_x_off, 2) + Math.pow(m1.data[4*k+mem_log[15][0]+1]+_y_off, 2);
       if (_t1 < _f)
       {
         _f = _t1;
@@ -2081,7 +2084,7 @@ function select2dpoint(x, y) // 2D find
 			_lp[0] = _lp_world[0] = m_objs[obj_cyc][4*_n_sku];
 			_lp[1] = _lp_world[1] = m_objs[obj_cyc][4*_n_sku+1];
 			_lp[2] = _lp_world[2] = m_objs[obj_cyc][4*_n_sku+2];
-				cursor_helper = 1;
+			cursor_helper = 1;
 			break;
 		case 1:
 			if (typeof _n_sku == 'number')
@@ -2155,6 +2158,7 @@ var translateFolder =
   focus: 0,
   runhook: 0,
   folder: Object,
+  excludeSelf: true,
   toggle: function ()
   {
     if (folder_selected < folder_cwd) {return;}
@@ -2174,7 +2178,7 @@ var translateFolder =
         // translateFolder.focus = 1;
         translateFolder.active = 1;
         translateFolder.runhook = 0;
-        playSound('sounds/tool.mp3')
+        playSound('sounds/tool.mp3');
         break;
 
       case 1:
@@ -2188,7 +2192,7 @@ var translateFolder =
         }
         // arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
         translateFolder.obj = 0;
-        playSound('sounds/finish.mp3')
+        playSound('sounds/finish.mp3');
         break;
     }
   },
@@ -2229,48 +2233,82 @@ var rotateFolder =
     {
       rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i]);
     }
-    playSound('sounds/finish.mp3')
+    playSound('sounds/finish.mp3');
   }
 };
 
-function trans_obj(_i)
+var translateObject =
 {
-	if (_i<=world_obj_count) {return;}
-	var _fd;
-	switch(trns_lock)
-	{
-		case 0:
-			trans_f[0] = _lop_world[0] = _lp_world[0];
-			trans_f[1] = _lop_world[1] = _lp_world[1];
-			trans_f[2] = _lop_world[2] = _lp_world[2];
-			trns_lock = 1; trns_obj_i = _i;
-			break;
+  enable: 0,
+  active: 0,
+  focus: 0,
+  obj: 0,
+  lpstart: [0,0,0],
+  lpdelta: [0,0,0],
+  runhook: 0,
+  excludeSelf: true,
+  opt_enable: function (_i)
+  {
+    translateObject.lpstart =
+      [
+        _lp_world[0],
+        _lp_world[1],
+        _lp_world[2]
+      ];
+    translateObject.lpdelta = [0,0,0];
+    translateObject.obj = _i;
 
-		case 1:
-			_fd = sub(_lp_world, trans_f);
-			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
-			{
-				if (!_settings[3].settings[0]) {m_objs[trns_obj_i][i*4] = m_objs[trns_obj_i][i*4]+_fd[0];}
-				if (!_settings[3].settings[1]) {m_objs[trns_obj_i][i*4+1] = m_objs[trns_obj_i][i*4+1]+_fd[1];}
-				if (!_settings[3].settings[2]) {m_objs[trns_obj_i][i*4+2] = m_objs[trns_obj_i][i*4+2]+_fd[2];}
-			}
-				m_obj_offs[trns_obj_i][0] = 0;
-				m_obj_offs[trns_obj_i][1] = 0;
-				m_obj_offs[trns_obj_i][2] =	0;
+    // translateObject.focus = 1;
+    translateObject.enable = 1;
+    translateObject.active = 1;
+    translateObject.runhook = 0;
 
-      arScale(m_objs_ghost[trns_obj_i], m_objs[trns_obj_i], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
+    // set point so that after transform it has the new 2d location and depth
+    setPoint(_lop_world, _lp_world);
+    playSound('sounds/tool.mp3');
+  },
+  toggle: function ()
+  {
+    if (obj_cyc <= world_obj_count) {return;} // stop if a world obj
+    switch(translateObject.enable)
+    {
+      case 0:
+        if (!hasN(_run_objs, obj_cyc)) {translateObject.opt_enable(obj_cyc);} // only start if not in run list but also allow disable
+        break;
 
-				// _lp[0] = _lp_world[0];
-				// _lp[1] = _lp_world[1];
-				// _lp[2] = _lp_world[2];
-				// _lp[0] = _lp_world[0] = _inter_rnd[0];
-				// _lp[1] = _lp_world[1] = _inter_rnd[1];
-				// _lp[2] = _lp_world[2] = _inter_rnd[2];
+      case 1:
+        translateObject.enable = 0;
+        translateObject.active = 0;
+        // translateObject.focus = 0;
 
-			trns_lock = 0; obj_cyc = trns_obj_i; trns_obj_i = 0;
-			break;
-	}
-}
+        // Apply changes to obj clones
+        arScale(m_objs_ghost[translateObject.obj], m_objs[translateObject.obj], [0,0,0], [0,0,0,0], [1,1,1,1]);
+        translateObject.obj = 0;
+        playSound('sounds/finish.mp3');
+        break;
+    }
+  },
+  run: function ()
+  {
+    // Check for axis lock settings
+    translateObject.lpdelta =
+    [
+      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateObject.lpstart[0],
+      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateObject.lpstart[1],
+      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateObject.lpstart[2]
+    ];
+
+    arScale(m_objs[translateObject.obj], m_objs_ghost[translateObject.obj], translateObject.lpdelta, [0,0,0,0], [1,1,1,1]);
+
+    // need system to prevent connect to self points
+  },
+  newest: function ()
+  {
+    if (translateObject.enable) {translateObject.toggle();}
+    translateObject.opt_enable(m_objs.length-1);
+  }
+}; functionRunList.push(translateObject);
+
 
 function m_obj_explode(_i)
 {
@@ -2597,9 +2635,11 @@ function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of qua
 //   }
 // }
 
+// pretty bad hard kode replace later
 function updateCursor()
 {
-  var _ob = splitObjS(m_objs_ghost[12]);
+  let _ob = splitObjS(m_objs_ghost[12]);
+  let _ob2 = splitObjS(m_objs_ghost[13]);
 
   for (var i = 0; i<=_ob[i].length; i++)
   {
@@ -2614,8 +2654,22 @@ function updateCursor()
     }
   }
 
+  for (var i = 0; i<=_ob2[i].length; i++)
+  {
+    switch(pln_cyc)
+    {
+      case 0:
+        _ob2[i] = rot_z_pln(_ob2[i], pi/2);  
+        break;
+      case 2:
+        _ob2[i] = rot_x_pln(_ob2[i], pi/2);
+        break;
+    }
+  }
+
   // write to obj data
   writeToObjI(packObj(_ob), 12);
+  writeToObjI(packObj(_ob2), 13);
 }
 
 function planeCycle()
@@ -2644,8 +2698,7 @@ function deleteObjectSelected()
 function del_world()
 {
   // Terminate all running data manipulation
-  for (let i = functionRunList.length-1; i>=0; i--)
-  { if (functionRunList[i].enable) {functionRunList[i].toggle();} }
+  runListTerminateAll();
 
   folder_selected = folder_cwd;
   obj_folders[folder_cwd].length = 0;
@@ -2713,7 +2766,7 @@ function mirrorOverPlane()
 
 function cloneObjSelected()
 {
-	if (obj_cyc>world_obj_count)
+	if (obj_cyc>world_obj_count) // && !hasN(_run_objs, obj_cyc)
 	{
 		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
 	}
@@ -2753,7 +2806,7 @@ function applyRotation()
 
 function moveObject()
 {
-	trans_obj(obj_cyc);
+  translateObject.toggle();
 }
 
 function deleteFolderObjs()
@@ -3674,8 +3727,9 @@ function drawLines()
   // Use this: by dist scale to setup the centers.
   // drawSegment(ar2Dmod(_2dis[j], _np, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.01 ), -2);
   // drawSegment(ar2Dmod(_2dis[j], _tp, m1.data[mem_log[12][0]+mem_log[12][1]-2]*0.005 ), -2);
-  
-  if (trns_lock)
+
+  // here fix to draw 2d inds for obj or any fn ?
+  if (translateObject.enable)
   {
     if (m1.data[mem_log[9][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _tp, 0.018 ), -3);}
     if (m1.data[mem_log[10][0]+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _np, 0.009 ), -3);}
@@ -3823,6 +3877,9 @@ function pointerOutsideWindow() // return [0] indicates if inside menu pane
 
 var boundingBox =
 {
+  enable: 0,
+  active: 0,
+  focus: 0,
   i: 0,
   k: 0,
   kf: 0,
@@ -3837,9 +3894,6 @@ var boundingBox =
   match: [0,0,0],
   remap1: [1, 0, 3, 2, 5, 4, 7, 6],
   remap2: [4, 5, 6, 7, 0, 1, 2, 3],
-  active: 0,
-  focus: 0,
-  enable: 0,
   runhook: 0,
   fpshook: 0,
   lpstart: [0,0,0],
@@ -4012,12 +4066,12 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
 // to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
+  enable: 0,
+  active: 0,
   obj: 0,
+  focus: 0,
   e_id: 'pivotAlign', // could be made any type
   sound_tick: 'sounds/tick.mp3',
-  active: 0,
-  focus: 0,
-  enable: 0,
   pivot: [0,0,0], p0: [0,0,0], // first point capture w/ key (f)
   p1: [0,0,0], p2: [0,0,0], // p1 & p2 make the second reference line
   pn: 0, // track what point has been logged
@@ -4276,16 +4330,18 @@ function updateRefLog()
            ?@?@?
            @?@*/
 
+
+var  _2d_exclude = [];
 function Compute(init_dat)
 {
 
 
   if (_settings[5].settings[2]) {updateZMap();}
 
-	m_obj_offs[12][0] = _lp_world[0];
-	m_obj_offs[12][1] = _lp_world[1];
-	m_obj_offs[12][2] = _lp_world[2];
-	m_obj_offs[12][3] = _settings[5].settings[0]/2.0;
+  m_obj_offs[12][0] = _lp_world[0];
+  m_obj_offs[12][1] = _lp_world[1];
+  m_obj_offs[12][2] = _lp_world[2];
+  m_obj_offs[12][3] = _settings[5].settings[0]/2.0;
 
   if (mem_t_sum != 0)
   {
@@ -4295,15 +4351,29 @@ function Compute(init_dat)
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
 
+  // excludeSelf: true,
   // RUN LIST HERE
-  let _run_check = false;
+  _run_check = false;
+  _run_objs = []; // or len = 0 ?
+  _2d_exclude = [];
   for (let p = functionRunList.length-1; p>=0; p--)
   {
     if (functionRunList[p].active) {functionRunList[p].run();}
-    if (functionRunList[p].enable) {_run_check = true;}
+    if (functionRunList[p].enable)
+    {
+      _run_check = true;
+      let _t = functionRunList[p].obj;
+      let _c = functionRunList[p].excludeSelf;
+      if (_t != undefined) {_run_objs.push(functionRunList[p].obj);} // somethind must be done w/ undefined -> cancel itself if..
+      if (functionRunList[p].excludeSelf) {_2d_exclude.push(functionRunList[p].obj);}
+    }
   }
   flag_objModif = _run_check;
-  
+
+
+
+
+
   // if (key_map.j && runEvery(50))
   // {
   //   let _np = rot_y_pln(sub3(player_pos, _lp_world), 0.05);
@@ -4326,7 +4396,6 @@ function Compute(init_dat)
   if (_settings[5].settings[0] != grid_scale_d) { updateGrid(); }
   if(document.activeElement.type ==  "text") { flag_inText = 1; } else {flag_inText = 0;}
 	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, _settings[7].settings[0], obj_cyc); }
-  if (key_map.shift && key_map.v && !trns_lock && runEvery(150)) { translateFolder.toggle(); }
 	if (key_map["5"] && runEvery(150)) { mirrorOverPlane(); }
 	if (key_map["6"] && runEvery(300)) { boundingBox.toggle(); }
 	if (key_map.l && runEvery(300)) { link_obj(obj_cyc); }
@@ -4334,21 +4403,8 @@ function Compute(init_dat)
 	if (key_map["7"] && runEvery(300)) { createCircleAtCursor(); }
 	if (key_map.h && runEvery(200)) { setCursorToObjCenter(); }
 
-	// This needs a system wtf
-	if (trns_lock)
-	{
-		if (!isNaN(mem_log[trns_obj_i][1]))
-		{
-			var _fd = sub(_lp_world, trans_f);
-			for (var i=0; i<mem_log[trns_obj_i][1]/4; i++)
-			{
-				if (!_settings[3].settings[0]) {m_obj_offs[trns_obj_i][0] = _fd[0];}
-				if (!_settings[3].settings[1]) {m_obj_offs[trns_obj_i][1] = _fd[1];}
-				if (!_settings[3].settings[2]) {m_obj_offs[trns_obj_i][2] = _fd[2];}
-			}
-		}
-	}
 
+  if (key_map.shift && key_map.v && !trns_lock && runEvery(150)) { translateFolder.toggle(); }
 	// Delete obj by obj cycle & fix memory
 	if (!trns_lock)
 	{
@@ -4622,26 +4678,28 @@ function Compute(init_dat)
         boundingBox.fpshook = 0;
       }
 
-			if (key_map.v && !translateFolder.active && runEvery(150)) {trans_obj(obj_cyc);}
+			if (key_map.v && !translateFolder.active && runEvery(150)) {translateObject.toggle();}
 
 			if (key_map.t && obj_cyc>world_obj_count && runEvery(350)) // Fix this area needs to check obj_cyc or in fn
 			{
 				if (key_map.shift)
 				{
-					switch(trns_lock)
+					switch(translateObject.enable)
 					{
 						case 0:
 							cloneObjSelected();
-							trans_obj(m_objs.length-1);
+              obj_cyc = m_objs.length-1;
+              translateObject.newest();	
 							break;
 						case 1:
 							moveObject();
 							cloneObjSelected();
-							trans_obj(m_objs.length-1);
+              obj_cyc = m_objs.length-1;
+              translateObject.newest();	
 							break;
 					}
 				}
-				if (!key_map.shift && !trns_lock)
+				if (!key_map.shift)
 				{
 					cloneObjSelected();
 					obj_cyc = m_objs.length-1;
@@ -4649,8 +4707,9 @@ function Compute(init_dat)
 			}
 			break;
 
-		case 1:
-			if (trns_lock) {trans_obj(trns_obj_i);}
+		case 1: ///////////////////////////////////////////////// WPNSELECT (2)
+
+      if (translateObject.enable) {translateObject.toggle();} // bad replace w/ larger system later
 			if (obj_cyc>world_obj_count)
 			{
 				
@@ -4666,7 +4725,6 @@ function Compute(init_dat)
 				if (key_map.lmb == false && wpn_1)
 				{
 					wpn_1 = 0;
-					finishTrnsAnim(obj_cyc);
 					m_obj_offs[obj_cyc] = [0,0,0,1];
 				}
 
