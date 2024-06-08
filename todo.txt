@@ -12,14 +12,98 @@
       |   \▓▓      \▓▓\▓▓▓▓▓▓▓▓\▓▓      \▓▓ \▓▓▓▓▓▓ \▓▓       \▓▓▓▓▓▓         \▓▓    \▓▓▓▓▓▓ \▓▓▓▓▓▓▓  \▓▓▓▓▓▓ 
       |
 ______|___________________________________________________________________________________________________________
-      |
+      |   
+      | - lots of things in this list.
+      |   most important is encoding 3 points using center that are simply
+      |   n+o+1: where n is an axis, o is offset; this case center; and 1 defines unit form
+      |   must update entire code structure for this one i knew i should have done this a long time ago
+      |   with fast reference vectors any data can be reoriented to it's original state without a log
+      |   and making a log can simply recover the array data (save data) making logs more simplistic
+      |   the look at function will use a direction vector as a reference but the twist is entirely arbitrary
+      |   and must rapidly change for ex: editing inside a polygon along it's lines that share no colinear normals
+      |   grid orientation will be very automagical w/ these combined
+      |   
+      |   to avoid the arbitrary twist there must also exist a secondary rotation methodology
+      |   rotate on the yaw to setup a second rotation in the pitch. emulate this with the continuity of quaternions ? right
+      |   
+      |   i started using points with lines and got to triangles but the reduction to triangles is essentially an indice map
+      |   i now need to automate triangles back to lines to allow the joining of geometry assuming they share at least one point
+      |   is this better than nesting ????????????????????????????????????????????????????????????????????
+      |   
+      |   
+      |   EZ FIXES
+______|___________________________________________________________________________________________________________
+      |   
+      |   
+      | - for now temp objs just make not delete
+      | - sub folders need to be considered when cursor color to folder change
+      | - sub folders need carry over when a folder duplicated
+      | - 2d inds need to be fixed for translation/fns, maybe just pre-populate the vectors
+      | - tree border width is opposite need to reverse w a 1-x
+      |   
+      | - arScale() should accept an array that determines what components are to be used in the computation reducing cpu (firefox)
+      | - indicator for folder move is not always working -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
+      | - also world points are visible through objects ?!?!?!?!? must split draw sequence into a before and after by pushing afters to a temp ar (faster)
+      | - raises the question should all types be done this way ?
+      |   
+      |   
+      |   ALL
+______|___________________________________________________________________________________________________________
+      | 
+      | - all static data can be checked to group triangles coplaner -> resulting groups provide unique surfaces
+      | - use the run list to create a ui for active modifiers -> data will end up in obj fns kinda big sad but maybe just use proper settings/functions string set
       | - 
-      | - 
-      | - get cross vec tool
+      | - simple line plane intersection for rotation inside a plane would make a lot more sense and ig this would be the next evoltuion of pivot align run
+      | - simple tool FAK: right click lock point (whenever cursor helper?) -> move point -> finish move -> write data
+      | - reverse object geometry fn with mirror along the linked edges
       | - ball rotate tool where you select inside surface of ball with simple line/sphere
-      | - 
+      |   - this would require pitch->yaw type of rotation. maybe settings for different types of rotation later
       | - pivot align can work with a cross vec holo
-      | - translated objects need priority
+      | - shift v should block input from all obj's in 2d query
+      | - short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
+      | - multi-select w/ drag or in list or world
+      | 
+      | - temp objs can be deleted but crashes ofc. this could be a system if it notices upon deletion to undo that step..
+      |   - deletion of any temp obj calls it's event (simple back) nah too complicated havent finished main features yet
+      |  
+      | - most obj fns could clone their opts -> generalize control struct
+      |  
+      | - i have forgotten the need for line/line intersections & line/mouse selection
+      | - almost done w/ this one: need exclusion of self and reorganize the start of obj. ensure enable and active. kind of redundant..
+      | - the functionRunList can contain color data that gets mapped later !!! GOOOOOD each Run obj will have two maps: obj [], col []
+      | - or if there exists a color map the color can later be set directly ?
+      | - 
+      | - 
+      | - if saves stored location, direction, zoom, and movement locks, a writing space becomes more accessible.
+      | - mouse to world combined with a line/plane will work for drawing and not lag so much
+      | - 
+      | - 
+      | - just make each obj store 3 directions that absorb rotation then reassume it's original
+      | - default state -> conjugate???
+      | - should be easy to revert change this way and keep a quat rot log essentially. assuming i can use their inverses w/ conjugate???
+      | - this way i can select to translate w/ arrows and then swap between grid/translate -> circle/rotation w/ holograms
+      | - might need to write something to test distance from point on circle (ez if predefined but bad in long term must be theoretical)
+      | - oh just use origin o on plane and take delta vec and use that for angle selection. so lpi first.
+      | - animated stackable logged quat rot holos in the end
+      |
+      | - per obj unit vecs saved data. aka all objects get additional data to absorb modification.
+      | - k-d (theoretical) -> faster query for 3d world data. would replace 2d queries if distance from a line became faster this way. faster obj modif w/ nesting.
+      | - chaikin's or something better lol -> repair some z buffer
+      | - color map finish -> i'm keeping the pipeline as is. educational purposes initially. textures will come with entire rewrite. mat4's w/ libs approach.
+      | - point nesting tool (auto sub-folder)
+      | - some keybinds need to be event based ! rule set required
+      |
+      | - can a shader processing 4*n sets of data use a secondary set of modifiers and possibly a asin+bcos matrix 
+      | - asin+bcos per entire diagonal -> a and b allow combined states of their weights in some way ?? to represent any rotation
+      | - as a preprogrammable set of data generated by js that applies per obj rotation
+      | - 
+      |
+      |
+      |
+      | - along axis when z is zero circles generated have incorrect center
+      | - 
+      | - bounding box should be relocalizeable
+      | - 
       | - termination of the run list should remove all eLog stuffz but not tooo fast
       | - grid need a radial fade effect
       | - 
@@ -30,7 +114,6 @@ ______|_________________________________________________________________________
       | - to avoid always write a duplicate functional representation of the fundamental task any wide task such as all tools and their purpose.
       | - part of this is also the setup for key binds. there's no middle table.
       | - 
-      | - one of the white square inds still does not rotate w/ planes
       | - z should undo a step in the pivot align
       | - 
       | - 
@@ -44,10 +127,6 @@ ______|_________________________________________________________________________
       |   - 
       |   - 
       |   - 
-      | - shift v should block input from all obj's in 2d query
-      | - sub folders need to be considered when cursor color to folder change
-      | - short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
-      | - indicator for folder move is not always working this is critical -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
       | - quats allow vector add/sub that; if sphereical arcing; allows preservation of direction. it's one motion. 
       | - auto z buffer top most
       |
@@ -83,11 +162,9 @@ ______|_________________________________________________________________________
       | - nominal lumber list ( need geo name for line objs )
       | - more fn obj conversion (doing trns obj) (fn done now fix rest of code)
       |
-      | - quat look at
       | - add an animated world (floating cubes?)
       | - animations/physics ticks must be parallelizable for GPU or bad performance in the end
       |
-      | - obj select scroll in folder
       |
       | - multi select... ? already going via folder
       | -   so..
@@ -97,16 +174,12 @@ ______|_________________________________________________________________________
       | -     - then select stacking
       | -     - dynamic bounding highlight boxes per or for joint select
       | -   
-      | - tree border width is opposite need to reverse w a 1-x
       | -  
-      | - geometric algebra may be worth the time for helping 10x my progress
-      | - quat look at will be next level stuff when it's applied w/ shader
+      | - need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
       | - ideally i use proper inverse to find mouse to world and I can use an offset/rounded lpi instead as well
       | - this help performance, reduce complexity, help clean up essentially.
       | -  
       | - i realize now to draw wire frame you can ray trace each vertex and when vertex shows behind remove connected lines.
-      | -  
-      | - need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
       | -  
       | - KKKK static premade shaded color map -> during tri pack w/ new k find the correct col and pack to second dynam buffer -> look same & shaded
       | -  
@@ -138,8 +211,6 @@ ______|_________________________________________________________________________
       | - Float32Array already contains byteLength and byteOffset.
       | - Match all of my data structure to use Float32Array to remove all type conversions
       | - fix preview image to offset w/ 2d forced square w/ check
-      | - rewrite the select2dpoint function
-        |  needs system to provide hologram ui
       | - if encoded center is within plane of poly's captures some overlap
       | - engine space
         -- generate dir vec curves
@@ -165,19 +236,9 @@ ______|_________________________________________________________________________
       |
       | - all my functions relative to the plane can be replaced with a general obj orient fn.
       |
-      | - Overlapping point issues BREOKEKN
-          - fuqk
-            take circle size and make size a fn
-              fn sets rel to z AND index
-              goal here is to have circle size data that maps to the screen
-                use data to reveal bounding areas to hover over to select overlapping selection of objs
-                  don't i already have a good z buffer.. wait
-
               might have the answer to this now with the new manual 2d gen circles
       |
       | - unit vector line conversion method for arc len
-      | - edit obj
-      | - Correctly log changed information that can be applied to reverse.
       |
       | So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
       | Random idea ::
@@ -196,14 +257,6 @@ ______|_________________________________________________________________________
   Assault cube old code
 
   .reduce is a method that accumulates the values of an array into a single value (in this case, the sum of the squared components).
-
-  If rotations use dir vec I can plug in my normal map to reorient the grid to surface.
-    ?: how do you make a grid ON a plane (my grid only reveals what rounding looks like)
-      maybe try reversing the process.
-      if I have a grid of rounded points and I rotate the grid to a new plane: rot(round(point))
-      if poly plane is assumed a normal coordinate system moving to a new plane: rot(round(point))
-      the procedure of rotation around an arbitrary axis applies to many things,
-        ?: point on a plane -> rotate to original world plane at O -> round(point) -> apply inverse rotation
 
   Instead of clipping for side planes I could draw lines in two directions determined if x1>x2.... lol NO CLIPPING NEEDED
     for a lil extra travel just offset
