@@ -1018,6 +1018,7 @@ window.addEventListener('mouseup', function(e)
 
 window.addEventListener("wheel", function(e)
 {
+  // use wpn_1 to switch scroll to object distance from player as another global var..
 	if (!key_map.shift) // off shift
 	{
 		if (mouseLock) // menu closed
@@ -2695,6 +2696,7 @@ function deleteObjectSelected()
 	del_obj(obj_cyc);
 }
 
+// just put the functions into array to be spliced ig ?!??!
 function del_world()
 {
   // Terminate all running data manipulation
@@ -4724,8 +4726,11 @@ function Compute(init_dat)
 
 				if (key_map.lmb == false && wpn_1)
 				{
-					wpn_1 = 0;
+          arScale(m_objs[obj_cyc], m_objs_ghost[obj_cyc], m_obj_offs[obj_cyc], [0,0,0,0], [1,1,1,1]);
+          arScale(m_objs_ghost[obj_cyc], m_objs[obj_cyc], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 					m_obj_offs[obj_cyc] = [0,0,0,1];
+					wpn_1 = 0;
+          // here fix add the arScale to apply finish
 				}
 
 				if (key_map.t && key_map.lmb == false && obj_cyc>world_obj_count && runEvery(350)) // Make fn handle move & dupe? Make dupes place where holding hologram
