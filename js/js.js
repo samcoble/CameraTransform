@@ -33,7 +33,8 @@ var flag_objModif = false, // replace _run_check with diff sys
     flag_loadTemp = 0,
     flag_inText = 0,
     _run_check = false,
-    _run_objs = [];
+    _run_objs = [],
+    _run_holos = [];
 
 var obj_folders = [],
     obj_last = 0, // last obj created id
@@ -1165,6 +1166,14 @@ function hasDuplicate(set, point)
     if (pIsEqual(existingPoint, point)) {return true;}
   }
   return false;
+}
+
+function hasNA(ar, k, n) // check if ar[i][k] (offset k) has n. for horizontal data
+{
+  let _l = ar.length,
+      _r = 0; // return data
+  for (var i=0; i<_l; i++) {if (ar[i][k] == n) {_r = 1;}}
+  return _r;
 }
 
 function hasN(ar, n) // simple test for checking indices or folders etc
@@ -2693,7 +2702,7 @@ function planeCycle()
 
 function deleteObjectSelected()
 {
-	del_obj(obj_cyc);
+  if (!hasNA(e_log, 2, obj_cyc)) { del_obj(obj_cyc); }
 }
 
 // just put the functions into array to be spliced ig ?!??!
@@ -4361,7 +4370,7 @@ function Compute(init_dat)
   for (let p = functionRunList.length-1; p>=0; p--)
   {
     if (functionRunList[p].active) {functionRunList[p].run();}
-    if (functionRunList[p].enable)
+    if (functionRunList[p].enable) // when tool enabled
     {
       _run_check = true;
       let _t = functionRunList[p].obj;
@@ -4411,9 +4420,9 @@ function Compute(init_dat)
 	if (!trns_lock)
 	{
 		if (key_map.shift) //320
-		{if (key_map.x && runEvery(320)) { del_obj(obj_cyc); }
+		{if (key_map.x && runEvery(320)) { deleteObjectSelected(); }
 		} else if (key_map.x && !del_obj_lock)
-		{ del_obj(obj_cyc); del_obj_lock = 1; }
+		{ deleteObjectSelected(); del_obj_lock = 1; }
 
 		if (key_map.c && !key_map.shift && !key_map.control && runEvery(300)) { editSelectedObject(); }
 	}
