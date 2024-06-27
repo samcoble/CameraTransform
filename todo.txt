@@ -34,8 +34,52 @@ ______|_________________________________________________________________________
       |   EZ FIXES
 ______|___________________________________________________________________________________________________________
       |   
-      |   
-      | - for now temp objs just make not delete
+      | - fix the damn paint tool to use mouse to world ray && allow selection/deletion
+      | - style & place the log box
+      | - m_t_objs was fundamentally a mistake because any array format will work ofc
+      | - go through code and write line number where center is included in logic here:
+      |
+      | =>          [ so now to fix all loops and pregenerated loops / offsets inside ]
+      |      - 
+      |      - DONE ? working through datafns now. make sure to fix all instances of fn call m_objs_loadPoints takes additional params 0 or dir (4f)
+      |      - DONE to make old saves continue to work i will separate the data and loading combines back into new format... only 1 time thing.
+      |      - DONE splitObj can be updated to fix most functions
+      |      - DONE now to update save fn, then update load fn, ...
+      |      - DONE obj point mean can't include dir points
+      |      - DONE so now the center is off b/c of the average
+      |      - DONE render sequence
+      |      - DONE fix preview
+      |      - DONE dots fix
+      |      - DONE line fix
+      |      - DONE link_obj
+      |      - DONE updateNormalMaps
+      |      - DONE updateRayInters
+      |      - 
+      |      - NEED FIX low call rate fn -> update dir vec visual buffer (only 3 lines -> write via indice reference -> all rel to ctr)
+      |      - NEED FIX select2dpoint()
+      |      - 
+      |      - NEED CHECK looks like findbyctr_obj and select2dpoint functions use memory offsets to center data so put new data after.
+      |      - NEED CHECK getctr_obj and getctr_ghost both reference length to get end point. will have to change
+      |      - NEED CHECK obj 2d center inds would be affected ??? resume 3684
+      |      - 
+      |      - 639 : remove center is here too
+      |      - 1367 : splitObj()
+      |      - 1431 : datafns
+      |      - 1541 : cloneObj()
+      |      - 1632 : updateNormalMaps()
+      |      - 2139 : getctr_obj
+      |      - 2149 : getctr_ghost
+      |      - 3628 : ...
+      |      - 
+      |      - so far it's complete ? so you can now select the internal dir vec. it absorbes scale and rotation at the same time
+      |      - 
+      |      - later need a function to define a system for locking obj dir relative to a new plane so 
+      |      - creating more geometry perp to surface still correctly applies the dir vec relative to at least one half the process (no twist)
+      |      - 
+      |
+      | - pivot align does not work with some orientations (colinear ?) might be a zero in the dividend
+      | - maybe i have failed to ensure a pipeline is entirely buffered where cross returns a new. it should edit preallocated space instead 
+      | - i recall the 2d inds for circles were not entirely buffered. never finished.
       | - sub folders need to be considered when cursor color to folder change
       | - sub folders need carry over when a folder duplicated
       | - 2d inds need to be fixed for translation/fns, maybe just pre-populate the vectors
@@ -50,6 +94,10 @@ ______|_________________________________________________________________________
       |   ALL
 ______|___________________________________________________________________________________________________________
       | 
+      | - rewrite pointerOutsideWindow() to accept boxes. location ??
+      | - event priority system: using any key/input can be directed to the next event awaiting completion w/ any input
+      | - move object along axis tool
+      | - really need line inside line tool. and set length of line
       | - all static data can be checked to group triangles coplaner -> resulting groups provide unique surfaces
       | - use the run list to create a ui for active modifiers -> data will end up in obj fns kinda big sad but maybe just use proper settings/functions string set
       | - 
@@ -164,6 +212,8 @@ ______|_________________________________________________________________________
       |
       | - add an animated world (floating cubes?)
       | - animations/physics ticks must be parallelizable for GPU or bad performance in the end
+      | - not entirely sure if it's possible to do so w/o a special way to apply a generated set to a secondary set such
+      | - that data sections receive individual rotations..
       |
       |
       | - multi select... ? already going via folder
@@ -175,7 +225,8 @@ ______|_________________________________________________________________________
       | -     - dynamic bounding highlight boxes per or for joint select
       | -   
       | -  
-      | - need to try a fn that scales grid up and then back to where it was over 5ms do 5 scales
+      | -  not great but i could try a fn that scales grid up and then back to where it was over 5ms do 5 scales
+      |
       | - ideally i use proper inverse to find mouse to world and I can use an offset/rounded lpi instead as well
       | - this help performance, reduce complexity, help clean up essentially.
       | -  
@@ -216,10 +267,9 @@ ______|_________________________________________________________________________
         -- generate dir vec curves
       |
       | - nested point sequences at overlap point should be fairly easy. take note of logic
-          - think i got it here
-            - placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
-            - len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
-            - logic diagram could provide more direct code struct
+          - placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
+          - len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
+          - logic diagram could provide more direct code struct
       |
       | - unique ids for objs will help w/ identical objs in future?
       |
