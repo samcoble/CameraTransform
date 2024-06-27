@@ -399,7 +399,7 @@ function makeTree(par) // output tree in the form of html structure
 
       // _li_fld.textContent = _n +": "+ _root[i][j] + " : " + obj_folders[_root[i][j]].length;
 
-      _li_fld.textContent = obj_folders[_root[i][j]].length + " | " + _n; // Enable after tree works correctly or show size in new element
+      _li_fld.textContent = obj_folders[_root[i][j]].length + " | " + _n; // enable after tree works correctly or show size in new element
       
       _li_fld.style.backgroundColor = tree_colors[(_root[i][j]+1)%tree_colors.length];
       _li_fld.style.height = (_s_fld_li_h+_s_fld_li_ex)+'px';
@@ -539,7 +539,7 @@ function makeTree(par) // output tree in the form of html structure
         // use mem_log for user info
         if (_obj_id <= m_objs.length-1)
         {
-          _li_obj.textContent = mem_log[_obj_id][2];
+          _li_obj.textContent = mem_log[_obj_id][2]==1 ? 1 : mem_log[_obj_id][2] - mem_encode[0];
         }
 
         // apply color for selected obj
@@ -1102,6 +1102,7 @@ border: 0px solid rgba(0, 0, 0, 0);
 color: #CCC;
 overflow-y: auto;
 overflow-x: hidden;
+scrollbar-width: none;
 `;
 
 var menu_tree_ulStyle =
@@ -2958,5 +2959,20 @@ makeElement(addDiv,
 });
 
 
+// makeElement(addDiv,
+// {
+//   id: "menu_logBox", cls: "", prnt: "html",
+//   rootStyle:
+//   `
+//   position: absolute;
+//   top: 93%;
+//   right: 3%;
+//   height: 40px;
+//   padding: 0px;
+//   margin: 0px;
+//   background: rgba(0,0,0,0);
+//   border: 1px solid rgb(0,0,0);
+//   `
+// });
 
 

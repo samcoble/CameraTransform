@@ -12,21 +12,21 @@ __/\\\\____________/\\\\__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\_____/\\\\\\\\
 */ // You exist in a .bin of floating point numbers.
 
 
-const pi = 3.141592653589793, // High definition PI makes a visible difference
+const pi = 3.141592653589793, // high definition PI makes a visible difference
       pi2 = 6.283185307179586,
       menuTime_int = 220,
       title_int = 420,
       player_speed = 0.5 * 0.7,
-      player_speed_vert = 0.3 * 0.7, // Vertical travel speed
-      player_speed_mult = 4 * 0.7; // Shift key
+      player_speed_vert = 0.3 * 0.7, // vertical travel speed
+      player_speed_mult = 4 * 0.7, // shift/sprint key
+      mem_encode = [4, 16], // offsets to be used where encoded data ref
+      base_dir = [1,0,0,1, 0,1,0,1, 0,0,1,1];
 
 var fileName = "";
 var world_obj_count = 0;
 var _preview_scaler;
 var _s_ratio;
 var cursor_helper = 0;
-var functionRunList = [];
-var e_log = [];
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -34,7 +34,8 @@ var flag_objModif = false, // replace _run_check with diff sys
     flag_inText = 0,
     _run_check = false,
     _run_objs = [],
-    _run_holos = [];
+    e_log = [],
+    functionRunList = [];
 
 var obj_folders = [],
     obj_last = 0, // last obj created id
@@ -68,7 +69,7 @@ var wpn_select = 0,
 
 var del_obj_lock = 0,
     trns_lock = 0,
-    _all_lock = 0, // Pass through color
+    _all_lock = 0, // pass through color
     _all_lock_i = 0;
 
 var paint_d = 0,
@@ -249,6 +250,14 @@ var key_map =
 	arrowright: false
 };
 
+var key_map_prevent = 
+{
+	shift: false,
+	tab: false,
+	control: false,
+	q: false
+};
+
 function setBackgroundColor()
 {
   let _c = [
@@ -266,14 +275,6 @@ function playSound(src)
   _audio.volume = 0.1;
   _audio.play();
 }
-
-var key_map_prevent = 
-{
-	shift: false,
-	tab: false,
-	control: false,
-	q: false
-};
 
 var player_pos_i = [],
     mScreenMode = 0,
@@ -365,8 +366,7 @@ function runListTerminateAll()
   { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
 }
 
-function eLog(_id, _f, _i) // i
-{ e_log.push([_id, _f, _i]); }
+function eLog(_id, _f, _i) { e_log.push([_id, _f, _i]); }
 
 function eLogClear(_id) // remove all entries with matching _id
 {
@@ -642,7 +642,8 @@ function getObjData(_i)
 {
   let _r = [];
   let _s = m_objs[_i].length;
-  for (let i = 0; i<_s-4; i++)
+
+  for (let i=0; i<_s-mem_encode[1]; i++)
   {
     if (i%4<3)
     {
@@ -651,6 +652,18 @@ function getObjData(_i)
     {
       _r.push(_i-world_obj_count-1);
     }
+  }
+  return _r;
+}
+
+function getObjDir(_i)
+{
+  let _r = [];
+  let _s = m_objs[_i].length;
+  for (let i=_s-mem_encode[1]; i<_s; i++) // -4
+  {
+    _r.push(m_objs[_i][i]);
+    if (!((i+1)%4)) {_r[_r.length-1] = 1;}
   }
   return _r;
 }
@@ -691,14 +704,15 @@ function unpackArray(ar)
 
   return _r;
 }
-  
+
 function makeSave()
 {
-  let _r = [],
-      _t = [],
-      _o = [],
-      _s,
-      _c = 5; // default folder count
+  let _r = [], // wrapped return
+      _t = [], // folder parents
+      _o = [], // raw obj data
+      _e = [], // dir vecs
+      _c = 5, // default folder count
+      _s;
 
   // folder toggle
   _s = folder_toggle.length;
@@ -724,6 +738,7 @@ function makeSave()
   for (let i = world_obj_count+1; i<_s; i++) // using world count here
   {
     _o.push(getObjData(i));
+    _e.push(getObjDir(i)); // pushed -> free index
   }
 
   // place _o
@@ -731,6 +746,9 @@ function makeSave()
 
   // place _t
   _r.push ( packArray(_t) );
+
+  // place _e
+  _r.push ( packArray(_e) );
 
   return new Float32Array(packArray(_r));
 }
@@ -741,7 +759,7 @@ function loadSelect(_fi)
   if (key_map.shift)
   {
     // flag_loadingObject = 1;
-    loadFile(_fi[0]);
+    loadFile(_fi[0]); // holding shift opens w/ old parsing
   } else {
     // flag_loadingObject = 1;
     loadFile0(_fi[0]);
@@ -786,7 +804,7 @@ function returnSmallestInArrays(ar)
   return _t;
 }
 
-function loadFile0(_fi)
+function loadFile0(_fi) // main load function
 {
   if (_fi)
   {
@@ -796,14 +814,20 @@ function loadFile0(_fi)
     const _fr = new FileReader();
     _fr.onload = event =>
     {
-      const _d = new Float32Array(event.target.result);
-      _r.push(unpackArray( _d ));
-      _r.push(unpackArray( _r[0][0] ));
+      const _d = new Float32Array(event.target.result); // this is a recursive unpack ...
+      _r.push( unpackArray( _d ) );
+      _r.push( unpackArray(_r[0][0]) ); // obj data : ref is [1]
 
       // unpack folder tree
       _r.push( unpackArray(_r[0][1]) ); // this [0]->toggle [1]->parent
       _r.push( unpackArray(_r[2][2]) ); // obj folders
       _r.push( unpackArray(_r[2][3]) ); // names
+
+      // unpack dir vecs per obj - undefined check is finished later
+      if (_r[0][2] != undefined)
+      {
+        _r.push( unpackArray(_r[0][2]) ); // ref is [5]
+      }
 
       // console.log(_r);
       
@@ -834,7 +858,6 @@ function loadFile0(_fi)
         folder_names.push(float32ArrayToString(_r[4][i]));
       }
       
-      // console.log(_r[3]);
       // load folder arrays
       _s = _r[3].length; // array containing folder arrays : now 0 is folder 3
       let _s1 = m_objs.length;
@@ -854,13 +877,12 @@ function loadFile0(_fi)
           obj_folders.push(offsetArray(_r[3][i], -(_sml)+_s1)); // and here
         }
       }
-      // console.log(_r);
       
       // load objs
       for (let i=0; i<_r[1].length; i++)
       {
-        // console.log(flag_loadingObject);
-        m_objs_loadPoints( _r[1][i] );
+        let _td = _r[5] == undefined ? 0 : _r[5]; // if load file contains no dir data provide the default dir vec for that object !!!
+        m_objs_loadPoints( _r[1][i], _td[i] ); // !!! WHERE POINTS LOAD !!!
         if (i==_r[1].length-1)
         {
           flag_loadingObject = 0;
@@ -906,8 +928,8 @@ function loadFile(_fi)
 			}
 			for (var n=0; n<_gs.length; n++)
 			{
-				if (n!=_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[n], _gs[n+1])); m_objs_loadPoints(new Float32Array(_tar));}
-				if (n==_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[_gs.length-1], _gs[_fa.length-1])); m_objs_loadPoints(new Float32Array(_tar));}
+				if (n!=_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[n], _gs[n+1])); m_objs_loadPoints(new Float32Array(_tar), 0);}
+				if (n==_gs.length-1) {var _tar = Array.from(_fa.slice(_gs[_gs.length-1], _gs[_fa.length-1])); m_objs_loadPoints(new Float32Array(_tar), 0);}
 			}
 			var _fn = _fi.name.slice(0, _fi.name.length-4);
 			var _si = _fn.length;
@@ -1111,7 +1133,7 @@ function add(a,b) {return [a[0]+b[0], a[1]+b[1], a[2]+b[2], 1];}
 
 function sub2(a,b) {return [a[0]-b[0], a[1]-b[1]];}
 function sub3(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];}
-function sub(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];} // Must keep last 1 to make it easy to push. Keep in mind..
+function sub(a,b) {return [a[0]-b[0], a[1]-b[1], a[2]-b[2], 1];} // must keep last 1 to make it easy to push. Keep in mind..
 
 function len2fast(a) {return a[0]*a[0]+a[1]*a[1];} // no root needed for sorting
 function len2(a) {return Math.sqrt(a[0]*a[0]+a[1]*a[1]);}
@@ -1134,7 +1156,7 @@ function norm(_p) // this is not the correct norm lol... this converts vec to un
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l]);
 }
 
-function norm4(_p) // Quaternion 
+function norm4(_p) // quaternion 
 {
 	let _l = dot4(_p,_p);
 	return ([_p[0]/_l, _p[1]/_l, _p[2]/_l, _p[3]/_l]);
@@ -1161,10 +1183,8 @@ function pIsEqual(p1, p2)
 
 function hasDuplicate(set, point)
 {
-  for (var existingPoint of set)
-  {
-    if (pIsEqual(existingPoint, point)) {return true;}
-  }
+  for (var _p0 of set)
+  { if (pIsEqual(_p0, point)) {return true;} }
   return false;
 }
 
@@ -1226,32 +1246,36 @@ function updateFPS()
 
 function checkNumber(n) { if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return false;} }
 
-function meanctr_obj(ar) // I think this work. I hope so.
+function meanctr_obj(ar, m) // i think this work. i hope so.
 {
   let _ob = splitObjS(ar),
-    _uniques = new Set(),
-    _pm = [0, 0, 0, 0];
-  for (var i = 0; i < _ob.length; i++)
+      _uniques = new Set(),
+      _pm = [0, 0, 0, 0],
+      _denom = 0;
+
+  for (var i = 0; i<_ob.length-m*mem_encode[0]; i++)
   {
     let _p = _ob[i];
     if (!hasDuplicate(_uniques, _p))
     {
       _pm = add3(_p, _pm);
       _uniques.add(_p);
+      _denom++;
     }
   }
+
   var uniqueCount = _uniques.size;
   _pm[3] = 1;
-  return uniqueCount === 0 ? new Float32Array(_pm) : new Float32Array(scale(_pm, 1 / uniqueCount));
+  return uniqueCount === 0 ? new Float32Array(_pm) : new Float32Array(scalew1(_pm, 1 / _denom));
 }
 
 
-/*-- Placeholder 4d data generation --\
-            \------------------------------------*/
+  /*-- Placeholder 4d data generation --\
+  \------------------------------------*/
 
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
-var _pp = [-125,0,-125]; // Point on plane will be static
+var _pp = [-125,0,-125]; // point on plane will be static
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 
 var _lp_world = new Float32Array([0.0,0.0,0.0,1]);
@@ -1325,7 +1349,7 @@ function updateGrid()
   grid_scale_d = _settings[5].settings[0];
 }
 
-
+// this should not need switch. pass in direction vector.
 function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, plane : maybe fix z later
 {
 	// s = x^2 + y^2
@@ -1345,7 +1369,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
 				c_pnts[n*4+2] = _lp_world[2]+_s*Math.cos(_r*n+_of);
 			}
-			m_objs_loadPoints(c_pnts);
+			m_objs_loadPoints(c_pnts, 0);
     break;
 		case 1:
 			for (let n=0; n<=_df; n++)
@@ -1354,7 +1378,7 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+1] = _lp_world[1];
 				c_pnts[n*4+2] = _lp_world[2]+_s*Math.sin(_r*n+_of);
 			}
-			m_objs_loadPoints(c_pnts);
+			m_objs_loadPoints(c_pnts, 0);
     break;
 		case 2:
 			for (let n=0; n<=_df; n++)
@@ -1363,32 +1387,46 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
 				c_pnts[n*4+2] = _lp_world[2];
 			}
-			m_objs_loadPoints(c_pnts);
+			m_objs_loadPoints(c_pnts, 0);
     break;
 	}
 }
 
-function splitObj(ar) // accepts linear : outputs array of 4d points
+function splitObjR(ar) // temp to finish new encode offsets. replace all with a single function later
 {
-  const r = [];
-  const _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
+  let r = [];
+  let _s = Math.ceil(ar.length / 4) - mem_encode[0];
   for (let i = 0; i < _s; i++)
   {
-    const end = Math.min(i*4 + 4, ar.length);
-    const chunk = ar.subarray(i*4, end);
+    let end = Math.min(i*4 + 4, ar.length);
+    let chunk = ar.subarray(i*4, end);
     r.push(new Float32Array(chunk));
   }
   return r;
 }
 
-function splitObjS(ar) // special function for splitting obj w/ no center
+function splitObj(ar) // special function for splitting obj w/ no center in return
 {
-  const r = [];
-  const _s = Math.ceil(ar.length / 4); // - 1 cntr
+  let r = [];
+  let _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
   for (let i = 0; i < _s; i++)
   {
-    const end = Math.min(i*4 + 4, ar.length);
-    const chunk = ar.subarray(i*4, end);
+    let end = Math.min(i*4 + 4, ar.length);
+    let chunk = ar.subarray(i*4, end);
+    r.push(new Float32Array(chunk));
+  }
+  return r;
+}
+
+function splitObjS(ar) // include center
+{
+  let r = [];
+  let _s = Math.ceil(ar.length / 4);
+  // console.log(_s);
+  for (let i = 0; i < _s; i++)
+  {
+    let end = Math.min(i*4 + 4, ar.length);
+    let chunk = ar.subarray(i*4, end);
     r.push(new Float32Array(chunk));
   }
   return r;
@@ -1422,30 +1460,64 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 [0,0,0,1.0,0,-1.0,0,1.0] // up
 */
 
-shaderModule.init();
-var m1 = shaderModule.alloc(80000); // Allocate memory for parallel operations
-for (i=0; i<m1.data.length; i++) {m1.data[i] = 0.0;}
+// actually wacked
+// the 4th needs to be set correctly
 
-function m_objs_loadPoints(ar) // Adds objects
+shaderModule.init();
+var m1 = shaderModule.alloc(80000); // allocate memory for parallel operations
+for (i=0; i<m1.data.length; i++) {m1.data[i] = 0.0;} // set data to zeros
+
+function m_objs_loadPoints(ar, _dir) // adds objects
 {
+  let ar_ctr = meanctr_obj(ar, 0);
+  let flag_use_dir = 0;
+  if (typeof _dir == 'object')
+  {
+    if (_dir.length > 0)
+    {
+      flag_use_dir = 1; // flag to use direction data
+      // console.log("Direction data found");
+    }
+  }
+
 	if (ar.length > 4)
 	{
-		var ar_f = new Float32Array(ar.length + 4);
-		ar_f.set(ar); ar_f.set(meanctr_obj(ar), ar.length);
-		var ar_g = new Float32Array(ar.length + 4);
+		var ar_f = new Float32Array(ar.length + mem_encode[1]); // this is for center
+    ar_end = new Float32Array(mem_encode[1]);
+		ar_f.set(ar); // place ar data
+
+    // here now check flag to determine what coord is loaded
+    if (flag_use_dir)
+    {
+      ar_f.set(_dir, ar.length);
+    } else {
+      ar_end.set(base_dir);
+      ar_end.set(ar_ctr, base_dir.length);
+      for (let i=0; i<mem_encode[1]-4; i++) { ar_end[i] = ar_end[i] + ar_ctr[i%4]; }
+      ar_f.set(ar_end, ar.length);
+    }
+
+    // m_objs.length-1
+    // console.log(_dir); console.log(ar_end);
+
+
+		var ar_g = new Float32Array(ar.length + mem_encode[1]); // ar_f.length
 		ar_g.set(ar_f); // new ghost
-		m_objs[m_objs.length] = ar_f; // Append ar to m_objs. m_objs.length points to end
+
+		m_objs[m_objs.length] = ar_f; // append ar to m_objs. m_objs.length points to end
 		m_objs_ghost[m_objs_ghost.length] = ar_g;
+
 		mem_log.push([mem_sum, ar_f.length, Math.floor(ar_f.length/4), Math.floor(ar_f.length/12)]);
 		mem_sum += ar_f.length;
 
     let _t_tris = Math.floor((Math.floor(ar_f.length/12)-1)/2)-Math.floor(ar_f.length/12)%2;
-		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // Idk this works for now??
+		obj_normalMaps.push(new Float32Array(_t_tris * 12 + 12)); // idk this works for now??
 
-    var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
-    m_draw.push([ar_t, ar_t.length/6, ar_t.length, (ar_t.length/6+3)*12*5, new Float32Array( (ar_t.length/6+3)*12*5 * 4)]); // Make space for webgl tris
+    // var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
+    var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-4)/2)- (Math.floor(ar_f.length/4)+1) %2)-1) * 6 + 6 ); // this fixed
+    m_draw.push([ar_t, ar_t.length/6, ar_t.length, (ar_t.length/6+3)*12*5, new Float32Array( (ar_t.length/6+3)*12*5 * 4)]); // yeah that is a 5
 
-    // z-map shit I think fixed now?
+    // z-map shit fixed now?
     var ar_z = new Float32Array( ar_t.length/6 );
     var ar_k = new Float32Array( ar_t.length/6 );
     z_map.push([ar_z, ar_k, ar_t.length/6]);
@@ -1474,7 +1546,7 @@ function m_objs_loadPoints(ar) // Adds objects
   let _fp = 0;
   if ((m_objs.length-1) > 2 && (m_objs.length-1) < 6) {_fp = 1;}
   if ((m_objs.length-1) > 5 && (m_objs.length-1) < 11) {_fp = 2;}
-  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 16) {_fp = 2;} // I think this is the default objs?
+  if ((m_objs.length-1) > 11 && (m_objs.length-1) < 16) {_fp = 2;} // i think this is the default objs?
 
   if (m_objs.length > 16) // all none default objs?
   {
@@ -1482,7 +1554,7 @@ function m_objs_loadPoints(ar) // Adds objects
   }
 
   if (flag_loadTemp) {_fp = 3; flag_loadTemp = 0;} // swap to temp obj folder if flagged
-  if (flag_loadingObject == 0) // I don't even know anymore
+  if (flag_loadingObject == 0) // i don't even know anymore
   {
     obj_folders[_fp].push(m_objs.length-1); // must be obj id
   }
@@ -1492,7 +1564,7 @@ function m_objs_loadPoints(ar) // Adds objects
 	updateNormalMaps();
 }
 
-function m_t_objs_loadPoint(ar) // Adds point to stack
+function m_t_objs_loadPoint(ar) // adds point to stack
 {
 	m_t_objs[m_t_objs.length] = ar;
 	mem_t_log.push([mem_t_sum, ar.length]);
@@ -1509,7 +1581,7 @@ function m_t_objs_loadPoints(ar)
 	}
 }
 
-function mem_t_mov() // Puts m_t_objs into m_objs as single array 
+function mem_t_mov() // puts m_t_objs into m_objs as single array 
 {
 	paint_n = 0;
 	if (mem_t_sum != 0)
@@ -1523,11 +1595,11 @@ function mem_t_mov() // Puts m_t_objs into m_objs as single array
 			_tar[i*4+3] = m_t_objs[i][3];
 		}
 		m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
-		m_objs_loadPoints(_tar);
+		m_objs_loadPoints(_tar, 0);
 	}
 }
 
-function packObj(ar) // Puts m_t_objs into m_objs as single array 
+function packObj(ar) // shitty old method
 {
 	var _tar = new Float32Array(ar.length*4);
 	for (i=0; i<ar.length; i++)
@@ -1540,21 +1612,22 @@ function packObj(ar) // Puts m_t_objs into m_objs as single array
 	return _tar;
 }
 
-function cloneObj(ar) // Removes ctr pt from linear array
+function cloneObj(ar) // removes encoded data and returns
 {
-	var _tn = new Float32Array(ar.length-4);
-	_tn.set(ar.subarray(0, ar.length-4));
-	return _tn;
+  let _l = ar.length-mem_encode[1];
+	let _t = new Float32Array(_l);
+	_t.set(ar.subarray(0, _l));
+	return _t;
 }
 
 var _nextSize;
-function setData() // Combine world and specific obj data set. Using mem_t_log as a clean space for obj modification. m_obj_offs creates temporary modification! animations!
+function setData()
 {
   for (let j = m_objs.length-1; j>=0; j--)
   {
     _nextSize = m_objs[j].length;
 
-    // I swear one line is smoother lol
+    // i swear one line is smoother lol
     for (let i=0; i<_nextSize; i++) { m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4]; }
   }
 
@@ -1585,22 +1658,22 @@ function setData() // Combine world and specific obj data set. Using mem_t_log a
 */ // #loaddata
 
 
-m_objs_loadPoints(plr_aim);      // 0
-m_objs_loadPoints(m_flr);        // 1
-m_objs_loadPoints(m_map);        // 2
-m_objs_loadPoints(g_over_x);     // 3
-m_objs_loadPoints(g_over_y);     // 4
-m_objs_loadPoints(g_over_z);     // 5
-m_objs_loadPoints(m_x);          // 6
-m_objs_loadPoints(m_y);          // 7
-m_objs_loadPoints(m_z);          // 8
-m_objs_loadPoints(_lp_world);    // 9
-m_objs_loadPoints(_lop_world);   // 10 should remove this
-m_objs_loadPoints(m_gun);        // 11
-m_objs_loadPoints(m_rect);       // 12
-m_objs_loadPoints(m_rect);       // 13
-m_objs_loadPoints(m_eyeRef);     // 14
-m_objs_loadPoints(m_cube);       // 15
+m_objs_loadPoints(plr_aim, 0);      // 0
+m_objs_loadPoints(m_flr, 0);        // 1
+m_objs_loadPoints(m_map, 0);        // 2
+m_objs_loadPoints(g_over_x, 0);     // 3
+m_objs_loadPoints(g_over_y, 0);     // 4
+m_objs_loadPoints(g_over_z, 0);     // 5
+m_objs_loadPoints(m_x, 0);          // 6
+m_objs_loadPoints(m_y, 0);          // 7
+m_objs_loadPoints(m_z, 0);          // 8
+m_objs_loadPoints(_lp_world, 0);    // 9
+m_objs_loadPoints(_lop_world, 0);   // 10 should remove this
+m_objs_loadPoints(m_gun, 0);        // 11
+m_objs_loadPoints(m_rect, 0);       // 12
+m_objs_loadPoints(m_rect, 0);       // 13
+m_objs_loadPoints(m_eyeRef, 0);     // 14
+m_objs_loadPoints(m_cube, 0);       // 15
 
 world_obj_count = obj_cyc = m_objs.length-1;
 
@@ -1614,7 +1687,8 @@ function updateNormalMaps()
 		let p1, p2, p3, v1, v2, _cr;
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
-			for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++)
+			// for (var k=0; k<Math.floor((mem_log[i][2]-4)/2)-mem_log[i][2]%2; k++) // here -4 was -1 doing test
+      for (let k=0; k<mem_log[i][3]+1; k++) // fixed
 			{
         p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
         p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
@@ -1639,9 +1713,9 @@ function updateNormalMaps()
 	}
 }
 
-// Just this one fn I copy paste. Wow it works too. Gotta review my barycentric coordinates lol
-// I realized that my tri's are not with 90's so a dot w/ 3 vectors didn't work.
-// I could just split each tri into two and still do it my way but this is good enough I guess.
+// just this one fn I copy paste. Wow it works too. Gotta review my barycentric coordinates lol
+// i realized that my tri's are not with 90's so a dot w/ 3 vectors didn't work
+// i could just split each tri into two and still do it my way but this is good enough I guess
 function isPointInsideTriangle(p, p1, p2, p3)
 {
   // Calculate vectors
@@ -1671,18 +1745,19 @@ var normOut = [];
 
 function updateRayInters(_dp, _p)
 {
-	if (m_objs.length>world_obj_count+1) // Remove?
+	if (m_objs.length>world_obj_count+1) // remove?
 	{
 		rayInterMap.length = 0;
     interKOut.length = 0;
     interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
-		for (var i=world_obj_count+1; i<m_objs.length; i++) // Removed +1 and i<m_objs.length instead of obj_normalMaps.length?????
+		for (var i=world_obj_count+1; i<m_objs.length; i++) // i<m_objs.length instead of obj_normalMaps.length ?
 		{
-			if (mem_log[i][2]>2) // wat?
+			if (mem_log[i][2]>2) // wat? might need to be updated ?
 			{
-				for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++) // Y no +1 w/ world count work??
+				// for (var k=0; k<Math.floor((mem_log[i][2]-4)/2)-mem_log[i][2]%2; k++)
+        for (let k=0; k<mem_log[i][3]+1; k++) // fixed
 				{
 					updateLook();
 
@@ -1699,7 +1774,7 @@ function updateRayInters(_dp, _p)
           //_plr_dtp, player_pos
 					_int = lpi(_dp, _p, p2, _cr);
 
-					//can use create point like I did before ez
+					// can use create point like I did before ez
 					if (isPointInsideTriangle(_int, p1, p2, p3))
 					{
 						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
@@ -1711,10 +1786,11 @@ function updateRayInters(_dp, _p)
 				}
 			}
 		}
-    _rayLast = findClosestVector(player_pos, rayInterMap);
+    _rayLast = findClosestVector(player_pos, rayInterMap); // not yet excluding behind
 	}
 }
 
+// simple sort needs to check if in front as well. use z buff?
 function findClosestVector(targetVector, vectors)
 {
   let minDistance = Number.MAX_VALUE;
@@ -2320,19 +2396,19 @@ var translateObject =
 }; functionRunList.push(translateObject);
 
 
-function m_obj_explode(_i)
+function m_obj_explode(_i) // encode patched
 {
 	if (_i>world_obj_count)
 	{
 		var _tp = [];
-		for (var i=0; i<mem_log[_i][2]; i++)
+		for (var i=0; i<mem_log[_i][2]-mem_encode[0]; i++)
 		{
 			_tp[i*4] = m_objs[_i][i*4];
 			_tp[i*4+1] = m_objs[_i][i*4+1];
 			_tp[i*4+2] = m_objs[_i][i*4+2];
 			_tp[i*4+3] = m_objs[_i][i*4+3];
 		}
-		m_t_objs_loadPoints(splitObj(new Float32Array(_tp)));
+		m_t_objs_loadPoints(splitObjS(new Float32Array(_tp)));
 		del_obj(_i);
 	}
 }
@@ -2347,8 +2423,8 @@ function bond_obj(_i)
 			break;
 		case 2:
 
-			var _oi = splitObj(m_objs[_i]);
-			var _of = splitObj(m_objs[_all_lock_i]);
+			var _oi = splitObjR(m_objs[_i]); // fixed encode temp tho
+			var _of = splitObjR(m_objs[_all_lock_i]);
 			// Some for each practice
 			var lap_oi = -1; var lap_of = -1;
 			_oi.forEach((e1, i1) =>
@@ -2376,7 +2452,7 @@ function bond_obj(_i)
 				_f.push(e1);
 			});
 
-			m_objs_loadPoints(packObj(_f));
+			m_objs_loadPoints(packObj(_f), 0);
 			_all_lock_i = 0; _all_lock = 0;
 
 			break;
@@ -2393,34 +2469,35 @@ function link_obj(_i)
   console.log(_t);
 	switch(_all_lock)
 	{
-		case 0: // Alternator
+		case 0: // alternator
 			_all_lock_i = _i;
 			_all_lock = 1;
 			break;
 		case 1:
 			if (mem_log[_i][1] != mem_log[_all_lock_i][1] || _i == _all_lock_i) {_all_lock = 0; _all_lock_i = 0; break;} //console.log("can't link");
 			var _of = [];
-			var _o1 = splitObj(m_objs[_i]);
-			var _o2 = splitObj(m_objs[_all_lock_i]);
+			var _o1 = splitObjR(m_objs[_i]);
+			var _o2 = splitObjR(m_objs[_all_lock_i]);
+      console.log(_o1.length);
 			switch(_t)
 			{
 				case 0:
 					var _ia = JSON.stringify([m_objs[_i][0], m_objs[_i][1], m_objs[_i][2], 1, m_objs[_all_lock_i][0], m_objs[_all_lock_i][1], m_objs[_all_lock_i][2], 1]);
-					for (var i = 0; i<mem_log[_i][2]-1; i++)
+					for (var i = 0; i<mem_log[_i][2]-mem_encode[0]; i++) // -(encoded offset)
 					{
 						var _ob = [];
 						_ob = [m_objs[_i][i*4], m_objs[_i][i*4+1], m_objs[_i][i*4+2], 1, m_objs[_all_lock_i][i*4], m_objs[_all_lock_i][i*4+1], m_objs[_all_lock_i][i*4+2], 1];
-						if (i == mem_log[_i][2]-2)
+						if (i == mem_log[_i][2]-mem_encode[0]-1) // -(encoded offset + 1)
 						{ // Double nested to avoid unnecesarry second call to JSON.stringify(). Dirty fix.
 							if (_ia != JSON.stringify(_ob))
-							{m_objs_loadPoints(new Float32Array(_ob));}
-						} else {m_objs_loadPoints(new Float32Array(_ob));}
+							{m_objs_loadPoints(new Float32Array(_ob), 0);}
+						} else {m_objs_loadPoints(new Float32Array(_ob), 0);}
 					}
 					_all_lock_i = 0; _all_lock = 0;
 					break;
 
 				case 1:
-					var _s = (mem_log[_i][2]-1) - 1; 
+					var _s = (mem_log[_i][2]-mem_encode[0]) - 1; // -(encoded offset + 1)
 					for (var i = 0; i<_s; i++)
 					{
 						if (i==0) {_of.push(_o1[i]);} // Start not included in pat gen seq
@@ -2474,18 +2551,18 @@ function link_obj(_i)
 								break;
 						}
 					}
-					m_objs_loadPoints(packObj(_of));
+					m_objs_loadPoints(packObj(_of), 0);
 					_all_lock_i = 0; _all_lock = 0;
 					break;
 
 				case 2:
-					for (var i = 0; i<mem_log[_i][2]-1; i++) // -1 remove center
+					for (var i = 0; i<mem_log[_i][2]-mem_encode[0]; i++) // -(encoded offset)
 					{
 						if (i==0) {_of.push(_o1[i]);}
 						_of.push(_o2[i]);
-						if (i != mem_log[_i][2]-2) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);}
+						if (i != mem_log[_i][2]-mem_encode[0]-1) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);} // -(encoded offset + 1)
 					}
-					m_objs_loadPoints(packObj(_of));
+					m_objs_loadPoints(packObj(_of), 0);
 					_all_lock_i = 0; _all_lock = 0;
 					break;
 			}
@@ -2562,7 +2639,7 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 			}
 			if (i==_to.length-1)
 			{
-				for (var j=0; j<mem_log[_obj][2]; j++)
+				for (var j=0; j<mem_log[_obj][2]; j++) // all points included because that's the purpose
 				{
 					m_objs[_obj][j*4+0] = _to[j][0];
 					m_objs[_obj][j*4+1] = _to[j][1];
@@ -2608,6 +2685,10 @@ function writeToObjI(_ob, i) // super bad
   }
 }
 
+// currently this moves the eyeref object in an arbitrary position in front of the player to provide 3d data into the pipe that provides the required
+// 2d output data used to interpolate 2d mouse relative to 2d eyeref. part of the process to make the 3d ray outward from screen relative to 2d mouse on screen
+// there exists ofc a direct theoretical algebraic method but this is not really that bad if it wasn't for the required js rotation of eyeref in the scene.
+
 function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of quaternions representing rotation around axis
 {
   let _t_c = getctr_ghost(_i);
@@ -2633,7 +2714,7 @@ function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of qua
   }
 }
 
-// quatRot( sub(_gp, _c), _viewq ) // looks like _c center removed from point
+// quatRot( sub(_gp, _c), _viewq )
 // function rotateObjI(_i, _q)
 // {
 //   _c = getctr_obj(_i);
@@ -2641,7 +2722,7 @@ function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of qua
 //   for (let i=0; i<_s; i++)
 //   {
 //     _gp = [m_objs_ghost[_i][i*4], m_objs_ghost[_i][i*4+1], m_objs_ghost[_i][i*4+2]]
-//     // quatRot( sub(_gp, _c), _viewq ) // looks like _c center removed from point
+//     // quatRot( sub(_gp, _c), _viewq )
 //   }
 // }
 
@@ -2713,7 +2794,8 @@ function del_world()
 
   folder_selected = folder_cwd;
   obj_folders[folder_cwd].length = 0;
-  mem_sum = 7408;
+
+  mem_sum = 7564; // total points increase from encoded dirs. previous: 7408
 
   let _c = folder_cwd+1; //let _c = 4;
   folder_parents.splice(_c);
@@ -2779,7 +2861,7 @@ function cloneObjSelected()
 {
 	if (obj_cyc>world_obj_count) // && !hasN(_run_objs, obj_cyc)
 	{
-		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]), 0);
 	}
 }
 
@@ -2808,7 +2890,7 @@ function editSelectedObject()
 	m_obj_explode(obj_cyc);
 }
 
-// Passing mem_t_mov w/ no menu function here for it.
+// mem_t_mov w/ no menu function here for it.
 
 function applyRotation()
 {
@@ -2865,7 +2947,7 @@ function dupeFolderObjs()
     if (_it != _h1)
     {
       _h1 = _it;
-      m_objs_loadPoints(cloneObj(m_objs[_folder[_h1]]));
+      m_objs_loadPoints(cloneObj(m_objs[_folder[_h1]]), 0);
       // obj_cyc = 2;
     }
     if (_dt >= _delay*(_folder.length-1))
@@ -2896,76 +2978,6 @@ function measureLine()
     */
 	// #DRAW
 	
-
-// function makeQuaternionFromAxisAngle(angle, axis) {
-//   let halfAngle = angle / 2;
-//   let s = Math.sin(halfAngle);
-//   let q = [
-//     Math.cos(halfAngle),
-//     axis[0] * s,
-//     axis[1] * s,
-//     axis[2] * s
-//   ];
-//   return q;
-// }
-//
-//
-// function angleBetweenVectors(A, B) {
-//   if (A.length !== B.length) {
-//     throw new Error('Vectors must have the same dimensionality');
-//   }
-//
-//  // Calculate the dot product of vectors A and B
-//   let dotProduct = A.reduce((sum, a, i) => sum + a * B[i], 0);
-//
-//   // Calculate the norm of vector A
-//   let normA = Math.sqrt(A.reduce((sum, a) => sum + a * a, 0));
-//
-//   // Calculate the norm of vector B
-//   let normB = Math.sqrt(B.reduce((sum, b) => sum + b * b, 0));
-//
-//   // Handle zero norms
-//   if (normA === 0 || normB === 0) {
-//     // You can decide what value to return in this case, for example, 0 radians or degrees
-//     return 0;
-//   }
-//
-//   // Calculate the cosine of the angle
-//   let cosTheta = dotProduct / (normA * normB);
-//
-//   // Ensure cosTheta is within the valid range [-1, 1]
-//   cosTheta = Math.max(-1, Math.min(1, cosTheta));
-//
-//   // Calculate the angle in radians using the arccosine formula
-//   let angle = Math.acos(cosTheta);
-//
-//   // Convert the angle to degrees if needed
-//   // let angleDegrees = angle * (180 / Math.PI);
-//
-//   return angle; // Return the angle in radians or degrees
-// }
-//
-// // Function to generate quaternion from a direction vector
-// function generateQuaternionFromDirection(dir) {
-//     // Normalize the direction vector
-//     const normalizedDir = normalizeVector(dir);
-//
-//     // Find the rotation axis and angle to rotate [0, 0, 1] to the normalized direction
-//     const rotationAxis = cross([0, 0, 1], normalizedDir);
-//     const rotationAngle = Math.acos(dot([0, 0, 1], normalizedDir));
-//
-//     // Create quaternion from the rotation axis and angle
-//     const quaternion = makeQuaternion(rotationAngle, rotationAxis);
-//
-//     return quaternion;
-// }
-//
-// // Helper function to normalize a vector
-// function normalizeVector(vec) {
-//     const length = Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
-//     return [vec[0] / length, vec[1] / length, vec[2] / length];
-// }
-
 function drawOverlay()
 {
 	// While in menu with low call rate i'll set values here:
@@ -3018,7 +3030,7 @@ function drawOverlay()
   updateTextByPar("menu_status_r1", "[" + grid_scale + " : " + _settings[5].settings[0]+"]");
 
 
-	// This needs to be fixed. Temp as I port menu to new script.
+	// this needs to be fixed. temp as I port menu to new script
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
 
   // temp until I move it to new menu in obj menu !!!
@@ -3432,7 +3444,7 @@ function drawLines()
         {
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
-            vertices = [];
+            // vertices = [];
             if (!_settings[5].settings[2])
             {
               for (let k = 0; k < m_draw[d_i][1]; k++)
@@ -3584,6 +3596,7 @@ function drawLines()
       skipDat = 0;
     }
 
+    // not a fan of my many code structures but this one is my least fav
     if ( (d_i < 3 && d_i != 1 && skipDat) || (d_i > 5 && d_i != 1 && skipDat) )
     {
       vertices = [];
@@ -3592,7 +3605,7 @@ function drawLines()
       size = mem_log[d_i][1];
       end = start + size;
       
-      for (let j = start; j < end - 4; j += 4)
+      for (let j = start; j < end - mem_encode[1]; j += 4) // fixed here
       {
         if (m1.data[j + 3] < 0)
         {
@@ -3606,7 +3619,10 @@ function drawLines()
           // x, y
           vertices.push(m1.data[j], -m1.data[j + 1]);
         }
-      }
+      } // end of for loop
+
+      // implement center inds l8r
+
       // last segment
       if (vertices.length > 0)
       {
@@ -3617,14 +3633,16 @@ function drawLines()
     if ((d_i > 2 && d_i < 6) || d_i == 1)
     {
       _si2 = mem_log[d_i][2];
-      _pts = new Float32Array(_si2 * 2 + 2);
+      // _pts = new Float32Array(_si2 * 2 + 2);
+      // _pts = new Float32Array(_si2 * 2 - 2*mem_encode[0]);
+      _pts = new Float32Array(_si2 * 2);
 
       // Experiment using while instead of for. Irrelevant performance difference?
       i0 = 0;
       j0 = 0;
       pointIndex = mem_log[d_i][0];
 
-      while (i0 < _si2 * 4)
+      while (i0 < _si2 * 4 - mem_encode[1]) // encode fix here: need to fix the float array too
       {
         if (m1.data[pointIndex + 3] >= 0)
         {
@@ -3635,15 +3653,16 @@ function drawLines()
          pointIndex += 4;
          i0 += 4;
       }
-      _pts[_si2] = 0.0;
-      _pts[_si2+1] = 0.0;
+      // _pts[_si2] = 0.0; // found the bugged trash creating the problem of missing points
+      // _pts[_si2+1] = 0.0;
 
       drawPoints(_pts, d_i);
     }
 
   
-  } // End of first obj loop
+  } // end of first obj loop
 
+  // this part is totally useless it should not require being split into a new data format to have temp data for line placement
   // Working object being drawn
   for (let i = mem_t_log.length - 1; i>=0 ; i--)
   {
@@ -3678,7 +3697,13 @@ function drawLines()
 
 
   // move all this back into fn to make good reverse fn - noticed percentile here relative to other dims?
-  _2d_previewBack = ar2Dmod_static(_2dis[1], _2dis_buffers[1], [-(menu_obj_pos[0]-in_win_w*0.01)/in_win_w, -0.5+(menu_obj_pos[1]-0-menu_obj_size[2]/2+menu_obj_size[0]+2)/in_win_h], [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]);
+  _2d_previewBack = ar2Dmod_static(
+    _2dis[1],
+    _2dis_buffers[1],
+    [-(menu_obj_pos[0]-in_win_w*0.01)/in_win_w,
+    -0.5+(menu_obj_pos[1]-0-menu_obj_size[2]/2+menu_obj_size[0]+2)/in_win_h],
+    [menu_obj_size[0]/in_win_w, menu_obj_size[0]/in_win_h*in_win_hw]
+  );
 
 
   // Draw the triangles after setting the color
@@ -3692,12 +3717,11 @@ function drawLines()
 
   // Preview object
   vertices = [];
-  // for (let j = 0; j<_preview_obj.length/4 - 1; j++) // Removing center
-  for (let j = _preview_obj.length/4 - 2; j>=0; j--) // Removing center
+  for (let j = _preview_obj.length/4 - 1 - mem_encode[0]; j>=0; j--) // removed encoded
   {
     
-    // Already normalized this earlier with minMax so theoretically it's only necessary to scale it.
-    // Still needs to be fixed where I have minmax. pick dimension maximum to scale everything.
+    // already normalized this earlier with minMax so theoretically it's only necessary to scale it
+    // still needs to be fixed where I have minmax. pick dimension maximum to scale everything
     // scale 2 other smaller dims by same scaler and don't use 3d len
     
     _tp =
@@ -3721,7 +3745,7 @@ function drawLines()
 
   }
 
-  // Draw the lines for the last segment
+  // draw the lines for the last segment
   if (vertices.length > 0)
   {
     drawSegment(vertices, -2);
@@ -3788,7 +3812,7 @@ function drawIt()
 {
 	Compute(m1);
 
-  let _dm = [obj_cyc,12,15,3,4,5]; // static entries
+  let _dm = [obj_cyc,12,15,3,4,5]; // set list of priority objects in z-buffer
 
   let _l = obj_folders[3].length; // get len
   for (var i=0; i<_l; i++) // loop through all temp objs and add to drap map _dm
@@ -4053,7 +4077,7 @@ functionRunList.push(boundingBox);
 function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
   flag_loadTemp = 1; // flag to send temp
-  m_objs_loadPoints(_ar);
+  m_objs_loadPoints(_ar, 0);
   eLog(_id, folder_last, obj_last);
 }
 
@@ -4241,7 +4265,7 @@ var surfaceNormal =
         1
       ]);
 
-		m_objs_loadPoints(_new_line);
+		m_objs_loadPoints(_new_line, 0);
   },
   logPoint: function ()
   {
@@ -4305,7 +4329,7 @@ function getMinMaxPairs(ar)
     let ar_z_max = ar[2]; let ar_z_min = ar[2];
 
     // loop through ar and max/min -logic-> update val
-    for (var i = 0; i<ar.length/4-1; i++) // divide by 4 to get point and remove encoded center
+    for (var i = 0; i<ar.length/4-mem_encode[0]; i++) // divide by 4 and remove encoded points
     {
       // if ar x > var max set var max to ar x, then do the min
       if (ar[i*4] > ar_x_max) {ar_x_max = ar[i*4];} 
@@ -4329,7 +4353,7 @@ var _preview_obj;
 function updateRefLog()
 {
 	_preview_scaler = 1/len3(getMinMaxPairs(m_objs[obj_cyc]));
-	_preview_ctr = meanctr_obj(m_objs[obj_cyc]);
+	_preview_ctr = meanctr_obj(m_objs[obj_cyc], 1);
 	_preview_obj = new Float32Array(m_objs[obj_cyc].length);
   arClone(_preview_obj, m_objs[obj_cyc], _preview_ctr, _preview_scaler);
 
@@ -4337,17 +4361,19 @@ function updateRefLog()
 	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
 
-           /*@?@
-           ?@?@?
-           @?@*/
 
-
+/* ____ ___  __  __ ____  _   _ _____ _____ 
+  / ___/ _ \|  \/  |  _ \| | | |_   _| ____|
+ | |  | | | | |\/| | |_) | | | | | | |  _|  
+ | |__| |_| | |  | |  __/| |_| | | | | |___ 
+  \____\___/|_|  |_|_|    \___/  |_| |_____| */
+                                            
 var  _2d_exclude = [];
 function Compute(init_dat)
 {
 
 
-  if (_settings[5].settings[2]) {updateZMap();}
+  if (_settings[5].settings[2]) {updateZMap();} // if depth enabled
 
   m_obj_offs[12][0] = _lp_world[0];
   m_obj_offs[12][1] = _lp_world[1];
@@ -4362,7 +4388,6 @@ function Compute(init_dat)
     m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
   }
 
-  // excludeSelf: true,
   // RUN LIST HERE
   _run_check = false;
   _run_objs = []; // or len = 0 ?
@@ -4380,7 +4405,6 @@ function Compute(init_dat)
     }
   }
   flag_objModif = _run_check;
-
 
 
 
@@ -4502,7 +4526,6 @@ function Compute(init_dat)
 		        _\///_________________\/////////_____\///_____\/////____________\///______________\///________\///__\///________\///________\///________
 	*/
 	// #FUNPART
-	// Use gpu here w/ the right size array32. Or can I even?
 
 	/*
 	Define plane w/ [ n . (Q-P) = 0 ]
@@ -4744,7 +4767,7 @@ function Compute(init_dat)
 
 				if (key_map.t && key_map.lmb == false && obj_cyc>world_obj_count && runEvery(350)) // Make fn handle move & dupe? Make dupes place where holding hologram
 				{
-					m_objs_loadPoints(cloneObj(m_objs[obj_cyc]));
+					m_objs_loadPoints(cloneObj(m_objs[obj_cyc]), 0);
 					obj_cyc = m_objs.length-1;
 				}
 			}
