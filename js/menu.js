@@ -1000,7 +1000,7 @@ var _error_info =
 
 // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 
-let _fixthis = menu_q_size[1];
+let _fixthis = menu_q_size[1] - 100;
 var menu_obj_style =
 `
 box-sizing: border-box;

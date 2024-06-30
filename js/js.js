@@ -1119,7 +1119,7 @@ function setTitle()
 	document.title = title;
 }
 
-// Could have used this for most of the simple code sooner
+//mathfns
 function setPoint(a, b) { a[0]=b[0]; a[1]=b[1]; a[2]=b[2]; } // set a to b 
 function multPoint(a, b) { return [a[0]*b[0], a[1]*b[1], a[2]*b[2]]; }
 
@@ -3067,11 +3067,8 @@ var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0
 // folder_selected_objs
 
 // So here I draw lines. Passing true object i'th
-function drawSegment(vertices, mi)
+function drawSegment(vertices, mi, color) // color added as override for now
 {
-
-  //gl.uniform4fv(colorUniformLocation, [1.0, 1.0, 1.0, 1]);
-
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
@@ -3183,6 +3180,10 @@ function drawSegment(vertices, mi)
       break;
   }
 
+  if (color != undefined) {gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 1.0]);}
+
+  // continue to add color logic here ...
+
   gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2);
 }
 
@@ -3230,7 +3231,9 @@ var _2dis_buffers = [];
 
 _2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1, -1, -1]));
 _2dis_buffers.push(new Float32Array(10));
-_2dis.push(new Float32Array([1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1]));
+
+// here is rect made of two tris to go behind the preview obj in tree
+_2dis.push(new Float32Array([-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1])); // swapping end points tris swaps the normal dir (culling fix for static 2d)
 _2dis_buffers.push(new Float32Array(12));
 
 _2dis.push(new Float32Array([1.0,0.0,0.981,0.195,0.924,0.383,0.831,0.556,0.707,0.707,0.556,0.831,0.383,0.924,0.195,0.981,0.0,1.0,-0.195,0.981,-0.383,0.924,-0.556,0.831,-0.707,0.707,-0.831,0.556,-0.924,0.383,-0.981,0.195,-1.0,0.0,-0.981,-0.195,-0.924,-0.383,-0.831,-0.556,-0.707,-0.707,-0.556,-0.831,-0.383,-0.924,-0.195,-0.981,0.0,-1.0,0.195,-0.981,0.383,-0.924,0.556,-0.831,0.707,-0.707,0.831,-0.556,0.924,-0.383,0.981,-0.195,1.0,0.0]));
@@ -3549,10 +3552,16 @@ function drawLines()
             }
             else
             {
-              
               for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-_settings[1].settings[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
 
-              gl.uniform1i(renderModeUniform, 0); // Should need this right
+              // after using the depth here again i can't tell if all tris end up same or
+              // i just use my z map or map by depth per tri better
+
+              // for (let l=0; l<m_draw[d_i][3]*4; l++)
+              // { m_draw[d_i][4][l] = (l%4==3) ? 1-_settings[1].settings[2]*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1], -0.5 ) - 0.25; }
+              // console.log(m1.data[mem_log[d_i][0] + mem_log[d_i][1] - 1]);
+
+              gl.uniform1i(renderModeUniform, 0); // should need this right
 
               gl.enableVertexAttribArray(positionAttrib);
               gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -3600,7 +3609,6 @@ function drawLines()
     if ( (d_i < 3 && d_i != 1 && skipDat) || (d_i > 5 && d_i != 1 && skipDat) )
     {
       vertices = [];
-
       start = mem_log[d_i][0];
       size = mem_log[d_i][1];
       end = start + size;
@@ -3611,7 +3619,7 @@ function drawLines()
         {
           if (vertices.length > 0) // do not remove this
           {
-            drawSegment(vertices, d_i);
+            drawSegment(vertices, d_i); // draw
             vertices.length = 0;
           }
         } else
@@ -3621,13 +3629,36 @@ function drawLines()
         }
       } // end of for loop
 
+      // test for now unbuffered : make ctr pt and use to make 3 lines
+
+
       // implement center inds l8r
 
       // last segment
       if (vertices.length > 0)
       {
-        drawSegment(vertices, d_i);
+        drawSegment(vertices, d_i); // draw
       }
+    }
+
+    // bad slow way to draw center axis
+    end = mem_log[d_i][0] + mem_log[d_i][1];
+    if (d_i == obj_cyc && m1.data[ end - 1 ] > 0 && m1.data[ end - 5 ] > 0 && m1.data[ end - 9 ] > 0 && m1.data[ end - 13 ] > 0)
+    {
+      let _tc = [ m1.data[ end - 4 ], -m1.data[ end - 3] ]; // temp ctr is x and y from last encoded pt
+      let _tx = [ m1.data[ end - 8 ], -m1.data[ end - 7] ];
+      let _ty = [ m1.data[ end - 12 ], -m1.data[ end - 11] ];
+      let _tz = [ m1.data[ end - 16 ], -m1.data[ end - 15] ];
+
+      drawSegment(
+        [
+          _tc[0], _tc[1], _tx[0], _tx[1],
+          _tc[0], _tc[1], _ty[0], _ty[1],
+          _tc[0], _tc[1], _tz[0], _tz[1]
+        ],
+        d_i,
+        [1.0, 1.0, 1.0, 1.0]
+      );
     }
 
     if ((d_i > 2 && d_i < 6) || d_i == 1)
@@ -3653,8 +3684,6 @@ function drawLines()
          pointIndex += 4;
          i0 += 4;
       }
-      // _pts[_si2] = 0.0; // found the bugged trash creating the problem of missing points
-      // _pts[_si2+1] = 0.0;
 
       drawPoints(_pts, d_i);
     }
@@ -3663,7 +3692,8 @@ function drawLines()
   } // end of first obj loop
 
   // this part is totally useless it should not require being split into a new data format to have temp data for line placement
-  // Working object being drawn
+  // working object being drawn
+
   for (let i = mem_t_log.length - 1; i>=0 ; i--)
   {
     vertices = [];
