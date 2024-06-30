@@ -16,7 +16,7 @@ const pi = 3.141592653589793, // high definition PI makes a visible difference
       pi2 = 6.283185307179586,
       menuTime_int = 220,
       title_int = 420,
-      player_speed = 0.5 * 0.7,
+      player_speed = 0.5 * 0.42,
       player_speed_vert = 0.3 * 0.7, // vertical travel speed
       player_speed_mult = 4 * 0.7, // shift/sprint key
       mem_encode = [4, 16], // offsets to be used where encoded data ref
@@ -3763,7 +3763,7 @@ function drawLines()
 
     _np = rot_x_pln(_tp, 0.2);
     _np = rot_z_pln(_np, 0.2);
-    _np = rot_y_pln(_np, 0.0006*Date.now()%10000);
+    _np = rot_y_pln(_np, 0.0004*Date.now()%10000);
 
     _np[0] = _np[0];
     _np[1] = in_win_wh * _np[1];
