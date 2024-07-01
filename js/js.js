@@ -74,6 +74,7 @@ var del_obj_lock = 0,
 
 var paint_d = 0,
     paint_n = 0,
+    paint_c = 0, // check
     _paint_track = [0.0, 0.0, 0.0];
 
 // FPS
@@ -2983,7 +2984,7 @@ function drawOverlay()
 	// While in menu with low call rate i'll set values here:
 	updateMenuPos();
 
-  if (!mouseLock && wpn_select==3) // in menu
+  if (!mouseLock && wpn_select > 1) // in menu
   {
     updateLook();
     updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
@@ -4599,14 +4600,14 @@ function Compute(init_dat)
 
 	*/
 
-	if (mouseLock)
-	{
-		if (key_map.lmb || key_map.f || key_map.y)
-		{
-			updateLook();
-			_inter = lpi(_plr_dtp, player_pos, _pp, _nplns);
-		}
-	}
+  // _inter is calculated here !
+  if (key_map.lmb || key_map.f || key_map.y)
+  {
+    updateLook();
+    let _mtw = mouseToWorld();
+    let _t_dir = mouseLock ? [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]] : _mtw;
+    _inter = lpi(_t_dir, player_pos, _pp, _nplns);
+  }
 
 		if (wpn_select==3)
 		{
@@ -4771,7 +4772,7 @@ function Compute(init_dat)
 			}
 			break;
 
-		case 1: ///////////////////////////////////////////////// WPNSELECT (2)
+		case 1: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
       if (translateObject.enable) {translateObject.toggle();} // bad replace w/ larger system later
 			if (obj_cyc>world_obj_count)
@@ -4803,55 +4804,58 @@ function Compute(init_dat)
 			}
 			break;
 
-		case 2:
-			if (key_map.lmb)
+		case 2: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+
+			if (key_map.lmb && pointerOutsideWindow()[0] && runEvery(20))
 			{
-				switch(_settings[4].settings[0])
-				{
-					case false:
-						if (paint_n < _settings[4].settings[2])
-						{
-							paint_d = len3(sub(_inter, _paint_track));
-							if (paint_d > _settings[4].settings[1])
-							{
-								m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
-                setPoint(_paint_track, _inter);
-								paint_n++;
-							}
-						} else {mem_t_mov();}
-          break;
-					case true:
-						paint_d = len3(sub(_inter, _paint_track));
-						if (paint_d > _settings[4].settings[1])
-						{
-							m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
-              setPoint(_paint_track, _inter);
-						}
-          break;
-				}
+        if (!_settings[4].settings[0])
+        {
+          if (paint_n > _settings[4].settings[2])
+          {
+            mem_t_mov();
+            paint_c = 1;
+          }
+        }
+
+        if (!paint_c)
+        {
+          switch(mouseLock)
+          {
+            case 0:
+              paint_d = m_t_objs.length==0 ? _settings[4].settings[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
+
+              if (paint_d > _settings[4].settings[1])
+              {
+                m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
+                paint_n++;
+              }
+              break;
+
+            case 1:
+              m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
+              paint_n++;
+              break;
+          }
+        }
 			}
-			if (_settings[4].settings[0] && key_map.lmb == false) {mem_t_mov();} // Finish draw !
-			break;
-		case 3:
+
+			if (_settings[4].settings[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
+			if (!_settings[4].settings[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
+
+			break; // end of wpn_select==2
+
+		case 3: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
 
       if (key_map.lmb && !mouseLock && runEvery(20))
       {
-        // let _p = lpi(mouseToWorld, player_pos, _lp_world, [0,1,0]);
-        // could get this to work if I made _plr_dtp use mouseToWorld dir vec
-        // but might work out easier to ray to new obj?
-
         updateRayInters(mouseToWorld(), player_pos);
         if (rayInterMap.length > 0)
         {
           let _p = rayInterMap[_rayLast];
           m_t_objs_loadPoint(_p);
           setPoint(_lp_world, _p);
-          // console.log(rayInterMap[_rayLast]);
         }
-        // obj_cyc = _tc;
-        // m_obj_offs[obj_cyc] = [_tc[0],_tc[1],_tc[2],1];
       }
-
 
 			if (key_map.lmb && mouseLock && runEvery(10))
 			{
