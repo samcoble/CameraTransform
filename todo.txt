@@ -14,37 +14,94 @@
 ______|___________________________________________________________________________________________________________
       |   
       |   
+      |   interactive rotation & resize that is relative to the center dir vec will complete part of the basic tools
+      |   the shading needs to be upgraded to work for every triangle rather than reusing a color sequence
+      |   this will also segway into the color map and satisfy the minimum visual fidelity required
+      |   i will finish up basic tools with line/point modification & beziers (all intersections pregenerated)
+      |   intersections revealed in more detail when within dist from mouse/aim
+      |   i realize now the base dataset is arbitrary if everything is preloaded in buffers via indice maps anyway
+      |   ex: any data in any order -> -> set of triangles
+      |   
+      |   border/inner border generation -> chamfer
+      |   moveable objects given defined restraints (interactive handles or anywhere on obj if using ray)
+      |   
+      |   important features for accelerating the workflow are not my priority:
+      |    - multi-select w/ clicking in world/menu
+      |    - folder krap dupe/move (needs to be more generalized)
+      |   
       |   to avoid the arbitrary twist there must also exist a secondary rotation methodology
       |   rotate on the yaw to setup a second rotation in the pitch. emulate this with the continuity of quaternions ? right
       |   
       |   i started using points with lines and got to triangles but the reduction to triangles is essentially an indice map
       |   i now need to automate triangles back to lines to allow the joining of geometry assuming they share at least one point
       |   is this better than nesting ????????????????????????????????????????????????????????????????????
+      |   don't forget point to line and line to line intersections though..
       |   
+      |   the app needs a simple scripting language. and requires type recognition
+      |   the syntax converts to a look up table and if the data types of in/out chain match always compute
+      |   variables can be set and must be assigned before the next code. use table.
+      |   
+      |   the depth buffer should be fixable. the k-d tree is interesting i will have to try a scaleable sample data and test out a query
+      |   static premade shaded color map -> during tri pack w/ new k find the correct col and pack to second dynam buffer -> look same & shaded
       |   
       |   EZ FIXES
 ______|___________________________________________________________________________________________________________
-      |   
+      |
+      | - stats get nice shadow boxes round with vert black divider at top w/ only two rows open file on bottom for now ...
+      | - finish exclude system for the axis lock
+      | - then remove axis lock and shift indices ... no good
+      | - 
+      | - folders not working with save correctly. maybe loading needs to be slowed down or done in a more reliable way
       | - 
       | - 
+      | - vertex fetch requires 227, but attribs only supply 180. DEPTH setting issue. likely due to moving some points to the bottom of stack
+      | - make initial and final point of obj noticeable in size
+      | - splitting the gun into two components will allow it to be animated (need to finish color map)
       | - 
+      |
+      |   all fns overload like (js does not support it explicitly? no errors without array anyway)
+      |   theFunc([1,2,3,4])
+      |   so you can say
+      |     setPoint([ a,b ]) // a set to b
+      |     setPoint([ a,b,c ]) // ... + c
+      |     setPoint([ a,b,c,d ]) // ... scale by d
+      |     etc
+      |     
+      | - rotate object fn using dir vec accepting final vec so much ig
+      | - shift bounding box along axis to fix the slightly offset box for some geometry
+      | - duplicating does not include the modifications to the inner dir vec
+      |
+      | - pre-generated indice mapping of lines to remove duplicate lines
+      |
+      | - bounding box indicator function generalizes bounding box indicators by accepting (not sure about color data)
+      | -  displayBox(name_string, [obj ids], )
+      | -  { use the elog system and reuse the bounding box world object as an input }
+      | -  when only one obj id place the bounding box relative to the inner dir vec
+      |
+      | - when folder selected/hover display two buttons on side to dupe or delete or move ...
+      | - when folder selected/hover use bounding box indicator function
+      |
+      | - on finish dupe placement with shift t it needs to return the selection back to any arbitrary prior selection
+      |
+      | - reversing the link alg could output the original sets !
+      | - similar to directly copying the data based on the alg rule set
       | - 
+      |
       | - fix the damn paint tool to allow selection/deletion
+      | - mouseToWorld is slow. i can avoid the issues it creates by logging the 2d coord
+      | - then converting to the 3d after. by separating it will lose less detail as the log is faster
+      | - javascript only runs so fast u know
       | - 
-      | - 
-      | - 
-      | - 
+      |
       | - setup for rotation/align relative tool
       | - write pivot align again or inject the change of basis
-      | - 
+      |
       | - style & place the log box
       | - m_t_objs was fundamentally a mistake because any array format will work ofc
       | - go through code and write line number where center is included in logic here:
       |
-      | - 
       | - later need a function to define a system for locking obj dir relative to a new plane so 
       | - creating more geometry perp to surface still correctly applies the dir vec relative to at least one half the process (no twist)
-      | - 
       |
       | - pivot align does not work with some orientations (colinear ?) might be a zero in the dividend
       | - maybe i have failed to ensure a pipeline is entirely buffered where cross returns a new. it should edit preallocated space instead 
@@ -123,9 +180,9 @@ ______|_________________________________________________________________________
       |   the look at function will use a direction vector as a reference but the twist is entirely arbitrary
       |   and must rapidly change for ex: editing inside a polygon along it's lines that share no colinear normals
       |   grid orientation will be very automagical w/ these combined
-
+      |
       | =>          [ so now to fix all loops and pregenerated loops / offsets inside ]
-      |      - 
+      | 
       |      - DONE ? working through datafns now. make sure to fix all instances of fn call m_objs_loadPoints takes additional params 0 or dir (4f)
       |      - DONE to make old saves continue to work i will separate the data and loading combines back into new format... only 1 time thing.
       |      - DONE splitObj can be updated to fix most functions
@@ -243,7 +300,6 @@ ______|_________________________________________________________________________
       | -  
       | - i realize now to draw wire frame you can ray trace each vertex and when vertex shows behind remove connected lines.
       | -  
-      | - KKKK static premade shaded color map -> during tri pack w/ new k find the correct col and pack to second dynam buffer -> look same & shaded
       | -  
       | - Make a pistol that shoots green lasers that bounce!
       | - Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections.
