@@ -1227,15 +1227,16 @@ makeElement(addDiv,
   box-sizing: border-box;
   position: absolute;
   width: 400px;
-  height: 714px;
+  height: 665px;
   left: 30px;
-  top: 190px;
   user-select: none;
   border-radius: 3px;
   background: rgba(0,0,0,0);
   `
 });
 
+  // top: 190px;
+  // top: 239px;
 makeElement(addDiv,
 {
   id: "menu_tabs", cls: "", prnt: "menu_q",
@@ -1599,7 +1600,7 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: 'div_toolListBin', cls: '', prnt: 'detail_box_toolList',
-  text: 'tools \u25CB',
+  text: 'tools',
   rootStyle: rootStyle + div_css + myTitleStyle
 });
 makeElement(addDiv,
@@ -2141,6 +2142,7 @@ makeElement(addCheckbox,
 #locksettings
 */
 
+/*
 makeElement(addDiv,
 {
   id: "detail_box_lockSettings", cls: "", prnt: "menu_detail",
@@ -2179,13 +2181,14 @@ makeElement(addDiv,
   rootStyle: rootStyle + div_css_half + div_lockSettings_r + _btn_col1
 });
 
+*/
 /*
   ╔╗╔═╗ 
   ╠╣║╔╗╗
   ║║║║║║
   ╚╝╚╝╚╝
 */    
-
+/*
 makeElement(addCheckbox,
 {
   id: "cbx_lockx", cls: "cbx_lockSettings", prnt: "div_lockxSettings",
@@ -2227,6 +2230,8 @@ makeElement(addCheckbox,
   callback: updateSetting
 });
 
+*/
+
 /*
                 ╔╗          ╔╗
                ╔╝╚╗        ╔╝╚╗
@@ -2242,7 +2247,7 @@ makeElement(addCheckbox,
 makeElement(addDiv,
 {
   id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
-  settings: [true, 1, 8],
+  settings: [true, 0.5, 8],
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2322,7 +2327,7 @@ makeElement(addTextInput,
 makeElement(addDiv,
 {
   id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-  settings: [8, true, false, false],
+  settings: [8, false, false, false],
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2362,7 +2367,7 @@ makeElement(addCheckbox,
   rootStyle: rootStyle+cbx_myStyle,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
-  defaultChecked: true,
+  defaultChecked: false,
   callback: updateSetting
 });
 
@@ -2493,7 +2498,7 @@ makeElement(addTextInput,
 
 makeElement(addDiv,
 {
-  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail_right",
+  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
   settings: [45],
   rootStyle: rootStyle + detail_menu_box
 });
@@ -2720,6 +2725,7 @@ background: rgb(13,13,13);
 border-top: 1px solid rgb(44,44,44);
 border-left: 1px solid rgb(44,44,44);
 border-bottom: 1px solid rgb(44,44,44);
+cursor: pointer;
 `;
 
 var style_wpn_n_key =
@@ -2765,7 +2771,6 @@ function updateWpnFromMenu(par)
 {
   wpn_select = par.i;
   updateWpnSelect();
-  pointerLockSwap();
 }
 
 makeElement(addDiv,
@@ -2913,6 +2918,7 @@ margin: 0px 1% 0px 1%;
 border-radius: 3px;
 border: 1px solid rgba(255,255,255,0.1);
 overflow-y: auto;
+scrollbar-width: none;
 `;
 
 var myLiStyle =
@@ -2958,21 +2964,204 @@ makeElement(addDiv,
   `
 });
 
+/*
+makeElement(addDiv,
+{
+  id: "menu_logBox", cls: "", prnt: "html",
+  rootStyle:
+  `
+  position: absolute;
+  top: 12px;
+  left: calc(50% - 135px);
+  height: 130px;
+  width: 270px;
+  padding: 0px;
+  margin: 0px;
+  background: rgba(14,14,14, 0.1);
+  border: 1px solid rgba(5,5,5, 0.15);
+  border-radius: 3px;
+  `
+});
+*/
 
+  // background: rgba(22,22,22, 0.7);
+  // border: 1px solid rgba(34,34,34, 0.7);
+
+// the html content of menu_logBox will be set w/ update fn
 // makeElement(addDiv,
 // {
-//   id: "menu_logBox", cls: "", prnt: "html",
-//   rootStyle:
-//   `
-//   position: absolute;
-//   top: 93%;
-//   right: 3%;
-//   height: 40px;
-//   padding: 0px;
-//   margin: 0px;
-//   background: rgba(0,0,0,0);
-//   border: 1px solid rgb(0,0,0);
-//   `
 // });
 
 
+const style_miniBar_n =
+`
+display: inline-block;
+vertical-align: top;
+height: 28px;
+width: 30px;
+margin: 0px;
+background: rgb(13,13,13);
+border-top: 1px solid rgb(44,44,44);
+border-left: 1px solid rgb(44,44,44);
+border-bottom: 1px solid rgb(44,44,44);
+cursor: pointer;
+`;
+
+const style_miniBar_n_key =
+`
+color: #555;
+position: relative;
+left: 5px;
+top: 5px;
+font-size: 9px;
+text-align: center;
+width: 0px;
+height: 0px;
+border: 0px;
+margin: 0px;
+`;
+
+const style_miniBar_n_name =
+`
+color: #AAA;
+display: inline-block;
+vertical-align: bottom;
+line-height: 0.45;
+font-size: 12px;
+text-align: center;
+width: 100%;
+height: 0px;
+border: 0px;
+margin: 0px;
+`;
+
+// recycled my own pasta bad
+function updateMiniBar()
+{
+  const _e = document.getElementById("miniBar_select");
+  const _q = _e.querySelectorAll("._miniBar");
+
+  _q.forEach(function(e, i)
+  {
+    // use ith of ar
+    const _c = (miniBar_stn[i]) ? _btn_col1_str : _btn_col2_str;
+    e.style.background = _c;
+  });
+}
+
+function updateMiniBarFromMenu(par)
+{
+  miniBar_stn[par.i] = !miniBar_stn[par.i];
+  updateMiniBar();
+}
+
+  // left: calc(50% - 45px);
+makeElement(addDiv,
+{
+  id: "miniBar_select", cls: "", prnt: "html",
+  rootStyle:
+  `
+  position: absolute;
+  top: calc(93% + 12px);
+  left: calc(3% + 330px);
+  height: 40px;
+  padding: 0px;
+  margin: 0px;
+  background: rgba(0,0,0,0);
+  border: 0px solid rgb(0,0,0);
+  `
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_1", cls: "_miniBar", prnt: "miniBar_select",
+  rootStyle: style_miniBar_n + _leftRadius,
+  callback: updateMiniBarFromMenu,
+  params: {i: 0}
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_1_key", cls: "", prnt: "menu_miniBar_1",
+  text: "1",
+  rootStyle: style_miniBar_n_key
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_1_name", cls: "", prnt: "menu_miniBar_1",
+  text: "X",
+  rootStyle: style_miniBar_n_name
+});
+
+// ---
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_2", cls: "_miniBar", prnt: "miniBar_select",
+  rootStyle: style_miniBar_n,
+  callback: updateMiniBarFromMenu,
+  params: {i: 1}
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_2_key", cls: "", prnt: "menu_miniBar_2",
+  text: "2",
+  rootStyle: style_miniBar_n_key
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_2_name", cls: "", prnt: "menu_miniBar_2",
+  text: "Y",
+  rootStyle: style_miniBar_n_name
+});
+
+// ---
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_3", cls: "_miniBar", prnt: "miniBar_select",
+  rootStyle: style_miniBar_n + _borderRight + _rightRadius,
+  callback: updateMiniBarFromMenu,
+  params: {i: 2}
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_3_key", cls: "", prnt: "menu_miniBar_3",
+  text: "3",
+  rootStyle: style_miniBar_n_key
+});
+
+makeElement(addDiv,
+{
+  id: "menu_miniBar_3_name", cls: "", prnt: "menu_miniBar_3",
+  text: "Z",
+  rootStyle: style_miniBar_n_name
+});
+
+// ---
+
+// makeElement(addDiv,
+// {
+//   id: "menu_miniBar_4", cls: "_miniBar", prnt: "miniBar_select",
+//   rootStyle: style_miniBar_n + _borderRight + _rightRadius,
+//   callback: updateMiniBarFromMenu,
+//   params: {i: 3}
+// });
+//
+// makeElement(addDiv,
+// {
+//   id: "menu_miniBar_4_key", cls: "", prnt: "menu_miniBar_4",
+//   text: "4",
+//   rootStyle: style_miniBar_n_key
+// });
+//
+// makeElement(addDiv,
+// {
+//   id: "menu_miniBar_4_name", cls: "", prnt: "menu_miniBar_4",
+//   text: "ray",
+//   rootStyle: style_miniBar_n_name
+// });

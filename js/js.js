@@ -27,6 +27,7 @@ var world_obj_count = 0;
 var _preview_scaler;
 var _s_ratio;
 var cursor_helper = 0;
+var miniBar_stn = [0,0,0];
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -105,7 +106,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [280, 714],
+var menu_q_size = [280, 665],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
@@ -262,9 +263,9 @@ var key_map_prevent =
 function setBackgroundColor()
 {
   let _c = [
-   _settings[6].settings[0],
-   _settings[6].settings[1],
-   _settings[6].settings[2]
+   _settings[5].settings[0],
+   _settings[5].settings[1],
+   _settings[5].settings[2]
   ];
 	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
 };
@@ -906,7 +907,7 @@ function loadFile0(_fi) // main load function
       }
     }
     fileName = _fn.slice(0, _si+1);
-    _settings[8].settings[1] = fileName;
+    _settings[7].settings[1] = fileName;
     updateTextByPar("menu_status_r2", _fn.slice(_si+1, _fn.length));
   }
   updateTree(tree_allObjects);
@@ -972,7 +973,7 @@ function downloadSaveFile()
   const anchor = document.createElement('a');
   anchor.href = _url;
 
-  anchor.download = makeValidFileName(_settings[8].settings[1]) + _l + ".bin";
+  anchor.download = makeValidFileName(_settings[7].settings[1]) + _l + ".bin";
 
   // use .click() to trigger download
   anchor.click();
@@ -1090,7 +1091,7 @@ window.addEventListener("wheel", function(e)
 	} else if (runEvery(200)) // when holding shift
   {
     grid_scale += -e.deltaY/Math.abs(e.deltaY);
-    _settings[5].settings[0] = Math.pow(2, grid_scale);
+    _settings[4].settings[0] = Math.pow(2, grid_scale);
 	}
 	s_fov = fov_slide*fov_slide*fov_slide/20; // event always updates s_fov last
 });
@@ -1249,7 +1250,7 @@ function checkNumber(n) { if (/^\d+(\.\d+)?$/.test(n)) {return n;} else {return 
 
 function meanctr_obj(ar, m) // i think this work. i hope so.
 {
-  let _ob = splitObjS(ar),
+  let _ob = splitObj(ar, 0),
       _uniques = new Set(),
       _pm = [0, 0, 0, 0],
       _denom = 0;
@@ -1276,12 +1277,13 @@ function meanctr_obj(ar, m) // i think this work. i hope so.
 
 var _lp = new Float32Array([0.0,0.0,0.0,1]);
 var _lgp = new Float32Array([0.0, 0.0, 0.0]);
-var _pp = [-125,0,-125]; // point on plane will be static
+var _pp = [-125,0,-125];
 var plr_aim = new Float32Array([0.0,0.0,0.0,1]);
 
 var _lp_world = new Float32Array([0.0,0.0,0.0,1]);
 var _lop_world = new Float32Array([0.0,0.0,0.0,1]);
 
+const m_eyeRef = new Float32Array([0,8.0,0,1.0,-8.0,0,0,1.0,0,-8.0,0,1.0,8.0,0,0,1.0,0,8.0,0,1.0]);
 const m_rect = new Float32Array([1, 0, 1, 1,-1, 0, 1, 1,-1, 0,-1, 1, 1, 0,-1, 1, 1, 0, 1, 1]);
 
 const m_cube = new Float32Array([-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0,-1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,-1.0,-1.0,-1.0,1.0]);
@@ -1295,10 +1297,7 @@ const m_map = new Float32Array([277.1638,-128.0,114.8050,0,277.1638,0.0,114.8050
 
 const m_flr = new Float32Array([-256.0,0.0,112.0,0,-256.0,0.0,80.0,0,-256.0,0.0,48.0,0,-256.0,0.0,16.0,0,-256.0,0.0,-16.0,0,-256.0,0.0,-48.0,0,-256.0,0.0,-80.0,0,-256.0,0.0,-112.0,0,-224.0,0.0,144.0,0,-224.0,0.0,112.0,0,-224.0,0.0,80.0,0,-224.0,0.0,48.0,0,-224.0,0.0,16.0,0,-224.0,0.0,-16.0,0,-224.0,0.0,-48.0,0,-224.0,0.0,-80.0,0,-224.0,0.0,-112.0,0,-224.0,0.0,-144.0,0,-192.0,0.0,176.0,0,-192.0,0.0,144.0,0,-192.0,0.0,112.0,0,-192.0,0.0,80.0,0,-192.0,0.0,48.0,0,-192.0,0.0,16.0,0,-192.0,0.0,-16.0,0,-192.0,0.0,-48.0,0,-192.0,0.0,-80.0,0,-192.0,0.0,-112.0,0,-192.0,0.0,-144.0,0,-192.0,0.0,-176.0,0,-160.0,0.0,208.0,0,-160.0,0.0,176.0,0,-160.0,0.0,144.0,0,-160.0,0.0,112.0,0,-160.0,0.0,80.0,0,-160.0,0.0,48.0,0,-160.0,0.0,16.0,0,-160.0,0.0,-16.0,0,-160.0,0.0,-48.0,0,-160.0,0.0,-80.0,0,-160.0,0.0,-112.0,0,-160.0,0.0,-144.0,0,-160.0,0.0,-176.0,0,-160.0,0.0,-208.0,0,-128.0,0.0,240.0,0,-128.0,0.0,208.0,0,-128.0,0.0,176.0,0,-128.0,0.0,144.0,0,-128.0,0.0,112.0,0,-128.0,0.0,80.0,0,-128.0,0.0,48.0,0,-128.0,0.0,16.0,0,-128.0,0.0,-16.0,0,-128.0,0.0,-48.0,0,-128.0,0.0,-80.0,0,-128.0,0.0,-112.0,0,-128.0,0.0,-144.0,0,-128.0,0.0,-176.0,0,-128.0,0.0,-208.0,0,-128.0,0.0,-240.0,0,-96.0,0.0,240.0,0,-96.0,0.0,208.0,0,-96.0,0.0,176.0,0,-96.0,0.0,144.0,0,-96.0,0.0,112.0,0,-96.0,0.0,80.0,0,-96.0,0.0,48.0,0,-96.0,0.0,16.0,0,-96.0,0.0,-16.0,0,-96.0,0.0,-48.0,0,-96.0,0.0,-80.0,0,-96.0,0.0,-112.0,0,-96.0,0.0,-144.0,0,-96.0,0.0,-176.0,0,-96.0,0.0,-208.0,0,-96.0,0.0,-240.0,0,-64.0,0.0,240.0,0,-64.0,0.0,208.0,0,-64.0,0.0,176.0,0,-64.0,0.0,144.0,0,-64.0,0.0,112.0,0,-64.0,0.0,80.0,0,-64.0,0.0,48.0,0,-64.0,0.0,16.0,0,-64.0,0.0,-16.0,0,-64.0,0.0,-48.0,0,-64.0,0.0,-80.0,0,-64.0,0.0,-112.0,0,-64.0,0.0,-144.0,0,-64.0,0.0,-176.0,0,-64.0,0.0,-208.0,0,-64.0,0.0,-240.0,0,-32.0,0.0,240.0,0,-32.0,0.0,208.0,0,-32.0,0.0,176.0,0,-32.0,0.0,144.0,0,-32.0,0.0,112.0,0,-32.0,0.0,80.0,0,-32.0,0.0,48.0,0,-32.0,0.0,16.0,0,-32.0,0.0,-16.0,0,-32.0,0.0,-48.0,0,-32.0,0.0,-80.0,0,-32.0,0.0,-112.0,0,-32.0,0.0,-144.0,0,-32.0,0.0,-176.0,0,-32.0,0.0,-208.0,0,-32.0,0.0,-240.0,0,0.0,0.0,240.0,0,0.0,0.0,208.0,0,0.0,0.0,176.0,0,0.0,0.0,144.0,0,0.0,0.0,112.0,0,0.0,0.0,80.0,0,0.0,0.0,48.0,0,0.0,0.0,16.0,0,0.0,0.0,-16.0,0,0.0,0.0,-48.0,0,0.0,0.0,-80.0,0,0.0,0.0,-112.0,0,0.0,0.0,-144.0,0,0.0,0.0,-176.0,0,0.0,0.0,-208.0,0,0.0,0.0,-240.0,0,32.0,0.0,240.0,0,32.0,0.0,208.0,0,32.0,0.0,176.0,0,32.0,0.0,144.0,0,32.0,0.0,112.0,0,32.0,0.0,80.0,0,32.0,0.0,48.0,0,32.0,0.0,16.0,0,32.0,0.0,-16.0,0,32.0,0.0,-48.0,0,32.0,0.0,-80.0,0,32.0,0.0,-112.0,0,32.0,0.0,-144.0,0,32.0,0.0,-176.0,0,32.0,0.0,-208.0,0,32.0,0.0,-240.0,0,64.0,0.0,240.0,0,64.0,0.0,208.0,0,64.0,0.0,176.0,0,64.0,0.0,144.0,0,64.0,0.0,112.0,0,64.0,0.0,80.0,0,64.0,0.0,48.0,0,64.0,0.0,16.0,0,64.0,0.0,-16.0,0,64.0,0.0,-48.0,0,64.0,0.0,-80.0,0,64.0,0.0,-112.0,0,64.0,0.0,-144.0,0,64.0,0.0,-176.0,0,64.0,0.0,-208.0,0,64.0,0.0,-240.0,0,96.0,0.0,240.0,0,96.0,0.0,208.0,0,96.0,0.0,176.0,0,96.0,0.0,144.0,0,96.0,0.0,112.0,0,96.0,0.0,80.0,0,96.0,0.0,48.0,0,96.0,0.0,16.0,0,96.0,0.0,-16.0,0,96.0,0.0,-48.0,0,96.0,0.0,-80.0,0,96.0,0.0,-112.0,0,96.0,0.0,-144.0,0,96.0,0.0,-176.0,0,96.0,0.0,-208.0,0,96.0,0.0,-240.0,0,128.0,0.0,208.0,0,128.0,0.0,176.0,0,128.0,0.0,144.0,0,128.0,0.0,112.0,0,128.0,0.0,80.0,0,128.0,0.0,48.0,0,128.0,0.0,16.0,0,128.0,0.0,-16.0,0,128.0,0.0,-48.0,0,128.0,0.0,-80.0,0,128.0,0.0,-112.0,0,128.0,0.0,-144.0,0,128.0,0.0,-176.0,0,128.0,0.0,-208.0,0,160.0,0.0,176.0,0,160.0,0.0,144.0,0,160.0,0.0,112.0,0,160.0,0.0,80.0,0,160.0,0.0,48.0,0,160.0,0.0,16.0,0,160.0,0.0,-16.0,0,160.0,0.0,-48.0,0,160.0,0.0,-80.0,0,160.0,0.0,-112.0,0,160.0,0.0,-144.0,0,160.0,0.0,-176.0,0,192.0,0.0,144.0,0,192.0,0.0,112.0,0,192.0,0.0,80.0,0,192.0,0.0,48.0,0,192.0,0.0,16.0,0,192.0,0.0,-16.0,0,192.0,0.0,-48.0,0,192.0,0.0,-80.0,0,192.0,0.0,-112.0,0,192.0,0.0,-144.0,0,224.0,0.0,112.0,0,224.0,0.0,80.0,0,224.0,0.0,48.0,0,224.0,0.0,16.0,0,224.0,0.0,-16.0,0,224.0,0.0,-48.0,0,224.0,0.0,-80.0,0,224.0,0.0,-112.0,0,256.0,0.0,80.0,0,256.0,0.0,48.0,0,256.0,0.0,16.0,0,256.0,0.0,-16.0,0,256.0,0.0,-48.0,0,256.0,0.0,-80.0,0,256.0,0.0,-80.0,0]);
 
-var _flr = 6*8; // Side length of square
-var edit_sum = 0;
-
-const m_eyeRef = new Float32Array([0,8.0,0,1.0,-8.0,0,0,1.0,0,-8.0,0,1.0,8.0,0,0,1.0,0,8.0,0,1.0]);
+var _flr = 6*8; // side length of square
 
 function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
@@ -1335,19 +1334,18 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 
 function updateGrid()
 {
-	g_over_x = setGrid(15, _settings[5].settings[0], 0, [0, 0, 0]);
-	g_over_y = setGrid(15, _settings[5].settings[0], 1, [0, 0, 0]);
-	g_over_z = setGrid(15, _settings[5].settings[0], 2, [0, 0, 0]);
+	g_over_x = setGrid(15, _settings[4].settings[0], 0, [0, 0, 0]);
+	g_over_y = setGrid(15, _settings[4].settings[0], 1, [0, 0, 0]);
+	g_over_z = setGrid(15, _settings[4].settings[0], 2, [0, 0, 0]);
 
-	// now write data to obj
-
-	for (var i = 0; i<mem_log[3][1]-4; i++) // the fuck
+	// write data to obj
+	for (var i = 0; i<mem_log[3][1]-4; i++)
 	{
 		m_objs[3][i] = m_objs_ghost[3][i] = g_over_x[i];
 		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
 		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
 	}
-  grid_scale_d = _settings[5].settings[0];
+  grid_scale_d = _settings[4].settings[0];
 }
 
 // this should not need switch. pass in direction vector.
@@ -1393,10 +1391,16 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 	}
 }
 
-function splitObjR(ar) // temp to finish new encode offsets. replace all with a single function later
+function splitObj(ar, n) // 0:S:raw, :1:-center, R:2:-enc
 {
   let r = [];
-  let _s = Math.ceil(ar.length / 4) - mem_encode[0];
+  let _s = 0;
+  switch(n)
+  {
+    case 0: _s = Math.ceil(ar.length / 4); break;
+    case 1: _s = Math.ceil(ar.length / 4) - 1; break;
+    case 2: _s = Math.ceil(ar.length / 4) - mem_encode[0]; break;
+  }
   for (let i = 0; i < _s; i++)
   {
     let end = Math.min(i*4 + 4, ar.length);
@@ -1406,41 +1410,11 @@ function splitObjR(ar) // temp to finish new encode offsets. replace all with a 
   return r;
 }
 
-function splitObj(ar) // special function for splitting obj w/ no center in return
-{
-  let r = [];
-  let _s = Math.ceil(ar.length / 4) - 1; // - 1 cntr
-  for (let i = 0; i < _s; i++)
-  {
-    let end = Math.min(i*4 + 4, ar.length);
-    let chunk = ar.subarray(i*4, end);
-    r.push(new Float32Array(chunk));
-  }
-  return r;
-}
-
-function splitObjS(ar) // include center
-{
-  let r = [];
-  let _s = Math.ceil(ar.length / 4);
-  // console.log(_s);
-  for (let i = 0; i < _s; i++)
-  {
-    let end = Math.min(i*4 + 4, ar.length);
-    let chunk = ar.subarray(i*4, end);
-    r.push(new Float32Array(chunk));
-  }
-  return r;
-}
-
-// grid: side length, scale, plane, offset
 //var m_flr = setGrid(8*4-2, 8, 1, [4, 0, 4]);
 
 var g_over_x = setGrid(15, 1, 0, [0, 0, 0]);
 var g_over_y = setGrid(15, 1, 1, [0, 0, 0]);
 var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
-
-
 
 /*
   __/\\\\\\\\\\\\________/\\\\\\\\\_____/\\\\\\\\\\\\\\\_____/\\\\\\\\\_______________/\\\\\\\\\\\\\\\__/\\\\\_____/\\\_____/\\\\\\\\\\\___        
@@ -1455,14 +1429,7 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 */
 // #DATAFNS
 
-/*
-[0,0,0,1.0,0,0,-1.0,1.0] // forward
-[0,0,0,1.0,-1.0,0,0,1.0] // left
-[0,0,0,1.0,0,-1.0,0,1.0] // up
-*/
-
-// actually wacked
-// the 4th needs to be set correctly
+// actually wacked, the 4th needs to be set correctly
 
 shaderModule.init();
 var m1 = shaderModule.alloc(80000); // allocate memory for parallel operations
@@ -1500,7 +1467,6 @@ function m_objs_loadPoints(ar, _dir) // adds objects
 
     // m_objs.length-1
     // console.log(_dir); console.log(ar_end);
-
 
 		var ar_g = new Float32Array(ar.length + mem_encode[1]); // ar_f.length
 		ar_g.set(ar_f); // new ghost
@@ -1819,20 +1785,10 @@ function findClosestVector(targetVector, vectors)
 
 function teleport_plr()
 {
-	switch(lock_vert_mov)
-	{
-		case false:
-			player_pos[0] = _lp_world[0];
-			player_pos[1] = _lp_world[1]-14;
-			player_pos[2] = _lp_world[2];
-			break;
-
-		case true:
-			player_pos[0] = _lp_world[0];
-			player_pos[2] = _lp_world[2];
-			player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero broken.
-			break;
-	}
+  player_pos[0] = _lp_world[0]; // set point not always useful
+  player_pos[1] = (_lp_world[1] - 14); hover_h = -player_pos[1];
+  player_pos[2] = _lp_world[2];
+  // player_look_dir[0] = (player_look_dir[0] + pi > 2 * pi) ? player_look_dir[0] - pi : player_look_dir[0] + pi; //flippero broken.
 }
 
 function rot_x_pln(_p,_r)
@@ -1886,8 +1842,8 @@ function mir_w_pln(_p,_c)
 	return _f;
 }
 
-// rotation around arbitrary axis. Basically useless now that I have quats.
-function rot_aa(_p, _v, _r) // _p must be local 
+// rotation around arbitrary axis. basically useless now that I have quats.
+function rot_aa(_p, _v, _r)
 {
 	// ang from y axis must be arctan(y/x) y is literally opposite of x
 	// reciprocal of opposite/adjacent gives the other angle (pi - ang)
@@ -1897,7 +1853,7 @@ function rot_aa(_p, _v, _r) // _p must be local
 	var _a2 = Math.atan(_v[1]/_d2);	// ang that moves to z pln
 	var _op1 = rot_y_pln(_p, -_a1);
 	var _opz = rot_x_pln(_op1, -_a2);
-	var _op4 = rot_z_pln(_opz, _r); // Apply our radians
+	var _op4 = rot_z_pln(_opz, _r); // apply our radians
 	var _op5 = rot_x_pln(_op4, _a2);
 	var _op6 = rot_y_pln(_op5, _a1);
 
@@ -1917,7 +1873,7 @@ function multiplyQuaternions(q1, q2) // The scaler part of the quaternion comes 
 }
 
 
-function makeQuaternion(_r, _a) // Radians, Axis
+function makeQuaternion(_r, _a) // radians, axis
 {
 	// quaternion (cos(theta/2), sin(theta/2) * V) converts to 4d array of data like this.
 	// implied if computed w/ matrices. dont 5get / 2
@@ -2031,9 +1987,8 @@ function del_obj(_i)
 {
 	if (_i > world_obj_count && !hasN(_run_objs, _i))
 	{
-		trns_lock = 0;
-		_all_lock = 0; _all_lock = 0;
-		if (_i == m_objs.length-1) // If last delete last
+		trns_lock = 0; _all_lock = 0;
+		if (_i == m_objs.length-1) // if last delete last
 		{
       // if (obj_cyc < m_objs.length-2) {obj_cyc = m_objs.length-3;}
 			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); m_draw.splice(-1);
@@ -2288,9 +2243,9 @@ var translateFolder =
     // Check for axis lock settings
     translateFolder.lpdelta =
     [
-      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateFolder.lpstart[0],
-      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateFolder.lpstart[1],
-      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateFolder.lpstart[2]
+      (miniBar_stn[0]) ? 0 : _lp_world[0] - translateFolder.lpstart[0],
+      (miniBar_stn[1]) ? 0 : _lp_world[1] - translateFolder.lpstart[1],
+      (miniBar_stn[2]) ? 0 : _lp_world[2] - translateFolder.lpstart[2]
     ];
 
     let _s = translateFolder.folder.length;
@@ -2318,7 +2273,7 @@ var rotateFolder =
     let _s = rotateFolder.folder.length;
     for (let i=0; i<_s; i++) // loop through folders
     {
-      rotateObject(0, _settings[7].settings[0], rotateFolder.folder[i]);
+      rotateObject(0, _settings[6].settings[0], rotateFolder.folder[i]);
     }
     playSound('sounds/finish.mp3');
   }
@@ -2380,9 +2335,9 @@ var translateObject =
     // Check for axis lock settings
     translateObject.lpdelta =
     [
-      (_settings[3].settings[0]) ? 0 : _lp_world[0] - translateObject.lpstart[0],
-      (_settings[3].settings[1]) ? 0 : _lp_world[1] - translateObject.lpstart[1],
-      (_settings[3].settings[2]) ? 0 : _lp_world[2] - translateObject.lpstart[2]
+      (miniBar_stn[0]) ? 0 : _lp_world[0] - translateObject.lpstart[0],
+      (miniBar_stn[1]) ? 0 : _lp_world[1] - translateObject.lpstart[1],
+      (miniBar_stn[2]) ? 0 : _lp_world[2] - translateObject.lpstart[2]
     ];
 
     arScale(m_objs[translateObject.obj], m_objs_ghost[translateObject.obj], translateObject.lpdelta, [0,0,0,0], [1,1,1,1]);
@@ -2409,7 +2364,7 @@ function m_obj_explode(_i) // encode patched
 			_tp[i*4+2] = m_objs[_i][i*4+2];
 			_tp[i*4+3] = m_objs[_i][i*4+3];
 		}
-		m_t_objs_loadPoints(splitObjS(new Float32Array(_tp)));
+		m_t_objs_loadPoints(splitObj(new Float32Array(_tp), 0));
 		del_obj(_i);
 	}
 }
@@ -2424,8 +2379,8 @@ function bond_obj(_i)
 			break;
 		case 2:
 
-			var _oi = splitObjR(m_objs[_i]); // fixed encode temp tho
-			var _of = splitObjR(m_objs[_all_lock_i]);
+			var _oi = splitObj(m_objs[_i], 2); // fixed encode temp tho
+			var _of = splitObj(m_objs[_all_lock_i], 2);
 			// Some for each practice
 			var lap_oi = -1; var lap_of = -1;
 			_oi.forEach((e1, i1) =>
@@ -2477,8 +2432,8 @@ function link_obj(_i)
 		case 1:
 			if (mem_log[_i][1] != mem_log[_all_lock_i][1] || _i == _all_lock_i) {_all_lock = 0; _all_lock_i = 0; break;} //console.log("can't link");
 			var _of = [];
-			var _o1 = splitObjR(m_objs[_i]);
-			var _o2 = splitObjR(m_objs[_all_lock_i]);
+			var _o1 = splitObj(m_objs[_i], 2);
+			var _o2 = splitObj(m_objs[_all_lock_i], 2);
       console.log(_o1.length);
 			switch(_t)
 			{
@@ -2593,7 +2548,7 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 {
 	if (_obj>world_obj_count)
 	{
-		var _to = splitObjS(m_objs[_obj]);
+		var _to = splitObj(m_objs[_obj], 0);
 		var _c = getctr_obj(_obj);
 		var _rf = _r * pi/180;
 
@@ -2689,6 +2644,7 @@ function writeToObjI(_ob, i) // super bad
 // currently this moves the eyeref object in an arbitrary position in front of the player to provide 3d data into the pipe that provides the required
 // 2d output data used to interpolate 2d mouse relative to 2d eyeref. part of the process to make the 3d ray outward from screen relative to 2d mouse on screen
 // there exists ofc a direct theoretical algebraic method but this is not really that bad if it wasn't for the required js rotation of eyeref in the scene.
+// maybe not the rotation -> it's just the interpolation function really ? so slow then...
 
 function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of quaternions representing rotation around axis
 {
@@ -2730,8 +2686,8 @@ function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of qua
 // pretty bad hard kode replace later
 function updateCursor()
 {
-  let _ob = splitObjS(m_objs_ghost[12]);
-  let _ob2 = splitObjS(m_objs_ghost[13]);
+  let _ob = splitObj(m_objs_ghost[12], 0);
+  let _ob2 = splitObj(m_objs_ghost[13], 0);
 
   for (var i = 0; i<=_ob[i].length; i++)
   {
@@ -2804,8 +2760,7 @@ function del_world()
   folder_names.splice(_c);
   obj_folders.splice(_c);
 
-	trns_lock = 0;
-	_all_lock = 0; _all_lock_i = 0;
+	trns_lock = 0; _all_lock = 0; _all_lock_i = 0;
 	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
   m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
   obj_normalMaps.splice(world_obj_count+1);
@@ -2830,7 +2785,7 @@ function mirrorOverPlane()
 {
 	if (obj_cyc>world_obj_count)
 	{
-		var _to = splitObjS(m_objs[obj_cyc]);
+		var _to = splitObj(m_objs[obj_cyc], 0);
 		var _c = getctr_obj(obj_cyc);
 		for (var i=0; i<_to.length; i++)
 		{
@@ -2862,16 +2817,16 @@ function cloneObjSelected()
 {
 	if (obj_cyc>world_obj_count) // && !hasN(_run_objs, obj_cyc)
 	{
-		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]), 0);
+		m_objs_loadPoints(cloneObj(m_objs[obj_cyc]), getObjDir(obj_cyc));
 	}
 }
 
 function setCursorToObjCenter()
 {
 	var _t = getctr_obj(obj_cyc);
-	if (!_settings[3].settings[0]) {_lp[0] = _lp_world[0] = _t[0];}
-	if (!_settings[3].settings[1]) {_lp[1] = _lp_world[1] = _t[1];}
-	if (!_settings[3].settings[2]) {_lp[2] = _lp_world[2] = _t[2];}	
+	if (!miniBar_stn[0]) {_lp[0] = _lp_world[0] = _t[0];}
+	if (!miniBar_stn[1]) {_lp[1] = _lp_world[1] = _t[1];}
+	if (!miniBar_stn[2]) {_lp[2] = _lp_world[2] = _t[2];}	
 }
 
 function returnCursorToGround()
@@ -2895,7 +2850,7 @@ function editSelectedObject()
 
 function applyRotation()
 {
-	rotateObject(0, _settings[7].settings[0], obj_cyc);
+	rotateObject(0, _settings[6].settings[0], obj_cyc);
 }
 
 function moveObject()
@@ -2960,10 +2915,10 @@ function dupeFolderObjs()
 
 function measureLine()
 {
-  var _t_obj = splitObj(m_objs[obj_cyc]);
+  var _t_obj = splitObj(m_objs[obj_cyc], 1);
   var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
   console.log(_t_d);
-  _settings[5].settings[0] = _t_d;
+  _settings[4].settings[0] = _t_d;
 }
 
 	/*
@@ -3028,7 +2983,7 @@ function drawOverlay()
   updateTextByPar("menu_status_l0", "[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
   updateTextByPar("menu_status_l1", "[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
   updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
-  updateTextByPar("menu_status_r1", "[" + grid_scale + " : " + _settings[5].settings[0]+"]");
+  updateTextByPar("menu_status_r1", "[" + grid_scale + " : " + _settings[4].settings[0]+"]");
 
 
 	// this needs to be fixed. temp as I port menu to new script
@@ -3449,7 +3404,7 @@ function drawLines()
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
             // vertices = [];
-            if (!_settings[5].settings[2])
+            if (!_settings[4].settings[2])
             {
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
@@ -3523,14 +3478,14 @@ function drawLines()
               }
             }
 
-            if (_settings[5].settings[3])
+            if (_settings[4].settings[3])
             {
               gl.enable(gl.CULL_FACE);
               gl.cullFace(gl.BACK);
             } else {gl.disable(gl.CULL_FACE);}
 
 
-            if (!_settings[5].settings[2])
+            if (!_settings[4].settings[2])
             {
               switch(!_settings[1].settings[2])
               {
@@ -3597,7 +3552,7 @@ function drawLines()
 
     if (!(_settings[1].settings[0])
     || (d_i == 13 && mem_t_sum == 0) // mem t sum ???
-    || (d_i == 2 && !_settings[5].settings[1])
+    || (d_i == 2 && !_settings[4].settings[1])
     || (d_i == 11 && wpn_select!=3)
     || (d_i == 14)
     || (d_i == 15 && !boundingBox.enable)
@@ -3817,20 +3772,23 @@ function drawLines()
     if (m1.data[mem_log[15][0] + 4*boundingBox.i+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _2dp_boundingBox1, 0.006 ), -3);}
   }
 
-  if (!mouseLock || wpn_select == 1 || key_map.tab)
+  if (!mouseLock)
   {
-    for (let i = m_objs.length-1; i>=0; i--)
+    if (wpn_select < 2 || key_map.tab)
     {
-      d_i = modIndex[i];
-      if (d_i > world_obj_count)
+      for (let i = m_objs.length-1; i>=0; i--)
       {
-      // set 2d centers here
-      m_center2d[d_i][0] = -m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 4 ];
-      m_center2d[d_i][1] =  m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 3 ];
+        d_i = modIndex[i];
+        if (d_i > world_obj_count)
+        {
+        // set 2d centers here
+        m_center2d[d_i][0] = -m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 4 ];
+        m_center2d[d_i][1] =  m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 3 ];
 
-      // Now make a set of data of 2d center points to feed this and scale w/ z from shader
-      drawSegment(ar2Dmod_static_single(_2dis[2], m_center2d_buffer[d_i], m_center2d[d_i], m1.data[mem_log[d_i][0]+mem_log[d_i][1]-2]*0.01 ), -5);
-     }
+        // now make a set of data of 2d center points to feed this and scale w/ z from shader
+        drawSegment(ar2Dmod_static_single(_2dis[2], m_center2d_buffer[d_i], m_center2d[d_i], m1.data[mem_log[d_i][0]+mem_log[d_i][1]-2]*0.01 ), -5);
+       }
+      }
     }
   }
 
@@ -3915,10 +3873,11 @@ function mouseToWorld()
   return _ff;
 }
 
+// this should be automated lol
 function pointerOutsideWindow() // return [0] indicates if inside menu pane
 {
 	// #incheck
-	var _in = [0,1,1];
+	var _in = [0,1,1,1];
 
 	if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+menu_q_size[0])))
 	{
@@ -3936,7 +3895,25 @@ function pointerOutsideWindow() // return [0] indicates if inside menu pane
 		}
 	}
 
-  if (_in[1] && _in[2]) {_in[0] = 1;}
+  // top: calc(93% + 12px); left: calc(3% + 330px); top: 93%; left: 3%;
+
+  let _offAr = 
+  [
+    in_win_w*0.03,
+    in_win_w*0.03+425,
+    in_win_h*0.93,
+    in_win_h*0.93+40
+  ];
+
+	if ((mouseData[0] > _offAr[0]) && (mouseData[0] < _offAr[1]))
+	{
+		if ((mouseData[1] > _offAr[2]) && (mouseData[1] < _offAr[3]))
+		{
+			_in[3] = 0;
+		}
+	}
+
+  if (_in[1] && _in[2] && _in[3]) {_in[0] = 1;}
 
 	return _in;
 }
@@ -4066,9 +4043,9 @@ var boundingBox =
 
     this.lpdelta =
     [
-      (_settings[3].settings[0]) ? 0 : _lp_world[0] - this.lpstart[0],
-      (_settings[3].settings[1]) ? 0 : _lp_world[1] - this.lpstart[1],
-      (_settings[3].settings[2]) ? 0 : _lp_world[2] - this.lpstart[2]
+      (miniBar_stn[0]) ? 0 : _lp_world[0] - this.lpstart[0],
+      (miniBar_stn[1]) ? 0 : _lp_world[1] - this.lpstart[1],
+      (miniBar_stn[2]) ? 0 : _lp_world[2] - this.lpstart[2]
     ];
 
     this.updateK();
@@ -4245,6 +4222,40 @@ var pivotAlign =
 
 functionRunList.push(pivotAlign); // push ref to run list
 
+function rotateObjectToDir(_i, dir)
+{
+  let _dir = getObjDir(_i);
+
+  let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc], // remove corresponding axis
+      _l1 = sub(pivotAlign.p0, pivotAlign.pivot),
+      _l2 = sub(pivotAlign.p2, pivotAlign.p1),
+      _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
+      _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
+      // _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
+      _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q // , makeQuaternion(Math.asin(_u_mag), makeDir(_l2))
+
+  let _obj_len = mem_log[pivotAlign.obj][2]; // get # of points
+
+  for (var i=0; i<_obj_len; i++)
+  {
+    let _vg = // extract temp point
+    [
+      m_objs_ghost[pivotAlign.obj][i*4],
+      m_objs_ghost[pivotAlign.obj][i*4+1],
+      m_objs_ghost[pivotAlign.obj][i*4+2]
+    ];
+
+    let _p_rel = pivotAlign.pivot; // getctr_ghost(pivotAlign.obj);
+    let _p_o = sub3(_vg, _p_rel); // remove rel point
+    let _p_rot = quatRot( _p_o, _q_f );
+    let _pf = add3(_p_rot, _p_rel); // final point add rel point
+
+    m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4] = _pf[0];
+    m_objs_ghost[pivotAlign.obj][i*4+1] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
+    m_objs_ghost[pivotAlign.obj][i*4+2] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
+  }
+}
+
 // simple function to take cross and create the normal. later will use obj_normalMaps: had issues w/ torsion
 var surfaceNormal =
 {
@@ -4404,19 +4415,19 @@ function Compute(init_dat)
 {
 
 
-  if (_settings[5].settings[2]) {updateZMap();} // if depth enabled
+  if (_settings[4].settings[2]) {updateZMap();} // if depth enabled
 
   m_obj_offs[12][0] = _lp_world[0];
   m_obj_offs[12][1] = _lp_world[1];
   m_obj_offs[12][2] = _lp_world[2];
-  m_obj_offs[12][3] = _settings[5].settings[0]/2.0;
+  m_obj_offs[12][3] = _settings[4].settings[0]/2.0;
 
   if (mem_t_sum != 0)
   {
     m_obj_offs[13][0] = m_t_objs[m_t_objs.length-1][0];
     m_obj_offs[13][1] = m_t_objs[m_t_objs.length-1][1];
     m_obj_offs[13][2] = m_t_objs[m_t_objs.length-1][2];
-    m_obj_offs[13][3] = _settings[5].settings[0]/8.0;
+    m_obj_offs[13][3] = _settings[4].settings[0]/8.0;
   }
 
   // RUN LIST HERE
@@ -4458,10 +4469,9 @@ function Compute(init_dat)
 	}
 
 
-  // will have to look on my git to find history bring this back in to remove
-  if (_settings[5].settings[0] != grid_scale_d) { updateGrid(); }
+  if (_settings[4].settings[0] != grid_scale_d) { updateGrid(); }
   if(document.activeElement.type ==  "text") { flag_inText = 1; } else {flag_inText = 0;}
-	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, _settings[7].settings[0], obj_cyc); }
+	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, _settings[6].settings[0], obj_cyc); }
 	if (key_map["5"] && runEvery(150)) { mirrorOverPlane(); }
 	if (key_map["6"] && runEvery(300)) { boundingBox.toggle(); }
 	if (key_map.l && runEvery(300)) { link_obj(obj_cyc); }
@@ -4542,7 +4552,6 @@ function Compute(init_dat)
 		}
 	}
 
-	// Will need replace
 	if (key_map.z && runEvery(140-key_map.shift*100) && m_t_objs.length!=0) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1); paint_n--;}
 
 	/*
@@ -4627,7 +4636,7 @@ function Compute(init_dat)
 					m_objs_ghost[tse][i*4+2]+32+Date.now()%3*key_map.lmb+key_map.rmb*30
 				];
 
-				// New attempt w/ quaternions
+				// new attempt w/ quaternions
 				// i tried using rotation around an arbitrary axis but this never works out
 				// i had some logic to fake the continuity but 1 frame events were unfixable.
 
@@ -4654,16 +4663,16 @@ function Compute(init_dat)
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
 		case 0:
-			grid_scale_ar[1] = _settings[5].settings[0];
-			grid_scale_ar[2] = _settings[5].settings[0];
+			grid_scale_ar[1] = _settings[4].settings[0];
+			grid_scale_ar[2] = _settings[4].settings[0];
 			break
 		case 1:
-			grid_scale_ar[0] = _settings[5].settings[0];
-			grid_scale_ar[2] = _settings[5].settings[0];
+			grid_scale_ar[0] = _settings[4].settings[0];
+			grid_scale_ar[2] = _settings[4].settings[0];
 			break
 		case 2:
-			grid_scale_ar[0] = _settings[5].settings[0];
-			grid_scale_ar[1] = _settings[5].settings[0];
+			grid_scale_ar[0] = _settings[4].settings[0];
+			grid_scale_ar[1] = _settings[4].settings[0];
 			break
 	}
 
@@ -4672,6 +4681,20 @@ function Compute(init_dat)
  	{
 		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_scale_ar[0]), roundTo(_lp[1], grid_scale_ar[1]), roundTo(_lp[2], grid_scale_ar[2])];}
  	}
+
+  if (wpn_select != 1)
+  {
+    if (key_map.rmb && runEveryLong(75))
+    {
+      if (!mouseLock)
+      {
+        // mouseLock
+        obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
+      } else {
+        select2dpoint(0, 0);
+      }
+    }
+  }
 
 	switch(wpn_select) //#WEAPONSCRIPT
 	{
@@ -4691,16 +4714,6 @@ function Compute(init_dat)
 				}
 			}
 
-			if (key_map.rmb && runEveryLong(75))
-			{
-				if (!mouseLock)
-				{
-					// mouseLock
-					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
-				} else {
-					select2dpoint(0, 0);
-				}
-			}
       // console.log(m1.data[mem_log[14][0] + 4]);
       // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 
@@ -4785,7 +4798,7 @@ function Compute(init_dat)
 					wpn_1 = 1;
 				}
 
-				if (wpn_1) {m_obj_offs[obj_cyc] = roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), _settings[5].settings[0]);}
+				if (wpn_1) {m_obj_offs[obj_cyc] = roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), _settings[4].settings[0]);}
 
 				if (key_map.lmb == false && wpn_1)
 				{
@@ -4808,9 +4821,9 @@ function Compute(init_dat)
 
 			if (key_map.lmb && pointerOutsideWindow()[0] && runEvery(20))
 			{
-        if (!_settings[4].settings[0])
+        if (!_settings[3].settings[0])
         {
-          if (paint_n > _settings[4].settings[2])
+          if (paint_n > _settings[3].settings[2])
           {
             mem_t_mov();
             paint_c = 1;
@@ -4822,9 +4835,9 @@ function Compute(init_dat)
           switch(mouseLock)
           {
             case 0:
-              paint_d = m_t_objs.length==0 ? _settings[4].settings[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
+              paint_d = m_t_objs.length==0 ? _settings[3].settings[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
 
-              if (paint_d > _settings[4].settings[1])
+              if (paint_d > _settings[3].settings[1])
               {
                 m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
                 paint_n++;
@@ -4839,8 +4852,8 @@ function Compute(init_dat)
         }
 			}
 
-			if (_settings[4].settings[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
-			if (!_settings[4].settings[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
+			if (_settings[3].settings[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
+			if (!_settings[3].settings[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2
 
@@ -5062,6 +5075,7 @@ document.addEventListener("DOMContentLoaded", function()
   updateRefLog();
 	updateMenuPos();
   updateWpnSelect();
+  updateMiniBar();
 
 	Compute(m1);
 	updateGrid();
