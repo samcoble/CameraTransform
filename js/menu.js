@@ -2550,9 +2550,10 @@ border-radius: 3px;
 overflow: hidden;
 `;
 
-const menu_stats_n = `width: calc(63% / 3); height: 50%;`;
-const menu_stats_n0 = `width: calc(63% / 3 - 5%); height: 50%;`;
-const menu_stats_f = `width: 42%; height: 50%;`;
+const menu_stats_s0 = `width: calc(63% / 3 - 7%); height: 50%;`;
+const menu_stats_s1 = `width: calc(59% / 3); height: 50%;`;
+const menu_stats_s2 = `width: calc(63% / 3 + 3%); height: 50%;`;
+const menu_stats_s3 = `width: 42%; height: 50%;`;
 const menu_stats_f0 = `width: 46%; height: 50%; background: rgb(37,37,37); outline: none; border: none; position: relative; top: -3px;`;
 const menu_stats_f1 = `width: 26%; height: 50%; background: rgb(37,37,37); outline: none; border: none; position: relative; top: -3px;`;
 
@@ -2596,26 +2597,26 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "menu_stats_0", cls: "", prnt: "menu_stats_wrap",
-  rootStyle: rootStyle + menu_stats_box + menu_stats_n +
+  rootStyle: rootStyle + menu_stats_box + menu_stats_s0 +
   `box-shadow: none;`
 });
 
 makeElement(addDiv,
 {
   id: "menu_stats_1", cls: "", prnt: "menu_stats_wrap",
-  rootStyle: rootStyle + menu_stats_box + menu_stats_n 
+  rootStyle: rootStyle + menu_stats_box + menu_stats_s1
 });
 
 makeElement(addDiv, // FPS
 {
   id: "menu_stats_2", cls: "", prnt: "menu_stats_wrap",
-  rootStyle: rootStyle + menu_stats_box + menu_stats_n0
+  rootStyle: rootStyle + menu_stats_box + menu_stats_s2
 });
 
 makeElement(addDiv,
 {
   id: "menu_stats_3", cls: "", prnt: "menu_stats_wrap",
-  rootStyle: rootStyle + menu_stats_box + menu_stats_f
+  rootStyle: rootStyle + menu_stats_box + menu_stats_s3
 });
 
 makeElement(addFileInput,

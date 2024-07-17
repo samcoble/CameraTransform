@@ -2980,11 +2980,10 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
 
-  // current task
-  updateTextByPar("menu_stats_3", "[ " + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+" ]");
+  updateTextByPar("menu_stats_0", "[ " + _fps + " ]");
   updateTextByPar("menu_stats_1", "[ " + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+" ]");
-  updateTextByPar("menu_stats_2", "[ " + _fps + " ]");
-  updateTextByPar("menu_stats_0", "[ " + grid_scale + " : " + _settings[4].settings[0]+" ]");
+  updateTextByPar("menu_stats_2", "[ " + grid_scale + " : " + _settings[4].settings[0].toFixed(5) + " ]");
+  updateTextByPar("menu_stats_3", "[ " + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+" ]");
 
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
 
