@@ -2629,7 +2629,7 @@ makeElement(addFileInput,
 makeElement(addTextInput,
 {
   id: "menu_stats_4", cls: "", prnt: "menu_stats_wrap",
-  value: 'memspc_',
+  value: '',
   rootStyle: rootStyle + menu_stats_box + menu_stats_f0,
   callback: updateSetting
 });

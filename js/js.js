@@ -907,7 +907,6 @@ function loadFile0(_fi) // main load function
       }
     }
     fileName = _fn.slice(0, _si+1);
-    _settings[6].settings[1] = fileName;
     updateValueByPar("menu_stats_5", _fn.slice(_si+1, _fn.length));
   }
   updateTree(tree_allObjects);
@@ -973,7 +972,8 @@ function downloadSaveFile()
   const anchor = document.createElement('a');
   anchor.href = _url;
 
-  anchor.download = makeValidFileName(_settings[6].settings[1]) + _l + ".bin";
+  let _tstr = document.getElementById('menu_stats_4').value;
+  anchor.download = makeValidFileName(_tstr) + _l + ".bin";
 
   // use .click() to trigger download
   anchor.click();
