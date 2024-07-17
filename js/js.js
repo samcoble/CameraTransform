@@ -768,7 +768,7 @@ function loadSelect(_fi)
   }
   // should be replaced ...
 
-  updateValueByPar("menu_status_l3", fileName);
+  updateValueByPar("menu_stats_4", fileName);
 }
 
 function offsetArray(ar, b)
@@ -907,8 +907,8 @@ function loadFile0(_fi) // main load function
       }
     }
     fileName = _fn.slice(0, _si+1);
-    _settings[7].settings[1] = fileName;
-    updateTextByPar("menu_status_r2", _fn.slice(_si+1, _fn.length));
+    _settings[6].settings[1] = fileName;
+    updateValueByPar("menu_stats_5", _fn.slice(_si+1, _fn.length));
   }
   updateTree(tree_allObjects);
 }
@@ -973,7 +973,7 @@ function downloadSaveFile()
   const anchor = document.createElement('a');
   anchor.href = _url;
 
-  anchor.download = makeValidFileName(_settings[7].settings[1]) + _l + ".bin";
+  anchor.download = makeValidFileName(_settings[6].settings[1]) + _l + ".bin";
 
   // use .click() to trigger download
   anchor.click();
@@ -2766,8 +2766,8 @@ function del_world()
   obj_normalMaps.splice(world_obj_count+1);
 	obj_cyc = 2;
 
-  document.getElementById("menu_status_l3").value = '';
-  document.getElementById("menu_status_r2").innerHTML = '';
+  document.getElementById("menu_stats_4").value = '';
+  document.getElementById("menu_stats_5").innerHTML = '';
 
   updateTree(tree_allObjects);
 }
@@ -2980,13 +2980,12 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
 
-  updateTextByPar("menu_status_l0", "[" + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+"]");
-  updateTextByPar("menu_status_l1", "[" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"]");
-  updateTextByPar("menu_status_r0", "fps[" + _fps + "]");
-  updateTextByPar("menu_status_r1", "[" + grid_scale + " : " + _settings[4].settings[0]+"]");
+  // current task
+  updateTextByPar("menu_stats_3", "[ " + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+" ]");
+  updateTextByPar("menu_stats_1", "[ " + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+" ]");
+  updateTextByPar("menu_stats_2", "[ " + _fps + " ]");
+  updateTextByPar("menu_stats_0", "[ " + grid_scale + " : " + _settings[4].settings[0]+" ]");
 
-
-	// this needs to be fixed. temp as I port menu to new script
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
 
   // temp until I move it to new menu in obj menu !!!
@@ -3020,8 +3019,10 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
 */
 
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
-// folder_selected_objs
+const color_light_purple = [0.65, 0.6, 1.0, 0.8];
+const color_yellow = [0.960, 0.85, 0.46, 0.87];
 
+// folder_selected_objs
 // So here I draw lines. Passing true object i'th
 function drawSegment(vertices, mi, color) // color added as override for now
 {
@@ -3036,7 +3037,7 @@ function drawSegment(vertices, mi, color) // color added as override for now
 	{
 	    if (mi == obj_cyc && mi > world_obj_count) //
 	    {
-	    	gl.uniform4fv(colorUniformLocation, [0.960, 0.85, 0.46, 1.0]); // set color yellow line
+	    	gl.uniform4fv(colorUniformLocation, color_yellow); // set color yellow line
 	    } else
 	    {
           switch(_settings[1].settings[2])
@@ -3050,7 +3051,7 @@ function drawSegment(vertices, mi, color) // color added as override for now
           }
   
 	    }
-    	if (mi == 12) {gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);}
+    	if (mi == 12) {gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);} // ?????????????????????
 	} else
   {
 		switch(mi) // Temp drawn line color
@@ -3067,7 +3068,7 @@ function drawSegment(vertices, mi, color) // color added as override for now
   // here set color of selected objects (probably slow)
   let _fs = folder_selected_objs.length;
   for (let f = 0; f<_fs; f++)
-  { if (mi == folder_selected_objs[f] && mi != obj_cyc && mi != _all_lock_i) {gl.uniform4fv(colorUniformLocation, [0.60, 0.55, 1.0, 1.0]);} }
+  { if (mi == folder_selected_objs[f] && mi != obj_cyc && mi != _all_lock_i) {gl.uniform4fv(colorUniformLocation, color_light_purple);} }
 
   // here set color of pivot align vectors
   let _ft = obj_folders[3].length;
@@ -3144,13 +3145,15 @@ function drawSegment(vertices, mi, color) // color added as override for now
 }
 
 
+var _fadeVal;
 function drawPoints(_pnts, mi)
 {
-  
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, _pnts, gl.STATIC_DRAW);
 
   gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+
+  if (wpn_select == 2) {_fadeVal = 0.20;} else {_fadeVal = 0.8;}
 
     if (mi > 2 && mi < 6)
     {
@@ -3160,13 +3163,13 @@ function drawPoints(_pnts, mi)
       switch((mi-3))
       {
         case 0:
-          gl.uniform4fv(colorUniformLocation, [1.0, 0.2, 0.2, 1.0]);
+          gl.uniform4fv(colorUniformLocation, [1.0, 0.2, 0.2, _fadeVal]);
           break;
         case 1:
-          gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, 1.0]);
+          gl.uniform4fv(colorUniformLocation, [0.2, 1.0, 0.2, _fadeVal]);
           break;
         case 2:
-          gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 1.0, 1.0]);
+          gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 1.0, _fadeVal]);
           break;
       }
     } else {gl.uniform4fv(colorUniformLocation, [0.5, 0.5, 0.5, 0.3]);} // white grid points

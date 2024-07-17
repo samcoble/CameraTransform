@@ -2541,172 +2541,107 @@ makeElement(addTextInput,
   ╚╩╩╝╚══╝╚╝╚╝╚══╝    ╚══╝ ╚═╝╚═══╝ ╚═╝╚══╝╚══╝
 */
 
-var menu_status_style =
+const menu_stats_wrap =
 `
-box-sizing: border-box;
 position: absolute;
-left: 12px;
-top: 12px;
-width: 400px;
-height: 75px;
+left: 1.5%; top: 2%;
+width: 400px; height: 50px;
 border-radius: 3px;
-border: 1px solid rgb(38,38,38);
-color: #DDD;
-padding: 10px 10px 0px 10px;
-` + _btn_col1;
-
-var menu_status_style_l =
-`
-width: 70%;
-height: 100%;
-float: left;
-` + _btn_col1;
-
-var menu_status_style_r =
-`
-width: 30%;
-height: 100%;
-float: right;
-` + _btn_col1;
-
-var _textLeft = `text-align: left;`;
-var _textRight = `text-align: right;`;
-
-var menu_status_style_l0 =
-`
-width: 100%;
-height: 23%;
-padding: 0px 0px 0px 1px;
-margin: 0px 0px 2px 0px;
-background: none;
+overflow: hidden;
 `;
 
-// border: 1px solid rgba(13,13,13,0.5);
+const menu_stats_n = `width: calc(63% / 3); height: 50%;`;
+const menu_stats_n0 = `width: calc(63% / 3 - 5%); height: 50%;`;
+const menu_stats_f = `width: 42%; height: 50%;`;
+const menu_stats_f0 = `width: 46%; height: 50%; background: rgb(37,37,37); outline: none; border: none; position: relative; top: -3px;`;
+const menu_stats_f1 = `width: 26%; height: 50%; background: rgb(37,37,37); outline: none; border: none; position: relative; top: -3px;`;
 
-var menu_status_style_l2 =
+// border-top: 1px solid rgb(44,44,44);
+const menu_stats_box =
 `
-display: block;
-float: left;
-padding: 0px 0px 0px 12px;
-width: 36%;
-height: 26px;
-margin: 5px 0px 0px 0px;
-border: 1px solid rgb(44,44,44);
+border-top: 1px solid #222;
+overflow: hidden;
+font-size: 10px;
+display: inline-block;
+line-height: 2.5;
+background: rgb(28,28,28);
+box-shadow: inset 1px 0px 1px 0px rgba(12, 12, 12, 0.6);
+text-align: center;
+color: #9f9f9f;
+padding-top: 1px;
+`;
+
+// border-top: 1px solid rgb(44,44,44);
+const menu_stats_file =
+`
+position: relative; top: -3px;
+color: #AAA;
+display: inline-block;
+font-size: 11px;
+text-align: center;
+width: 28%; height: 50%;
+margin: 0px; padding: 0px;
 cursor: pointer;
-border-radius: 3px 0px 0px 0px;
-line-height: 2.2;
+line-height: 2.4;
 background-color: rgb(38,38,39);
 `;
 
-var menu_status_style_l3 =
-`
-display: block;
-float: right;
-padding: 2px 0px 0px 12px;
-width: 64%;
-height: 26px;
-margin: 5px 0px 0px 0px;
-border: 1px solid rgb(34,34,34);
-border-left: none;
-outline: none;
-` + _btn_col1;
-
-var menu_status_style_r2 =
-`
-padding: 0px 0px 0px 12px;
-width: 100%;
-height: 26px;
-margin: 7px 0px 0px 0px;
-border: 1px solid rgb(34,34,34);
-border-left: none;
-border-radius: 0px 3px 0px 0px;
-color: #555;
-line-height: 2.2;
-` + _btn_col1;
-
-var _textScaleFix =
-`
-width: 300px;
-position: relative;
-left: -187px;
-`;
-
-var _menu_status_text_col = ` color: #AAA; `;
-
+// background: #000;
 makeElement(addDiv,
 {
-  id: "menu_status", cls: "", prnt: "html",
-  settings: ["", "memspc_"],
-  rootStyle: rootStyle + menu_status_style
+  id: "menu_stats_wrap", cls: "", prnt: "html",
+  rootStyle: rootStyle + menu_stats_wrap
 });
 
 makeElement(addDiv,
 {
-  id: "menu_status_l", cls: "", prnt: "menu_status",
-  rootStyle: rootStyle + menu_status_style_l
+  id: "menu_stats_0", cls: "", prnt: "menu_stats_wrap",
+  rootStyle: rootStyle + menu_stats_box + menu_stats_n +
+  `box-shadow: none;`
 });
 
 makeElement(addDiv,
 {
-  id: "menu_status_l0", cls: "", prnt: "menu_status_l",
-  rootStyle: rootStyle + menu_status_style_l0 + _textLeft + _menu_status_text_col
+  id: "menu_stats_1", cls: "", prnt: "menu_stats_wrap",
+  rootStyle: rootStyle + menu_stats_box + menu_stats_n 
+});
+
+makeElement(addDiv, // FPS
+{
+  id: "menu_stats_2", cls: "", prnt: "menu_stats_wrap",
+  rootStyle: rootStyle + menu_stats_box + menu_stats_n0
 });
 
 makeElement(addDiv,
 {
-  id: "menu_status_l1", cls: "", prnt: "menu_status_l",
-  rootStyle: rootStyle + menu_status_style_l0 + _textLeft + _menu_status_text_col
+  id: "menu_stats_3", cls: "", prnt: "menu_stats_wrap",
+  rootStyle: rootStyle + menu_stats_box + menu_stats_f
 });
-
-/*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
-
-// fix this area: can use settingUpdate and niladic -> var fileName -> loadSelect()
 
 makeElement(addFileInput,
 {
-  id: "menu_status_l2", cls: "", prnt: "menu_status_l",
+  id: "menu_stats_file", cls: "", prnt: "menu_stats_wrap",
   text: "Open file",
-  rootStyle: rootStyle + menu_status_style_l2 + _menu_status_text_col,
+  rootStyle: rootStyle + menu_stats_file,
   callback: loadSelect
 });
 
 makeElement(addTextInput,
 {
-  id: "menu_status_l3", cls: "", prnt: "menu_status_l",
-  value: "memspc_",
-  rootStyle: rootStyle + menu_status_style_l3,
+  id: "menu_stats_4", cls: "", prnt: "menu_stats_wrap",
+  value: 'memspc_',
+  rootStyle: rootStyle + menu_stats_box + menu_stats_f0,
   callback: updateSetting
 });
 
-makeElement(addDiv,
+makeElement(addTextInput,
 {
-  id: "menu_status_r", cls: "", prnt: "menu_status",
-  rootStyle: rootStyle + menu_status_style_r
+  id: "menu_stats_5", cls: "", prnt: "menu_stats_wrap",
+  value: '',
+  rootStyle: rootStyle + menu_stats_box + menu_stats_f1,
+  callback: updateSetting
 });
 
-makeElement(addDiv,
-{
-  id: "menu_status_r0", cls: "", prnt: "menu_status_r",
-  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _menu_status_text_col
-});
-
-makeElement(addDiv,
-{
-  id: "menu_status_r1", cls: "", prnt: "menu_status_r",
-  rootStyle: rootStyle + menu_status_style_l0 + _textRight + _textScaleFix + _menu_status_text_col
-});
-
-makeElement(addDiv,
-{
-  id: "menu_status_r2", cls: "", prnt: "menu_status_r",
-  text: "",
-  rootStyle: rootStyle + menu_status_style_r2 + _textLeft
-});
 
 // Wpn selector ind
 
