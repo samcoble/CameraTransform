@@ -43,16 +43,33 @@ ______|_________________________________________________________________________
       |   
       |   the depth buffer should be fixable. the k-d tree is interesting i will have to try a scaleable sample data and test out a query
       |   static premade shaded color map -> during tri pack w/ new k find the correct col and pack to second dynam buffer -> look same & shaded
+      |   the alternative calculation for depth was entirely yolo low pow
+      |   
+      |   memory errors are big sad
+      |   fix mem_sum. fix save interaction with empty folders. fix nesting logic. fix vertex fetch error. fix complex save file load
+      | - poly fill alg
+      | - destructive poly interactions require connecting two lines of different sizes. easier when just on one plane
+      |   
       |   
       |   EZ FIXES
 ______|___________________________________________________________________________________________________________
       |
-      | - stats get nice shadow boxes round with vert black divider at top w/ only two rows open file on bottom for now ...
-      | - finish exclude system for the axis lock
-      | - then remove axis lock and shift indices ... no good
+      | - selected obj must draw before the drawn lines and make purple opacity like 0.85
+      | - paint needs shift click to draw lines between single clicks
+      | - disable grid auto locking for movement somehow...
+      | - 
+      | - make the axis lock box also show current. somehow make both features at the same time make sense. hovering on it displays a dir holo in front of the player !!!!
+      | - i need one of those layers to separate static ar indices automatically so my hard coded stack is created and logged via id
+      | - 
+      | - 
+      | - i need a slice/split geometry by plane. this would allow obj trimming. chamfer. angled cut
+      | - maybe look at the problem as the volume within. not sure
+      | - 
+      | - 
       | - 
       | - folders not working with save correctly. maybe loading needs to be slowed down or done in a more reliable way
       | - 
+      | - just noticed mem_sum equates to 7588 instead of the actual mem_sum provided within the mem_log after making/deleting one obj
       | - 
       | - vertex fetch requires 227, but attribs only supply 180. DEPTH setting issue. likely due to moving some points to the bottom of stack
       | - make initial and final point of obj noticeable in size
