@@ -21,7 +21,8 @@ I have limited folder names to use the following characters: A-Z, 0-9, period an
 
 I have ported a lot to webgl and the performance improvements are quite insane but far from a native application. The perspective transform does not use the gl-matrix library. Textures require the correct orientation which I have yet to create a transform for. I tried a standard implementation of the view matrix 4f applied directly to the shader with the matrix library but I noticed a performance loss !? Ultimately the z-buffer should be a shader to reduce a future workload. Javascript only runs so fast you know.
 
-
+My math here is maybe wrong but the paint tool is fairly accessible now. I have noticed my initial idea to hijack spacial memory by providing a 3D context actually worked out. I will have to use it more to determine if there is any noticeable advantage. I have a few simple things I can apply to the way the paint tool works to help produce a more true representation of what is drawn. Lines will also be run through a simple algorithm to reduce their 'noise' and help smooth things out.
+![191730](https://github.com/user-attachments/assets/872c9590-70b9-48fa-b9af-743670839f0c)
 ![204828](https://github.com/user-attachments/assets/c375516e-2fff-4591-8c76-835d9c3dac43)
 ![133802](https://github.com/samcoble/CameraTransform/assets/32228102/938919da-2ca4-4040-ac9c-2574d58a5190)
 ![005917](https://github.com/samcoble/CameraTransform/assets/32228102/ad118f58-29c4-455f-879e-8b41b11601de)
