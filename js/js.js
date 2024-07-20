@@ -3008,15 +3008,6 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
         _______\///______\///________\///__\///////////__\//////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
 */ // #trilinedot
 
-/*
-  only draw when length > 2
-  every second point draws a tri from ith to previous and ahead
-  i is offset by len%2, so at 4th do -1. (len-1)%2
-  if obj is static pat could be pregen
-  after removing center (mem_log[i][2]-1)%2 => (mem_log[i][2]-2)%2 => mem_log[i][2]%2
-  hardest of them all
-*/
-
 var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
 const color_light_purple = [0.65, 0.6, 1.0, 0.8];
 const color_yellow = [0.960, 0.85, 0.46, 0.87];
@@ -3774,9 +3765,9 @@ function drawLines()
     if (m1.data[mem_log[15][0] + 4*boundingBox.i+3] > 0) {drawSegment(ar2Dmod(_2dis[0], _2dis_buffers[0], _2dp_boundingBox1, 0.006 ), -3);}
   }
 
-  if (!mouseLock)
+  if (!mouseLock || key_map.tab)
   {
-    if (wpn_select < 2 || key_map.tab)
+    if (wpn_select < 2)
     {
       for (let i = m_objs.length-1; i>=0; i--)
       {
@@ -4698,27 +4689,19 @@ function Compute(init_dat)
     }
   }
 
+  if (key_map.tab && runEvery(75))
+  {
+    if (mouseLock)
+    { obj_cyc = findbyctr_obj(0, 0); }
+    else
+    { obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]); }
+  }
+
 	switch(wpn_select) //#WEAPONSCRIPT
 	{
 		case 0:
-
-			if (key_map.tab && runEvery(75)) // Fix this by separating by in menu / in game
-			{
-				if (mouseLock)
-				{
-					// Menu mouse
-					obj_cyc = findbyctr_obj(0, 0);
-				}
-				else
-				{
-					// mouseLock
-					obj_cyc = findbyctr_obj(in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
-				}
-			}
-
       // console.log(m1.data[mem_log[14][0] + 4]);
       // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
-
 
 			if (key_map.lmb && !mouseLock) //  && runEveryLong(75)
 			{
