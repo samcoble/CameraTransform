@@ -20,7 +20,8 @@ const pi = 3.141592653589793, // high definition PI makes a visible difference
       player_speed_vert = 0.3 * 0.7, // vertical travel speed
       player_speed_mult = 4 * 0.7, // shift/sprint key
       mem_encode = [4, 16], // offsets to be used where encoded data ref
-      base_dir = [1,0,0,1, 0,1,0,1, 0,0,1,1];
+      base_dir = [1,0,0,1, 0,1,0,1, 0,0,1,1],
+      _scroll_mult = 18;
 
 var fileName = "";
 var world_obj_count = 0;
@@ -106,7 +107,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [280, 665],
+var menu_q_size = [280, 568],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
@@ -263,19 +264,22 @@ var key_map_prevent =
 function setBackgroundColor()
 {
   let _c = [
-   _settings[5].settings[0],
-   _settings[5].settings[1],
-   _settings[5].settings[2]
+   getSetting('detail_box_colorSettings', 1)[0],
+   getSetting('detail_box_colorSettings', 1)[1],
+   getSetting('detail_box_colorSettings', 1)[2]
   ];
 	document.body.style.backgroundColor = "rgb(" + _c[0] + "," + _c[1] + "," + _c[2] + ")";
 };
 
 function playSound(src)
 {
-  let _audio = document.getElementById('audioPlayer');
-  _audio.src = src;
-  _audio.volume = 0.1;
-  _audio.play();
+  if (getSetting('detail_box_generalSettings', 1)[0])
+  {
+    let _audio = document.getElementById('audioPlayer');
+    _audio.src = src;
+    _audio.volume = 0.1;
+    _audio.play();
+  }
 }
 
 var player_pos_i = [],
@@ -1082,16 +1086,15 @@ window.addEventListener("wheel", function(e)
     // controls 0 to 100 var to be used by menu
     if (!mouseLock && !pointerOutsideWindow()[1]) // when inside q menu
     {
-      let _scroll_mult = 20;
       let _new_c = menu_scroll_c + _scroll_mult*Math.sign(e.deltaY);
       if (_new_c <= 100 && _new_c >= 0) {menu_scroll_c = _new_c;}
-      setScrollingElements(eset_tools, 14);
+      // setScrollingElements(eset_tools, _scroll_mult);
     }
 
 	} else if (runEvery(200)) // when holding shift
   {
     grid_scale += -e.deltaY/Math.abs(e.deltaY);
-    _settings[4].settings[0] = Math.pow(2, grid_scale);
+    getSetting('detail_box_gridSettings', 1)[0] = Math.pow(2, grid_scale);
 	}
 	s_fov = fov_slide*fov_slide*fov_slide/20; // event always updates s_fov last
 });
@@ -1334,9 +1337,9 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 
 function updateGrid()
 {
-	g_over_x = setGrid(15, _settings[4].settings[0], 0, [0, 0, 0]);
-	g_over_y = setGrid(15, _settings[4].settings[0], 1, [0, 0, 0]);
-	g_over_z = setGrid(15, _settings[4].settings[0], 2, [0, 0, 0]);
+	g_over_x = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 0, [0, 0, 0]);
+	g_over_y = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 1, [0, 0, 0]);
+	g_over_z = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 2, [0, 0, 0]);
 
 	// write data to obj
 	for (var i = 0; i<mem_log[3][1]-4; i++)
@@ -1345,7 +1348,7 @@ function updateGrid()
 		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
 		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
 	}
-  grid_scale_d = _settings[4].settings[0];
+  grid_scale_d = getSetting('detail_box_gridSettings', 1)[0];
 }
 
 // this should not need switch. pass in direction vector.
@@ -2273,7 +2276,7 @@ var rotateFolder =
     let _s = rotateFolder.folder.length;
     for (let i=0; i<_s; i++) // loop through folders
     {
-      rotateObject(0, _settings[6].settings[0], rotateFolder.folder[i]);
+      rotateObject(0, getSetting('detail_box_rotationSettings', 1)[0], rotateFolder.folder[i]);
     }
     playSound('sounds/finish.mp3');
   }
@@ -2418,9 +2421,9 @@ function bond_obj(_i)
 function link_obj(_i)
 {
   let _t = 1;
-  if (_settings[2].settings[0][0] == true) {_t = 0;}
-  if (_settings[2].settings[1][0] == true) {_t = 1;}
-  if (_settings[2].settings[2][0] == true) {_t = 2;}
+  if (getSetting('detail_box_linkSettings', 1)[0][0] == true) {_t = 0;}
+  if (getSetting('detail_box_linkSettings', 1)[1][0] == true) {_t = 1;}
+  if (getSetting('detail_box_linkSettings', 1)[2][0] == true) {_t = 2;}
 
   console.log(_t);
 	switch(_all_lock)
@@ -2774,7 +2777,7 @@ function del_world()
 
 function createCircleAtCursor()
 {
-  let _stn = _settings[0].settings;
+  let _stn = getSetting('detail_box_circleSettings', 1);
 	if (!isNaN(_stn[1]) && !isNaN(_stn[0]) && !isNaN(_stn[2]))
 	{
 		make_cir_obj(Math.floor(_stn[1]), _stn[0], _stn[2], _stn[3], pln_cyc);
@@ -2850,7 +2853,7 @@ function editSelectedObject()
 
 function applyRotation()
 {
-	rotateObject(0, _settings[6].settings[0], obj_cyc);
+	rotateObject(0, getSetting('detail_box_rotationSettings', 1)[0], obj_cyc);
 }
 
 function moveObject()
@@ -2918,7 +2921,7 @@ function measureLine()
   var _t_obj = splitObj(m_objs[obj_cyc], 1);
   var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
   console.log(_t_d);
-  _settings[4].settings[0] = _t_d;
+  getSetting('detail_box_gridSettings', 1)[0] = _t_d;
 }
 
 	/*
@@ -2982,7 +2985,7 @@ function drawOverlay()
 
   updateTextByPar("menu_stats_0", "[ " + _fps + " ]");
   updateTextByPar("menu_stats_1", "[ " + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+" ]");
-  updateTextByPar("menu_stats_2", "[ " + grid_scale + " : " + _settings[4].settings[0].toFixed(5) + " ]");
+  updateTextByPar("menu_stats_2", "[ " + grid_scale + " : " + getSetting('detail_box_gridSettings', 1)[0].toFixed(5) + " ]");
   updateTextByPar("menu_stats_3", "[ " + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+" ]");
 
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
@@ -3008,7 +3011,13 @@ __/\\\\\\\\\\\\\\\__/\\\\\\\\\______/\\\\\\\\\\\__/\\\_________/\\\\\\\\\\\__/\\
         _______\///______\///________\///__\///////////__\//////////__\///////////__\///_____\/////__\/////////////__\//////////__________\/////____________\///________
 */ // #trilinedot
 
-var _all_lock_colors = [ [0.960, 0.85, 0.46, 1.0], [0.3, 0.3, 1.0, 1.0], [1.0, 0.3, 0.3, 1.0], [0.6, 0.3, 0.5, 1.0] ];
+var _all_lock_colors = [
+  [0.75, 0.67, 0.37, 1.0],
+  [0.3, 0.3, 1.0, 1.0],
+  [1.0, 0.3, 0.3, 1.0],
+  [0.6, 0.3, 0.5, 1.0]
+];
+
 const color_light_purple = [0.65, 0.6, 1.0, 0.8];
 const color_yellow = [0.960, 0.85, 0.46, 0.87];
 
@@ -3030,7 +3039,7 @@ function drawSegment(vertices, mi, color) // color added as override for now
 	    	gl.uniform4fv(colorUniformLocation, color_yellow); // set color yellow line
 	    } else
 	    {
-          switch(_settings[1].settings[2])
+          switch(getSetting('detail_box_drawSettings', 1)[2])
           {
             case true:
               gl.uniform4fv(colorUniformLocation, [0.7, 0.7, 0.7, 0.2]);
@@ -3388,7 +3397,7 @@ function drawLines()
   {
     d_i = modIndex[i];
 
-    if (_settings[1].settings[1])
+    if (getSetting('detail_box_drawSettings', 1)[1])
     {
       if (d_i > world_obj_count)
       {
@@ -3397,7 +3406,7 @@ function drawLines()
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
             // vertices = [];
-            if (!_settings[4].settings[2])
+            if (!getSetting('detail_box_drawSettings', 1)[3]) // was grid 2 depth
             {
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
@@ -3471,22 +3480,22 @@ function drawLines()
               }
             }
 
-            if (_settings[4].settings[3])
+            if (getSetting('detail_box_drawSettings', 1)[4]) // was grid 3 culling
             {
               gl.enable(gl.CULL_FACE);
               gl.cullFace(gl.BACK);
             } else {gl.disable(gl.CULL_FACE);}
 
 
-            if (!_settings[4].settings[2])
+            if (!getSetting('detail_box_drawSettings', 1)[3]) // was grid 2 depth
             {
-              switch(!_settings[1].settings[2])
+              switch(!getSetting('detail_box_drawSettings', 1)[2])
               {
                 case true:
                   gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]); 
                   break;
                 case false:
-                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]);
+                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.6]);
                   break;
               }
               gl.uniform1i(renderModeUniform, 1);
@@ -3501,13 +3510,13 @@ function drawLines()
             }
             else
             {
-              for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-_settings[1].settings[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
+              for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
 
               // after using the depth here again i can't tell if all tris end up same or
               // i just use my z map or map by depth per tri better
 
               // for (let l=0; l<m_draw[d_i][3]*4; l++)
-              // { m_draw[d_i][4][l] = (l%4==3) ? 1-_settings[1].settings[2]*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1], -0.5 ) - 0.25; }
+              // { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1], -0.5 ) - 0.25; }
               // console.log(m1.data[mem_log[d_i][0] + mem_log[d_i][1] - 1]);
 
               gl.uniform1i(renderModeUniform, 0); // should need this right
@@ -3543,9 +3552,9 @@ function drawLines()
     
     skipDat = 1;
 
-    if (!(_settings[1].settings[0])
+    if (!(getSetting('detail_box_drawSettings', 1)[0])
     || (d_i == 13 && mem_t_sum == 0) // mem t sum ???
-    || (d_i == 2 && !_settings[4].settings[1])
+    || (d_i == 2 && !getSetting('detail_box_generalSettings', 1)[1])
     || (d_i == 11 && wpn_select!=3)
     || (d_i == 14)
     || (d_i == 15 && !boundingBox.enable)
@@ -4215,6 +4224,9 @@ var pivotAlign =
 
 functionRunList.push(pivotAlign); // push ref to run list
 
+// dir replaces the temp line
+//
+
 function rotateObjectToDir(_i, dir)
 {
   let _dir = getObjDir(_i);
@@ -4396,6 +4408,16 @@ function updateRefLog()
 	// m_ref_sum = m_objs[obj_cyc].length; // temp can't really be this
 }
 
+function getSetting(id, _t)
+{
+  let _s = _setting_ids.length;
+  let _ref_i = Number;
+  for (let i=0; i<_s; i++)
+  {
+    if (_setting_ids[i] == id) {_ref_i = i;}
+  }
+  return (_t==0) ? _ref_i : _settings[_ref_i].settings;
+}
 
 /* ____ ___  __  __ ____  _   _ _____ _____ 
   / ___/ _ \|  \/  |  _ \| | | |_   _| ____|
@@ -4408,19 +4430,19 @@ function Compute(init_dat)
 {
 
 
-  if (_settings[4].settings[2]) {updateZMap();} // if depth enabled
+  if (getSetting('detail_box_drawSettings', 1)[3]) {updateZMap();} // if depth enabled
 
   m_obj_offs[12][0] = _lp_world[0];
   m_obj_offs[12][1] = _lp_world[1];
   m_obj_offs[12][2] = _lp_world[2];
-  m_obj_offs[12][3] = _settings[4].settings[0]/2.0;
+  m_obj_offs[12][3] = getSetting('detail_box_gridSettings', 1)[0]/2.0;
 
   if (mem_t_sum != 0)
   {
     m_obj_offs[13][0] = m_t_objs[m_t_objs.length-1][0];
     m_obj_offs[13][1] = m_t_objs[m_t_objs.length-1][1];
     m_obj_offs[13][2] = m_t_objs[m_t_objs.length-1][2];
-    m_obj_offs[13][3] = _settings[4].settings[0]/8.0;
+    m_obj_offs[13][3] = getSetting('detail_box_gridSettings', 1)[0]/8.0;
   }
 
   // RUN LIST HERE
@@ -4462,9 +4484,9 @@ function Compute(init_dat)
 	}
 
 
-  if (_settings[4].settings[0] != grid_scale_d) { updateGrid(); }
+  if (getSetting('detail_box_gridSettings', 1)[0] != grid_scale_d) { updateGrid(); }
   if(document.activeElement.type ==  "text") { flag_inText = 1; } else {flag_inText = 0;}
-	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, _settings[6].settings[0], obj_cyc); }
+	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, getSetting('detail_box_rotationSettings', 1)[0], obj_cyc); }
 	if (key_map["5"] && runEvery(150)) { mirrorOverPlane(); }
 	if (key_map["6"] && runEvery(300)) { boundingBox.toggle(); }
 	if (key_map.l && runEvery(300)) { link_obj(obj_cyc); }
@@ -4656,23 +4678,26 @@ function Compute(init_dat)
 	switch(pln_cyc) // can't return w/ rmb. only in vertical??
 	{
 		case 0:
-			grid_scale_ar[1] = _settings[4].settings[0];
-			grid_scale_ar[2] = _settings[4].settings[0];
+			grid_scale_ar[1] = getSetting('detail_box_gridSettings', 1)[0];
+			grid_scale_ar[2] = getSetting('detail_box_gridSettings', 1)[0];
 			break
 		case 1:
-			grid_scale_ar[0] = _settings[4].settings[0];
-			grid_scale_ar[2] = _settings[4].settings[0];
+			grid_scale_ar[0] = getSetting('detail_box_gridSettings', 1)[0];
+			grid_scale_ar[2] = getSetting('detail_box_gridSettings', 1)[0];
 			break
 		case 2:
-			grid_scale_ar[0] = _settings[4].settings[0];
-			grid_scale_ar[1] = _settings[4].settings[0];
+			grid_scale_ar[0] = getSetting('detail_box_gridSettings', 1)[0];
+			grid_scale_ar[1] = getSetting('detail_box_gridSettings', 1)[0];
 			break
 	}
 
  	// check nan other place? like lpi?
  	if (mouseLock == 1)
  	{
-		if (!isNaN( _inter[0])) {_inter_rnd = [roundTo(_lp[0], grid_scale_ar[0]), roundTo(_lp[1], grid_scale_ar[1]), roundTo(_lp[2], grid_scale_ar[2])];}
+		if (!isNaN( _inter[0] ))
+    {
+      _inter_rnd = (getSetting('detail_box_gridSettings', 1)[1]) ? _inter : [roundTo(_lp[0], grid_scale_ar[0]), roundTo(_lp[1], grid_scale_ar[1]), roundTo(_lp[2], grid_scale_ar[2])];
+    }
  	}
 
   if (wpn_select != 1)
@@ -4783,7 +4808,10 @@ function Compute(init_dat)
 					wpn_1 = 1;
 				}
 
-				if (wpn_1) {m_obj_offs[obj_cyc] = roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), _settings[4].settings[0]);}
+				if (wpn_1)
+        {
+          m_obj_offs[obj_cyc] = (getSetting('detail_box_gridSettings', 1)[1]) ? sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc) : roundPTo(sub(sub(player_pos, scale(f_look, wpn_1_d)), wpn_1_mc), getSetting('detail_box_gridSettings', 1)[0]);
+        }
 
 				if (key_map.lmb == false && wpn_1)
 				{
@@ -4806,9 +4834,9 @@ function Compute(init_dat)
 
 			if (key_map.lmb && pointerOutsideWindow()[0] && runEvery(20))
 			{
-        if (!_settings[3].settings[0])
+        if (!getSetting('detail_box_paintSettings', 1)[0])
         {
-          if (paint_n > _settings[3].settings[2])
+          if (paint_n > getSetting('detail_box_paintSettings', 1)[2])
           {
             mem_t_mov();
             paint_c = 1;
@@ -4820,9 +4848,9 @@ function Compute(init_dat)
           switch(mouseLock)
           {
             case 0:
-              paint_d = m_t_objs.length==0 ? _settings[3].settings[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
+              paint_d = m_t_objs.length==0 ? getSetting('detail_box_paintSettings', 1)[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
 
-              if (paint_d > _settings[3].settings[1])
+              if (paint_d > getSetting('detail_box_paintSettings', 1)[1])
               {
                 m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
                 paint_n++;
@@ -4837,8 +4865,8 @@ function Compute(init_dat)
         }
 			}
 
-			if (_settings[3].settings[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
-			if (!_settings[3].settings[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
+			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
+			if (!getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2
 
@@ -5051,6 +5079,8 @@ document.addEventListener("DOMContentLoaded", function()
 {
 	document.getElementsByTagName("body")[0].width = in_win_w;
 	document.getElementsByTagName("body")[0].height = in_win_h;
+
+  // setScrollingElements(eset_tools, _scroll_mult);
 
 	updateNormalMaps();
 

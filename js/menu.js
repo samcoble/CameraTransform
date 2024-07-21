@@ -148,6 +148,7 @@ function appendFilter(p, e)
   else {document.body.appendChild(e);}
 }
 
+
 function addDiv(par) // ------------------------ Div
 {
   const div = document.createElement("div");
@@ -223,12 +224,15 @@ function addTextInput(par) // ------------------------ Text input
   input.className = par.cls;
   input.value = par.value;
 
-  input.addEventListener("input", function ()
+  function _kode()
   {
     par.value = input.value;
     if (typeof par.callback != "undefined" && par.params != "undefined") {par.callback(par.params);}
     if (typeof par.niladic != "undefined") {par.niladic();}
-  });
+  }
+
+  input.addEventListener("input", function () {_kode();});
+  input.addEventListener("click", function () {_kode();});
 
   input.addEventListener('keydown', function(event)
   {
@@ -1227,12 +1231,13 @@ makeElement(addDiv,
   `
   box-sizing: border-box;
   position: absolute;
-  width: 400px;
-  height: 665px;
+  width: 273px;
+  height: 578px;
   left: 30px;
   user-select: none;
   border-radius: 3px;
   background: rgba(0,0,0,0);
+  overflow: none;
   `
 });
 
@@ -1254,7 +1259,6 @@ makeElement(addDiv,
 var _btn_hover = `box-shadow: inset 0px 0px 2px 0px rgba(255, 255, 255, 0.6);`;
 var _btn_tab =
 `
-display: inline-block;
 line-height: 2.4;
 text-align: center;
 border-top: 1px solid rgba(222, 222, 222, 0.1);
@@ -1265,7 +1269,7 @@ background-color: rgb(38, 38, 39);
 outline: none;
 padding: 0px;
 margin: 0px;
-width: 31%;
+width: 49%;
 `;
 
 var _btn_tab0 = `border-left: 1px solid rgba(222, 222, 222, 0.1); margin: 0px 0px 0px 5px; border-radius: 3px 0px 0px 3px;`;
@@ -1329,7 +1333,7 @@ makeElement(addDiv,
   `
   background: rgba(0,0,0,0);
   width: 273px;
-  height: 95%;
+  height: 100%;
   margin: 0px;
   padding-top: 0%;
   `
@@ -1351,34 +1355,36 @@ makeElement(addDiv,
 var detail_menu =
 `
 float: left;
-width: 50%;
-height: 100%;
+width: 50%; height: inherit;
 margin: 0px;
 padding: 0px;
 border: 0px;
 background-color: rgba(0, 0, 0, 0);
-overflow-y: hidden;
 z-index: -1;
+overflow-y: hidden;
+overflow-x: hidden;
+border-radius: 3px;
+scrollbar-width: none;
 `;
 
 makeElement(addDiv,
 {
   id: "menu_detail", cls: "", prnt: "q_menu_left",
-  rootStyle: rootStyle + detail_menu
+  rootStyle: rootStyle + detail_menu + 'overflow-y: visible;'
 });
 
-var detail_menu_right =
-`
-float: left;
-width: 50%;
-height: 100%;
-margin: 0px;
-padding: 0px;
-border: 0px;
-background-color: rgba(0, 0, 0, 0);
-overflow-y: hidden;
-z-index: -1;
-`;
+// var detail_menu_right =
+// `
+// float: left;
+// width: 50%; height: inherit;
+// margin: 0px;
+// padding: 0px;
+// border: 0px;
+// background-color: rgba(0, 0, 0, 0);
+// overflow-y: hidden;
+// z-index: -1;
+// border-radius: 3px;
+// `;
 
 makeElement(addDiv,
 {
@@ -1571,7 +1577,7 @@ function packElement(ar_ptr, _callb, _par)
 // slapped it in there total nightmare
 function setScrollingElements(_eset, _h)
 {
-  _h = 18;
+  // _h = 18;
   let _si = _eset.length;
   if (_h > _si) {_h = _si;}
   let _rem = _si-_h;
@@ -1595,19 +1601,31 @@ var eset_tools = [];
 makeElement(addDiv,
 {
   id: 'detail_box_toolList', cls: '', prnt: 'menu_detail_right',
-  rootStyle: rootStyle + detail_menu_box + 'overflow: hidden; border-bottom: 0px solid #FFF;'
+  rootStyle: rootStyle + detail_menu_box + 
+  `
+    height: inherit;
+    overflow: hidden;
+    border-bottom: 0px solid #FFF;
+  `
 });
+
+// makeElement(addDiv,
+// {
+//   id: 'div_toolListBin', cls: '', prnt: 'detail_box_toolList',
+//   text: 'tools',
+//   rootStyle: rootStyle + div_css + myTitleStyle
+// });
 
 makeElement(addDiv,
 {
-  id: 'div_toolListBin', cls: '', prnt: 'detail_box_toolList',
-  text: 'tools',
-  rootStyle: rootStyle + div_css + myTitleStyle
-});
-makeElement(addDiv,
-{
   id: 'div_toolListHeader', cls: '', prnt: 'detail_box_toolList',
-  rootStyle: rootStyle + div_css + myTitleStyle + 'height: 487px; background: none; overflow: hidden;'
+  rootStyle: rootStyle + div_css + myTitleStyle +
+  `
+    height: inherit;
+    background: none;
+    overflow-y: scroll;
+    scrollbar-width: none;
+  `
 });
 
 packElement(eset_tools, addButton,
@@ -1842,132 +1860,6 @@ makeElements(eset_tools);
 
 // new tool location
 
-makeElement(addDiv,
-{
-  id: 'detail_box_circleSettings', cls: '', prnt: 'menu_detail',
-  settings: [8, 32, 0, 0],
-  rootStyle: rootStyle + detail_menu_box
-});
-
-makeElement(addDiv,
-{
-  id: "div_circleToolHeader", cls: "", prnt: "detail_box_circleSettings",
-  text: `circle settings \u25CB`,
-  rootStyle: rootStyle + div_css + myTitleStyle
-});
-
-makeElement(addDiv,
-{
-  id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
-  text: `scale`,
-  rootStyle: rootStyle + div_css_half + _btn_col1
-});
-
-makeElement(addTextInput,
-{
-  id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
-  rootStyle: rootStyle + textIn_css + _btn_col1,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting
-});
-
-makeElement(addDiv,
-{
-  id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
-  text: `divider`,
-  rootStyle: rootStyle + div_css_half + _btn_col2
-});
-
-makeElement(addTextInput,
-{
-  id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
-  rootStyle: rootStyle + textIn_css + _btn_col2,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting
-});
-
-makeElement(addDiv,
-{
-  id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
-  text: `offset`,
-  rootStyle: rootStyle + div_css_half + _btn_col1
-});
-
-makeElement(addTextInput,
-{
-  id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
-  rootStyle: rootStyle + textIn_css + _btn_col1,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting
-});
-
-makeElement(addDiv,
-{
-  id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
-  text: `n parts`,
-  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
-});
-
-makeElement(addTextInput,
-{
-  id: "textIn_limit", cls: "_textInput", prnt: "circleTool_limit",
-  rootStyle: rootStyle + textIn_css + _btn_col2,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting
-});
-
-/*
-makeElement(addDiv,
-{
-  id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
-  text: `green`,
-  rootStyle: rootStyle + div_css_half + _btn_col2
-});
-
-makeElement(addTextInput,
-{
-  id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
-  rootStyle: rootStyle + textIn_css + _btn_col2,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting,
-  niladic: setBackgroundColor
-});
-*/
-
-/*
-  ╔╗                       ╔╗
-  ║║                      ╔╝╚╗
-╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
-║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
-║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
-╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
-#drawsettings
-*/
-
-
-makeElement(addDiv,
-{
-  id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-  settings: [true, true, false],
-  rootStyle: rootStyle + detail_menu_box
-});
-
-makeElement(addDiv,
-{
-  id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
-  text: 'draw settings \u03BB',
-  rootStyle: rootStyle + div_css + myTitleStyle
-});
-
-
-makeElement(addDiv,
-{
-  id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
-  text: `lines`,
-  rootStyle: rootStyle + div_css_half + _btn_col1
-});
-
-
 // background: rgba(159, 144, 75, 0.8);
 // box-shadow: inset 1px -1px 1px 0px rgba(16, 16, 16, 1);
 
@@ -2002,12 +1894,206 @@ margin: 0% 0% 0 0%;
 padding: 0px;
 ` + _btn_col2;
 
+/*         ╔╗         ╔╗
+           ║║        ╔╝╚╗
+╔══╗╔═╗╔╗╔═╝║    ╔══╗╚╗╔╝╔═╗ 
+║╔╗║║╔╝╠╣║╔╗║    ║══╣ ║║ ║╔╗╗
+║╚╝║║║ ║║║╚╝║    ╠══║ ║╚╗║║║║
+╚═╗║╚╝ ╚╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
+╔═╝║
+╚══╝
+#gridsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
+  settings: [8, false],
+  rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
+  text: 'grid settings \u2637',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
+  text: `scale`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_unlock", cls: "", prnt: "detail_box_gridSettings",
+  text: `unlock`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: updateGrid
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_unlock", cls: "cbx_gridSettings", prnt: "div_gridSettings_unlock",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+
 /*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
+makeElement(addDiv,
+{
+  id: "div_colorSettings_g", cls: "", prnt: "detail_box_colorSettings",
+  text: `green`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_colorSettings_g", cls: "textIn_colorSettings", prnt: "div_colorSettings_g",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting,
+  niladic: setBackgroundColor
+});
+*/
+
+/*
+#generalsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_generalSettings", cls: "", prnt: "menu_detail",
+  settings: [false, false],
+  rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_generalSettings", cls: "", prnt: "detail_box_generalSettings",
+  text: 'general',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_generalSettings_sound", cls: "", prnt: "detail_box_generalSettings",
+  text: `sound`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_soundEnable", cls: "cbx_generalSettings", prnt: "div_generalSettings_sound",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_generalSettings_mapWalls", cls: "", prnt: "detail_box_generalSettings",
+  text: `map walls`,
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_mapWalls", cls: "cbx_generalSettings", prnt: "div_generalSettings_mapWalls",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+/*
+        ╔╗      ╔╗                    ╔╗
+       ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
+╔═╗╔══╗╚╗╔╝╔══╗╚╗╔╝╔╗╔══╗╔═╗     ╔══╗╚╗╔╝╔═╗ 
+║╔╝║╔╗║ ║║ ╚ ╗║ ║║ ╠╣║╔╗║║╔╗╗    ║══╣ ║║ ║╔╗╗
+║║ ║╚╝║ ║╚╗║╚╝╚╗║╚╗║║║╚╝║║║║║    ╠══║ ║╚╗║║║║
+╚╝ ╚══╝ ╚═╝╚═══╝╚═╝╚╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
+#rotationsettings
+*/
+
+makeElement(addDiv,
+{
+  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
+  settings: [45],
+  rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
+  text: 'rotation \u2B6E',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+makeElement(addDiv,
+{
+  id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
+  text: `deg`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addTextInput,
+{
+  id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
+  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
+
+/*
+  ╔╗                       ╔╗
+  ║║                      ╔╝╚╗
+╔═╝║╔═╗╔══╗ ╔╗╔╗╔╗    ╔══╗╚╗╔╝╔═╗
+║╔╗║║╔╝╚ ╗║ ║╚╝╚╝║    ║══╣ ║║ ║╔╗╗
+║╚╝║║║ ║╚╝╚╗╚╗╔╗╔╝    ╠══║ ║╚╗║║║║
+╚══╝╚╝ ╚═══╝ ╚╝╚╝     ╚══╝ ╚═╝╚╝╚╝
+#drawsettings
+*/
+
+
+makeElement(addDiv,
+{
+  id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
+  settings: [true, true, false, false, false],
+  rootStyle: rootStyle + detail_menu_box
+});
+
+makeElement(addDiv,
+{
+  id: "div_drawSettings", cls: "", prnt: "detail_box_drawSettings",
+  text: 'draw settings \u03BB',
+  rootStyle: rootStyle + div_css + myTitleStyle
+});
+
+
+makeElement(addDiv,
+{
+  id: "div_drawLines", cls: "", prnt: "detail_box_drawSettings",
+  text: `lines`,
+  rootStyle: rootStyle + div_css_half + _btn_col1
+});
 
 makeElement(addCheckbox,
 {
@@ -2041,16 +2127,50 @@ makeElement(addDiv,
 {
   id: "div_drawOpacity", cls: "", prnt: "detail_box_drawSettings",
   text: `opacity`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addCheckbox,
 {
   id: "cbx_opacity", cls: "cbx_drawSettings", prnt: "div_drawOpacity",
-  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  rootStyle: rootStyle + cbx_myStyle,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   callback: updateSetting,
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_drawSettings",
+  text: `depth`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_drawDepth", cls: "", prnt: "detail_box_drawSettings",
+  text: `culling`,
+  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_drawDepth", cls: "cbx_gridSettings", prnt: "div_gridSettings_drawDepth",
+  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
 });
 
 /*
@@ -2266,13 +2386,6 @@ makeElement(addDiv,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
-/*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
-
 makeElement(addCheckbox,
 {
   id: "cbx_paintInf", cls: "cbx_paintSettings", prnt: "div_paintInf",
@@ -2313,96 +2426,79 @@ makeElement(addTextInput,
   callback: updateSetting
 });
 
-/*
-           ╔╗         ╔╗
-           ║║        ╔╝╚╗
-╔══╗╔═╗╔╗╔═╝║    ╔══╗╚╗╔╝╔═╗ 
-║╔╗║║╔╝╠╣║╔╗║    ║══╣ ║║ ║╔╗╗
-║╚╝║║║ ║║║╚╝║    ╠══║ ║╚╗║║║║
-╚═╗║╚╝ ╚╝╚══╝    ╚══╝ ╚═╝╚╝╚╝
-╔═╝║
-╚══╝
-#gridsettings
-*/
+// circle settings
 
 makeElement(addDiv,
 {
-  id: "detail_box_gridSettings", cls: "", prnt: "menu_detail",
-  settings: [8, false, false, false],
+  id: 'detail_box_circleSettings', cls: '', prnt: 'menu_detail',
+  settings: [8, 32, 0, 0],
   rootStyle: rootStyle + detail_menu_box
 });
 
 makeElement(addDiv,
 {
-  id: "div_gridSettings", cls: "", prnt: "detail_box_gridSettings",
-  text: 'grid settings \u2637',
+  id: "div_circleToolHeader", cls: "", prnt: "detail_box_circleSettings",
+  text: `circle settings \u25CB`,
   rootStyle: rootStyle + div_css + myTitleStyle
 });
 
 makeElement(addDiv,
 {
-  id: "div_gridSettings_scale", cls: "", prnt: "detail_box_gridSettings",
+  id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
   text: `scale`,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
+makeElement(addTextInput,
+{
+  id: "textIn_scale", cls: "_textInput", prnt: "circleTool_scale",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
+  callback: updateSetting
+});
+
 makeElement(addDiv,
 {
-  id: "div_gridSettings_mapWalls", cls: "", prnt: "detail_box_gridSettings",
-  text: `map walls`,
+  id: "circleTool_divider", cls: "", prnt: "detail_box_circleSettings",
+  text: `divider`,
   rootStyle: rootStyle + div_css_half + _btn_col2
 });
 
 makeElement(addTextInput,
 {
-  id: "textIn_gridSettings_scale", cls: "textIn_gridSettings_scale", prnt: "div_gridSettings_scale",
-  rootStyle: rootStyle + textIn_css + _btn_col1,
+  id: "textIn_divider", cls: "_textInput", prnt: "circleTool_divider",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
   hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting,
-  niladic: updateGrid
-});
-
-makeElement(addCheckbox,
-{
-  id: "cbx_mapWalls", cls: "cbx_gridSettings", prnt: "div_gridSettings_mapWalls",
-  rootStyle: rootStyle+cbx_myStyle,
-  hoverStyles: cbx_myStyle_hover,
-  checkedStyles: cbx_myStyle_checked,
-  defaultChecked: false,
   callback: updateSetting
 });
 
 makeElement(addDiv,
 {
-  id: "div_gridSettings_faceCulling", cls: "", prnt: "detail_box_gridSettings",
-  text: `depth`,
+  id: "circleTool_off", cls: "", prnt: "detail_box_circleSettings",
+  text: `offset`,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
-makeElement(addCheckbox,
+makeElement(addTextInput,
 {
-  id: "cbx_faceCulling", cls: "cbx_gridSettings", prnt: "div_gridSettings_faceCulling",
-  rootStyle: rootStyle + cbx_myStyle,
-  hoverStyles: cbx_myStyle_hover,
-  checkedStyles: cbx_myStyle_checked,
-  defaultChecked: false,
+  id: "textIn_off", cls: "_textInput", prnt: "circleTool_off",
+  rootStyle: rootStyle + textIn_css + _btn_col1,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
   callback: updateSetting
 });
 
 makeElement(addDiv,
 {
-  id: "div_gridSettings_drawDepth", cls: "", prnt: "detail_box_gridSettings",
-  text: `culling`,
+  id: "circleTool_limit", cls: "", prnt: "detail_box_circleSettings",
+  text: `n parts`,
   rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
 });
 
-makeElement(addCheckbox,
+makeElement(addTextInput,
 {
-  id: "cbx_drawDepth", cls: "cbx_gridSettings", prnt: "div_gridSettings_drawDepth",
-  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-  hoverStyles: cbx_myStyle_hover,
-  checkedStyles: cbx_myStyle_checked,
-  defaultChecked: false,
+  id: "textIn_limit", cls: "_textInput", prnt: "circleTool_limit",
+  rootStyle: rootStyle + textIn_css + _btn_col2,
+  hoverShadow: textIn_hover, shadow: textIn_leave,
   callback: updateSetting
 });
 
@@ -2420,7 +2516,7 @@ makeElement(addCheckbox,
 
 makeElement(addDiv,
 {
-  id: "detail_box_colorSettings", cls: "", prnt: "menu_detail_right",
+  id: "detail_box_colorSettings", cls: "", prnt: "menu_detail",
   settings: [18, 18, 18],
   rootStyle: rootStyle + detail_menu_box
 });
@@ -2438,13 +2534,6 @@ makeElement(addDiv,
   text: `red`,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
-
-/*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
 
 makeElement(addTextInput,
 {
@@ -2485,52 +2574,6 @@ makeElement(addTextInput,
   hoverShadow: textIn_hover, shadow: textIn_leave,
   callback: updateSetting,
   niladic: setBackgroundColor
-});
-
-/*
-        ╔╗      ╔╗                    ╔╗
-       ╔╝╚╗    ╔╝╚╗                  ╔╝╚╗
-╔═╗╔══╗╚╗╔╝╔══╗╚╗╔╝╔╗╔══╗╔═╗     ╔══╗╚╗╔╝╔═╗ 
-║╔╝║╔╗║ ║║ ╚ ╗║ ║║ ╠╣║╔╗║║╔╗╗    ║══╣ ║║ ║╔╗╗
-║║ ║╚╝║ ║╚╗║╚╝╚╗║╚╗║║║╚╝║║║║║    ╠══║ ║╚╗║║║║
-╚╝ ╚══╝ ╚═╝╚═══╝╚═╝╚╝╚══╝╚╝╚╝    ╚══╝ ╚═╝╚╝╚╝
-#rotationsettings
-*/
-
-makeElement(addDiv,
-{
-  id: "detail_box_rotationSettings", cls: "", prnt: "menu_detail",
-  settings: [45],
-  rootStyle: rootStyle + detail_menu_box
-});
-
-makeElement(addDiv,
-{
-  id: "div_rotationSettings", cls: "", prnt: "detail_box_rotationSettings",
-  text: 'rotation \u2B6E',
-  rootStyle: rootStyle + div_css + myTitleStyle
-});
-
-makeElement(addDiv,
-{
-  id: "div_rotationSettings_r", cls: "", prnt: "detail_box_rotationSettings",
-  text: `deg`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
-});
-
-/*
-  ╔╗╔═╗ 
-  ╠╣║╔╗╗
-  ║║║║║║
-  ╚╝╚╝╚╝
-*/    
-
-makeElement(addTextInput,
-{
-  id: "textIn_rotationSettings_r", cls: "textIn_rotationSettings", prnt: "div_rotationSettings_r",
-  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
-  hoverShadow: textIn_hover, shadow: textIn_leave,
-  callback: updateSetting
 });
 
 /*
