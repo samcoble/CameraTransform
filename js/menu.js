@@ -940,6 +940,7 @@ var key_bind_info =
   "L(link objects -> select in sequence)",
   "I(join objects -> select in sequence) [BUGGY]",
   "Pivot Align enable -> logs selected obj -> use F key to mark two arrows (4 points) -> F key to apply -> aligns first vector to second",
+  "Surface Normal works the same as Pivot Align. the tool creates a normal vector and sets grid plane to surface",
   "...",
   "N(LOCK movement planar)",
   "[PLANAR LOCK] Scroll(vertical movement)",
@@ -1820,9 +1821,18 @@ packElement(eset_tools, addButton,
 
 packElement(eset_tools, addButton,
 {
+  text: "Reset Grid \u2637",
+  id: "tool_resetGrid", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
+  hoverStyles: _btn_hover_tool,
+  callback: resetGrid
+});
+
+packElement(eset_tools, addButton,
+{
   text: `Save World \u213B`,
   id: "tool_saveWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: downloadSaveFile
 });

@@ -16,11 +16,12 @@ const pi = 3.141592653589793, // high definition PI makes a visible difference
       pi2 = 6.283185307179586,
       menuTime_int = 220,
       title_int = 420,
-      player_speed = 0.5 * 0.42,
+      player_speed = 0.5 * 0.26,
       player_speed_vert = 0.3 * 0.7, // vertical travel speed
       player_speed_mult = 4 * 0.7, // shift/sprint key
       mem_encode = [4, 16], // offsets to be used where encoded data ref
       base_dir = [1,0,0,1, 0,1,0,1, 0,0,1,1],
+      ref_data = [1,0,0,1, 0,1,0,1, 0,0,1,1, 0,0,0,1],
       _scroll_mult = 18;
 
 var fileName = "";
@@ -29,6 +30,7 @@ var _preview_scaler;
 var _s_ratio;
 var cursor_helper = 0;
 var miniBar_stn = [0,0,0];
+var grid_plane = [0,0,1];
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -107,7 +109,7 @@ var grid_scale = 3,
     grid_scale_ar = [8, 8, 8],
     grid_scale_d = 8;
 
-var menu_q_size = [280, 568],
+var menu_q_size = [280, 612],
     menu_q_pos = [30, 240],
     menu_obj_pos = [0, 0],
     menu_obj_size = [],
@@ -1305,9 +1307,9 @@ var _flr = 6*8; // side length of square
 function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 {
 	var _ob = new Float32Array(4*_l*_l);
-	for (var i = 0; i<=_l; i++)
+	for (var i = 0; i< _l; i++)
 	{
-		for (var j = 0; j<=_l; j++)
+		for (var j = 0; j< _l; j++)
 		{	//	i <=> (i*10+j)
 			switch (_p)
 			{
@@ -1335,19 +1337,34 @@ function setGrid(_l, _s, _p, _o) // grid: side length, scale, plane, offset
 	return _ob;
 }
 
+
 function updateGrid()
 {
 	g_over_x = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 0, [0, 0, 0]);
 	g_over_y = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 1, [0, 0, 0]);
 	g_over_z = setGrid(15, getSetting('detail_box_gridSettings', 1)[0], 2, [0, 0, 0]);
 
+  const _s = mem_log[3][1]-16;
+
 	// write data to obj
-	for (var i = 0; i<mem_log[3][1]-4; i++)
+	for (var i = 0; i<_s; i++)
 	{
 		m_objs[3][i] = m_objs_ghost[3][i] = g_over_x[i];
 		m_objs[4][i] = m_objs_ghost[4][i] = g_over_y[i];
 		m_objs[5][i] = m_objs_ghost[5][i] = g_over_z[i];
 	}
+
+  for (let i = 0; i<16; i++)
+  {
+		m_objs[3][_s+i] = m_objs_ghost[3][_s+i] = ref_data[i];
+		m_objs[4][_s+i] = m_objs_ghost[4][_s+i] = ref_data[i];
+		m_objs[5][_s+i] = m_objs_ghost[5][_s+i] = ref_data[i];
+  }
+
+  rotateObjectToDir(3, grid_plane);
+  rotateObjectToDir(4, grid_plane);
+  rotateObjectToDir(5, grid_plane);
+
   grid_scale_d = getSetting('detail_box_gridSettings', 1)[0];
 }
 
@@ -2091,9 +2108,10 @@ function select2dpoint(x, y) // 2D find
 
 	if (!mouseLock) // this is the 2d find for grid points
 	{
-		for (let k = 0; k<mem_log[3+pln_cyc][1]/4; k++)
+		for (let k = 0; k<mem_log[3+pln_cyc][2]-mem_encode[0]; k++)
 		{
-			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]+_x_off, 2) + Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]+_y_off, 2);
+			_t1 = Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]]+_x_off, 2) +
+            Math.pow(m1.data[4*k+mem_log[3+pln_cyc][0]+1]+_y_off, 2);
 
 			if (!isNaN(_t1) && !isNaN(_f))
 			{
@@ -2425,7 +2443,6 @@ function link_obj(_i)
   if (getSetting('detail_box_linkSettings', 1)[1][0] == true) {_t = 1;}
   if (getSetting('detail_box_linkSettings', 1)[2][0] == true) {_t = 2;}
 
-  console.log(_t);
 	switch(_all_lock)
 	{
 		case 0: // alternator
@@ -2437,7 +2454,6 @@ function link_obj(_i)
 			var _of = [];
 			var _o1 = splitObj(m_objs[_i], 2);
 			var _o2 = splitObj(m_objs[_all_lock_i], 2);
-      console.log(_o1.length);
 			switch(_t)
 			{
 				case 0:
@@ -2924,6 +2940,14 @@ function measureLine()
   getSetting('detail_box_gridSettings', 1)[0] = _t_d;
 }
 
+function resetGrid()
+{
+  grid_plane = [0,0,1];
+  grid_scale = 3;
+  getSetting('detail_box_gridSettings', 1)[0] = Math.pow(2, grid_scale);
+  updateGrid();
+}
+
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
 		 _\/\\\////////\\\___/\\\///////\\\_____/\\\\\\\\\\\\\__\/\\\_____________\/\\\_       
@@ -2983,9 +3007,9 @@ function drawOverlay()
     // updateViewRef(rayInterMap[_rayLast], obj_cyc, _tq);
   }
 
-  updateTextByPar("menu_stats_0", "[ " + _fps + " ]");
-  updateTextByPar("menu_stats_1", "[ " + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+" ]");
-  updateTextByPar("menu_stats_2", "[ " + grid_scale + " : " + getSetting('detail_box_gridSettings', 1)[0].toFixed(5) + " ]");
+  updateTextByPar("menu_stats_0", "" + _fps + "");
+  updateTextByPar("menu_stats_1", "" + [" X-Plane "," Y-Plane "," Z-Plane "][pln_cyc]+"");
+  updateTextByPar("menu_stats_2", "" + grid_scale + " : " + getSetting('detail_box_gridSettings', 1)[0].toFixed(5) + "");
   updateTextByPar("menu_stats_3", "[ " + player_pos[0].toFixed(1) + ", " + player_pos[1].toFixed(1) + ", " + player_pos[2].toFixed(1)+" ]");
 
 	if (mouseLock) {setVisibility({hide:["menu_1"], show:[""]});} else {setVisibility({hide:[""], show:["menu_1"]});}
@@ -3788,7 +3812,7 @@ function drawLines()
         m_center2d[d_i][1] =  m1.data[ mem_log[d_i][0] + mem_log[d_i][1] - 3 ];
 
         // now make a set of data of 2d center points to feed this and scale w/ z from shader
-        drawSegment(ar2Dmod_static_single(_2dis[2], m_center2d_buffer[d_i], m_center2d[d_i], m1.data[mem_log[d_i][0]+mem_log[d_i][1]-2]*0.01 ), -5);
+        drawSegment(ar2Dmod_static_single(_2dis[2], m_center2d_buffer[d_i], m_center2d[d_i], m1.data[mem_log[d_i][0]+mem_log[d_i][1]-2]*0.0075 ), -5); // 2d circle size
        }
       }
     }
@@ -3840,18 +3864,28 @@ function drawIt()
 // m1.data[4*k+mem_log[14][0]]+_x/in_win_hc*(in_win_h/in_win_w),
 // m1.data[4*k+mem_log[14][0]+1]+_y/in_win_hc
 
+
 function mouseToWorld()
 {
-  // Needs refactor and rename
+  // needs refactor and rename
+  // refactor the theory
+  // interpolate with less information by not using two of the points per axis
+  // then remove those points from reference object. it's the dir vec
+  // rotate 1 less point in js
+  // can't i just literally read the 2d x y then ?
+    
+  let _moff = mem_log[14][0];
 
-  let _2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
-  let _2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+  // 2d dx and dy
+  let _2dx = 2*m1.data[_moff + 12];
+  let _2dy = 2*m1.data[_moff + 9];
   
+  // dist from center screen
   let _x = in_win_wc-mouseData[0];
   let _y = in_win_hc-mouseData[1];
   
-  let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
-  let _dy = (_y/in_win_hc) - (m1.data[mem_log[14][0]]);
+  let _dx = (-_x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[_moff + 4]);
+  let _dy = (_y/in_win_hc) - (m1.data[_moff]);
   
   let _vsc = _dx/_2dx;
   let _vsc0 = -_dy/_2dy;
@@ -3874,6 +3908,73 @@ function mouseToWorld()
 
   return _ff;
 }
+
+
+/*
+var mtwData =
+{
+  _2dx: Number,
+  _2dy: Number,
+  _x: Number,
+  _y: Number,
+  _dx: Number,
+  _dy: Number,
+  _vsc: Number,
+  _vsc0: Number,
+  _v1: Object,
+  _v2: Object,
+  _vd1_0: Object,
+  _v10: Object,
+  _v20: Object,
+  _vd1_1: Object,
+  _vdf: Object,
+  _testv: Object,
+  _teste: Object,
+  _d: Number,
+  _ff: Object
+}
+
+function mouseToWorld()
+{
+  // needs refactor and rename
+  // going to convert this to written theoretical w/ diagram and see if
+  // it can be reduced. any chain of var = a; var b = a*n; results in performance lose
+  // that's why my entire code base was initially very manual and not maximally functionized
+  // after reduction i'll have one big line o code
+    
+  // 2d dx and dy
+  mtwData._2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
+  mtwData._2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
+  
+  // dist from center screen
+  mtwData._x = in_win_wc-mouseData[0];
+  mtwData._y = in_win_hc-mouseData[1];
+  
+  mtwData._dx = (-mtwData._x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
+  mtwData._dy = (mtwData._y/in_win_hc) - (m1.data[mem_log[14][0]]);
+  
+  mtwData._vsc = mtwData._dx/mtwData._2dx;
+  mtwData._vsc0 = -mtwData._dy/mtwData._2dy;
+
+  mtwData._v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
+  mtwData._v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
+  mtwData._vd1_0 = add3(scale(sub3(mtwData._v1, mtwData._v2), mtwData._vsc), mtwData._v2); // length always 16
+
+  mtwData._v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
+  mtwData._v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
+  mtwData._vd1_1 = scale(sub3(mtwData._v10, mtwData._v20), mtwData._vsc0); // length always 16
+
+  mtwData._vdf = add3(mtwData._vd1_0, mtwData._vd1_1);
+  mtwData._testv = sub3(mtwData._vdf, player_pos);
+  
+  mtwData._teste = scale(mtwData._testv, 1/len3(mtwData._testv));
+
+  mtwData._d = -player_pos[1]/dot([0,1,0],norm(mtwData._teste));
+  mtwData._ff = [player_pos[0]+mtwData._d*mtwData._teste[0],player_pos[1]+mtwData._d*mtwData._teste[1],player_pos[2]+mtwData._d*mtwData._teste[2]]; // player pos + look dir * 
+
+  return mtwData._ff;
+}
+*/
 
 // this should be automated lol
 function pointerOutsideWindow() // return [0] indicates if inside menu pane
@@ -4092,13 +4193,6 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
 }
 
 // so i must apply torsion for now default from center w/ test arcsin(sin(theta)) out of curiosity
-// can align but a more detailed fn will still be needed
-// maybe use 3 lines per or have axis logged
-// cross is needed to orient to plane then one more to rotate along plane
-// this can't quite connect everything yet
-// nope broken
-// okay this works great lmao got it
-// just need to implement axis lock. _plane not used anymore.
 // also there's no way to control the torsion as it's own alignable property
 // for ex: with the wing of the plane and pitch of the wings
 // difficult layer to extend to without plane relocalization & directly no recursion
@@ -4106,9 +4200,7 @@ function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!
 // swapping order of an operation implies inverse direction of rotation which
 // maps nicely to the use of cross product
 // must reduce the cross to unit length 1 while maintaining the sign
-// i guess any predefined arbitrary coordinate system that is perp on all 3 axis can be used as a reference to orient a vector.
 
-// to finish rotate the obj dir vec and check angle. do for both. use smallest.
 var pivotAlign =
 {
   enable: 0,
@@ -4144,8 +4236,7 @@ var pivotAlign =
   },
   align: function ()
   {
-    let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc], // remove corresponding axis
-        _l1 = sub(pivotAlign.p0, pivotAlign.pivot),
+    let _l1 = sub(pivotAlign.p0, pivotAlign.pivot),
         _l2 = sub(pivotAlign.p2, pivotAlign.p1),
         _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
         _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
@@ -4224,40 +4315,44 @@ var pivotAlign =
 
 functionRunList.push(pivotAlign); // push ref to run list
 
-// dir replaces the temp line
-//
+function epsilon(a, b, c)
+{
+  if ( Math.abs(a[0]-b[0]) < c && Math.abs(a[1]-b[1]) < c && Math.abs(a[2]-b[2]) < c )
+  { return true;
+  } else {return false;}
+}
 
 function rotateObjectToDir(_i, dir)
 {
-  let _dir = getObjDir(_i);
+  let _dir = getObjDir(_i); // current direction
 
-  let _plane = [[0,1,1],[1,0,1],[1,1,0]][pln_cyc], // remove corresponding axis
-      _l1 = sub(pivotAlign.p0, pivotAlign.pivot),
-      _l2 = sub(pivotAlign.p2, pivotAlign.p1),
-      _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ), // so the sign is later derived from cross !!! :)
-      _u_cr = makeDir(cross(_l1, _l2)), // unit cross product
-      // _u_mag = len3(_u_cr), // == sine(theta) but not good path to go down given [-90, 90] or im wrong???
-      _q_f = [makeQuaternion(_rad, _u_cr)]; // construct q // , makeQuaternion(Math.asin(_u_mag), makeDir(_l2))
+  let _l1 = makeDir([ _dir[8] - _dir[12], _dir[9] - _dir[13], _dir[10] - _dir[14] ]),
+      _l2 = [ dir[0], dir[1], dir[2] ],
+      _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ),
+      _u_cr = makeDir(cross(_l1, _l2)),
+      _q_f = [makeQuaternion(_rad, _u_cr)];
+  
+  if (epsilon(_l1, _l2, 1e-3)) {return;}
 
-  let _obj_len = mem_log[pivotAlign.obj][2]; // get # of points
+  let _obj_len = mem_log[_i][2]; // get # of points
 
   for (var i=0; i<_obj_len; i++)
   {
     let _vg = // extract temp point
     [
-      m_objs_ghost[pivotAlign.obj][i*4],
-      m_objs_ghost[pivotAlign.obj][i*4+1],
-      m_objs_ghost[pivotAlign.obj][i*4+2]
+      m_objs_ghost[_i][i*4],
+      m_objs_ghost[_i][i*4+1],
+      m_objs_ghost[_i][i*4+2]
     ];
 
-    let _p_rel = pivotAlign.pivot; // getctr_ghost(pivotAlign.obj);
+    let _p_rel = [_dir[12], _dir[13], _dir[14]];
     let _p_o = sub3(_vg, _p_rel); // remove rel point
     let _p_rot = quatRot( _p_o, _q_f );
     let _pf = add3(_p_rot, _p_rel); // final point add rel point
 
-    m_objs_ghost[pivotAlign.obj][i*4] = m_objs[pivotAlign.obj][i*4] = _pf[0];
-    m_objs_ghost[pivotAlign.obj][i*4+1] = m_objs[pivotAlign.obj][i*4+1] = _pf[1];
-    m_objs_ghost[pivotAlign.obj][i*4+2] = m_objs[pivotAlign.obj][i*4+2] = _pf[2];
+    m_objs_ghost[_i][i*4] = m_objs[_i][i*4] = _pf[0];
+    m_objs_ghost[_i][i*4+1] = m_objs[_i][i*4+1] = _pf[1];
+    m_objs_ghost[_i][i*4+2] = m_objs[_i][i*4+2] = _pf[2];
   }
 }
 
@@ -4298,6 +4393,9 @@ var surfaceNormal =
         _cr = cross(_l1, _l2),
         _u_cr = makeDir(_cr), // unit cross product
         _u_len = 0.5*(len3(_l1) + len3(_l2)); // arbitrary
+
+    grid_plane = [_u_cr[0], _u_cr[1], _u_cr[2]];
+    updateGrid();
 
     let _fp = add3(surfaceNormal.p0, scale3(_u_cr, _u_len));
     let _new_line =
@@ -4432,12 +4530,13 @@ function Compute(init_dat)
 
   if (getSetting('detail_box_drawSettings', 1)[3]) {updateZMap();} // if depth enabled
 
+  // indicator box
   m_obj_offs[12][0] = _lp_world[0];
   m_obj_offs[12][1] = _lp_world[1];
   m_obj_offs[12][2] = _lp_world[2];
   m_obj_offs[12][3] = getSetting('detail_box_gridSettings', 1)[0]/2.0;
 
-  if (mem_t_sum != 0)
+  if (mem_t_sum != 0) // indicator box
   {
     m_obj_offs[13][0] = m_t_objs[m_t_objs.length-1][0];
     m_obj_offs[13][1] = m_t_objs[m_t_objs.length-1][1];
@@ -4663,6 +4762,7 @@ function Compute(init_dat)
 
 				updateLook();
 
+        // weapon offset
 				m_obj_offs[tse] = [player_pos[0]-f_look[0]*3, player_pos[1]-f_look[1]*3, player_pos[2]-f_look[2]*3, 1/(4*7)];
 			}
 		}
@@ -4976,7 +5076,7 @@ function fixme2(a)
   switch((pln_cyc+1)%3)
 	{
 		case 0:
-			for (var i = 0; i<=mem_log[3][2]; i++)
+			for (var i = 0; i<=mem_log[3][2]-mem_encode[0]; i++)
 			{
 				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _lp_world[0];
 				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _lp_world[1];
@@ -4984,7 +5084,7 @@ function fixme2(a)
 			}
 			break;
 		case 1:
-			for (var i = 0; i<=mem_log[4][2]; i++)
+			for (var i = 0; i<=mem_log[4][2]-mem_encode[0]; i++)
 			{
 				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _lp_world[0];
 				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _lp_world[1];
@@ -4992,7 +5092,7 @@ function fixme2(a)
 			}
 			break;
 		case 2:
-			for (var i = 0; i<mem_log[5][2]+1; i++)
+			for (var i = 0; i<mem_log[5][2]-mem_encode[0]; i++)
 			{
 				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _lp_world[0];
 				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _lp_world[1];
@@ -5004,7 +5104,7 @@ function fixme2(a)
 	switch(pln_cyc)
 	{
 		case 0:
-			for (var i = 0; i<=mem_log[3][2]; i++)
+			for (var i = 0; i<=mem_log[3][2]-mem_encode[0]; i++)
 			{
 				m_objs[3][4*i]  =  m_objs_ghost[3][4*i] + _lp_world[0];
 				m_objs[3][4*i+1] = m_objs_ghost[3][4*i+1] + _lp_world[1];
@@ -5012,7 +5112,7 @@ function fixme2(a)
 			}
 			break;
 		case 1:
-			for (var i = 0; i<=mem_log[4][2]; i++)
+			for (var i = 0; i<=mem_log[4][2]-mem_encode[0]; i++)
 			{
 				m_objs[4][4*i]  =  m_objs_ghost[4][4*i] + _lp_world[0];
 				m_objs[4][4*i+1] = m_objs_ghost[4][4*i+1] + _lp_world[1];
@@ -5020,7 +5120,7 @@ function fixme2(a)
 			}
 			break;
 		case 2:
-			for (var i = 0; i<mem_log[5][2]+1; i++)
+			for (var i = 0; i<mem_log[5][2]-mem_encode[0]; i++)
 			{
 				m_objs[5][4*i]  =  m_objs_ghost[5][4*i] + _lp_world[0];
 				m_objs[5][4*i+1] = m_objs_ghost[5][4*i+1] + _lp_world[1];
