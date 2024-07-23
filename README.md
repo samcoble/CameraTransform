@@ -31,7 +31,6 @@ My math here is maybe wrong but the paint tool is fairly accessible now. I have 
 ![204436](https://github.com/samcoble/CameraTransform/assets/32228102/75e57ec2-d004-4c47-b40f-996907ebe937)
 ![220450](https://github.com/samcoble/CameraTransform/assets/32228102/6161a4a4-5c90-438f-927b-74b33588f122)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
-![NVIDIA](https://github.com/samcoble/CameraTransform/assets/32228102/5796f7f6-e08a-4e15-a02f-085735bfa242)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
 ![192239](https://github.com/user-attachments/assets/8430e868-63a3-4fb2-b97e-e9617a4da597)
 ![badartexedllfree](https://github.com/samcoble/CameraTransform/assets/32228102/0edfd5dc-f69f-454c-80f5-ff29e8853b75)
