@@ -31,6 +31,7 @@ var _s_ratio;
 var cursor_helper = 0;
 var miniBar_stn = [0,0,0];
 var grid_plane = [0,0,1];
+var enableViewRef = false;
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -1551,21 +1552,21 @@ function m_objs_loadPoints(ar, _dir) // adds objects
 	updateNormalMaps();
 }
 
-function m_t_objs_loadPoint(ar) // adds point to stack
+function m_t_objs_loadPoint(ar)
 {
-	m_t_objs[m_t_objs.length] = ar;
+  let _s = m_t_objs.length;
+  m_t_objs[_s] = ar[0]; m_t_objs[_s+1] = ar[1]; m_t_objs[_s+2] = ar[2]; m_t_objs[_s+3] = ar[3];
 	mem_t_log.push([mem_t_sum, ar.length]);
 	mem_t_sum += ar.length;
 }
 
 function m_t_objs_loadPoints(ar)
 {
-	for (i=0; i<ar.length; i++)
-	{
-		m_t_objs[m_t_objs.length] = ar[i];
-		mem_t_log.push([mem_t_sum, ar[i].length]);
-		mem_t_sum += ar[i].length;
-	}
+  let _s = m_t_objs.length,
+      _s2 = ar.length;
+  for (let i=0; i<_s2; i++) { m_t_objs[_s+i] = ar[i]; }
+	mem_t_log.push([mem_t_sum, ar.length]);
+	mem_t_sum += ar.length;
 }
 
 function mem_t_mov() // puts m_t_objs into m_objs as single array 
@@ -1573,16 +1574,8 @@ function mem_t_mov() // puts m_t_objs into m_objs as single array
 	paint_n = 0;
 	if (mem_t_sum != 0)
 	{
-		var _tar = new Float32Array(mem_t_sum);
-		for (i=0; i<m_t_objs.length; i++)
-		{
-			_tar[i*4+0] = m_t_objs[i][0];
-			_tar[i*4+1] = m_t_objs[i][1];
-			_tar[i*4+2] = m_t_objs[i][2];
-			_tar[i*4+3] = m_t_objs[i][3];
-		}
+    m_objs_loadPoints(new Float32Array(m_t_objs), 0);
 		m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
-		m_objs_loadPoints(_tar, 0);
 	}
 }
 
@@ -1618,17 +1611,8 @@ function setData()
     for (let i=0; i<_nextSize; i++) { m1.data[i+mem_log[j][0]] = (i%4 == 3) ? m_objs[j][i]*m_obj_offs[j][3] : m_objs[j][i]*m_obj_offs[j][3] + m_obj_offs[j][i%4]; }
   }
 
-  for (let j = m_t_objs.length-1; j>=0; j--)
-  {
-    _nextSize = m_t_objs[j].length;
-    for (let i = 0; i < _nextSize; i += 4)
-    {
-      m1.data[i+mem_t_log[j][0]+mem_sum]   = m_t_objs[j][i+0];
-      m1.data[i+1+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+1];
-      m1.data[i+2+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+2];
-      m1.data[i+3+mem_t_log[j][0]+mem_sum] = m_t_objs[j][i+3];
-    }
-  }
+  _nextSize = m_t_objs.length;
+  for (let i=0; i<_nextSize; i++) { m1.data[mem_sum+i] = m_t_objs[i]; }
 }
 
 
@@ -1674,7 +1658,6 @@ function updateNormalMaps()
 		let p1, p2, p3, v1, v2, _cr;
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
-			// for (var k=0; k<Math.floor((mem_log[i][2]-4)/2)-mem_log[i][2]%2; k++) // here -4 was -1 doing test
       for (let k=0; k<mem_log[i][3]+1; k++) // fixed
 			{
         p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
@@ -1764,7 +1747,6 @@ function updateRayInters(_dp, _p)
 					// can use create point like I did before ez
 					if (isPointInsideTriangle(_int, p1, p2, p3))
 					{
-						//m_t_objs_loadPoint(new Float32Array([_int[0], _int[1], _int[2], 1.0]));
 						rayInterMap.push(_int);
 						interKOut.push(k);
 						interIOut.push(i);
@@ -2092,21 +2074,19 @@ function select2dpoint(x, y) // 2D find
 		}
 	}
 
-	for (var i = 0; i<m_t_objs.length; i++) // this looks through the temp placed points
+   // this looks through the temp placed points
+	for (var i = 0; i<m_t_objs.length/4; i++)
 	{
-		for (var j = 0; j<mem_t_log[i][1]/4; j++)
-		{
-			_t1 = Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum]+_x_off, 2) + Math.pow(m1.data[4*j+mem_t_log[i][0]+mem_sum+1]+_y_off, 2);
+			_t1 = Math.pow(m1.data[4*i+mem_sum]+_x_off, 2) + Math.pow(m1.data[4*i+mem_sum+1]+_y_off, 2);
 			if (_t1 < _f)
 			{
 				_f = _t1;
 				_n_sku = i;
 				_d = 1;
 			}
-		}
 	}
 
-	if (!mouseLock) // this is the 2d find for grid points
+	if (!mouseLock && !enableViewRef) // this is the 2d find for grid points
 	{
 		for (let k = 0; k<mem_log[3+pln_cyc][2]-mem_encode[0]; k++)
 		{
@@ -2154,9 +2134,9 @@ function select2dpoint(x, y) // 2D find
 			{
 				if (m_t_objs.length != 0 && typeof m_t_objs[_n_sku] != 'undefined')
 				{
-					_lp[0] = _lp_world[0] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-4)];
-					_lp[1] = _lp_world[1] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-3)];
-					_lp[2] = _lp_world[2] = m_t_objs[_n_sku][(mem_t_log[m_t_objs.length-1][1]-2)];
+					_lp[0] = _lp_world[0] = m_t_objs[4*_n_sku];
+					_lp[1] = _lp_world[1] = m_t_objs[4*_n_sku+1];
+					_lp[2] = _lp_world[2] = m_t_objs[4*_n_sku+2];
 					cursor_helper = 1;
 				}
 			}
@@ -2377,15 +2357,8 @@ function m_obj_explode(_i) // encode patched
 {
 	if (_i>world_obj_count)
 	{
-		var _tp = [];
-		for (var i=0; i<mem_log[_i][2]-mem_encode[0]; i++)
-		{
-			_tp[i*4] = m_objs[_i][i*4];
-			_tp[i*4+1] = m_objs[_i][i*4+1];
-			_tp[i*4+2] = m_objs[_i][i*4+2];
-			_tp[i*4+3] = m_objs[_i][i*4+3];
-		}
-		m_t_objs_loadPoints(splitObj(new Float32Array(_tp), 0));
+    let _t = m_objs[_i].slice(0, -mem_encode[1]);
+		m_t_objs_loadPoints(_t);
 		del_obj(_i);
 	}
 }
@@ -2966,7 +2939,8 @@ function drawOverlay()
 	// While in menu with low call rate i'll set values here:
 	updateMenuPos();
 
-  if (!mouseLock && wpn_select > 1) // in menu
+  
+  if (enableViewRef)
   {
     updateLook();
     updateViewRef(add3(player_pos, scale(f_look, -10)), 14, _viewq);
@@ -3909,73 +3883,6 @@ function mouseToWorld()
   return _ff;
 }
 
-
-/*
-var mtwData =
-{
-  _2dx: Number,
-  _2dy: Number,
-  _x: Number,
-  _y: Number,
-  _dx: Number,
-  _dy: Number,
-  _vsc: Number,
-  _vsc0: Number,
-  _v1: Object,
-  _v2: Object,
-  _vd1_0: Object,
-  _v10: Object,
-  _v20: Object,
-  _vd1_1: Object,
-  _vdf: Object,
-  _testv: Object,
-  _teste: Object,
-  _d: Number,
-  _ff: Object
-}
-
-function mouseToWorld()
-{
-  // needs refactor and rename
-  // going to convert this to written theoretical w/ diagram and see if
-  // it can be reduced. any chain of var = a; var b = a*n; results in performance lose
-  // that's why my entire code base was initially very manual and not maximally functionized
-  // after reduction i'll have one big line o code
-    
-  // 2d dx and dy
-  mtwData._2dx = m1.data[mem_log[14][0] + 12] - m1.data[mem_log[14][0] + 4];
-  mtwData._2dy = m1.data[mem_log[14][0] + 9] - m1.data[mem_log[14][0] + 1];
-  
-  // dist from center screen
-  mtwData._x = in_win_wc-mouseData[0];
-  mtwData._y = in_win_hc-mouseData[1];
-  
-  mtwData._dx = (-mtwData._x/in_win_hc*(in_win_h/in_win_w)) - (m1.data[mem_log[14][0] + 4]);
-  mtwData._dy = (mtwData._y/in_win_hc) - (m1.data[mem_log[14][0]]);
-  
-  mtwData._vsc = mtwData._dx/mtwData._2dx;
-  mtwData._vsc0 = -mtwData._dy/mtwData._2dy;
-
-  mtwData._v1 = [m_objs[14][12], m_objs[14][13], m_objs[14][14]];
-  mtwData._v2 = [m_objs[14][4], m_objs[14][5], m_objs[14][6]];
-  mtwData._vd1_0 = add3(scale(sub3(mtwData._v1, mtwData._v2), mtwData._vsc), mtwData._v2); // length always 16
-
-  mtwData._v10 = [m_objs[14][8], m_objs[14][9], m_objs[14][10]];
-  mtwData._v20 = [m_objs[14][0], m_objs[14][1], m_objs[14][2]];
-  mtwData._vd1_1 = scale(sub3(mtwData._v10, mtwData._v20), mtwData._vsc0); // length always 16
-
-  mtwData._vdf = add3(mtwData._vd1_0, mtwData._vd1_1);
-  mtwData._testv = sub3(mtwData._vdf, player_pos);
-  
-  mtwData._teste = scale(mtwData._testv, 1/len3(mtwData._testv));
-
-  mtwData._d = -player_pos[1]/dot([0,1,0],norm(mtwData._teste));
-  mtwData._ff = [player_pos[0]+mtwData._d*mtwData._teste[0],player_pos[1]+mtwData._d*mtwData._teste[1],player_pos[2]+mtwData._d*mtwData._teste[2]]; // player pos + look dir * 
-
-  return mtwData._ff;
-}
-*/
-
 // this should be automated lol
 function pointerOutsideWindow() // return [0] indicates if inside menu pane
 {
@@ -4331,6 +4238,12 @@ function rotateObjectToDir(_i, dir)
       _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ),
       _u_cr = makeDir(cross(_l1, _l2)),
       _q_f = [makeQuaternion(_rad, _u_cr)];
+
+  // i see two ways:
+  // rot in two parts first to plane then finish or correct after
+  // same thing
+  // getObjDir should be used right after first loop then.
+  // when using 8,9,10 use either other axis will work
   
   if (epsilon(_l1, _l2, 1e-3)) {return;}
 
@@ -4354,6 +4267,20 @@ function rotateObjectToDir(_i, dir)
     m_objs_ghost[_i][i*4+1] = m_objs[_i][i*4+1] = _pf[1];
     m_objs_ghost[_i][i*4+2] = m_objs[_i][i*4+2] = _pf[2];
   }
+
+  // let _dir = getObjDir(_i); // current direction
+  //
+  // let _l1 = makeDir([ _dir[8] - _dir[12], _dir[9] - _dir[13], _dir[10] - _dir[14] ]),
+  //     _l2 = [ dir[0], dir[1], dir[2] ],
+  //     _rad = Math.acos( dot(_l1, _l2) / (len3(_l1)*len3(_l2)) ),
+  //     _u_cr = makeDir(cross(_l1, _l2)),
+  //     _q_f = [makeQuaternion(_rad, _u_cr)];
+  // 
+  // if (epsilon(_l1, _l2, 1e-3)) {return;}
+
+
+
+
 }
 
 // simple function to take cross and create the normal. later will use obj_normalMaps: had issues w/ torsion
@@ -4461,6 +4388,59 @@ var surfaceNormal =
 
 functionRunList.push(surfaceNormal); // push ref to run list
 
+var getSurface = {
+  active: 0,
+  toggle: function ()
+  {
+    switch(getSurface.active)
+    {
+      case 0: // enabled
+        // if (obj_cyc <= world_obj_count) {break;}
+        getSurface.active = 1;
+        // log box
+        break;
+      case 1: // disabled
+        getSurface.active = 0;
+        // eLogClear(getSurface.e_id);
+        // log box
+        break;
+    }
+  },
+  calc: function ()
+  {
+    let _mtw = mouseToWorld();
+    let _t_dir = mouseLock ? [player_pos[0]+f_dist*f_look[0],player_pos[1]+f_dist*f_look[1],player_pos[2]+f_dist*f_look[2]] : _mtw;
+
+    updateRayInters(_t_dir, player_pos);
+
+    if (rayInterMap.length > 0)
+    {
+      // rayInterMap[_rayLast];
+      let _p = normOut[_rayLast];
+      // if (!isNaN(_p[0]) && !isNaN(_p[1]) && !isNaN(_p[2]))
+      // {
+        grid_plane = makeDir(normOut[_rayLast]);
+        updateGrid();
+        getSurface.toggle();
+      // }
+    }
+    /*
+     *
+    } else {
+      // updateRayInters(_plr_dtp, player_pos);
+    }
+     * */
+  },
+  run: function ()
+  {
+    if (key_map.lmb) {getSurface.calc();}
+  }
+}
+
+functionRunList.push(getSurface);
+
+
+
 // scale a unit cube to the size of min/max really 6 pieces of information min & max of each axis so 3*2 querys
 // while itor over w/ 4*i take min/max as two loops or do both for each axis at the same time.
 
@@ -4527,6 +4507,10 @@ var  _2d_exclude = [];
 function Compute(init_dat)
 {
 
+  if (
+    !mouseLock && wpn_select > 1
+    || getSurface.active
+  ) {enableViewRef = true;} else {enableViewRef = false;}
 
   if (getSetting('detail_box_drawSettings', 1)[3]) {updateZMap();} // if depth enabled
 
@@ -4538,9 +4522,10 @@ function Compute(init_dat)
 
   if (mem_t_sum != 0) // indicator box
   {
-    m_obj_offs[13][0] = m_t_objs[m_t_objs.length-1][0];
-    m_obj_offs[13][1] = m_t_objs[m_t_objs.length-1][1];
-    m_obj_offs[13][2] = m_t_objs[m_t_objs.length-1][2];
+    let _s = m_t_objs.length;
+    m_obj_offs[13][0] = m_t_objs[_s-4];
+    m_obj_offs[13][1] = m_t_objs[_s-3];
+    m_obj_offs[13][2] = m_t_objs[_s-2];
     m_obj_offs[13][3] = getSetting('detail_box_gridSettings', 1)[0]/8.0;
   }
 
@@ -4666,7 +4651,12 @@ function Compute(init_dat)
 		}
 	}
 
-	if (key_map.z && runEvery(140-key_map.shift*100) && m_t_objs.length!=0) {m_t_objs.splice(-1); mem_t_sum -= mem_t_log[mem_t_log.length-1][1]; mem_t_log.splice(-1); paint_n--;}
+	if (key_map.z && runEvery(140-key_map.shift*100) && m_t_objs.length != 0)
+  {
+    m_t_objs.length = m_t_objs.length-4;
+    mem_t_sum -= 4;
+    paint_n--;
+  }
 
 	/*
 		__/\\\\\\\\\\\\\\\__/\\\________/\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\_______/\\\\\\\\\_______/\\\\\\\\\______/\\\\\\\\\\\\\\\_        
@@ -4948,17 +4938,18 @@ function Compute(init_dat)
           switch(mouseLock)
           {
             case 0:
-              paint_d = m_t_objs.length==0 ? getSetting('detail_box_paintSettings', 1)[1]+1 : len3(sub(_inter, m_t_objs[m_t_objs.length - 1]));
+              let _s = m_t_objs.length;
+              paint_d = m_t_objs.length==0 ? getSetting('detail_box_paintSettings', 1)[1]+1 : len3(sub3(_inter, [m_t_objs[_s-4], m_t_objs[_s-3], m_t_objs[_s-2]] ));
 
               if (paint_d > getSetting('detail_box_paintSettings', 1)[1])
               {
-                m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
+                m_t_objs_loadPoint([_inter[0], _inter[1], _inter[2], 1.0]);
                 paint_n++;
               }
               break;
 
             case 1:
-              m_t_objs_loadPoint(new Float32Array([_inter[0], _inter[1], _inter[2], 1.0]));
+              m_t_objs_loadPoint([_inter[0], _inter[1], _inter[2], 1.0]);
               paint_n++;
               break;
           }
@@ -5006,7 +4997,7 @@ function Compute(init_dat)
 	// Place point
   if (key_map.f && !flag_objModif && !_run_check && runEvery(150)) // no longer allow during any runtime function
   {
-    m_t_objs_loadPoint(new Float32Array([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]));
+    m_t_objs_loadPoint([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]);
     playSound('sounds/tick.mp3');
   }
 

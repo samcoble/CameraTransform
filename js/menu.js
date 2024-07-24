@@ -922,7 +922,7 @@ var key_bind_info =
   "W(move forward), S(move backwards)",
   "A(move left), D(move right)",
   "Space(up), B(down)",
-  "Shift(speed up movement & deletion)",
+  "Shift(sprint & fast deletion)",
   "[Ctrl or Alt] (unlock mouse so you can Alt+Tab)",
   "...",
   "[MENU CLOSED] LMB(move 3D cursor to aim location)",
@@ -939,6 +939,7 @@ var key_bind_info =
   "C(edit object -> converts to points)",
   "L(link objects -> select in sequence)",
   "I(join objects -> select in sequence) [BUGGY]",
+  "Pick Surface -> left click on any surface triangle",
   "Pivot Align enable -> logs selected obj -> use F key to mark two arrows (4 points) -> F key to apply -> aligns first vector to second",
   "Surface Normal works the same as Pivot Align. the tool creates a normal vector and sets grid plane to surface",
   "...",
@@ -1749,9 +1750,18 @@ packElement(eset_tools, addButton,
 
 packElement(eset_tools, addButton,
 {
+  text: "Pick Surface \u25B2",
+  id: "tool_pickSurface", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  hoverStyles: _btn_hover_tool,
+  callback: getSurface.toggle
+});
+
+packElement(eset_tools, addButton,
+{
   text: "Resize Object \u2922",
   id: "tool_resizeObject", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: boundingBox.toggle
 });
@@ -1760,7 +1770,7 @@ packElement(eset_tools, addButton,
 {
   text: "Surface Normal \u21A5",
   id: "tool_surfaceNormal", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: surfaceNormal.toggle
 });
@@ -1769,7 +1779,7 @@ packElement(eset_tools, addButton,
 {
   text: "Apply Rotation \u2B6E",
   id: "tool_applyRotation", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: applyRotation
 });
@@ -1778,7 +1788,7 @@ packElement(eset_tools, addButton,
 {
   text: "Mirror / Plane \u2346",
   id: "tool_mirrorOverPlane", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: mirrorOverPlane
 });
@@ -1787,7 +1797,7 @@ packElement(eset_tools, addButton,
 {
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1796,7 +1806,7 @@ packElement(eset_tools, addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1805,7 +1815,7 @@ packElement(eset_tools, addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1814,7 +1824,7 @@ packElement(eset_tools, addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
