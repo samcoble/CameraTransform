@@ -507,7 +507,7 @@ function makeTree(par) // output tree in the form of html structure
           if (event.target != draggedElement) // not dropping on self
           {
             moveK(draggedElement.getAttribute(_attr_fi), draggedElement.getAttribute(_attr_k), event.target.getAttribute(_attr_fi));
-            console.log(event.target.getAttribute(_attr_fi));
+            // console.log(event.target.getAttribute(_attr_fi));
             updateTree(par);
             key_map.lmb = false;
           }

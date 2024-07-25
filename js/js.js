@@ -375,7 +375,7 @@ function runListTerminateAll()
   { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
 }
 
-function eLog(_id, _f, _i) { e_log.push([_id, _f, _i]); }
+function eLog(_id, _f, _i, _b) { e_log.push([_id, _f, _i, _b]); }
 
 function eLogClear(_id) // remove all entries with matching _id
 {
@@ -1200,7 +1200,7 @@ function hasNA(ar, k, n) // check if ar[i][k] (offset k) has n. for horizontal d
 {
   let _l = ar.length,
       _r = 0; // return data
-  for (var i=0; i<_l; i++) {if (ar[i][k] == n) {_r = 1;}}
+  for (var i=0; i<_l; i++) {if (ar[i][k] == n) {_r = i;}}
   return _r;
 }
 
@@ -1987,28 +1987,51 @@ function updateDrawMap(priorityObjects)
 
 function del_obj(_i)
 {
-	if (_i > world_obj_count && !hasN(_run_objs, _i))
-	{
-		trns_lock = 0; _all_lock = 0;
-		if (_i == m_objs.length-1) // if last delete last
-		{
-      // if (obj_cyc < m_objs.length-2) {obj_cyc = m_objs.length-3;}
-			m_objs.splice(-1);	mem_log.splice(-1); m_obj_offs.splice(-1); m_objs_ghost.splice(-1); m_draw.splice(-1);
-      m_center2d.splice(-1); m_center2d_buffer.splice(-1); z_map.splice(-1);
-      obj_normalMaps.splice(-1);
-      obj_cyc = m_objs.length-1;
+  if (_i > world_obj_count) // instead of no delete make it clear log // && !hasN(_run_objs, _i)
+  {
+    trns_lock = 0; _all_lock = 0;
+    let splice_all = [
+      m_objs,
+      mem_log,
+      m_obj_offs,
+      m_objs_ghost,
+      m_draw,
+      m_center2d,
+      m_center2d_buffer,
+      z_map,
+      obj_normalMaps
+    ];
 
-		} else // Delete specific
-		{
-			var _ts = mem_log[_i][1];
+    if (_i == m_objs.length-1) // if last delete last
+    {
+      for (let i=0; i<splice_all.length; i++) {splice_all[i].splice(-1);};
+      obj_cyc = (m_objs.length==world_obj_count+1) ? 2 : m_objs.length-1;
+
+    } else // Delete specific
+    {
+      var _ts = mem_log[_i][1];
 			for (var i = _i+1; i<mem_log.length; i++)
 			{
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
-			m_objs.splice(_i, 1); mem_log.splice(_i, 1); m_obj_offs.splice(_i, 1); m_objs_ghost.splice(_i, 1); m_draw.splice(_i, 1);
-      m_center2d.splice(_i, 1); m_center2d_buffer.splice(_i, 1); z_map.splice(_i, 1);
-      obj_normalMaps.splice(_i, 1);
+
+      _ts = e_log.length;
+      for (let i=0; i<_ts; i++)
+      {
+        let _n = e_log[i][2];
+        e_log[i][2] = _n>_i ? _n-1 : _n;
+      }
+      
+      _ts = functionRunList.length;
+      for (let i=0; i<_ts; i++)
+      {
+        let _n = functionRunList[i].obj;
+        functionRunList[i].obj = _run_objs[i] = _n>_i ? _n-1 : _n;
+      }
+
+      for (let i=0; i<splice_all.length; i++) {splice_all[i].splice(_i, 1);};
 		}
+
 		updateList(objListConst(), "list_objectSelect");
     foldersDel(_i);
     updateTree(tree_allObjects);
@@ -2732,7 +2755,12 @@ function planeCycle()
 
 function deleteObjectSelected()
 {
-  if (!hasNA(e_log, 2, obj_cyc)) { del_obj(obj_cyc); }
+  let _c = hasNA(e_log, 2, obj_cyc);
+  // console.log(e_log[_c][3]);
+  if (_c)
+  {
+    if (e_log[_c][3]) { del_obj(obj_cyc); }// else { || hasN(e_log[obj_cyc], true)}
+  } else if (!hasN(_run_objs, obj_cyc)) { del_obj(obj_cyc); }
 }
 
 // just put the functions into array to be spliced ig ?!??!
@@ -4092,11 +4120,11 @@ var boundingBox =
 
 functionRunList.push(boundingBox);
 
-function loadTempObj(_ar, _id) // bad to use _last, should refactor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+function loadTempObj(_ar, _id, _b) // bad to use _last, should refactor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
   flag_loadTemp = 1; // flag to send temp
   m_objs_loadPoints(_ar, 0);
-  eLog(_id, folder_last, obj_last);
+  eLog(_id, folder_last, obj_last, _b);
 }
 
 // so i must apply torsion for now default from center w/ test arcsin(sin(theta)) out of curiosity
@@ -4184,7 +4212,8 @@ var pivotAlign =
         _tv = pivotAlign.pivot; _tw = _lp_world; // simple format
         loadTempObj(
           new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
-          pivotAlign.e_id
+          pivotAlign.e_id,
+          false 
         );
         setPoint(pivotAlign.p0, _lp_world);
         pivotAlign.pn++;
@@ -4197,7 +4226,8 @@ var pivotAlign =
         _tv = pivotAlign.p1; _tw = _lp_world; // simple format
         loadTempObj(
           new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
-          pivotAlign.e_id
+          pivotAlign.e_id,
+          false
         );
         setPoint(pivotAlign.p2, _lp_world);
         pivotAlign.pn++;
@@ -4299,7 +4329,7 @@ var surfaceNormal =
     switch(surfaceNormal.enable)
     {
       case 0: // enabled
-        if (obj_cyc <= world_obj_count) {break;}
+        // if (obj_cyc <= world_obj_count) {break;}
         surfaceNormal.enable = 1;
         playSound(surfaceNormal.sound_start);
         // log box
@@ -4356,7 +4386,8 @@ var surfaceNormal =
         _tv = surfaceNormal.p0; _tw = _lp_world; // simple format
         loadTempObj(
           new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
-          surfaceNormal.e_id
+          surfaceNormal.e_id,
+          false
         );
         setPoint(surfaceNormal.p1, _lp_world);
         surfaceNormal.pn++;
@@ -4371,7 +4402,8 @@ var surfaceNormal =
         _tv = surfaceNormal.p2; _tw = _lp_world; // simple format
         loadTempObj(
           new Float32Array([_tv[0], _tv[1], _tv[2], _tv[3], _tw[0], _tw[1], _tw[2], _tw[3]]),
-          surfaceNormal.e_id
+          surfaceNormal.e_id,
+          false
         );
         setPoint(surfaceNormal.p3, _lp_world);
         surfaceNormal.pn++;
@@ -4396,6 +4428,7 @@ var getSurface = {
     {
       case 0: // enabled
         // if (obj_cyc <= world_obj_count) {break;}
+        updateNormalMaps();
         getSurface.active = 1;
         // log box
         break;
