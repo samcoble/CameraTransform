@@ -1645,7 +1645,7 @@ packElement(eset_tools, addButton,
   id: 'tool_curTp', cls: '_btn', prnt: 'div_toolListHeader',
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
-  callback: teleport_plr
+  callback: unlink_obj// teleport_plr
 });
 
 packElement(eset_tools, addButton,
@@ -1824,9 +1824,18 @@ packElement(eset_tools, addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
+});
+
+packElement(eset_tools, addButton,
+{
+  text: "Unlink Object \u2366",
+  id: "tool_objUnlink", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: unlink_obj
 });
 
 packElement(eset_tools, addButton,

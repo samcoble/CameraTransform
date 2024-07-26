@@ -2432,6 +2432,61 @@ function bond_obj(_i)
 	}
 }
 
+function unlink_obj(_i, _d) // _d bool for data/load
+{
+  if (_i == undefined) {_i = obj_cyc; _d = 0;}
+  let _s = mem_log[_i][2] - mem_encode[0],
+      _r0 = [],
+      _r1 = [],
+      _r2 = [],
+      _f = [],
+      _n0 = 0,
+      _n2 = 0,
+      _k = 0;
+
+  for (let i=0; i<_s; i++)
+  {
+    if ((i-0)%2!=0 || i==_s-2)
+    {
+      _k = i==_s-2 ? _s-1 : (i==_s-1 ? _s-2 : i);
+      _r0[_n0*4] = m_objs[_i][_k*4];
+      _r0[_n0*4+1] = m_objs[_i][_k*4+1];
+      _r0[_n0*4+2] = m_objs[_i][_k*4+2];
+      _r0[_n0*4+3] = m_objs[_i][_k*4+3];
+      _n0++
+    }
+  }
+
+  _s = _r0.length; _n0 = 0;
+  for (let i=0; i<_s/4; i++)
+  {
+    if (i%2)
+    {
+      _r1[_n0*4] = _r0[i*4];
+      _r1[_n0*4+1] = _r0[i*4+1];
+      _r1[_n0*4+2] = _r0[i*4+2];
+      _r1[_n0*4+3] = _r0[i*4+3];
+      _n0++;
+    } else
+    {
+      _r2[_n1*4] = _r0[i*4];
+      _r2[_n1*4+1] = _r0[i*4+1];
+      _r2[_n1*4+2] = _r0[i*4+2];
+      _r2[_n1*4+3] = _r0[i*4+3];
+      _n1++;
+    }
+  }
+
+  if (_d)
+  { return [_r1, _r2];
+  } else
+  {
+    if (key_map.shift) {m_objs_loadPoints(new Float32Array(_r0), 0);}
+    m_objs_loadPoints(new Float32Array(_r1), 0);
+    m_objs_loadPoints(new Float32Array(_r2), 0);
+  }
+}
+
 function link_obj(_i)
 {
   let _t = 1;
@@ -4787,6 +4842,9 @@ function Compute(init_dat)
 
         // weapon offset
 				m_obj_offs[tse] = [player_pos[0]-f_look[0]*3, player_pos[1]-f_look[1]*3, player_pos[2]-f_look[2]*3, 1/(4*7)];
+        // let _mtw = mouseToWorld();
+        // _mtw[3] = 1/(4*7);
+				// m_obj_offs[tse] = _mtw;
 			}
 		}
 
