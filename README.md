@@ -24,6 +24,7 @@ I have ported a lot to webgl and the performance improvements are quite insane b
 My math here is maybe wrong but the paint tool is fairly accessible now. I have noticed my initial idea to hijack spacial memory by providing a 3D context actually worked out. I will have to use it more to determine if there is any noticeable advantage. I have a few simple things I can apply to the way the paint tool works to help produce a more true representation of what is drawn. Lines will also be run through a simple algorithm to reduce their 'noise' and help smooth things out.
 
 
+
 ![191730](https://github.com/user-attachments/assets/872c9590-70b9-48fa-b9af-743670839f0c)
 ![204828](https://github.com/user-attachments/assets/c375516e-2fff-4591-8c76-835d9c3dac43)
 ![133802](https://github.com/samcoble/CameraTransform/assets/32228102/938919da-2ca4-4040-ac9c-2574d58a5190)
@@ -32,7 +33,7 @@ My math here is maybe wrong but the paint tool is fairly accessible now. I have 
 ![220450](https://github.com/samcoble/CameraTransform/assets/32228102/6161a4a4-5c90-438f-927b-74b33588f122)
 ![backfacecull](https://github.com/samcoble/CameraTransform/assets/32228102/5baf3c58-ead5-4f1d-9334-898dfaf6d3eb)
 ![best](https://github.com/samcoble/CameraTransform/assets/32228102/c78772e6-341f-496f-9ed3-83243d5655b8)
-![192239](https://github.com/user-attachments/assets/8430e868-63a3-4fb2-b97e-e9617a4da597)
+![220347](https://github.com/user-attachments/assets/89c6742e-b228-4f4e-afb6-566dd71fcc37)
 ![badartexedllfree](https://github.com/samcoble/CameraTransform/assets/32228102/0edfd5dc-f69f-454c-80f5-ff29e8853b75)
 ![opacity](https://github.com/samcoble/CameraTransform/assets/32228102/af285eac-080d-46c6-adc8-6358b8e845a2)
 ![newz](https://github.com/samcoble/CameraTransform/assets/32228102/19106736-ec6f-49ff-a570-44e8f76adb4d)
