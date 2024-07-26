@@ -2441,7 +2441,7 @@ function unlink_obj(_i, _d) // _d bool for data/load
       _r2 = [],
       _f = [],
       _n0 = 0,
-      _n2 = 0,
+      _n1 = 0,
       _k = 0;
 
   for (let i=0; i<_s; i++)
