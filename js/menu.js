@@ -1645,7 +1645,7 @@ packElement(eset_tools, addButton,
   id: 'tool_curTp', cls: '_btn', prnt: 'div_toolListHeader',
   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
   hoverStyles: _btn_hover_tool,
-  callback: unlink_obj// teleport_plr
+  callback: teleport_plr
 });
 
 packElement(eset_tools, addButton,
