@@ -37,44 +37,102 @@ ______|_________________________________________________________________________
       |   is this better than nesting ????????????????????????????????????????????????????????????????????
       |   don't forget point to line and line to line intersections though..
       |   
-      |   the app needs a simple scripting language. and requires type recognition
-      |   the syntax converts to a look up table and if the data types of in/out chain match always compute
-      |   variables can be set and must be assigned before the next code. use table.
-      |   
       |   the depth buffer should be fixable. the k-d tree is interesting i will have to try a scaleable sample data and test out a query
       |   static premade shaded color map -> during tri pack w/ new k find the correct col and pack to second dynam buffer -> look same & shaded
       |   the alternative calculation for depth was entirely yolo low pow
       |   
       |   memory errors are big sad
+      |   maybe less sad now with mem encoded offset 4
       |   fix mem_sum. fix save interaction with empty folders. fix nesting logic. fix vertex fetch error. fix complex save file load
-      | - poly fill alg
-      | - destructive poly interactions require connecting two lines of different sizes. easier when just on one plane
       |   
+      |   poly fill alg
+      |   destructive poly interactions require connecting two lines of different sizes. easier when just on one plane
+      |   
+      |   fake shadow idea : probably bad
+      |   pregenerated indice maps that determine shade by the location of an arrow pointing into a sphere
+      |   exact input data is interpolated to nearest data points on sphere
+      |   to add light source apply a bias across from the angle between the two planes of light
+      |   
+      |   the app needs a simple scripting language. and requires type recognition
+      |   the syntax converts to a look up table and if the data types of in/out chain match always compute
+      |   variables can be set and must be assigned before the next code. use table.
+      |   
+      |   the tool gun will be a thing soon
+      |   !!! THE SCRIPTED OBJECTS DEFINE ENTITIES (new type & list on tree) (active & with body)
+      |   
+      |   with in-app scripting any sequence of actions can be automated by any user. this extends the possible user input
+      |   as widely as possible. calling ray traces to find data. referencing data and placing copies along curvature. some functions will be provided
+      |   to calculate line length to make interpolation more accessible when using lines as a reference.
+      |   for ex: with a short script you can place duplicates along a spiral where the distances between the objects are set along the line of the spiral
+      |           to the input number(s) and make all objects rotate to face any/random direction. manipulating sequences will be semi-automated.
+      |   also ray trace or ray scan passing it a trace per dx/dy -> further methods to sort capture data
+      |
+      |   a real time script can provide interactive components and animations.
+      |   i was planning to make interactive objects and i realized rotational ratios would be interesting. say i bind two objects to rotate relative
+      |   to each other based on their difference in diameter. this would connect an important part of movement interactions pertaining to machinery
+      |
+      |   add insane mode where all sounds are extra
+      |   find wood screech sound of table moving for finish when translating lol
+      |   make objects fly along an arc and spin when being translated from a to b
+      |   
+      |   primary:
+      |             - rotateObjectToDir (two stage rot w/ removing an axis that's it)
+      |             - line edit
+      |             - bezier
+      |             - set angle
+      |
+      |             - un-link by taking every second point... not hard. make temp objs. then next final f clears elog and creates the original
+      |             - elog clear has all the ref fns
+      |   
+______|___________________________________________________________________________________________________________
       |   
       |   EZ FIXES
 ______|___________________________________________________________________________________________________________
+      |   
       |
-      | - selected obj must draw before the drawn lines and make purple opacity like 0.85
-      | - paint needs shift click to draw lines between single clicks
-      | - disable grid auto locking for movement somehow...
-      | - 
-      | - make the axis lock box also show current. somehow make both features at the same time make sense. hovering on it displays a dir holo in front of the player !!!!
-      | - i need one of those layers to separate static ar indices automatically so my hard coded stack is created and logged via id
-      | - 
-      | - 
-      | - i need a slice/split geometry by plane. this would allow obj trimming. chamfer. angled cut
-      | - maybe look at the problem as the volume within. not sure
-      | - 
-      | - 
-      | - 
-      | - folders not working with save correctly. maybe loading needs to be slowed down or done in a more reliable way
-      | - 
-      | - just noticed mem_sum equates to 7588 instead of the actual mem_sum provided within the mem_log after making/deleting one obj
-      | - 
-      | - vertex fetch requires 227, but attribs only supply 180. DEPTH setting issue. likely due to moving some points to the bottom of stack
-      | - make initial and final point of obj noticeable in size
-      | - splitting the gun into two components will allow it to be animated (need to finish color map)
-      | - 
+      |   ray trace still not working as usual
+      |
+      |   elog add deletion by select again w/ option to enable/disable it to make persistant reference krap
+      |   already have delete by id but need fn to delete all w/ obj id
+      |   
+      |   after locking to point set grid offset for line/plane to components n/grid_scale -> remainder ?
+      |   remove old bounding check or system for scroll ????
+      |   with lines disabled it runs faster for the mouse to world paint lmao sick
+      |   
+      |   selected obj must draw before the drawn lines and make purple opacity like 0.85
+      |   on finish dupe placement with shift t it needs to return the selection back to any arbitrary prior selection
+      |   
+      |
+      |   when folder selected/hover display two buttons on side to dupe or delete or move ...
+      |   when folder selected/hover use bounding box indicator function
+      |   obj in folder hover to select options for dupe/del/edit
+      |   folder sort button and folder auto split =========)))))))))))))
+      |   all tools should apply to all objects or combinations
+      |   actions need to apply to either folder/selected set/individual relative to what? selector ?
+      |   
+      |   needs a help gif guide
+      |   move depth and culling to draw settings
+      |   
+      |   finish obj rot fn
+      |   
+      |   paint needs shift click to draw lines between single clicks, can check for shift when m_t_objs load fn as work around
+      |   disable grid auto locking for movement somehow...
+      |   
+      |   make the axis lock box also show current. somehow make both features at the same time make sense. hovering on it displays a dir holo in front of the player !!!!
+      |   i need one of those layers to separate static ar indices automatically so my hard coded stack is created and logged via id
+      |   
+      |   i need a slice/split geometry by plane. this would allow obj trimming. chamfer. angled cut
+      |   maybe look at the problem as the volume within. not sure
+      |
+      |   
+      |   folders not working with save correctly. maybe loading needs to be slowed down or done in a more reliable way
+      |   
+      |   just noticed mem_sum equates to 7588 instead of the actual mem_sum provided within the mem_log after making/deleting one obj
+      |   
+      |   vertex fetch requires 227, but attribs only supply 180. DEPTH setting issue. likely due to moving some points to the bottom of stack
+      |   make initial and final point of obj noticeable in size
+      |   splitting the gun into two components will allow it to be animated (need to finish color map)
+      |   
       |
       |   all fns overload like (js does not support it explicitly? no errors without array anyway)
       |   theFunc([1,2,3,4])
@@ -84,110 +142,106 @@ ______|_________________________________________________________________________
       |     setPoint([ a,b,c,d ]) // ... scale by d
       |     etc
       |     
-      | - rotate object fn using dir vec accepting final vec so much ig
-      | - shift bounding box along axis to fix the slightly offset box for some geometry
-      | - duplicating does not include the modifications to the inner dir vec
+      |   shift bounding box along axis to fix the slightly offset box for some geometry
+      |   duplicating does not include the modifications to the inner dir vec
       |
-      | - pre-generated indice mapping of lines to remove duplicate lines
+      |   pre-generated indice mapping of lines to remove duplicate lines
       |
-      | - bounding box indicator function generalizes bounding box indicators by accepting (not sure about color data)
-      | -  displayBox(name_string, [obj ids], )
-      | -  { use the elog system and reuse the bounding box world object as an input }
-      | -  when only one obj id place the bounding box relative to the inner dir vec
+      |   bounding box indicator function generalizes bounding box indicators by accepting (not sure about color data)
+      |    displayBox(name_string, [obj ids], )
+      |    { use the elog system and reuse the bounding box world object as an input }
+      |    when only one obj id place the bounding box relative to the inner dir vec
       |
-      | - when folder selected/hover display two buttons on side to dupe or delete or move ...
-      | - when folder selected/hover use bounding box indicator function
       |
-      | - on finish dupe placement with shift t it needs to return the selection back to any arbitrary prior selection
-      |
-      | - reversing the link alg could output the original sets !
-      | - similar to directly copying the data based on the alg rule set
-      | - 
-      |
-      | - fix the damn paint tool to allow selection/deletion
-      | - mouseToWorld is slow. i can avoid the issues it creates by logging the 2d coord
-      | - then converting to the 3d after. by separating it will lose less detail as the log is faster
-      | - javascript only runs so fast u know
-      | - 
-      |
-      | - setup for rotation/align relative tool
-      | - write pivot align again or inject the change of basis
-      |
-      | - style & place the log box
-      | - m_t_objs was fundamentally a mistake because any array format will work ofc
-      | - go through code and write line number where center is included in logic here:
-      |
-      | - later need a function to define a system for locking obj dir relative to a new plane so 
-      | - creating more geometry perp to surface still correctly applies the dir vec relative to at least one half the process (no twist)
-      |
-      | - pivot align does not work with some orientations (colinear ?) might be a zero in the dividend
-      | - maybe i have failed to ensure a pipeline is entirely buffered where cross returns a new. it should edit preallocated space instead 
-      | - i recall the 2d inds for circles were not entirely buffered. never finished.
-      | - sub folders need to be considered when cursor color to folder change
-      | - sub folders need carry over when a folder duplicated
-      | - 2d inds need to be fixed for translation/fns, maybe just pre-populate the vectors
-      | - tree border width is opposite need to reverse w a 1-x
+      |   reversing the link alg could output the original sets !
+      |   similar to directly copying the data based on the alg rule set
       |   
-      | - arScale() should accept an array that determines what components are to be used in the computation reducing cpu (firefox)
-      | - indicator for folder move is not always working -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
-      | - also world points are visible through objects ?!?!?!?!? must split draw sequence into a before and after by pushing afters to a temp ar (faster)
-      | - raises the question should all types be done this way ?
+      |
+      |   fix the damn paint tool to allow selection/deletion
+      |   mouseToWorld is slow. i can avoid the issues it creates by logging the 2d coord
+      |   then converting to the 3d after. by separating it will lose less detail as the log is faster
+      |   javascript only runs so fast u know
       |   
+      |
+      |   setup for rotation/align relative tool
+      |   write pivot align again or inject the change of basis
+      |
+      |   style & place the log box
+      |   m_t_objs was fundamentally a mistake because any array format will work ofc
+      |   go through code and write line number where center is included in logic here:
+      |
+      |   later need a function to define a system for locking obj dir relative to a new plane so 
+      |   creating more geometry perp to surface still correctly applies the dir vec relative to at least one half the process (no twist)
+      |
+      |   pivot align does not work with some orientations (colinear ?) might be a zero in the dividend
+      |   maybe i have failed to ensure a pipeline is entirely buffered where cross returns a new. it should edit preallocated space instead 
+      |   i recall the 2d inds for circles were not entirely buffered. never finished.
+      |   sub folders need to be considered when cursor color to folder change
+      |   sub folders need carry over when a folder duplicated
+      |   2d inds need to be fixed for translation/fns, maybe just pre-populate the vectors
+      |   tree border width is opposite need to reverse w a 1-x
+      |   
+      |   arScale() should accept an array that determines what components are to be used in the computation reducing cpu (firefox)
+      |   indicator for folder move is not always working -> so i found it works after using normal translation w/ v but not w/o using it 1time first?!??!
+      |   also world points are visible through objects ?!?!?!?!? must split draw sequence into a before and after by pushing afters to a temp ar (faster)
+      |   raises the question should all types be done this way ?
+      |   
+______|___________________________________________________________________________________________________________
       |   
       |   ALL
 ______|___________________________________________________________________________________________________________
       | 
-      | - rewrite pointerOutsideWindow() to accept boxes. location ??
-      | - event priority system: using any key/input can be directed to the next event awaiting completion w/ any input
-      | - move object along axis tool
-      | - really need line inside line tool. and set length of line
-      | - all static data can be checked to group triangles coplaner -> resulting groups provide unique surfaces
-      | - use the run list to create a ui for active modifiers -> data will end up in obj fns kinda big sad but maybe just use proper settings/functions string set
-      | - 
-      | - simple line plane intersection for rotation inside a plane would make a lot more sense and ig this would be the next evoltuion of pivot align run
-      | - simple tool FAK: right click lock point (whenever cursor helper?) -> move point -> finish move -> write data
-      | - reverse object geometry fn with mirror along the linked edges
-      | - ball rotate tool where you select inside surface of ball with simple line/sphere
+      |   rewrite pointerOutsideWindow() to accept boxes. location ??
+      |   event priority system: using any key/input can be directed to the next event awaiting completion w/ any input
+      |   move object along axis tool
+      |   really need line inside line tool. and set length of line
+      |   all static data can be checked to group triangles coplaner -> resulting groups provide unique surfaces
+      |   use the run list to create a ui for active modifiers -> data will end up in obj fns kinda big sad but maybe just use proper settings/functions string set
+      |   
+      |   simple line plane intersection for rotation inside a plane would make a lot more sense and ig this would be the next evoltuion of pivot align run
+      |   simple tool FAK: right click lock point (whenever cursor helper?) -> move point -> finish move -> write data
+      |   reverse object geometry fn with mirror along the linked edges
+      |   ball rotate tool where you select inside surface of ball with simple line/sphere
       |   - this would require pitch->yaw type of rotation. maybe settings for different types of rotation later
-      | - pivot align can work with a cross vec holo
-      | - shift v should block input from all obj's in 2d query
-      | - short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
-      | - multi-select w/ drag or in list or world
+      |   pivot align can work with a cross vec holo
+      |   shift v should block input from all obj's in 2d query
+      |   short cuts for move obj||folder should both should cancel either -> entire key system needs rewrite fak
+      |   multi-select w/ drag or in list or world
       | 
-      | - temp objs can be deleted but crashes ofc. this could be a system if it notices upon deletion to undo that step..
+      |   temp objs can be deleted but crashes ofc. this could be a system if it notices upon deletion to undo that step..
       |   - deletion of any temp obj calls it's event (simple back) nah too complicated havent finished main features yet
       |  
-      | - most obj fns could clone their opts -> generalize control struct
+      |   most obj fns could clone their opts -> generalize control struct
       |  
-      | - i have forgotten the need for line/line intersections & line/mouse selection
-      | - almost done w/ this one: need exclusion of self and reorganize the start of obj. ensure enable and active. kind of redundant..
-      | - the functionRunList can contain color data that gets mapped later !!! GOOOOOD each Run obj will have two maps: obj [], col []
-      | - or if there exists a color map the color can later be set directly ?
-      | - 
-      | - 
-      | - if saves stored location, direction, zoom, and movement locks, a writing space becomes more accessible.
-      | - mouse to world combined with a line/plane will work for drawing and not lag so much
-      | - 
-      | - 
-      | - just make each obj store 3 directions that absorb rotation then reassume it's original
-      | - default state -> conjugate???
-      | - should be easy to revert change this way and keep a quat rot log essentially. assuming i can use their inverses w/ conjugate???
-      | - this way i can select to translate w/ arrows and then swap between grid/translate -> circle/rotation w/ holograms
-      | - might need to write something to test distance from point on circle (ez if predefined but bad in long term must be theoretical)
-      | - oh just use origin o on plane and take delta vec and use that for angle selection. so lpi first.
-      | - animated stackable logged quat rot holos in the end
+      |   i have forgotten the need for line/line intersections & line/mouse selection
+      |   almost done w/ this one: need exclusion of self and reorganize the start of obj. ensure enable and active. kind of redundant..
+      |   the functionRunList can contain color data that gets mapped later !!! GOOOOOD each Run obj will have two maps: obj [], col []
+      |   or if there exists a color map the color can later be set directly ?
+      |   
+      |   
+      |   if saves stored location, direction, zoom, and movement locks, a writing space becomes more accessible.
+      |   mouse to world combined with a line/plane will work for drawing and not lag so much
+      |   
+      |   
+      |   just make each obj store 3 directions that absorb rotation then reassume it's original
+      |   default state -> conjugate???
+      |   should be easy to revert change this way and keep a quat rot log essentially. assuming i can use their inverses w/ conjugate???
+      |   this way i can select to translate w/ arrows and then swap between grid/translate -> circle/rotation w/ holograms
+      |   might need to write something to test distance from point on circle (ez if predefined but bad in long term must be theoretical)
+      |   oh just use origin o on plane and take delta vec and use that for angle selection. so lpi first.
+      |   animated stackable logged quat rot holos in the end
       |
-      | - per obj unit vecs saved data. aka all objects get additional data to absorb modification.
-      | - k-d (theoretical) -> faster query for 3d world data. would replace 2d queries if distance from a line became faster this way. faster obj modif w/ nesting.
-      | - chaikin's or something better lol -> repair some z buffer
-      | - color map finish -> i'm keeping the pipeline as is. educational purposes initially. textures will come with entire rewrite. mat4's w/ libs approach.
-      | - point nesting tool (auto sub-folder)
-      | - some keybinds need to be event based ! rule set required
+      |   per obj unit vecs saved data. aka all objects get additional data to absorb modification.
+      |   k-d (theoretical) -> faster query for 3d world data. would replace 2d queries if distance from a line became faster this way. faster obj modif w/ nesting.
+      |   chaikin's or something better lol -> repair some z buffer
+      |   color map finish -> i'm keeping the pipeline as is. educational purposes initially. textures will come with entire rewrite. mat4's w/ libs approach.
+      |   point nesting tool (auto sub-folder)
+      |   some keybinds need to be event based ! rule set required
       |
-      | - can a shader processing 4*n sets of data use a secondary set of modifiers and possibly a asin+bcos matrix 
-      | - asin+bcos per entire diagonal -> a and b allow combined states of their weights in some way ?? to represent any rotation
-      | - as a preprogrammable set of data generated by js that applies per obj rotation
-      | - 
+      |   can a shader processing 4*n sets of data use a secondary set of modifiers and possibly a asin+bcos matrix 
+      |   asin+bcos per entire diagonal -> a and b allow combined states of their weights in some way ?? to represent any rotation
+      |   as a preprogrammable set of data generated by js that applies per obj rotation
+      |   
       |
       |   most important is encoding 3 points using center that are simply
       |   n+o+1: where n is an axis, o is offset; this case center; and 1 defines unit form
@@ -233,24 +287,24 @@ ______|_________________________________________________________________________
       |      - so far it's complete ? so you can now select the internal dir vec. it absorbes scale and rotation at the same time
       |
       |
-      | - along axis when z is zero circles generated have incorrect center
-      | - 
-      | - bounding box should be relocalizeable
-      | - 
-      | - termination of the run list should remove all eLog stuffz but not tooo fast
-      | - grid need a radial fade effect
-      | - 
-      | - soon can try simple algs like chaikin's
-      | - something that can reduce surfaces to a set of smaller surfaces can help repair the accuracy of the depth buffer
+      |   along axis when z is zero circles generated have incorrect center
+      |   
+      |   bounding box should be relocalizeable
+      |   
+      |   termination of the run list should remove all eLog stuffz but not tooo fast
+      |   grid need a radial fade effect
+      |   
+      |   soon can try simple algs like chaikin's
+      |   something that can reduce surfaces to a set of smaller surfaces can help repair the accuracy of the depth buffer
       |
-      | - fundamentally i'm missing differentation when applying tool struct w/ ui type w/ move fn w/ specific use
-      | - to avoid always write a duplicate functional representation of the fundamental task any wide task such as all tools and their purpose.
-      | - part of this is also the setup for key binds. there's no middle table.
-      | - 
-      | - z should undo a step in the pivot align
-      | - 
-      | - 
-      | - elemental scroll directly w/ the div list
+      |   fundamentally i'm missing differentation when applying tool struct w/ ui type w/ move fn w/ specific use
+      |   to avoid always write a duplicate functional representation of the fundamental task any wide task such as all tools and their purpose.
+      |   part of this is also the setup for key binds. there's no middle table.
+      |   
+      |   z should undo a step in the pivot align
+      |   
+      |   
+      |   elemental scroll directly w/ the div list
       |   - loop pointer map.layer 1 and 2 are first made end to end no grouping or make conversion
       |   - send data to array as they were passed, ex:
 
@@ -260,128 +314,128 @@ ______|_________________________________________________________________________
       |   - 
       |   - 
       |   - 
-      | - quats allow vector add/sub that; if sphereical arcing; allows preservation of direction. it's one motion. 
-      | - auto z buffer top most
+      |   quats allow vector add/sub that; if sphereical arcing; allows preservation of direction. it's one motion. 
+      |   auto z buffer top most
       |
-      | - small menus
-      | - start moving colors into array formats to allow pipe: load/modif col_ar sets -> col_ar set -> col_str set
-      | -   
+      |   small menus
+      |   start moving colors into array formats to allow pipe: load/modif col_ar sets -> col_ar set -> col_str set
+      |     
       |
-      | - temp objs need to be grouped with an event identifier 
-      | - try experiment w/ date now
+      |   temp objs need to be grouped with an event identifier 
+      |   try experiment w/ date now
       |
-      | - fix opacity not working w/ no depth
-      | - dupe folder should also dupe inner folders. Oh god help.
-      | - fix opacity for line color change for objs in folder selected
-      | - shift modifier for folder short cuts
-      | - twist applied along axis by a sum of rotation
-      | - connecting multiple lines or lines of different sizes ??? EDGE CONNECT
-      | - point modification system
-      | - bezier tool (requires way to connect sequences)
-      | - menu overhaul (retarding progress w/o using scroll... draw out plan)
-      | - measure angle (F to confirm 3 points)
-      | - m_t_objs mem temp objects needs to be shown in tree as purple entry if points > 0
-      | - mode for all lines / some lines / no lines
-      | - paint still needs to be fixed so it doesn't continue a second line until key release
+      |   fix opacity not working w/ no depth
+      |   dupe folder should also dupe inner folders. Oh god help.
+      |   fix opacity for line color change for objs in folder selected
+      |   shift modifier for folder short cuts
+      |   twist applied along axis by a sum of rotation
+      |   connecting multiple lines or lines of different sizes ??? EDGE CONNECT
+      |   point modification system
+      |   bezier tool (requires way to connect sequences)
+      |   menu overhaul (retarding progress w/o using scroll... draw out plan)
+      |   measure angle (F to confirm 3 points)
+      |   m_t_objs mem temp objects needs to be shown in tree as purple entry if points > 0
+      |   mode for all lines / some lines / no lines
+      |   paint still needs to be fixed so it doesn't continue a second line until key release
       |
-      | - add C-s and C-o for files.
-      | - need a temp 3d mem space for objects to be drawn as holos. color passed in for lines (keep simple?)
-      | - maybe use my folder system to manage a non-interactable folder that contains temp objects?? Wait idk idk idk idk
-      | - paint tool for tri's for the color map. ig color map will be in save file first step
+      |   add C-s and C-o for files.
+      |   need a temp 3d mem space for objects to be drawn as holos. color passed in for lines (keep simple?)
+      |   maybe use my folder system to manage a non-interactable folder that contains temp objects?? Wait idk idk idk idk
+      |   paint tool for tri's for the color map. ig color map will be in save file first step
+       
+      |   maybe just for fun try an animated projectile that travels to hit location
       |
-      | - maybe just for fun try an animated projectile that travels to hit location
+      |   need to use objects to connect w/ run list for most animated tools
+      |   nominal lumber list ( need geo name for line objs )
+      |   more fn obj conversion (doing trns obj) (fn done now fix rest of code)
+       
+      |   add an animated world (floating cubes?)
+      |   animations/physics ticks must be parallelizable for GPU or bad performance in the end
+      |   not entirely sure if it's possible to do so w/o a special way to apply a generated set to a secondary set such
+      |   that data sections receive individual rotations..
+       
       |
-      | - need to use objects to connect w/ run list for most animated tools
-      | - nominal lumber list ( need geo name for line objs )
-      | - more fn obj conversion (doing trns obj) (fn done now fix rest of code)
+      |   multi select... ? already going via folder
+      |     so..
+      |     already have setup for obj tools w/ run & active checks
+      |     lame but could setup like this:
+      |       - replace instances of by obj index data modification to apply via list of i's
+      |       - then select stacking
+      |       - dynamic bounding highlight boxes per or for joint select
+      |     
+      |    
+      |    not great but i could try a fn that scales grid up and then back to where it was over 5ms do 5 scales
+       
+      |   ideally i use proper inverse to find mouse to world and I can use an offset/rounded lpi instead as well
+      |   this help performance, reduce complexity, help clean up essentially.
+      |    
+      |   i realize now to draw wire frame you can ray trace each vertex and when vertex shows behind remove connected lines.
+      |    
+      |    
+      |   Make a pistol that shoots green lasers that bounce!
+      |   Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections.
+      |   This would look cool inside a sphere! w/ no limit it'd probably crash
+      |   physics engine should be possible but first I need to fix my triangles
+      |   collision detections will need to borrow from the same idea of culling back faces
+      |   but I will replace the tri actually with a bounding box
+      |   so I first do check if they are close together then use dist to plane w/ dot simple
+      |   if anything checks in adjust the objects velocities (rotational and position)
+      |   collision's determine the angular velocity by distance from center
+      |   apply standard gravity ticks
+      |   collisions must always result in energy lost
+      |   maybe all velocities and acceleration can be computed on the gpu or in a worker or both.
+      |   a worker's latency may not matter if only left to manage some layers not visually noticeable
+      |   the ground is defined by a positional min/max (no loop if below threshold)
+      |   the ground can apply more dampening than obj to obj
+      |   default amount of inverse angular velocity
+      |  
+      |   to get started setup the buffers
+      |   box collision function and tests
+      |   
+      |   13.25, 13.625, 74.875
       |
-      | - add an animated world (floating cubes?)
-      | - animations/physics ticks must be parallelizable for GPU or bad performance in the end
-      | - not entirely sure if it's possible to do so w/o a special way to apply a generated set to a secondary set such
-      | - that data sections receive individual rotations..
+      |   finish center inds?
+      |   need parallel array manager to auto manage all the krap
+      |   Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
+      |   Float32Array already contains byteLength and byteOffset.
+      |   Match all of my data structure to use Float32Array to remove all type conversions
+      |   fix preview image to offset w/ 2d forced square w/ check
+      |   if encoded center is within plane of poly's captures some overlap
+      |   engine space
+         - generate dir vec curves
       |
-      |
-      | - multi select... ? already going via folder
-      | -   so..
-      | -   already have setup for obj tools w/ run & active checks
-      | -   lame but could setup like this:
-      | -     - replace instances of by obj index data modification to apply via list of i's
-      | -     - then select stacking
-      | -     - dynamic bounding highlight boxes per or for joint select
-      | -   
-      | -  
-      | -  not great but i could try a fn that scales grid up and then back to where it was over 5ms do 5 scales
-      |
-      | - ideally i use proper inverse to find mouse to world and I can use an offset/rounded lpi instead as well
-      | - this help performance, reduce complexity, help clean up essentially.
-      | -  
-      | - i realize now to draw wire frame you can ray trace each vertex and when vertex shows behind remove connected lines.
-      | -  
-      | -  
-      | - Make a pistol that shoots green lasers that bounce!
-      | - Ray trace is done. Now to make it reflect and start a new trace -> keeps going until a defined amount of reflections.
-      | - This would look cool inside a sphere! w/ no limit it'd probably crash
-      | - physics engine should be possible but first I need to fix my triangles
-      | - collision detections will need to borrow from the same idea of culling back faces
-      | - but I will replace the tri actually with a bounding box
-      | - so I first do check if they are close together then use dist to plane w/ dot simple
-      | - if anything checks in adjust the objects velocities (rotational and position)
-      | - collision's determine the angular velocity by distance from center
-      | - apply standard gravity ticks
-      | - collisions must always result in energy lost
-      | - maybe all velocities and acceleration can be computed on the gpu or in a worker or both.
-      | - a worker's latency may not matter if only left to manage some layers not visually noticeable
-      | - the ground is defined by a positional min/max (no loop if below threshold)
-      | - the ground can apply more dampening than obj to obj
-      | - default amount of inverse angular velocity
-      | -
-      | - to get started setup the buffers
-      | - box collision function and tests
-      | - 
-      | - 13.25, 13.625, 74.875
-      |
-      | - finish center inds?
-      | - need parallel array manager to auto manage all the krap
-      | - Menu updates need to be more efficient. Primarily updating selected item to curb tab alg proc
-      | - Float32Array already contains byteLength and byteOffset.
-      | - Match all of my data structure to use Float32Array to remove all type conversions
-      | - fix preview image to offset w/ 2d forced square w/ check
-      | - if encoded center is within plane of poly's captures some overlap
-      | - engine space
-        -- generate dir vec curves
-      |
-      | - nested point sequences at overlap point should be fairly easy. take note of logic
+      |   nested point sequences at overlap point should be fairly easy. take note of logic
           - placing loop at a point implies to keep sequence continuity one additional point must be placed after loop insertion
           - len of loop does determine the need for the additional. I assume none or 1. may be 1 or 2.
           - logic diagram could provide more direct code struct
       |
-      | - unique ids for objs will help w/ identical objs in future?
+      |   unique ids for objs will help w/ identical objs in future?
       |
-      | - lock point offsets grid? could fix a lot of things w/ rmb select
-      | - lmb in free mode is setting plane to inter_rnd for some reason..
+      |   lock point offsets grid? could fix a lot of things w/ rmb select
+      |   lmb in free mode is setting plane to inter_rnd for some reason..
           - when point locked the lpi is not being calculated with the arbitrary offset essentially
       |
-      | - ? intersection reveal
+      |   ? intersection reveal
           - doesn't have to be run all the time if the purpose is to model
           - line's checked for intersection within some range of it's len.
       |
-      | - just noticed save data corrupted by single point data
+      |   just noticed save data corrupted by single point data
           - temp fix is making all 1 point objs 2 equal points w/ center ig
       |
-      | - all my functions relative to the plane can be replaced with a general obj orient fn.
+      |   all my functions relative to the plane can be replaced with a general obj orient fn.
       |
               might have the answer to this now with the new manual 2d gen circles
       |
-      | - unit vector line conversion method for arc len
+      |   unit vector line conversion method for arc len
       |
-      | So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
-      | Random idea ::
-        | if I can clip a region of polygon's in 2d space creating two sets
-        | -> i could then display them at two different fov's creating a zoomed region for scopes/sights
-      | Obj cut hole { i could try using the link script on to the hole... }
-        | i keep reusing my linear link. need to learn poly fill alg
-        | i need to implement geometric obj creation.
-        | with more layers of encoded data i can keep logs of what obj's are fundamentally
+      |   So I guess I need to learn geometric algebra now. Quaternions are not even meta anymore.
+      |   Random idea ::
+      |   if I can clip a region of polygon's in 2d space creating two sets
+      |   -> i could then display them at two different fov's creating a zoomed region for scopes/sights
+      |   Obj cut hole { i could try using the link script on to the hole... }
+      |   i keep reusing my linear link. need to learn poly fill alg
+      |   i need to implement geometric obj creation.
+      |   with more layers of encoded data i can keep logs of what obj's are fundamentally
 
     All middle points of lines are free as I have encoded centers. Highlight center point on any obj w/ 2, 3 pts.
     Skeletal animation -> point interpolation. Long way to go I don't have interp maps yet. Do I really need to interp packed data??
