@@ -2627,45 +2627,52 @@ function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, c
 
 		for (var i=0; i<_to.length; i++)
 		{
-			switch(pln_cyc)
-			{
-				case 0:
-					switch(_op)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_x_pln(sub(_to[i], _lp_world), _rf));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
-						break;
-					}
-					break;
-				case 1:
-					switch(_op)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_y_pln(sub(_to[i], _lp_world), _rf));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), _rf));
-						break;
-					}
-					break;
-				case 2:
-					switch(_op)
-					{
-					case 0:
-						_to[i] = add3(_lp_world, rot_z_pln(sub(_to[i], _lp_world), _rf));
-						break;
-					case 1:
-						_to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), _rf));
-						break;
-					}
-					break;
-			}
+      if (grid_plane[0] != 0 || grid_plane[1] != 0 || grid_plane[2] != 1)
+      {
+        _to[i] = add3(_lp_world, rot_aa(sub(_to[i], _lp_world), grid_plane, _rf));
+      } else {
+
+        switch(pln_cyc)
+        {
+          case 0:
+            switch(_op)
+            {
+            case 0:
+              _to[i] = add3(_lp_world, rot_x_pln(sub(_to[i], _lp_world), _rf));
+              break;
+            case 1:
+              _to[i] = add3(_c, rot_x_pln(sub(_to[i], _c), _rf));
+              break;
+            }
+            break;
+          case 1:
+            switch(_op)
+            {
+            case 0:
+              _to[i] = add3(_lp_world, rot_y_pln(sub(_to[i], _lp_world), _rf));
+              break;
+            case 1:
+              _to[i] = add3(_c, rot_y_pln(sub(_to[i], _c), _rf));
+              break;
+            }
+            break;
+          case 2:
+            switch(_op)
+            {
+            case 0:
+              _to[i] = add3(_lp_world, rot_z_pln(sub(_to[i], _lp_world), _rf));
+              break;
+            case 1:
+              _to[i] = add3(_c, rot_z_pln(sub(_to[i], _c), _rf));
+              break;
+            }
+            break;
+        }
+      }
+
 			if (i==_to.length-1)
 			{
-				for (var j=0; j<mem_log[_obj][2]; j++) // all points included because that's the purpose
+				for (var j=0; j<mem_log[_obj][2]; j++)
 				{
 					m_objs[_obj][j*4+0] = _to[j][0];
 					m_objs[_obj][j*4+1] = _to[j][1];
@@ -2702,7 +2709,7 @@ function writeToObjI(_ob, i) // super bad
   if (_ob.length == mem_log[i][1])
   {
     let start = 0;
-    const end = mem_log[i][1];
+    const end = mem_log[i][1]-mem_encode[1];
     while (start < end)
     {
       m_objs[i][start] = _ob[start];
@@ -2887,6 +2894,35 @@ function mirrorOverPlane()
     arScale(m_objs_ghost[obj_cyc], m_objs[obj_cyc], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
 	}
 }
+
+// function reverseObject(_i)
+// {
+//   let _s = 0,
+//       _n = [];
+//
+//   // oh lol wrong wrong
+//   // must swap them
+//   // just use a remap :) 0, 2, 4, ... looks like %2 exact =)
+//
+//   _remap = [];
+//
+//   _s = mem_log[_i][2] - mem_encode[0];
+//   for (let i=0; i<_s; i++)
+//   {
+//     _n[i*4] = m_objs[_i][(_s-i-1)*4];
+//     _n[i*4+1] = m_objs[_i][(_s-i-1)*4+1];
+//     _n[i*4+2] = m_objs[_i][(_s-i-1)*4+2];
+//     _n[i*4+3] = m_objs[_i][(_s-i-1)*4+3];
+//   }
+//
+//   for (let i=0; i<_s; i++)
+//   {
+//     m_objs[_i][i*4] = _n[i*4];
+//     m_objs[_i][i*4+1] = _n[i*4+1];
+//     m_objs[_i][i*4+2] = _n[i*4+2];
+//     m_objs[_i][i*4+3] = _n[i*4+3];
+//   }
+// }
 
 function cloneObjSelected()
 {
@@ -4658,7 +4694,7 @@ function Compute(init_dat)
 
   if (getSetting('detail_box_gridSettings', 1)[0] != grid_scale_d) { updateGrid(); }
   if(document.activeElement.type ==  "text") { flag_inText = 1; } else {flag_inText = 0;}
-	if (key_map.shift && key_map.r && runEvery(150)) { rotateObject(0, getSetting('detail_box_rotationSettings', 1)[0], obj_cyc); }
+	if (key_map.shift && key_map.r && runEvery(100)) { rotateObject(0, getSetting('detail_box_rotationSettings', 1)[0], obj_cyc); }
 	if (key_map["5"] && runEvery(150)) { mirrorOverPlane(); }
 	if (key_map["6"] && runEvery(300)) { boundingBox.toggle(); }
 	if (key_map.l && runEvery(300)) { link_obj(obj_cyc); }
