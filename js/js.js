@@ -288,20 +288,16 @@ function playSound(src)
 var player_pos_i = [],
     mScreenMode = 0,
     mTimer = 0,
-    dragCatch = 0;
+    dragCatch = 0
+    _touch_start = [];
 
 const handleTouchStart = (event) =>
 {
   mTimer = Date.now();
   mScreenMode = 0;
   dragCatch = 1;
- if (event.touches[0].clientX > in_win_wc)
- {
-  select2dpoint(0,0);
- } else
- {
-  mScreenMode = 1;
- }
+  set2(_touch_start, [event.touches[0].clientX, event.touches[0].clientY]);
+  if (event.touches[0].clientX < in_win_wc) {mScreenMode = 1;}
 }
 
 const handleTouchMove = (event) =>
@@ -330,17 +326,32 @@ const handleTouchMove = (event) =>
     break;
 
     case 1:
-      let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
-      setPoint(player_pos, add3(_np, _lp_world));
-      player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
-      setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
+      updateLook()
+      // let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
+      // move plr
+      // setPoint(player_pos, add3(_np, _lp_world));
+      //y
+      // player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
+      let _dx = scale3(makeDir(cross(f_look, [0,1,0])), -_touch_delta[0]/in_win_w*320);
+      let _dy = scale3(f_look, _touch_delta[1]/in_win_w*320);
+      setPoint(player_pos, add3(player_pos_i, add3(_dx, _dy)));
+      // setPoint(player_pos, add3(player_pos_i, ));
+      // update dir
+      // setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
     break;
   }
 };
 
-const handleTouchEnd = () =>
+const handleTouchEnd = (event) =>
 {
+  let _dt = Date.now()-mTimer;
   dragCatch = 0;
+  if (_dt < 230)
+  {
+    console.log(_touch_start);
+    console.log(_dt);
+    select2dpoint(in_win_wc-_touch_start[0], in_win_hc-_touch_start[1]);
+  }
   // window.onload = requestFullscreen();
 }
 
@@ -1128,6 +1139,7 @@ function setTitle()
 }
 
 //mathfns
+function set2(a, b) { a[0]=b[0]; a[1]=b[1];}
 function setPoint(a, b) { a[0]=b[0]; a[1]=b[1]; a[2]=b[2]; } // set a to b 
 function multPoint(a, b) { return [a[0]*b[0], a[1]*b[1], a[2]*b[2]]; }
 
@@ -2051,6 +2063,8 @@ function updateLook() // Quat view rot
 
 function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 {
+  let _c = false; // catch undefined params
+  if (x == undefined || y == undefined) {x = y = 0; _c = true;}
 	if (m_objs.length > world_obj_count+1)
 	{
 		let _lt,
@@ -2064,6 +2078,7 @@ function findbyctr_obj(x, y) // 2D find by 3D encoded center point
 			_lt = len2fast([m1.data[mem_log[i][0]+mem_log[i][1]-4]+_x_off, m1.data[mem_log[i][0]+mem_log[i][1]-3]+_y_off]);
 			if (_lt < _l) {_i = i; _l = _lt;}
 		}
+    obj_cyc = _c ? _i : obj_cyc;
 		return _i;
 	} else {return world_obj_count;}
 }
