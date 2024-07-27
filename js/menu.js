@@ -172,6 +172,13 @@ function addDiv(par) // ------------------------ Div
     });
   }
 
+  if (typeof par.niladic != "undefined")
+  {
+    div.addEventListener("click", function()
+    {
+      par.niladic();
+    });
+  }
   appendFilter(par.prnt, div);
   applyStyles(div, par);
   return div;
@@ -1042,7 +1049,8 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "menu_objPreview", cls: "_none", prnt: "menu_obj",
-  rootStyle: rootStyle + menu_objPreview_style + justOuter
+  rootStyle: rootStyle + menu_objPreview_style + justOuter,
+  niladic: findbyctr_obj
 });
 
 var listStyle2 =
@@ -1629,6 +1637,23 @@ makeElement(addDiv,
     scrollbar-width: none;
   `
 });
+
+if (isMobile)
+{
+  packElement(eset_tools, addButton,
+  {
+    text: 'Place Point',
+    id: 'tool_placePoint', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_col2 +
+    `
+      height: 90px;
+      text-align: center;
+      font-size: 14px;
+    `,
+    hoverStyles: _btn_hover_tool,
+    callback: placePoint
+  });
+}
 
 packElement(eset_tools, addButton,
 {
