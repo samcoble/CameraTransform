@@ -297,6 +297,7 @@ const handleTouchStart = (event) =>
   mScreenMode = 0;
   dragCatch = 1;
   set2(_touch_start, [event.touches[0].clientX, event.touches[0].clientY]);
+
   if (event.touches[0].clientX < in_win_wc) {mScreenMode = 1;}
 }
 
@@ -319,40 +320,49 @@ const handleTouchMove = (event) =>
 
   // console.log(_touch_delta);
 
-  switch(mScreenMode)
+  if (pointerOutsideWindow()[0])
   {
-    case 0:
-      setPoint(player_look_dir, [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]);
-    break;
+    switch(mScreenMode)
+    {
+      case 0:
+        setPoint(player_look_dir, [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]);
+      break;
 
-    case 1:
-      updateLook()
-      // let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
-      // move plr
-      // setPoint(player_pos, add3(_np, _lp_world));
-      //y
-      // player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
-      let _dx = scale3(makeDir(cross(f_look, [0,1,0])), -_touch_delta[0]/in_win_w*320);
-      let _dy = scale3(f_look, _touch_delta[1]/in_win_w*320);
-      setPoint(player_pos, add3(player_pos_i, add3(_dx, _dy)));
-      // setPoint(player_pos, add3(player_pos_i, ));
-      // update dir
-      // setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
-    break;
+      case 1:
+        updateLook()
+        // let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
+        // move plr
+        // setPoint(player_pos, add3(_np, _lp_world));
+        //y
+        // player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
+        
+        let _lv = lock_vert_mov ? [f_look[0], 0, f_look[2]] : f_look;
+        let _dx = scale3(makeDir(cross(f_look, [0,1,0])), -_touch_delta[0]/in_win_w*320);
+        let _dy = scale3(_lv, _touch_delta[1]/in_win_w*320);
+        setPoint(player_pos, add3(player_pos_i, add3(_dx, _dy)));
+
+        // setPoint(player_pos, add3(player_pos_i, ));
+        // update dir
+        // setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
+      break;
+    }
   }
 };
 
 const handleTouchEnd = (event) =>
 {
-  let _dt = Date.now()-mTimer;
-  dragCatch = 0;
-  if (_dt < 230)
+  if (pointerOutsideWindow()[0])
   {
-    console.log(_touch_start);
-    console.log(_dt);
-    select2dpoint(in_win_wc-_touch_start[0], in_win_hc-_touch_start[1]);
+    let _dt = Date.now()-mTimer;
+    dragCatch = 0;
+    if (_dt < 230)
+    {
+      console.log(_touch_start);
+      console.log(_dt);
+      select2dpoint(in_win_wc-_touch_start[0], in_win_hc-_touch_start[1]);
+    }
+    // window.onload = requestFullscreen();
   }
-  // window.onload = requestFullscreen();
 }
 
 
@@ -3049,6 +3059,11 @@ function resetGrid()
   updateGrid();
 }
 
+function placePoint()
+{
+  m_t_objs_loadPoint([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]);
+  playSound('sounds/tick.mp3');
+}
 	/*
 		__/\\\\\\\\\\\\_______/\\\\\\\\\_________/\\\\\\\\\_____/\\\______________/\\\_        
 		 _\/\\\////////\\\___/\\\///////\\\_____/\\\\\\\\\\\\\__\/\\\_____________\/\\\_       
@@ -3896,19 +3911,20 @@ function mouseToWorld()
 function pointerOutsideWindow() // return [0] indicates if inside menu pane
 {
 	// #incheck
-	var _in = [0,1,1,1];
+  let _d = isMobile ? _touch_start : mouseData,
+	    _in = [0,1,1,1];
 
-	if ((mouseData[0] > menu_q_pos[0]) && (mouseData[0] < (menu_q_pos[0]+menu_q_size[0])))
+	if ((_d[0] > menu_q_pos[0]) && (_d[0] < (menu_q_pos[0]+menu_q_size[0])))
 	{
-		if ((mouseData[1] > menu_q_pos[1]) && (mouseData[1] < (menu_q_pos[1]+menu_q_size[1])))
+		if ((_d[1] > menu_q_pos[1]) && (_d[1] < (menu_q_pos[1]+menu_q_size[1])))
 		{
 			_in[1] = 0; // q menu?
 		}
 	}
 
-	if ((mouseData[0] > menu_obj_pos[0]) && (mouseData[0] < (menu_obj_pos[0]+menu_obj_size[0])))
+	if ((_d[0] > menu_obj_pos[0]) && (_d[0] < (menu_obj_pos[0]+menu_obj_size[0])))
 	{
-		if ((mouseData[1] > menu_obj_pos[1]) && (mouseData[1] < (menu_obj_pos[1]+menu_obj_size[1])))
+		if ((_d[1] > menu_obj_pos[1]) && (_d[1] < (menu_obj_pos[1]+menu_obj_size[1])))
 		{
 			_in[2] = 0; // obj menu
 		}
@@ -3924,9 +3940,9 @@ function pointerOutsideWindow() // return [0] indicates if inside menu pane
     in_win_h*0.93+40
   ];
 
-	if ((mouseData[0] > _offAr[0]) && (mouseData[0] < _offAr[1]))
+	if ((_d[0] > _offAr[0]) && (_d[0] < _offAr[1]))
 	{
-		if ((mouseData[1] > _offAr[2]) && (mouseData[1] < _offAr[3]))
+		if ((_d[1] > _offAr[2]) && (_d[1] < _offAr[3]))
 		{
 			_in[3] = 0;
 		}
@@ -5011,11 +5027,11 @@ function Compute(init_dat)
 	} // END OF wpn_select switch
 
 
+
 	// Place point
   if (key_map.f && !flag_objModif && !_run_check && runEvery(150)) // no longer allow during any runtime function
   {
-    m_t_objs_loadPoint([_lp_world[0], _lp_world[1], _lp_world[2], 1.0]);
-    playSound('sounds/tick.mp3');
+    placePoint();
   }
 
   // Bad code for point placement w/ pivot align, will refactor this but good nuff4now
