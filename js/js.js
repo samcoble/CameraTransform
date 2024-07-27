@@ -1658,7 +1658,7 @@ function updateNormalMaps()
 		let p1, p2, p3, v1, v2, _cr;
 		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
-      for (let k=0; k<mem_log[i][3]+1; k++) // fixed
+      for (let k=0; k<m_draw[i][1]; k++) // fixed
 			{
         p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
         p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
@@ -1673,8 +1673,9 @@ function updateNormalMaps()
         obj_normalMaps[i][4*k+1] = _cr[1];
         obj_normalMaps[i][4*k+2] = _cr[2];
 
-        // Unreal man it works unlike unreal man
-        // Now to update updateRayInters with all results from lpi w/ by paralleling with m_objs again to query both m_objs and obj_normalMaps into the lpi that updates a list of points. Dynamic list for this one.
+        // unreal man it works unlike unreal man
+        // now to update updateRayInters with all results from lpi w/ by paralleling with m_objs again to query both m_objs and obj_normalMaps into the lpi that updates a list of points
+        // dynamic list for this one.
         // 2d mean could point to nearest 3 points as well making this a lot faster than doing this lol. or combine both and use the 2d to determine if it's center and if the planes are equal.??
         // if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
 			}
@@ -1722,12 +1723,11 @@ function updateRayInters(_dp, _p)
     interIOut.length = 0;
     normOut.length = 0;
 		var p1, p2, p3, _cr, _int;
-		for (var i=world_obj_count+1; i<m_objs.length; i++) // i<m_objs.length instead of obj_normalMaps.length ?
+		for (var i=world_obj_count+1; i<m_objs.length; i++)
 		{
-			if (mem_log[i][2]>2) // wat? might need to be updated ?
+			if (mem_log[i][2]>2)
 			{
-				// for (var k=0; k<Math.floor((mem_log[i][2]-4)/2)-mem_log[i][2]%2; k++)
-        for (let k=0; k<mem_log[i][3]+1; k++) // fixed
+        for (let k=0; k<m_draw[i][1]; k++)
 				{
 					updateLook();
 
@@ -1741,10 +1741,8 @@ function updateRayInters(_dp, _p)
 					v1 = sub3(p2,p1);
 					v2 = sub3(p3,p2);
 					v3 = sub3(p1,p3);
-          //_plr_dtp, player_pos
 					_int = lpi(_dp, _p, p2, _cr);
 
-					// can use create point like I did before ez
 					if (isPointInsideTriangle(_int, p1, p2, p3))
 					{
 						rayInterMap.push(_int);
@@ -2735,10 +2733,6 @@ function updateViewRef(_v, _i, _q) // raw direction vector, obj id, array of qua
       m_objs_ghost[_i][i*4+1],
       m_objs_ghost[_i][i*4+2]
     ];
-
-    // sub _t temp ith point w/ center
-    // quat rot this ^ w/ quat _q
-    // add it onto _v ... ??!?!?
     let _t_fp = add3(_v, quatRot( sub(_t_gp, _t_c), _q ));
 
     // apply change per point
@@ -3370,124 +3364,6 @@ function updateZMap()
   }
 }
 
-// I think this worked but it took a few SECONDS to trace every tri center
-// that's like 0.4 frames per second performance..
-
-/*
-
-function triMean(a, b, c)
-{
-  return new Float32Array([(a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3, (a[0]+b[1]+c[2])/3]);
-}
-
-var triCtr_map = [];
-var kIn_map = [];
-function updateTriCtrMap()
-{
-  triCtr_map.length = 0;
-  const _s = m_objs.length;
-  for (let i=0; i<_s; i++)
-  {
-    if (m_objs[i].length > 2)
-    {
-      // can try this one
-      // Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2
-      let _count = Math.floor( (m_objs[i].length + 4)/4 ); 
-      _si = (Math.floor((_count - 1) / 2) - _count%2);
-      triCtr_map.push(new Float32Array(_si * 3)); // _si -> tris * 3 floats -> one point per tri
-      kIn_map.push(new Float32Array(_si)); // _si -> tris * 1 k per tri
-    } else {triCtr_map.push([]);}
-  }
-
-  let p1, p2, p3, _cr;
-  // import normal map code here to calc and export dat
-  
-  for (var i=0; i<m_objs.length; i++)
-  {
-    for (var k=0; k<Math.floor((mem_log[i][2]-1)/2)-mem_log[i][2]%2; k++)
-    {
-      p1 = [m_objs[i][8*k], m_objs[i][8*k+1], m_objs[i][8*k+2]];
-      p2 = [m_objs[i][8*k+4], m_objs[i][8*k+5], m_objs[i][8*k+6]];
-      p3 = [m_objs[i][8*k+8], m_objs[i][8*k+9], m_objs[i][8*k+10]];
-
-      _cr = triMean(p1,p2,p3);
-      triCtr_map[i][3*k+0] = _cr[0];
-      triCtr_map[i][3*k+1] = _cr[1];
-      triCtr_map[i][3*k+2] = _cr[2];
-    }
-  }
-}
-
-// now/ ray trace fn and write draw bool essentially
-
-
-function updateKInMap()
-{
-  const _s0 = triCtr_map.length;
-  for (let j=0; j<_s0; j++)
-  {
-    const _s = triCtr_map[j].length/3;
-    let _l = [];
-    for (let i=0; i<_s; i++)
-    {
-      _l = [triCtr_map[j][i*3], triCtr_map[j][i*3+1], triCtr_map[j][i*3+2]];
-
-      const _n = sub3(_l, player_pos);
-      updateRayInters(_n, player_pos)
-      kIn_map[j][i] = interKOut[_rayLast];
-      console.log(rayInterMap[_rayLast]);
-    }
-  }
-}
-
-updateTriCtrMap();
-
-// for (let k = 0; k <= m_draw[d_i][2]/4 - 1; k++) // Might have to - 2
-
-// borrow my old loop and just use one coord
-// maybe try populate it and setup size to fluc
-// ok make list of tri centers static -> rt fn uses center dat with lpi to check every tri center ---]
-// [--> nearest point --> ( this part can be complex for speed increase )store k by writing to final kIn_map --> if k == -1 no draw
-// later change to every second
-
-*/
-// _uniLast = [];
-// function setGlColor(_c)
-// {
-//   if (_uniLast[0] != _c[0] || _uniLast[1] != _c[1] || _uniLast[2] != _c[2] || _uniLast[3] != _c[3])
-//   {
-//     gl.uniform4fv(colorUniformLocation, _c);
-//     _uniLast[0] = _c[0];
-//     _uniLast[1] = _c[1];
-//     _uniLast[2] = _c[2];
-//     _uniLast[3] = _c[3];
-//   }
-// }
-
-/*
-function drawThinLines(vertices)
-{
-  for (let i = 0; i < vertices.length / 2 - 1; i++)
-  {
-    const lineWidth = 2.0 / in_win_w + 0.001; // Adjust based on canvas size
-    const offset = lineWidth / 2; // Diagonal offset
-    // const _r = (in_win_h/in_win_w);
-    const _r = 1;
-    lineVertices = new Float32Array([
-       vertices[i * 2] - offset*_r, vertices[i * 2 + 1] - offset,
-       vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
-       vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
-       vertices[i * 2] + offset*_r, vertices[i * 2 + 1] + offset,
-       vertices[i * 2 + 2] - offset*_r, vertices[i * 2 + 3] - offset,
-       vertices[i * 2 + 2] + offset*_r, vertices[i * 2 + 3] + offset,
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, lineVertices, gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-}
-*/
-
-
 // updateZMap();
 
 // crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
@@ -3912,7 +3788,6 @@ function drawLines()
   }
 
   // Last thing to add will be the cursor helper!
-
 } // End of drawLines()
 
 
