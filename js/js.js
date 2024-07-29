@@ -32,6 +32,7 @@ var cursor_helper = 0;
 var miniBar_stn = [0,0,0];
 var grid_plane = [0,0,1];
 var enableViewRef = false;
+var text_log = [];
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -169,9 +170,9 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 function updateMenuPos() // this stuff so bad jesus
 {
 
-  let _tempMe = document.getElementById("tree_allObjects").clientHeight;
+  let _tree_folder_h = document.getElementById("tree_allObjects").clientHeight;
 
-  menu_obj_size = [200, 500, _tempMe+300]; // default & modified to include margins	
+  menu_obj_size = [200, 500, _tree_folder_h+26+200]; // default & modified to include margins	
   menu_obj_pos = [in_win_w-200-in_win_w*0.01, in_win_h*0.5 - 0.5*menu_obj_size[2]];
  	menu_objpreview_pos = [in_win_wc-165/2, -in_win_hc+170/2]; // not sure what this does
 
@@ -183,7 +184,7 @@ function updateMenuPos() // this stuff so bad jesus
 	document.getElementById("menu_q").style.left = menu_q_pos[0]+"px";
 
 	document.getElementById("menu_obj").style.top = menu_obj_pos[1]+"px";
-	document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px";
+	// document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px";
 	menu_obj_size[1] = document.getElementById("menu_obj").offsetHeight;
 
 	in_win_clip = in_win_w+_epsilon;
@@ -396,6 +397,21 @@ function runListTerminateAll()
   { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
 }
 
+
+function updateTextLog()
+{
+  let _t = '',
+      _s = text_log.length,
+      _b = Object;
+
+  if (document.getElementById('menu_logBox') != undefined) { _b = document.getElementById('menu_logBox'); }
+  for (let i=0; i<_s; i++) { _t = _t + text_log[i] + `<br>`; }
+  _b.innerHTML = _t;
+  _b.scrollTop = _b.scrollHeight;
+}
+
+function textLog(_s) { text_log.push(_s); updateTextLog();}
+
 function eLog(_id, _f, _i, _b) { e_log.push([_id, _f, _i, _b]); }
 
 function eLogClear(_id) // remove all entries with matching _id
@@ -407,8 +423,12 @@ function eLogClear(_id) // remove all entries with matching _id
   {
     for (var _q=_ls - 1; _q >= 0; _q--) // loop -> e_log
     {
-      if (e_log[_q][0] != _id)
-      { _new_log.push(e_log[_q]); } else { del_obj(e_log[_q][2]); }
+      if (_id == -1)
+      {
+        del_obj(e_log[_q][2]);
+      } else {
+        if (e_log[_q][0] != _id) { _new_log.push(e_log[_q]); } else { del_obj(e_log[_q][2]); }
+      }
     }
   }
 
@@ -796,7 +816,7 @@ function loadSelect(_fi)
   }
   // should be replaced ...
 
-  updateValueByPar("menu_stats_4", fileName);
+  updateValueById("menu_stats_4", fileName);
 }
 
 function offsetArray(ar, b)
@@ -935,7 +955,8 @@ function loadFile0(_fi) // main load function
       }
     }
     fileName = _fn.slice(0, _si+1);
-    updateValueByPar("menu_stats_5", _fn.slice(_si+1, _fn.length));
+    updateValueById("menu_stats_5", _fn.slice(_si+1, _fn.length));
+    textLog(fileName + '.bin load complete');
   }
   updateTree(tree_allObjects);
 }
@@ -988,6 +1009,7 @@ function makeValidFileName(_i)
 function downloadSaveFile()
 {
   runListTerminateAll();
+  eLogClear(-1);
   if (mouseLock) {pointerLockSwap();} 
   let arrayBuffer = makeSave();
   let _l = arrayBuffer.length;
@@ -1000,13 +1022,13 @@ function downloadSaveFile()
   const anchor = document.createElement('a');
   anchor.href = _url;
 
-  let _tstr = document.getElementById('menu_stats_4').value;
-  anchor.download = makeValidFileName(_tstr) + _l + ".bin";
+  let _str = document.getElementById('menu_stats_4').value;
+  anchor.download = makeValidFileName(_str) + _l + ".bin";
 
-  // use .click() to trigger download
-  anchor.click();
+  anchor.click(); // .click() to trigger download
   URL.revokeObjectURL(_url);
   key_map.p = false;
+  textLog('Attempted download of ' + anchor.download);
 }
 
 window.addEventListener('keydown', (event) =>
@@ -1173,6 +1195,8 @@ function scale2(a,s) {return [a[0]*s, a[1]*s];}
 function scale3(a,s) {return [a[0]*s, a[1]*s, a[2]*s];}
 function scale(a,s) {return [a[0]*s, a[1]*s, a[2]*s];} // Removed last 1 take note
 function scalew1(a,s) {return [a[0]*s, a[1]*s, a[2]*s, 1];}
+
+function toFixed3(a, b) {return [a[0].toFixed(b), a[1].toFixed(b), a[2].toFixed(b)]; }
 
 function makeDir(_p)
 {
@@ -1702,7 +1726,10 @@ function updateNormalMaps()
         // if this doens't have to be updated so quickly I can do a test for if i'm in the poly instead at run time as my only rt data.
 			}
 		}
-    // console.log("Normal map update complete...");
+    // if (textLog != undefined)
+    // {
+    //   textLog('normal map update complete...');
+    // }
 	}
 }
 
@@ -2007,7 +2034,8 @@ function updateDrawMap(priorityObjects)
 
 function del_obj(_i)
 {
-  if (_i > world_obj_count) // instead of no delete make it clear log // && !hasN(_run_objs, _i)
+  // hasN(obj_folders[folder_selected], obj_cyc)
+  if (_i > world_obj_count && !translateFolder.active) // instead of no delete make it clear log // && !hasN(_run_objs, _i)
   {
     trns_lock = 0; _all_lock = 0;
     let splice_all = [
@@ -2035,22 +2063,27 @@ function del_obj(_i)
 				mem_log[i][0] = mem_log[i][0]-_ts;
 			}
 
-      _ts = e_log.length;
-      for (let i=0; i<_ts; i++)
-      {
-        let _n = e_log[i][2];
-        e_log[i][2] = _n>_i ? _n-1 : _n;
-      }
-      
-      _ts = functionRunList.length;
-      for (let i=0; i<_ts; i++)
-      {
-        let _n = functionRunList[i].obj;
-        functionRunList[i].obj = _run_objs[i] = _n>_i ? _n-1 : _n;
-      }
-
       for (let i=0; i<splice_all.length; i++) {splice_all[i].splice(_i, 1);};
 		}
+
+    _ts = e_log.length;
+    for (let i=0; i<_ts; i++)
+    {
+      let _n = e_log[i][2];
+      e_log[i][2] = _n>_i ? _n-1 : _n;
+    }
+
+    for (let i=0; i<_ts; i++)
+    {
+      if (e_log[i][2] == _i) { e_log.splice(i, 1); break;}
+    }
+    
+    _ts = functionRunList.length;
+    for (let i=0; i<_ts; i++)
+    {
+      let _n = functionRunList[i].obj;
+      functionRunList[i].obj = _run_objs[i] = _n>_i ? _n-1 : _n;
+    }
 
 		updateList(objListConst(), "list_objectSelect");
     foldersDel(_i);
@@ -2246,8 +2279,10 @@ var translateFolder =
   active: 0,
   focus: 0,
   runhook: 0,
-  folder: Object,
+  folder: [],
+  folder_id: 0,
   excludeSelf: true,
+  name: 'Translate Folder',
   toggle: function ()
   {
     if (folder_selected < folder_cwd) {return;}
@@ -2263,10 +2298,12 @@ var translateFolder =
         translateFolder.lpdelta = [0,0,0];
         translateFolder.folder = Array.from(obj_folders[folder_selected]);
         translateFolder.obj = obj_cyc;
+        translateFolder.folder_id = folder_selected;
 
         // translateFolder.focus = 1;
         translateFolder.active = 1;
         translateFolder.runhook = 0;
+        textLog(translateFolder.name + ' [' + folder_selected + '] enabled');
         playSound('sounds/tool.mp3');
         break;
 
@@ -2275,12 +2312,13 @@ var translateFolder =
         // translateFolder.focus = 0;
         // Apply changes to obj clones
         let _s = translateFolder.folder.length;
+
         for (let i=0; i<_s; i++)
-        {
-          arScale(m_objs_ghost[translateFolder.folder[i]], m_objs[translateFolder.folder[i]], [0,0,0], [0,0,0,0], [1,1,1,1]);
-        }
+        { arScale(m_objs_ghost[translateFolder.folder[i]], m_objs[translateFolder.folder[i]], [0,0,0], [0,0,0,0], [1,1,1,1]); }
+
         // arScale(m_objs_ghost[this.obj], m_objs[this.obj], [0,0,0,0], [0,0,0,0], [1,1,1,1]);
-        translateFolder.obj = 0;
+        translateFolder.obj = 0; translateFolder.folder = [];
+        textLog(translateFolder.name + ' [' + translateFolder.folder_id + '] finished');
         playSound('sounds/finish.mp3');
         break;
     }
@@ -2336,6 +2374,7 @@ var translateObject =
   lpdelta: [0,0,0],
   runhook: 0,
   excludeSelf: true,
+  name: 'Move Object',
   opt_enable: function (_i)
   {
     translateObject.lpstart =
@@ -2363,6 +2402,7 @@ var translateObject =
     {
       case 0:
         if (!hasN(_run_objs, obj_cyc)) {translateObject.opt_enable(obj_cyc);} // only start if not in run list but also allow disable
+        textLog(translateObject.name + ' enabled');
         break;
 
       case 1:
@@ -2374,6 +2414,7 @@ var translateObject =
         arScale(m_objs_ghost[translateObject.obj], m_objs[translateObject.obj], [0,0,0], [0,0,0,0], [1,1,1,1]);
         translateObject.obj = 0;
         playSound('sounds/finish.mp3');
+        textLog(translateObject.name + ' finished');
         break;
     }
   },
@@ -2507,12 +2548,15 @@ function unlink_obj(_i, _d) // _d bool for data/load
     if (key_map.shift) {m_objs_loadPoints(new Float32Array(_r0), 0);}
     m_objs_loadPoints(new Float32Array(_r1), 0);
     m_objs_loadPoints(new Float32Array(_r2), 0);
+    textLog('Unlink [' + _i + '] complete');
   }
 }
 
 function link_obj(_i)
 {
-  let _t = 1;
+  let _t = 1,
+      _i2 = _i;
+
   if (getSetting('detail_box_linkSettings', 1)[0][0] == true) {_t = 0;}
   if (getSetting('detail_box_linkSettings', 1)[1][0] == true) {_t = 1;}
   if (getSetting('detail_box_linkSettings', 1)[2][0] == true) {_t = 2;}
@@ -2601,7 +2645,6 @@ function link_obj(_i)
 						}
 					}
 					m_objs_loadPoints(packObj(_of), 0);
-					_all_lock_i = 0; _all_lock = 0;
 					break;
 
 				case 2:
@@ -2612,9 +2655,10 @@ function link_obj(_i)
 						if (i != mem_log[_i][2]-mem_encode[0]-1) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);} // -(encoded offset + 1)
 					}
 					m_objs_loadPoints(packObj(_of), 0);
-					_all_lock_i = 0; _all_lock = 0;
 					break;
 			}
+      textLog('Link complete [' + _all_lock_i + '] -> [' + _i2 + ']');
+		  _all_lock_i = _all_lock = 0;
 			break;
 	}
 }
@@ -2847,30 +2891,46 @@ function deleteObjectSelected()
 // just put the functions into array to be spliced ig ?!??!
 function del_world()
 {
-  // Terminate all running data manipulation
-  runListTerminateAll();
+  runListTerminateAll(); // terminate all running data manipulation
+  eLogClear(-1);
 
-  folder_selected = folder_cwd;
+  folder_selected = folder_cwd; // set to current working directory
   obj_folders[folder_cwd].length = 0;
 
-  mem_sum = 7564; // total points increase from encoded dirs. previous: 7408
+  mem_sum = 7564; // reset mem_sum to sum of world data
 
-  let _c = folder_cwd+1; //let _c = 4;
-  folder_parents.splice(_c);
-  folder_toggle.splice(_c);
-  folder_names.splice(_c);
-  obj_folders.splice(_c);
+  let _c = folder_cwd+1,
+      _woc = world_obj_count+1,
+      splice_all = [];
 
-	trns_lock = 0; _all_lock = 0; _all_lock_i = 0;
-	m_objs.splice(world_obj_count+1); mem_log.splice(world_obj_count+1); m_obj_offs.splice(world_obj_count+1); m_objs_ghost.splice(world_obj_count+1);
-  m_draw.splice(world_obj_count+1); m_center2d.splice(world_obj_count+1); m_center2d_buffer.splice(world_obj_count+1); z_map.splice(world_obj_count+1);
-  obj_normalMaps.splice(world_obj_count+1);
+  splice_all = [
+    folder_parents,
+    folder_toggle,
+    folder_names,
+    obj_folders,
+  ]; for (let i=0; i<splice_all.length; i++) {splice_all[i].splice(_c);};
+
+  splice_all = [
+    m_objs,
+    mem_log,
+    m_obj_offs,
+    m_objs_ghost,
+    m_draw,
+    m_center2d,
+    m_center2d_buffer,
+    z_map,
+    obj_normalMaps,
+  ]; for (let i=0; i<splice_all.length; i++) {splice_all[i].splice(_woc);};
+
+  trns_lock = _all_lock = _all_lock_i = 0;
+
 	obj_cyc = 2;
 
-  document.getElementById("menu_stats_4").value = '';
-  document.getElementById("menu_stats_5").innerHTML = '';
+  updateValueById("menu_stats_4", '');
+  updateValueById("menu_stats_5", '');
 
   updateTree(tree_allObjects);
+  textLog('World data reset');
 }
 
 function createCircleAtCursor()
@@ -3049,6 +3109,7 @@ function measureLine()
   var _t_d = len3(sub(_t_obj[0], _t_obj[1]));
   console.log(_t_d);
   getSetting('detail_box_gridSettings', 1)[0] = _t_d;
+  textLog('Measured: ' + _t_d.toFixed(7));
 }
 
 function resetGrid()
@@ -3057,6 +3118,7 @@ function resetGrid()
   grid_scale = 3;
   getSetting('detail_box_gridSettings', 1)[0] = Math.pow(2, grid_scale);
   updateGrid();
+  textLog('Grid reset: [ ' + toFixed3(grid_plane, 3) + ' ]');
 }
 
 function placePoint()
@@ -4139,6 +4201,7 @@ var pivotAlign =
   active: 0,
   obj: 0,
   focus: 0,
+  name: 'Pivot Align ',
   e_id: 'pivotAlign', // could be made any type
   sound_tick: 'sounds/tick.mp3',
   pivot: [0,0,0], p0: [0,0,0], // first point capture w/ key (f)
@@ -4149,20 +4212,26 @@ var pivotAlign =
     switch(pivotAlign.enable)
     {
       case 0: // pivot align enabled
-        if (obj_cyc <= world_obj_count) {break;}
+        if (obj_cyc <= world_obj_count) {textLog(pivotAlign.name + 'no object selected'); break;}
         pivotAlign.enable = 1;
         pivotAlign.focus = 1;
         pivotAlign.obj = obj_cyc;
         playSound('sounds/tool.mp3');
-        // log box
+        textLog(pivotAlign.name + 'enabled'); // log box
         break;
       case 1: // pivot align disabled
-        if (pivotAlign.pn == 4) {playSound('sounds/finish.mp3');} else {playSound('sounds/warn.mp3');}
+        if (pivotAlign.pn == 4)
+        {
+          playSound('sounds/finish.mp3');
+          textLog(pivotAlign.name + 'finished');
+        } else {
+          playSound('sounds/warn.mp3');
+          textLog(pivotAlign.name + 'canceled');
+        }
         pivotAlign.pn = 0;
         pivotAlign.focus = 0;
         pivotAlign.enable = 0;
         eLogClear(pivotAlign.e_id);
-        // log box
         break;
     }
   },
@@ -4315,6 +4384,7 @@ var surfaceNormal =
 {
   enable: 0,
   e_id: 'surfaceNormal',
+  name: 'Surface Normal ',
   sound_start: 'sounds/tool.mp3',
   sound_end: 'sounds/finish.mp3',
   sound_error: 'sounds/warn.mp3',
@@ -4329,14 +4399,20 @@ var surfaceNormal =
         // if (obj_cyc <= world_obj_count) {break;}
         surfaceNormal.enable = 1;
         playSound(surfaceNormal.sound_start);
-        // log box
+        textLog(surfaceNormal.name + 'enabled'); // log box
         break;
       case 1: // disabled
-        if (surfaceNormal.pn == 4) {playSound(surfaceNormal.sound_end);} else {playSound(surfaceNormal.sound_error);}
+        if (surfaceNormal.pn == 4)
+        {
+          playSound(surfaceNormal.sound_end);
+          textLog(surfaceNormal.name + 'finished');
+        } else {
+          playSound(surfaceNormal.sound_error);
+          textLog(surfaceNormal.name + 'canceled');
+        }
         surfaceNormal.enable = 0;
         surfaceNormal.pn = 0;
         eLogClear(surfaceNormal.e_id);
-        // log box
         break;
     }
   },
@@ -4345,13 +4421,13 @@ var surfaceNormal =
     let _l1 = sub(surfaceNormal.p1, surfaceNormal.p0),
         _l2 = sub(surfaceNormal.p3, surfaceNormal.p2),
         _cr = cross(_l1, _l2),
-        _u_cr = makeDir(_cr), // unit cross product
-        _u_len = 0.5*(len3(_l1) + len3(_l2)); // arbitrary
+        _u_cr = makeDir(_cr); // unit cross product
+        // _u_len = 0.5*(len3(_l1) + len3(_l2)); // arbitrary
 
     grid_plane = [_u_cr[0], _u_cr[1], _u_cr[2]];
     updateGrid();
 
-    let _fp = add3(surfaceNormal.p0, scale3(_u_cr, _u_len));
+    let _fp = add3(surfaceNormal.p0, scale3(_u_cr, grid_scale_f));
     let _new_line =
       new Float32Array([
         surfaceNormal.p0[0],
@@ -4419,20 +4495,22 @@ functionRunList.push(surfaceNormal); // push ref to run list
 
 var getSurface = {
   active: 0,
+  wait: 0,
+  name: 'Get Surface',
   toggle: function ()
   {
     switch(getSurface.active)
     {
       case 0: // enabled
-        // if (obj_cyc <= world_obj_count) {break;}
         updateNormalMaps();
         getSurface.active = 1;
-        // log box
+        getSurface.wait = 1,
+        textLog(getSurface.name + ' enabled'); // log box
         break;
       case 1: // disabled
         getSurface.active = 0;
-        // eLogClear(getSurface.e_id);
-        // log box
+        let _str = getSurface.wait ? ' disabled' : ' finished';
+        textLog(getSurface.name + _str); // log box
         break;
     }
   },
@@ -4450,16 +4528,31 @@ var getSurface = {
       // if (!isNaN(_p[0]) && !isNaN(_p[1]) && !isNaN(_p[2]))
       // {
         grid_plane = makeDir(normOut[_rayLast]);
+
+        let _p0 = add(rayInterMap[_rayLast], scale3(grid_plane, grid_scale_d)),
+            _p1 = rayInterMap[_rayLast],
+            _pf = [];
+
+        _p1[3] = 1;
+        _pf = _p0.concat(_p1);
+
+        loadTempObj(
+          new Float32Array(_pf),
+          'surfaceNorm',
+          true
+        );
+
         updateGrid();
+        getSurface.wait = 0;
         getSurface.toggle();
       // }
     }
+
     /*
-     *
     } else {
       // updateRayInters(_plr_dtp, player_pos);
     }
-     * */
+    */
   },
   run: function ()
   {

@@ -1,56 +1,77 @@
 // memspc.xyz menu generation.
 
-// this one really helped me understand objects in javascript that's for sure.
-// very noob level implementation here though. I just wan't absolute freedom.
-
 /*
-  -- check number on getInput function
-
-  -- js so funny man
+  js so funny man
       - 1*"2" = 2
       - 2+"" = "2"
 
-  -- i can't tell if i'm on the right track.
+  i can't tell if i'm on the right track.
       - maybe i can design it such that
           [code for tool] (use data)-> [[tool settings obj data]] <-(use data) [menu section generation]
 
-      i'll learn how if I properly create a windowDraggable feature that's automatic per section.
-      or use table with string id's to make one update function convert menu code to a settings array.
-
-  log box needs to be reloadable 
-  basically make push fn also perform js text load
-
-  -- super key here to put that fn inside the listener assigned to text boxes.
-  -- need to start consistently providing undefined checks and skips. Good one here is the apply styles need it's own obj
-
-  -- not needed to pass params or callback. okay because of new params for functions not using secondary params
-  -- now add second callback par for check boxes and textinputs and file open?
-
-  -- finish removing old menu
+  LINE : 1547
+  here i need to bind this with the standard functions and have options for iStyle and fStyle to go with modStyle
+  that works directly through the parent container and remove prnt from packed elements so the parent is set 
+  
+  also need to consider making the functionRunList auto generate the menu
+  using checkbox buttons as toggle does not entirely fix the problem so this should help
 */
 
-var _this; // ez pointer for params
-var _settings = [];
-var _setting_ids = [];
 
-var _btn_col1 = `background-color: rgb(28, 28, 28);`;
-var _btn_col1_str = `rgb(28, 28, 28)`;
+var _btn_col1 = `background-color: rgb(28, 28, 28);`,
+    _btn_col1_str = `rgb(28, 28, 28)`,
+    _btn_col2 = `background-color: rgb(34, 34, 34);`,
+    _btn_col2_str = `rgb(34, 34, 34)`,
+    _btn_col = [`background-color: rgb(28, 28, 28);`, `background-color: rgb(34, 34, 34);`];
 
-var _btn_col2 = `background-color: rgb(34, 34, 34);`;
-var _btn_col2_str = `rgb(34, 34, 34)`;
+// should just use opacity here with light and dark overlays instead of color specific
+
+const tree_colors =
+[
+  "rgba(78, 55, 81, 1)",
+  "rgba(63, 46, 110, 1)",
+  "rgba(58, 89, 52, 1)",
+  "rgba(60, 101, 115, 1)",
+  "rgba(94, 66, 55, 1)"
+],    tree_colors_d =
+[
+  "rgba(55, 39, 57, 1)",
+  "rgba(44, 32, 77, 1)",
+  "rgba(41, 62, 36, 1)",
+  "rgba(42, 71, 80, 1)",
+  "rgba(65, 46, 38, 1)"
+],    tree_colors_l =
+[
+  "rgba(117, 97, 118, 1)",
+  "rgba(100, 88, 143, 1)",
+  "rgba(101, 121, 87, 1)",
+  "rgba(103, 130, 144, 1)",
+  "rgba(131, 106, 97, 1)"
+];
+
+var _settings = [],
+    _setting_ids = [],
+    eset_tools = [],
+    _attr_fi = 'data-folderIndex',
+    _attr_t = 'data-type',
+    _attr_k = 'data-k',
+    draggedElement,
+    _this; // ez pointer for param
+
+
+/*_______________________________________________________________________________________________________________________*/
+
 
 function applyStyles(element, par)
 {
 
-  /*
-             ╔╗
+  /*         ╔╗
             ╔╝╚╗
             ╚╗╔╝    
   ╔═╗╔══╗╔══╗║║
   ║╔╝║╔╗║║╔╗║║║
   ║║ ║╚╝║║╚╝║║╚╗
-  ╚╝ ╚══╝╚══╝╚═╝
-  */
+  ╚╝ ╚══╝╚══╝╚═╝ */
   if (par.rootStyle && par.rootStyle.trim() !== "")
   {
     const _temp_str = `#${element.id} {${par.rootStyle}}`;
@@ -59,14 +80,12 @@ function applyStyles(element, par)
     document.head.appendChild(styleElement);
   }
 
-  /*
-  ╔╗
-  ║║
-  ║╚═╗╔══╗╔╗╔╗╔══╗╔═╗
-  ║╔╗║║╔╗║║╚╝║║╔╗║║╔╝
-  ║║║║║╚╝║╚╗╔╝║║═╣║║
-  ╚╝╚╝╚══╝ ╚╝ ╚══╝╚╝
-  */
+  /*╔╗
+    ║║
+    ║╚═╗╔══╗╔╗╔╗╔══╗╔═╗
+    ║╔╗║║╔╗║║╚╝║║╔╗║║╔╝
+    ║║║║║╚╝║╚╗╔╝║║═╣║║
+    ╚╝╚╝╚══╝ ╚╝ ╚══╝╚╝ */
   if (par.hoverStyles && par.hoverStyles.trim() !== "")
   {
     const _temp_str = `#${element.id}:hover {${par.hoverStyles}}`;
@@ -75,16 +94,12 @@ function applyStyles(element, par)
     document.head.appendChild(styleElement);
   }
 
-  //input[type="text"]:hover
-
-  /*
-      ╔╗       ╔╗
-      ║║       ║║
-  ╔══╗║║ ╔╗╔══╗║║╔╗
-  ║╔═╝║║ ╠╣║╔═╝║╚╝╝
-  ║╚═╗║╚╗║║║╚═╗║╔╗╗
-  ╚══╝╚═╝╚╝╚══╝╚╝╚╝
-  */
+  /*    ╔╗       ╔╗
+        ║║       ║║
+    ╔══╗║║ ╔╗╔══╗║║╔╗
+    ║╔═╝║║ ╠╣║╔═╝║╚╝╝
+    ║╚═╗║╚╗║║║╚═╗║╔╗╗
+    ╚══╝╚═╝╚╝╚══╝╚╝╚╝ */
   if (par.clickStyles && par.clickStyles.trim() !== "")
   {
     const _temp_str = `#${element.id}:click {${par.clickStyles}}`;
@@ -93,14 +108,12 @@ function applyStyles(element, par)
     document.head.appendChild(styleElement);
   }
 
-  /*
-      ╔╗          ╔╗        ╔╗
+  /*  ╔╗          ╔╗        ╔╗
       ║║          ║║        ║║
   ╔══╗║╚═╗╔══╗╔══╗║║╔╗╔══╗╔═╝║
   ║╔═╝║╔╗║║╔╗║║╔═╝║╚╝╝║╔╗║║╔╗║
   ║╚═╗║║║║║║═╣║╚═╗║╔╗╗║║═╣║╚╝║
-  ╚══╝╚╝╚╝╚══╝╚══╝╚╝╚╝╚══╝╚══╝
-  */
+  ╚══╝╚╝╚╝╚══╝╚══╝╚╝╚╝╚══╝╚══╝ */
   if ((par.checkedStyles && par.checkedStyles.trim() !== "") && (element.type === "checkbox"))
   {
     const _temp_str = `#${element.id}:checked {${par.checkedStyles}}`;
@@ -109,14 +122,12 @@ function applyStyles(element, par)
     document.head.appendChild(styleElement);
   }
 
-  /*
-  ╔╗
-  ║║
-  ║║ ╔╗
-  ║║ ╠╣
-  ║╚╗║║
-  ╚═╝╚╝
-  */
+  /*╔╗
+    ║║
+    ║║ ╔╗
+    ║║ ╠╣
+    ║╚╗║║
+    ╚═╝╚╝ */
   if (par.liStyles && par.liStyles.trim() !== "")
   {
     const _temp_str = `.${element.id+"_li"} {${par.liStyles}}`;
@@ -125,14 +136,12 @@ function applyStyles(element, par)
     document.head.appendChild(styleElement);
   }    
 
-  /*
-      ╔╗
+   /* ╔╗
       ║║
   ╔╗╔╗║║
   ║║║║║║
   ║╚╝║║╚╗
-  ╚══╝╚═╝
-  */
+  ╚══╝╚═╝ */
   if (par.myUlStyle && par.myUlStyle.trim() !== "")
   {
     const _temp_str = `.${element.className+"_ul"} {${par.myUlStyle}}`;
@@ -148,6 +157,12 @@ function appendFilter(p, e)
   else {document.body.appendChild(e);}
 }
 
+/*  ╔╗
+    ║║
+  ╔═╝║╔╗╔╗╔╗
+  ║╔╗║╠╣║╚╝║
+  ║╚╝║║║╚╗╔╝
+  ╚══╝╚╝ ╚╝ */
 
 function addDiv(par) // ------------------------ Div
 {
@@ -167,22 +182,25 @@ function addDiv(par) // ------------------------ Div
   if (typeof par.callback != "undefined")
   {
     div.addEventListener("click", function()
-    {
-      par.callback(par.params);
-    });
+    { par.callback(par.params); });
   }
 
   if (typeof par.niladic != "undefined")
   {
     div.addEventListener("click", function()
-    {
-      par.niladic();
-    });
+    { par.niladic(); });
   }
   appendFilter(par.prnt, div);
   applyStyles(div, par);
   return div;
 }
+
+/*    ╔╗   ╔╗
+      ║║  ╔╝╚╗
+   ╔╗ ║╚═╗╚╗╔╝╔══╗
+  ╔╝╚╗║╔╗║ ║║ ║╔╗║
+  ╚╗╔╝║╚╝║ ║╚╗║║║║
+   ╚╝ ╚══╝ ╚═╝╚╝╚╝ */
 
 function addButton(par) // ------------------------ Button
 {
@@ -201,6 +219,13 @@ function addButton(par) // ------------------------ Button
   appendFilter(par.prnt, button);
   return button;
 }
+
+/*        ╔╗
+          ║║
+   ╔╗ ╔══╗║╚═╗╔╗╔╗
+  ╔╝╚╗║╔═╝║╔╗║╚╬╬╝
+  ╚╗╔╝║╚═╗║╚╝║╔╬╬╗
+   ╚╝ ╚══╝╚══╝╚╝╚╝ */
 
 function addCheckbox(par) // ------------------------ Checkbox
 {
@@ -223,6 +248,13 @@ function addCheckbox(par) // ------------------------ Checkbox
   return checkbox;
 }
 
+/*     ╔╗      ╔╗
+      ╔╝╚╗    ╔╝╚╗
+   ╔╗ ╚╗╔╝╔╗╔╗╚╗╔╝    ╔╗╔══╗ 
+  ╔╝╚╗ ║║ ╚╬╬╝ ║║     ╠╣║╔╗║
+  ╚╗╔╝ ║╚╗╔╬╬╗ ║╚╗    ║║║║║║
+   ╚╝  ╚═╝╚╝╚╝ ╚═╝    ╚╝╚╝╚╝ */
+
 function addTextInput(par) // ------------------------ Text input
 {
   const input = document.createElement("input");
@@ -244,33 +276,33 @@ function addTextInput(par) // ------------------------ Text input
   input.addEventListener('keydown', function(event)
   {
     if (event.key === 'Enter' && flag_inText == 1)
-    {
-      // input.blur();
-      event.target.blur(); // maybe this more reliable?
-    }
+    { event.target.blur(); } // maybe this more reliable? input.blur();
   });
 
   if (typeof par.hoverShadow != "undefined")
   {
     input.addEventListener('mouseover', function(event)
-    {
-      event.target.style.boxShadow = par.hoverShadow;
-    });
+    { event.target.style.boxShadow = par.hoverShadow; });
   }
 
   if (typeof par.shadow != "undefined")
   {
     input.style.boxShadow = par.shadow;
     input.addEventListener('mouseleave', function(event)
-    {
-      event.target.style.boxShadow = par.shadow;
-    });
+    { event.target.style.boxShadow = par.shadow; });
   }
 
   appendFilter(par.prnt, input);
   applyStyles(input, par);
   return input;
 }
+
+/*     ╔═╗  ╔╗
+       ║╔╝  ║║
+   ╔╗ ╔╝╚╗╔╗║║ ╔══╗
+  ╔╝╚╗╚╗╔╝╠╣║║ ║╔╗║
+  ╚╗╔╝ ║║ ║║║╚╗║║═╣
+   ╚╝  ╚╝ ╚╝╚═╝╚══╝ */
 
 function addFileInput(par) // ------------------------ File input
 {
@@ -298,51 +330,19 @@ function addFileInput(par) // ------------------------ File input
   return fileLabel;
 }
 
-// move to better place eventually
-
-var draggedElement;
-var _attr_fi = 'data-folderIndex';
-var _attr_t = 'data-type';
-var _attr_k = 'data-k';
-
-// should just be taking advantage of opacity here with light and dark overlays instead of color specific
-
-const tree_colors =
-[
-  "rgba(78, 55, 81, 1)",
-  "rgba(63, 46, 110, 1)",
-  "rgba(58, 89, 52, 1)",
-  "rgba(60, 101, 115, 1)",
-  "rgba(94, 66, 55, 1)"
-];
-
-const tree_colors_d =
-[
-  "rgba(55, 39, 57, 1)",
-  "rgba(44, 32, 77, 1)",
-  "rgba(41, 62, 36, 1)",
-  "rgba(42, 71, 80, 1)",
-  "rgba(65, 46, 38, 1)"
-];
-
-const tree_colors_l =
-[
-  "rgba(117, 97, 118, 1)",
-  "rgba(100, 88, 143, 1)",
-  "rgba(101, 121, 87, 1)",
-  "rgba(103, 130, 144, 1)",
-  "rgba(131, 106, 97, 1)"
-];
-
+/* ╔╗                 ╔═╗
+  ╔╝╚╗                ║╔╝
+  ╚╗╔╝╔═╗╔══╗╔══╗    ╔╝╚╗╔══╗╔══╗
+   ║║ ║╔╝║╔╗║║╔╗║    ╚╗╔╝║╔╗║║══╣
+   ║╚╗║║ ║║═╣║║═╣     ║║ ║║║║╠══║
+   ╚═╝╚╝ ╚══╝╚══╝     ╚╝ ╚╝╚╝╚══╝ */
 
 function updateTree(par) // ------------------------ Update tree
 {
   const _t = document.getElementById(par.id);
   document.getElementById(par.id).innerHTML = "";
 
-  // _m = makeTree(tree_allObjects);
   _m = makeTree(par);
-
   const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
 
   // append allows event listener creation. innerHTML is like text = text. not same. must query to be able to append
@@ -521,9 +521,6 @@ function makeTree(par) // output tree in the form of html structure
         }
       });
 
-      // nvim
-      // :set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50\,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor\,sm:block-blinkwait175-blinkoff150-blinkon175
-
            /*@?@
            ?@?@?
            @?@*/
@@ -674,6 +671,14 @@ function treeTextInUpdate(par)
   updateTree(tree_allObjects);
 }
 
+
+/*     ╔╗ ╔╗      ╔═╗
+       ║║ ║║      ║╔╝
+  ╔══╗ ║║ ║║     ╔╝╚╗╔══╗╔══╗
+  ║╔╗║ ║║ ║║     ╚╗╔╝║╔╗║║══╣
+  ║╚╝╚╗║╚╗║╚╗     ║║ ║║║║╠══║
+  ╚═══╝╚═╝╚═╝     ╚╝ ╚╝╚╝╚══╝ */
+
 function addList(par)
 {
   const ul = document.createElement("ul");
@@ -800,7 +805,7 @@ function updateTextByPar(id, _v)
   if (_e != "undefined") {_e.innerHTML = _v;}
 }
 
-function updateValueByPar(id, _v)
+function updateValueById(id, _v)
 {
   const _e = document.getElementById(id);
   if (_e != "undefined") {_e.value = _v;}
@@ -808,8 +813,7 @@ function updateValueByPar(id, _v)
 
 
 // move to menu fns ???
-function menuLinkObj()
-{link_obj(obj_cyc);}
+function menuLinkObj() {link_obj(obj_cyc);}
 
 
 // side note: loadPoints fn if using redirect could generalize/link tree better?
@@ -882,10 +886,7 @@ function makeElement(_f, _o)
 }
 
 
-/*
-
-
-*/
+/*_______________________________________________________________________________________________________________________*/
 
 
 var justOuter =
@@ -1008,25 +1009,21 @@ var _error_info =
 ];
 
 
-//////////////////////////////////////////////////////////////////////////////////////
-
-// Must add event listener to detect li clicks/hovers -> compare class/id
-
 // background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 
-let _fixthis = menu_q_size[1] - 100;
+// let _fixthis = menu_q_size[1] - 100;
 var menu_obj_style =
 `
 box-sizing: border-box;
 position: absolute;
 width: 200px;
-height: auto;
-left: -500px;
-top: 0px;
+right: 1%;
+top: -1000px;
 user-select: none;
 background: rgba(0,0,0,0);
 border-radius: 3px;
 `;
+// top: calc(50% - 180px);
 
 var menu_objPreview_style =
 `
@@ -1060,7 +1057,6 @@ width: 96%;
 padding: 0px;
 margin: 3px;
 border: 1px solid rgba(255,255,255,0.1);
-max-height: `+_fixthis+`px;
 overflow-y: auto;
 overflow-x: hidden;
 `;
@@ -1109,7 +1105,6 @@ var menu_tree_style =
 `
 box-sizing: border-box;
 width: 200px;
-max-height: `+_fixthis+`px;
 user-select: none;
 border-radius: 3px;
 background: rgba(0, 0, 0, 0);
@@ -1118,7 +1113,9 @@ color: #CCC;
 overflow-y: auto;
 overflow-x: hidden;
 scrollbar-width: none;
+max-height: `+(menu_q_size[1]-200)+`px;
 `;
+// max-height: `+menu_q_size[1]-200+`px;
 
 var menu_tree_ulStyle =
 `
@@ -1519,6 +1516,9 @@ var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
                 : rootStyle + _btn + _btn_tool_border,
     benzene ring
     \u232C
+ 
+
+
 */
 
 var _btn_tool0 =
@@ -1571,42 +1571,54 @@ box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
 // const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
 // _e.forEach(function(e) { _t.appendChild(e); });
 
-function makeElements(ar)
+function deleteElements(ar)
 {
   let _l = ar.length;
   for (var i=0; i<_l; i++)
-  { makeElement(ar[i][0], ar[i][1]); }
+  { 
+    _this = document.getElementById(ar[i][1].id);
+    if (_this != undefined) {_this.remove();}
+  }
 }
 
-function packElement(ar_ptr, _callb, _par)
+function makeElements(ar, _mod)
+{
+  deleteElements(ar);
+  let _l = ar.length;
+  for (var i=0; i<_l; i++)
+  {
+    if (_mod != undefined) { ar[i][1].rootStyle = ar[i][1].rootStyle + _mod[i%2]; }
+    makeElement(ar[i][0], ar[i][1]);
+  }
+}
+
+function packElement(ar_ptr, _callb, _par, _mod)
 {
   let _ar = [_callb, _par];
   ar_ptr.push(_ar);
 }
 
 // slapped it in there total nightmare
-function setScrollingElements(_eset, _h)
-{
-  // _h = 18;
-  let _si = _eset.length;
-  if (_h > _si) {_h = _si;}
-  let _rem = _si-_h;
-  let _off_top = Math.abs(Math.round(_rem*menu_scroll_c/100)); 
-  let _off_bot = Math.abs(_off_top + _h);
-  if (_off_bot < _si) {_off_bot += 1;}
-
-  for (var i=0; i<_si; i++)
-  {
-    if (i>=_off_top && i<_off_bot)
-    {
-      document.getElementById(_eset[i][1].id).style.display = 'block';
-    } else {
-      document.getElementById(_eset[i][1].id).style.display = 'none';
-    }
-  }
-}
-
-var eset_tools = [];
+// function setScrollingElements(_eset, _h)
+// {
+//   // _h = 18;
+//   let _si = _eset.length;
+//   if (_h > _si) {_h = _si;}
+//   let _rem = _si-_h;
+//   let _off_top = Math.abs(Math.round(_rem*menu_scroll_c/100)); 
+//   let _off_bot = Math.abs(_off_top + _h);
+//   if (_off_bot < _si) {_off_bot += 1;}
+//
+//   for (var i=0; i<_si; i++)
+//   {
+//     if (i>=_off_top && i<_off_bot)
+//     {
+//       document.getElementById(_eset[i][1].id).style.display = 'block';
+//     } else {
+//       document.getElementById(_eset[i][1].id).style.display = 'none';
+//     }
+//   }
+// }
 
 makeElement(addDiv,
 {
@@ -1644,7 +1656,7 @@ if (isMobile)
   {
     text: 'Place Point',
     id: 'tool_placePoint', cls: '_btn', prnt: 'div_toolListHeader',
-    rootStyle: rootStyle + _btn + _btn_col2 +
+    rootStyle: rootStyle + _btn +
     `
       height: 90px;
       text-align: center;
@@ -1659,7 +1671,7 @@ packElement(eset_tools, addButton,
 {
   text: 'Lock Planar \u26C7',
   id: 'tool_moveMode', cls: '_btn', prnt: 'div_toolListHeader',
-  rootStyle: rootStyle + _btn + _btn_col1,
+  rootStyle: rootStyle + _btn,
   hoverStyles: _btn_hover_tool,
   callback: playerChangeMovementMode
 });
@@ -1668,7 +1680,7 @@ packElement(eset_tools, addButton,
 {
   text: 'Teleport \u27AB',
   id: 'tool_curTp', cls: '_btn', prnt: 'div_toolListHeader',
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: teleport_plr
 });
@@ -1677,7 +1689,7 @@ packElement(eset_tools, addButton,
 {
   text: 'Get Center \u22A1',
   id: 'tool_curToCtr', cls: '_btn', prnt: 'div_toolListHeader',
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: setCursorToObjCenter
 });
@@ -1686,7 +1698,7 @@ packElement(eset_tools, addButton,
 {
   text: "Measure Line \u27F7",
   id: "tool_measureLine", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: measureLine
 });
@@ -1695,7 +1707,7 @@ packElement(eset_tools, addButton,
 // {
 //   text: "Measure Angle \u2221",
 //   id: "tool_measureAngle", cls: "_btn", prnt: "div_toolListHeader",
-//   rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+//   rootStyle: rootStyle + _btn + _btn_tooln,
 //   hoverStyles: _btn_hover_tool,
 //   callback: measureAngle
 // });
@@ -1704,7 +1716,7 @@ packElement(eset_tools, addButton,
 {
   text: "Ground Cursor \u2356",
   id: "tool_curToGrnd", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: returnCursorToGround
 });
@@ -1713,7 +1725,7 @@ packElement(eset_tools, addButton,
 {
   text: "Create Circle \u25EF",
   id: "tool_createCircle", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: createCircleAtCursor
 });
@@ -1722,7 +1734,7 @@ packElement(eset_tools, addButton,
 {
   text: "Dupe Object \u26FC",
   id: "tool_dupeObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: cloneObjSelected
 });
@@ -1732,7 +1744,7 @@ packElement(eset_tools, addButton,
 {
   text: "Dupe Folder \u20AA",
   id: "tool_dupeFld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: dupeFolderObjs
 });
@@ -1741,7 +1753,7 @@ packElement(eset_tools, addButton,
 {
   text: "Rotate Folder \u2B6E",
   id: "tool_rotateFolder", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: rotateFolder.run
 });
@@ -1750,7 +1762,7 @@ packElement(eset_tools, addButton,
 {
   text: "Move Folder \u2933",
   id: "tool_moveFld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: translateFolder.toggle
 });
@@ -1759,7 +1771,7 @@ packElement(eset_tools, addButton,
 {
   text: "Empty Folder \u2672",
   id: "tool_delFldObjs", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: deleteFolderObjs
 });
@@ -1768,7 +1780,7 @@ packElement(eset_tools, addButton,
 {
   text: "Pivot Align \u15D2",
   id: "tool_pivotAlign", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: pivotAlign.toggle
 });
@@ -1777,7 +1789,7 @@ packElement(eset_tools, addButton,
 {
   text: "Pick Surface \u25B2",
   id: "tool_pickSurface", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: getSurface.toggle
 });
@@ -1786,7 +1798,7 @@ packElement(eset_tools, addButton,
 {
   text: "Resize Object \u2922",
   id: "tool_resizeObject", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: boundingBox.toggle
 });
@@ -1795,7 +1807,7 @@ packElement(eset_tools, addButton,
 {
   text: "Surface Normal \u21A5",
   id: "tool_surfaceNormal", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: surfaceNormal.toggle
 });
@@ -1804,7 +1816,7 @@ packElement(eset_tools, addButton,
 {
   text: "Apply Rotation \u2B6E",
   id: "tool_applyRotation", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: applyRotation
 });
@@ -1813,7 +1825,7 @@ packElement(eset_tools, addButton,
 {
   text: "Mirror / Plane \u2346",
   id: "tool_mirrorOverPlane", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: mirrorOverPlane
 });
@@ -1822,7 +1834,7 @@ packElement(eset_tools, addButton,
 {
   text: "Move Object \u2933",
   id: "tool_moveObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: moveObject
 });
@@ -1831,7 +1843,7 @@ packElement(eset_tools, addButton,
 {
   text: "Edit Object \u2188",
   id: "tool_editObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: editSelectedObject
 });
@@ -1840,7 +1852,7 @@ packElement(eset_tools, addButton,
 {
   text: "Finish Object \u07F7",
   id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: mem_t_mov
 });
@@ -1849,7 +1861,7 @@ packElement(eset_tools, addButton,
 {
   text: "Link Object \u2366",
   id: "tool_objLink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: menuLinkObj
 });
@@ -1858,7 +1870,7 @@ packElement(eset_tools, addButton,
 {
   text: "Unlink Object \u2366",
   id: "tool_objUnlink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: unlink_obj
 });
@@ -1867,7 +1879,7 @@ packElement(eset_tools, addButton,
 {
   text: "Reset Grid \u2637",
   id: "tool_resetGrid", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2 + _btn_tool0, // + 'border-bottom: 0px solid #fff;' SPOOKY BUG
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_tool0,
   hoverStyles: _btn_hover_tool,
   callback: resetGrid
 });
@@ -1876,7 +1888,7 @@ packElement(eset_tools, addButton,
 {
   text: `Save World \u213B`,
   id: "tool_saveWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: downloadSaveFile
 });
@@ -1885,7 +1897,7 @@ packElement(eset_tools, addButton,
 {
   text: "Delete Object \u2421",
   id: "tool_delObj", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col2,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: deleteObjectSelected
 });
@@ -1894,12 +1906,13 @@ packElement(eset_tools, addButton,
 {
   text: `\u05D0 Clear World \u05D0`,
   id: "tool_clearWorld", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_col1 + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
   hoverStyles: _btn_hover_tool,
   callback: del_world
 });
 
-makeElements(eset_tools);
+makeElements(eset_tools, _btn_col);
+
 // setScrollingElements(eset_tools, 14);
 // problem now is this part isn't refreshed anyway
 
@@ -2995,36 +3008,42 @@ makeElement(addDiv,
   padding: 0px;
   overflow-x: hidden;
   border-radius: 3px;
+  scrollbar-width: none;
   `
 });
 
-/*
+
 makeElement(addDiv,
 {
   id: "menu_logBox", cls: "", prnt: "html",
   rootStyle:
   `
   position: absolute;
-  top: 12px;
-  left: calc(50% - 135px);
-  height: 130px;
-  width: 270px;
-  padding: 0px;
+  top: calc(2%);
+  right: calc(1%);
+  height: 70px;
+  width: 300px;
+  padding: 10px 10px 10px 20px;
   margin: 0px;
-  background: rgba(14,14,14, 0.1);
   border: 1px solid rgba(5,5,5, 0.15);
   border-radius: 3px;
+  color: #777;
+  font-size: 11px;
+  font-family: Monospace;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  background: rgba(14,14,14, 0.1);
   `
 });
-*/
+
+
+  // mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.60));
+  // background: linear-gradient(to top, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35));
+  // background: rgba(14,14,14, 0.1);
 
   // background: rgba(22,22,22, 0.7);
   // border: 1px solid rgba(34,34,34, 0.7);
-
-// the html content of menu_logBox will be set w/ update fn
-// makeElement(addDiv,
-// {
-// });
 
 
 const style_miniBar_n =
