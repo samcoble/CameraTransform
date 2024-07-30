@@ -33,6 +33,7 @@ var miniBar_stn = [0,0,0];
 var grid_plane = [0,0,1];
 var enableViewRef = false;
 var text_log = [];
+var _this; // ez pointer for param
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -365,7 +366,6 @@ const handleTouchEnd = (event) =>
     // window.onload = requestFullscreen();
   }
 }
-
 
 // function requestFullscreen()
 // {
@@ -2270,6 +2270,31 @@ function getctr_ghost(_i) // get encoded 3D center point from duplicate ghost se
 	_c[3] = 1;
 	return _c;
 }
+
+var emulateKey =
+{
+  timer: 0,
+  active: 0,
+  key: '',
+  hold_time: 50,
+  start: function(_p)
+  {
+    _this = emulateKey;
+    _this.active = 1;
+    _this.timer = Date.now();
+    _this.key = _p.key;
+  },
+  run: function ()
+  {
+    key_map[_this.key] = 1;
+    if (Date.now() - _this.timer > _this.hold_time)
+    {
+      key_map[_this.key] = 0;
+      _this.active = 0;
+    }
+  }
+}; functionRunList.push(emulateKey);
+
 
 var translateFolder =
 {

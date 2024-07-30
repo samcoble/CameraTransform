@@ -55,8 +55,7 @@ var _settings = [],
     _attr_fi = 'data-folderIndex',
     _attr_t = 'data-type',
     _attr_k = 'data-k',
-    draggedElement,
-    _this; // ez pointer for param
+    draggedElement;
 
 
 /*_______________________________________________________________________________________________________________________*/
@@ -1516,18 +1515,15 @@ var textIn_leave = `inset 1px 0px 0px 0px rgba(12, 12, 12, 1)`;
                 : rootStyle + _btn + _btn_tool_border,
     benzene ring
     \u232C
- 
-
-
 */
 
 var _btn_tool0 =
 `
 margin: 0px;
 border-radius: 3px 3px 0px 0px;
-border-top: 1px solid #282828;
 `;
 
+// border-top: 1px solid #282828;
 var _btn_toolf =
 `
 margin: 0px 0px 3px 0px;
@@ -1540,32 +1536,36 @@ var _btn =
  `
 color: #AAA;
 text-align: right;
-font-size: 11.5px;
 border-bottom: 1px solid rgb(12,12,12);
 border-top: 0px solid #FFF;
 border-left: 0px solid #FFF;
 border-right: 0px solid #FFF;
 outline: none;
 width: 100%;
-height: 26px;
-line-height: 2.2;
 `;
+
+if (isMobile)
+{
+  _btn = _btn + `
+    text-align: center;
+    height: 120px;
+    line-height: 2.2;
+    font-size: 17px;
+  `;
+} else {
+  _btn = _btn + `
+    text-align: right;
+    height: 26px;
+    line-height: 2.2;
+    font-size: 11.5px;
+  `;
+}
 
 var _btn_hover_tool =
 `
 background-color: rgb(38, 38, 39);
-box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
 `;
-
-// making scroll
-// load all of makeElement params into container
-// use range and offset
-// no looping just min max
-// additional style logic to set top and bottom to 3px rad no matter what
-// when inside enable scroll wheel
-// now fix so it uses display: none; instead of deletion
-
-// background-color: rgb(17, 17, 18);
 
 // document.getElementById(par.id).innerHTML = "";
 // const _e = _m.querySelectorAll('.'+par.id+'_ul_0');
@@ -1654,16 +1654,32 @@ if (isMobile)
 {
   packElement(eset_tools, addButton,
   {
-    text: 'Place Point',
-    id: 'tool_placePoint', cls: '_btn', prnt: 'div_toolListHeader',
-    rootStyle: rootStyle + _btn +
-    `
-      height: 90px;
-      text-align: center;
-      font-size: 14px;
-    `,
+    text: 'F Key',
+    id: 'tool_emKeyF', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
     hoverStyles: _btn_hover_tool,
-    callback: placePoint
+    callback: emulateKey.start,
+    params: { key: 'f' }
+  });
+
+  packElement(eset_tools, addButton,
+  {
+    text: 'R Key',
+    id: 'tool_emKeyR', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: emulateKey.start,
+    params: { key: 'r' }
+  });
+
+  packElement(eset_tools, addButton,
+  {
+    text: 'Z Key',
+    id: 'tool_emKeyZ', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: emulateKey.start,
+    params: { key: 'z' }
   });
 }
 
