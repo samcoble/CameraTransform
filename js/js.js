@@ -119,7 +119,8 @@ var menu_q_size = [280, 612],
     menu_objpreview_pos = [0, 0],
     menu_tab = 0,
     menu_wpn_pos = [155, 10],
-    menu_scroll_c = 0; // scroll offset, real constant
+    menu_scroll_c = 0, // scroll offset, real constant
+    menu_q_scale = [1, 59.5];
 
 var indices = [],
     distances = [],
@@ -172,6 +173,9 @@ function updateMenuPos() // this stuff so bad jesus
 {
 
   let _tree_folder_h = document.getElementById("tree_allObjects").clientHeight;
+
+  menu_q_size[1] = in_win_h/100*menu_q_scale[1];
+  document.getElementById('menu_q').style.height = menu_q_size[1]+"px";
 
   menu_obj_size = [200, 500, _tree_folder_h+26+200]; // default & modified to include margins	
   menu_obj_pos = [in_win_w-200-in_win_w*0.01, in_win_h*0.5 - 0.5*menu_obj_size[2]];
@@ -1432,25 +1436,25 @@ function make_cir_obj(_d, _s, _o, _lim, _p) // divisions, scale, offset, parts, 
 			for (let n=0; n<=_df; n++)
 			{
 				c_pnts[n*4+0] = _lp_world[0];
-				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
-				c_pnts[n*4+2] = _lp_world[2]+_s*Math.cos(_r*n+_of);
+				c_pnts[n*4+1] = _lp_world[1]+0.5*_s*Math.sin(_r*n+_of);
+				c_pnts[n*4+2] = _lp_world[2]+0.5*_s*Math.cos(_r*n+_of);
 			}
 			m_objs_loadPoints(c_pnts, 0);
     break;
 		case 1:
 			for (let n=0; n<=_df; n++)
 			{
-				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n+_of);
+				c_pnts[n*4+0] = _lp_world[0]+0.5*_s*Math.cos(_r*n+_of);
 				c_pnts[n*4+1] = _lp_world[1];
-				c_pnts[n*4+2] = _lp_world[2]+_s*Math.sin(_r*n+_of);
+				c_pnts[n*4+2] = _lp_world[2]+0.5*_s*Math.sin(_r*n+_of);
 			}
 			m_objs_loadPoints(c_pnts, 0);
     break;
 		case 2:
 			for (let n=0; n<=_df; n++)
 			{
-				c_pnts[n*4+0] = _lp_world[0]+_s*Math.cos(_r*n+_of);
-				c_pnts[n*4+1] = _lp_world[1]+_s*Math.sin(_r*n+_of);
+				c_pnts[n*4+0] = _lp_world[0]+0.5*_s*Math.cos(_r*n+_of);
+				c_pnts[n*4+1] = _lp_world[1]+0.5*_s*Math.sin(_r*n+_of);
 				c_pnts[n*4+2] = _lp_world[2];
 			}
 			m_objs_loadPoints(c_pnts, 0);
@@ -3621,6 +3625,7 @@ function drawLines()
             else
             {
               for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
+              // here is the color data
 
               // after using the depth here again i can't tell if all tris end up same or
               // i just use my z map or map by depth per tri better
@@ -4003,7 +4008,7 @@ function pointerOutsideWindow() // return [0] indicates if inside menu pane
 
 	if ((_d[0] > menu_q_pos[0]) && (_d[0] < (menu_q_pos[0]+menu_q_size[0])))
 	{
-		if ((_d[1] > menu_q_pos[1]) && (_d[1] < (menu_q_pos[1]+menu_q_size[1])))
+		if ((_d[1] > menu_q_pos[1]) && (_d[1] < (menu_q_pos[1]+menu_q_size[1]+34)))
 		{
 			_in[1] = 0; // q menu?
 		}

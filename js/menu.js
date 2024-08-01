@@ -1548,9 +1548,9 @@ if (isMobile)
 {
   _btn = _btn + `
     text-align: center;
-    height: 120px;
+    height: 100px;
     line-height: 2.2;
-    font-size: 17px;
+    font-size: 19px;
   `;
 } else {
   _btn = _btn + `
@@ -1681,6 +1681,17 @@ if (isMobile)
     callback: emulateKey.start,
     params: { key: 'z' }
   });
+
+  packElement(eset_tools, addButton,
+  {
+    text: "Finish Object \u07F7",
+    id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: mem_t_mov
+  });
+
+  menu_q_scale[1] = 76;
 }
 
 packElement(eset_tools, addButton,
@@ -2528,7 +2539,7 @@ makeElement(addDiv,
 makeElement(addDiv,
 {
   id: "circleTool_scale", cls: "", prnt: "detail_box_circleSettings",
-  text: `scale`,
+  text: `diameter`,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
