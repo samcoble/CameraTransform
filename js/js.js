@@ -296,82 +296,84 @@ function playSound(src)
 var player_pos_i = [],
     mScreenMode = 0,
     mTimer = 0,
-    dragCatch = 0
+    dragCatch = 0,
     _touch_start = [];
 
-const handleTouchStart = (event) =>
+if (isMobile)
 {
-  if (pointerOutsideWindow[0]) { event.preventDefault(); }
-  mTimer = Date.now();
-  mScreenMode = 0;
-  dragCatch = 1;
-  set2(_touch_start, [event.touches[0].clientX, event.touches[0].clientY]);
+	document.addEventListener('touchstart', (event) => {
+		if (pointerOutsideWindow[0]) { event.preventDefault(); }
+		mTimer = Date.now();
+		mScreenMode = 0;
+		dragCatch = 1;
+		set2(_touch_start, [event.touches[0].clientX, event.touches[0].clientY]);
+		
+		if (event.touches[0].clientX < in_win_wc) {mScreenMode = 1;}
 
-  if (event.touches[0].clientX < in_win_wc) {mScreenMode = 1;}
-}
+	});
+	
+	document.addEventListener('touchmove', (event) => {
+	  if (dragCatch)
+	  {
+	    _touch_i[0] = event.touches[0].clientX;
+	    _touch_i[1] = event.touches[0].clientY;
+	    setPoint(player_look_dir_i, player_look_dir);
+	    setPoint(player_pos_i, player_pos);
+	    dragCatch = 0;
+	  }
+	
+	    event.preventDefault();
+	
+	    _touch_f[0] = event.touches[0].clientX;
+	    _touch_f[1] = event.touches[0].clientY;
+	    _touch_delta = sub2(_touch_f, _touch_i);
+	
+	  // console.log(_touch_delta);
+	
+	  if (pointerOutsideWindow()[0])
+	  {
+	    switch(mScreenMode)
+	    {
+	      case 0:
+	        setPoint(player_look_dir, [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]);
+	      break;
+	
+	      case 1:
+	        updateLook()
+	        // let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
+	        // move plr
+	        // setPoint(player_pos, add3(_np, _lp_world));
+	        //y
+	        // player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
+	        
+	        let _lv = lock_vert_mov ? [f_look[0], 0, f_look[2]] : f_look;
+	        let _dx = scale3(makeDir(cross(f_look, [0,1,0])), -_touch_delta[0]/in_win_w*320);
+	        let _dy = scale3(_lv, _touch_delta[1]/in_win_w*320);
+	        setPoint(player_pos, add3(player_pos_i, add3(_dx, _dy)));
+	
+	        // setPoint(player_pos, add3(player_pos_i, ));
+	        // update dir
+	        // setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
+	      break;
+	    }
+	  }
+	});
+		
+	document.addEventListener('touchend', (event) => {
+	  if (pointerOutsideWindow()[0])
+	  {
+	    let _dt = Date.now()-mTimer;
+	    dragCatch = 0;
+	    if (_dt < 230)
+	    {
+	      console.log(_touch_start);
+	      console.log(_dt);
+	      select2dpoint(in_win_wc-_touch_start[0], in_win_hc-_touch_start[1]);
+	    }
+	    // window.onload = requestFullscreen();
+	  }
+	});
 
-const handleTouchMove = (event) =>
-{
-  if (dragCatch)
-  {
-    _touch_i[0] = event.touches[0].clientX;
-    _touch_i[1] = event.touches[0].clientY;
-    setPoint(player_look_dir_i, player_look_dir);
-    setPoint(player_pos_i, player_pos);
-    dragCatch = 0;
-  }
-
-    event.preventDefault();
-
-    _touch_f[0] = event.touches[0].clientX;
-    _touch_f[1] = event.touches[0].clientY;
-    _touch_delta = sub2(_touch_f, _touch_i);
-
-  // console.log(_touch_delta);
-
-  if (pointerOutsideWindow()[0])
-  {
-    switch(mScreenMode)
-    {
-      case 0:
-        setPoint(player_look_dir, [ player_look_dir_i[0]+(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1]-(_touch_delta[1]/in_win_w * pi * 2) , 0 ]);
-      break;
-
-      case 1:
-        updateLook()
-        // let _np = rot_y_pln(sub3(player_pos_i, _lp_world), (_touch_delta[0]/in_win_w * pi * 2));
-        // move plr
-        // setPoint(player_pos, add3(_np, _lp_world));
-        //y
-        // player_pos[1] = player_pos_i[1] + _touch_delta[1]/in_win_w*320;
-        
-        let _lv = lock_vert_mov ? [f_look[0], 0, f_look[2]] : f_look;
-        let _dx = scale3(makeDir(cross(f_look, [0,1,0])), -_touch_delta[0]/in_win_w*320);
-        let _dy = scale3(_lv, _touch_delta[1]/in_win_w*320);
-        setPoint(player_pos, add3(player_pos_i, add3(_dx, _dy)));
-
-        // setPoint(player_pos, add3(player_pos_i, ));
-        // update dir
-        // setPoint(player_look_dir, [ player_look_dir_i[0]-(_touch_delta[0]/in_win_w * pi * 2) , player_look_dir_i[1], 0 ]);
-      break;
-    }
-  }
-};
-
-const handleTouchEnd = (event) =>
-{
-  if (pointerOutsideWindow()[0])
-  {
-    let _dt = Date.now()-mTimer;
-    dragCatch = 0;
-    if (_dt < 230)
-    {
-      console.log(_touch_start);
-      console.log(_dt);
-      select2dpoint(in_win_wc-_touch_start[0], in_win_hc-_touch_start[1]);
-    }
-    // window.onload = requestFullscreen();
-  }
 }
 
 // function requestFullscreen()
@@ -380,12 +382,7 @@ const handleTouchEnd = (event) =>
 //   if (elem.requestFullscreen) { elem.requestFullscreen(); }
 // }
 
-if (isMobile)
-{
-  document.addEventListener('touchstart', handleTouchStart);
-  document.addEventListener('touchmove', handleTouchMove);
-  document.addEventListener('touchend', handleTouchEnd);
-}
+
 
 document.onmousemove = function(e)
 {
