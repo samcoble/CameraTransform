@@ -299,13 +299,6 @@ var player_pos_i = [],
     dragCatch = 0
     _touch_start = [];
 
-if (isMobile)
-{
-  document.addEventListener('touchstart', handleTouchStart);
-  document.addEventListener('touchmove', handleTouchMove);
-  document.addEventListener('touchend', handleTouchEnd);
-}
-
 const handleTouchStart = (event) =>
 {
   if (pointerOutsideWindow[0]) { event.preventDefault(); }
@@ -379,6 +372,13 @@ const handleTouchEnd = (event) =>
     }
     // window.onload = requestFullscreen();
   }
+}
+
+if (isMobile)
+{
+  document.addEventListener('touchstart', handleTouchStart);
+  document.addEventListener('touchmove', handleTouchMove);
+  document.addEventListener('touchend', handleTouchEnd);
 }
 
 // function requestFullscreen()
