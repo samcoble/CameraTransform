@@ -321,7 +321,7 @@ const handleTouchMove = (event) =>
     dragCatch = 0;
   }
 
-    event.preventDefault();
+    // event.preventDefault();
 
     _touch_f[0] = event.touches[0].clientX;
     _touch_f[1] = event.touches[0].clientY;
@@ -1509,32 +1509,6 @@ var g_over_z = setGrid(15, 1, 2, [0, 0, 0]);
 */
 // #DATAFNS
 
-function zeroZMap()
-{
-  let _s = m_objs.length;
-  for (let i=0; i<_s; i++)
-  {
-    let _s2 = m_draw[i][1];
-    for (let k=0; k<_s2; k++)
-    {
-      z_map[i][0][k] = 0;
-      z_map[i][1][k] = k;
-    }
-  }
-}
-
-function updateColorMaps()
-{
-  let _bool = getSetting('detail_box_drawSettings', 1)[2];
-  for (let h=0; h<m_objs.length; h++)
-  {
-    for (let l=0; l<m_draw[h][3]*4; l++)
-    { 
-      m_draw[h][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[h][3]*l*1.2+0.40;
-    }
-  }
-}
-
 // actually wacked, the 4th needs to be set correctly
 
 shaderModule.init();
@@ -1645,7 +1619,8 @@ function m_objs_loadPoints(ar, _dir) // adds objects
 
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
-  if (m_objs.length > 16 && typeof updateColorMaps == 'function') {updateColorMaps(); zeroZMap();};
+  zeroZMap();
+  if (m_objs.length > 16 && typeof updateColorMaps == 'function') {updateColorMaps(); };
 
 } // END OF FN
 
@@ -3591,6 +3566,31 @@ function updateZMap() // mean tri calc
   }
 }
 
+function zeroZMap()
+{
+  let _s = m_objs.length;
+  for (let i=0; i<_s; i++)
+  {
+    let _s2 = m_draw[i][1];
+    for (let k=0; k<_s2; k++)
+    {
+      z_map[i][0][k] = 0;
+      z_map[i][1][k] = k;
+    }
+  }
+}
+
+function updateColorMaps()
+{
+  let _bool = getSetting('detail_box_drawSettings', 1)[2];
+  for (let h=0; h<m_objs.length; h++)
+  {
+    for (let l=0; l<m_draw[h][3]*4; l++)
+    { 
+      m_draw[h][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[h][3]*l*1.2+0.40;
+    }
+  }
+}
 
 /*
   // m_draw[m_objs.length-1][Math.floor(l/(12*5))]
