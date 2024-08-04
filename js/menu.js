@@ -57,6 +57,7 @@ var _settings = [],
     _attr_k = 'data-k',
     draggedElement;
 
+var _this; // ez pointer for param
 
 /*_______________________________________________________________________________________________________________________*/
 
@@ -1542,28 +1543,24 @@ border-left: 0px solid #FFF;
 border-right: 0px solid #FFF;
 outline: none;
 width: 100%;
+`;
+
+if (isMobile)
+{
+  _btn = _btn + `
+    text-align: center;
+    height: 100px;
+    line-height: 2.2;
+    font-size: 19px;
+  `;
+} else {
+  _btn = _btn + `
     text-align: right;
     height: 26px;
     line-height: 2.2;
     font-size: 11.5px;
-`;
-
-// if (isMobile)
-// {
-//   _btn = _btn + `
-//     text-align: center;
-//     height: 100px;
-//     line-height: 2.2;
-//     font-size: 19px;
-//   `;
-// } else {
-//   _btn = _btn + `
-//     text-align: right;
-//     height: 26px;
-//     line-height: 2.2;
-//     font-size: 11.5px;
-//   `;
-// }
+  `;
+}
 
 var _btn_hover_tool =
 `
@@ -1651,52 +1648,53 @@ makeElement(addDiv,
     background: none;
     overflow-y: scroll;
     scrollbar-width: none;
+    border-bottom: none;
   `
 });
 
-// if (isMobile)
-// {
-//   packElement(eset_tools, addButton,
-//   {
-//     text: 'F Key',
-//     id: 'tool_emKeyF', cls: '_btn', prnt: 'div_toolListHeader',
-//     rootStyle: rootStyle + _btn + _btn_tooln,
-//     hoverStyles: _btn_hover_tool,
-//     callback: emulateKey.start,
-//     params: { key: 'f' }
-//   });
+if (isMobile)
+{
+  packElement(eset_tools, addButton,
+  {
+    text: 'F Key',
+    id: 'tool_emKeyF', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: emulateKey.start,
+    params: { key: 'f' }
+  });
 
-//   packElement(eset_tools, addButton,
-//   {
-//     text: 'R Key',
-//     id: 'tool_emKeyR', cls: '_btn', prnt: 'div_toolListHeader',
-//     rootStyle: rootStyle + _btn + _btn_tooln,
-//     hoverStyles: _btn_hover_tool,
-//     callback: emulateKey.start,
-//     params: { key: 'r' }
-//   });
+  packElement(eset_tools, addButton,
+  {
+    text: 'R Key',
+    id: 'tool_emKeyR', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: emulateKey.start,
+    params: { key: 'r' }
+  });
 
-//   packElement(eset_tools, addButton,
-//   {
-//     text: 'Z Key',
-//     id: 'tool_emKeyZ', cls: '_btn', prnt: 'div_toolListHeader',
-//     rootStyle: rootStyle + _btn + _btn_tooln,
-//     hoverStyles: _btn_hover_tool,
-//     callback: emulateKey.start,
-//     params: { key: 'z' }
-//   });
+  packElement(eset_tools, addButton,
+  {
+    text: 'Z Key',
+    id: 'tool_emKeyZ', cls: '_btn', prnt: 'div_toolListHeader',
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: emulateKey.start,
+    params: { key: 'z' }
+  });
 
-//   packElement(eset_tools, addButton,
-//   {
-//     text: "Finish Object \u07F7",
-//     id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
-//     rootStyle: rootStyle + _btn + _btn_tooln,
-//     hoverStyles: _btn_hover_tool,
-//     callback: mem_t_mov
-//   });
+  packElement(eset_tools, addButton,
+  {
+    text: "Finish Object \u07F7",
+    id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
+    rootStyle: rootStyle + _btn + _btn_tooln,
+    hoverStyles: _btn_hover_tool,
+    callback: mem_t_mov
+  });
 
-//   menu_q_scale[1] = 74;
-// }
+  menu_q_scale[1] = 74;
+}
 
 packElement(eset_tools, addButton,
 {
@@ -2174,7 +2172,7 @@ makeElement(addTextInput,
 makeElement(addDiv,
 {
   id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-  settings: [true, true, false, false, false],
+  settings: [true, true, false, false, false, false],
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2235,7 +2233,9 @@ makeElement(addCheckbox,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   callback: updateSetting,
+  defaultChecked: false
 });
+  // niladic: updateColorMaps,
 
 makeElement(addDiv,
 {
@@ -2258,18 +2258,36 @@ makeElement(addDiv,
 {
   id: "div_gridSettings_drawDepth", cls: "", prnt: "detail_box_drawSettings",
   text: `culling`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addCheckbox,
 {
   id: "cbx_drawDepth", cls: "cbx_gridSettings", prnt: "div_gridSettings_drawDepth",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_sortTris", cls: "", prnt: "detail_box_drawSettings",
+  text: `auto sort`,
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_sortTris", cls: "cbx_gridSettings", prnt: "div_gridSettings_sortTris",
   rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   defaultChecked: false,
   callback: updateSetting
 });
+
 
 /*
 ╔╗       ╔╗           ╔╗
