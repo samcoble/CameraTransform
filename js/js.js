@@ -1620,7 +1620,7 @@ function m_objs_loadPoints(ar, _dir) // adds objects
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
   // zeroZMap();
-  // if (m_objs.length > 16 && typeof updateColorMaps == 'function') {updateColorMaps(); };
+  if (m_objs.length > 16 && typeof updateColorMaps == 'function') {updateColorMaps(); };
 
 } // END OF FN
 
@@ -3582,7 +3582,8 @@ function zeroZMap()
 
 function updateColorMaps()
 {
-  let _bool = getSetting('detail_box_drawSettings', 1)[2];
+  // let _bool = getSetting('detail_box_drawSettings', 1)[2];
+  let _bool = 0;
   for (let h=0; h<m_objs.length; h++)
   {
     for (let l=0; l<m_draw[h][3]*4; l++)
@@ -3620,8 +3621,8 @@ function drawLines()
 {
   start = size = end = 0;
 
-  let stn_depth = !getSetting('detail_box_drawSettings', 1)[3],
-      stn_surfaces = getSetting('detail_box_drawSettings', 1)[1];
+  let stn_depth = !getSetting('detail_box_drawSettings', 1)[3];
+  let stn_surfaces = getSetting('detail_box_drawSettings', 1)[1];
 
   for (let i = m_objs.length-1; i >= 0; i--)
   {

@@ -2232,7 +2232,8 @@ makeElement(addCheckbox,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   callback: updateSetting,
-  niladic: updateColorMaps
+  niladic: updateColorMaps,
+  defaultChecked: false
 });
 
 makeElement(addDiv,
