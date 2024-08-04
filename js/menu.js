@@ -2171,7 +2171,7 @@ makeElement(addTextInput,
 makeElement(addDiv,
 {
   id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-  settings: [true, true, false, false, false, false],
+  settings: [true, true, false, false, false], //, false
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2269,23 +2269,23 @@ makeElement(addCheckbox,
   defaultChecked: false,
   callback: updateSetting
 });
-
-makeElement(addDiv,
-{
-  id: "div_gridSettings_sortTris", cls: "", prnt: "detail_box_drawSettings",
-  text: `auto sort`,
-  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
-});
-
-makeElement(addCheckbox,
-{
-  id: "cbx_sortTris", cls: "cbx_gridSettings", prnt: "div_gridSettings_sortTris",
-  rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
-  hoverStyles: cbx_myStyle_hover,
-  checkedStyles: cbx_myStyle_checked,
-  defaultChecked: false,
-  callback: updateSetting
-});
+//
+// makeElement(addDiv,
+// {
+//   id: "div_gridSettings_sortTris", cls: "", prnt: "detail_box_drawSettings",
+//   text: `auto sort`,
+//   rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
+// });
+//
+// makeElement(addCheckbox,
+// {
+//   id: "cbx_sortTris", cls: "cbx_gridSettings", prnt: "div_gridSettings_sortTris",
+//   rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
+//   hoverStyles: cbx_myStyle_hover,
+//   checkedStyles: cbx_myStyle_checked,
+//   defaultChecked: false,
+//   callback: updateSetting
+// });
 
 
 /*
