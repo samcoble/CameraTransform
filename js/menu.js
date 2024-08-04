@@ -1647,6 +1647,7 @@ makeElement(addDiv,
     background: none;
     overflow-y: scroll;
     scrollbar-width: none;
+    border-bottom: none;
   `
 });
 
@@ -1691,7 +1692,7 @@ if (isMobile)
     callback: mem_t_mov
   });
 
-  menu_q_scale[1] = 76;
+  menu_q_scale[1] = 74;
 }
 
 packElement(eset_tools, addButton,
@@ -2170,7 +2171,7 @@ makeElement(addTextInput,
 makeElement(addDiv,
 {
   id: "detail_box_drawSettings", cls: "", prnt: "menu_detail",
-  settings: [true, true, false, false, false],
+  settings: [true, true, false, false, false, false],
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2231,6 +2232,7 @@ makeElement(addCheckbox,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   callback: updateSetting,
+  niladic: updateColorMaps
 });
 
 makeElement(addDiv,
@@ -2254,18 +2256,36 @@ makeElement(addDiv,
 {
   id: "div_gridSettings_drawDepth", cls: "", prnt: "detail_box_drawSettings",
   text: `culling`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addCheckbox,
 {
   id: "cbx_drawDepth", cls: "cbx_gridSettings", prnt: "div_gridSettings_drawDepth",
+  rootStyle: rootStyle + cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
+  id: "div_gridSettings_sortTris", cls: "", prnt: "detail_box_drawSettings",
+  text: `auto sort`,
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_sortTris", cls: "cbx_gridSettings", prnt: "div_gridSettings_sortTris",
   rootStyle: rootStyle + cbx_myStyle + _cbxLastRad,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   defaultChecked: false,
   callback: updateSetting
 });
+
 
 /*
 ╔╗       ╔╗           ╔╗
