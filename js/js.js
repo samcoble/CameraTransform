@@ -387,7 +387,7 @@ if (isMobile)
   document.addEventListener('touchend', handleTouchEnd);
 }
 
-onmousemove = function(e)
+document.onmousemove = function(e)
 {
 	if (mouseLock)
 		{
