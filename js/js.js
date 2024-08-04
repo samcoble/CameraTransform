@@ -1620,7 +1620,7 @@ function m_objs_loadPoints(ar, _dir) // adds objects
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
   // zeroZMap();
-  if (m_objs.length > 16 && typeof updateColorMaps == 'function') {updateColorMaps(); };
+  if (m_objs.length > 16) { updateColorMaps(); }; // && typeof updateColorMaps == 'function'
 
 } // END OF FN
 
@@ -3561,7 +3561,7 @@ function updateZMap() // mean tri calc
 
     } else
     {
-      z_map[i] = 0; // Later check if not zero. Or doesn't matter.
+      // z_map[i] = 0; // Later check if not zero. Or doesn't matter.
     }
   }
 }
