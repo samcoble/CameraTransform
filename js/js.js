@@ -34,7 +34,7 @@ var grid_plane = [0,0,1];
 var enableViewRef = false;
 var text_log = [];
 
-var click_map; // pointer to object clickMonitor array data
+// var click_map; // pointer to object clickMonitor array data
 
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
@@ -2295,78 +2295,21 @@ var emulateKey =
   hold_time: 50,
   start: function(_p)
   {
-    this.active = 1;
-    this.timer = Date.now();
-    this.key = _p.key;
+    emulateKey.active = 1;
+    emulateKey.timer = Date.now();
+    emulateKey.key = _p.key;
   },
   run: function ()
   {
-    this.map[this.key] = 1;
-    if (Date.now() - this.timer > this.hold_time)
+    emulateKey.map[emulateKey.key] = 1;
+    if (Date.now() - emulateKey.timer > emulateKey.hold_time)
     {
-      this.map[this.key] = 0;
-      this.active = 0;
+      emulateKey.map[emulateKey.key] = 0;
+      emulateKey.active = 0;
     }
   }
 }; functionRunList.push(emulateKey);
 
-
-/*
-// i set this up for mouse input but it's only useful for touch. works tho.
-// this should be possible to do in a more simple abstract way using a measure of a broader scope of inputs and doing a check within bounds
-var clickMonitor =
-{
-  active: 1,
-  timer: 0,
-  time_log: [0, 0, 0],
-  dt: 80,
-  dt_s: [2, 5],
-  map: [0, 0, 0], // single, double, drag
-  run: function ()
-  {
-    if (key_map.lmb && !pointerOutsideWindow[0]) // key down
-    {
-      if (this.time_log[0]==0) {this.time_log[0] = Date.now();} // set time 2
-
-      if (this.time_log[0] != 0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[1]*this.dt)
-      { // drag start
-        this.time_log[1] = 0;
-        this.map[1] = 0;
-        this.map[2] = 1;
-        // console.log('drag start');
-      }
-
-    } else { // key release
-
-      if (Date.now() - this.time_log[1] > this.dt_s[1]*this.dt && this.map[2] == 0) {this.map[0] = this.map[1] = this.map[2] = 0;}
-      if (this.time_log[1] == 0) { this.time_log[1] = Date.now(); } // set time 1
-
-      if (this.time_log[0] !=0 && Date.now() - this.time_log[0] < this.dt_s[0]*this.dt)
-      {
-        this.map[0] = 1;
-        this.time_log[0] = 0;
-        // console.log('single click');
-      }
-
-      if (this.time_log[0] !=0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[0]*this.dt && Date.now() - this.time_log[0] < this.dt_s[1]*this.dt)
-      { // long click
-        this.map[0] = 0; this.map[1] = 1;
-        this.time_log[0] = 0;
-        // console.log('long click');
-      }
-
-      if (this.map[2])
-      {
-        this.map[2] = 0;
-        this.time_log[0] = 0;
-        // console.log('drag end');
-      }
-    }
-  }
-}; functionRunList.push(clickMonitor);
-*/
-
-// click_map = clickMonitor.map;
 
 var translateFolder =
 {
