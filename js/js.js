@@ -3515,11 +3515,11 @@ function zeroZMap()
 function updateColorMaps()
 {
   let _bool = getSetting('detail_box_drawSettings', 1)[2];
-  for (let h=0; h<m_objs.length; h++)
+  for (let i=0; i<m_objs.length; i++)
   {
-    for (let l=0; l<m_draw[h][3]*4; l++)
+    for (let l=0; l<m_draw[i][3]*4; l++)
     { 
-      m_draw[h][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[h][3]*l*1.2+0.40;
+      m_draw[i][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[i][3]*l*1.2+0.40;
     }
   }
 }
