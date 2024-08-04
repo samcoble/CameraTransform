@@ -1542,24 +1542,28 @@ border-left: 0px solid #FFF;
 border-right: 0px solid #FFF;
 outline: none;
 width: 100%;
-`;
-
-if (isMobile)
-{
-  _btn = _btn + `
-    text-align: center;
-    height: 100px;
-    line-height: 2.2;
-    font-size: 19px;
-  `;
-} else {
-  _btn = _btn + `
     text-align: right;
     height: 26px;
     line-height: 2.2;
     font-size: 11.5px;
-  `;
-}
+`;
+
+// if (isMobile)
+// {
+//   _btn = _btn + `
+//     text-align: center;
+//     height: 100px;
+//     line-height: 2.2;
+//     font-size: 19px;
+//   `;
+// } else {
+//   _btn = _btn + `
+//     text-align: right;
+//     height: 26px;
+//     line-height: 2.2;
+//     font-size: 11.5px;
+//   `;
+// }
 
 var _btn_hover_tool =
 `
@@ -1650,49 +1654,49 @@ makeElement(addDiv,
   `
 });
 
-if (isMobile)
-{
-  packElement(eset_tools, addButton,
-  {
-    text: 'F Key',
-    id: 'tool_emKeyF', cls: '_btn', prnt: 'div_toolListHeader',
-    rootStyle: rootStyle + _btn + _btn_tooln,
-    hoverStyles: _btn_hover_tool,
-    callback: emulateKey.start,
-    params: { key: 'f' }
-  });
+// if (isMobile)
+// {
+//   packElement(eset_tools, addButton,
+//   {
+//     text: 'F Key',
+//     id: 'tool_emKeyF', cls: '_btn', prnt: 'div_toolListHeader',
+//     rootStyle: rootStyle + _btn + _btn_tooln,
+//     hoverStyles: _btn_hover_tool,
+//     callback: emulateKey.start,
+//     params: { key: 'f' }
+//   });
 
-  packElement(eset_tools, addButton,
-  {
-    text: 'R Key',
-    id: 'tool_emKeyR', cls: '_btn', prnt: 'div_toolListHeader',
-    rootStyle: rootStyle + _btn + _btn_tooln,
-    hoverStyles: _btn_hover_tool,
-    callback: emulateKey.start,
-    params: { key: 'r' }
-  });
+//   packElement(eset_tools, addButton,
+//   {
+//     text: 'R Key',
+//     id: 'tool_emKeyR', cls: '_btn', prnt: 'div_toolListHeader',
+//     rootStyle: rootStyle + _btn + _btn_tooln,
+//     hoverStyles: _btn_hover_tool,
+//     callback: emulateKey.start,
+//     params: { key: 'r' }
+//   });
 
-  packElement(eset_tools, addButton,
-  {
-    text: 'Z Key',
-    id: 'tool_emKeyZ', cls: '_btn', prnt: 'div_toolListHeader',
-    rootStyle: rootStyle + _btn + _btn_tooln,
-    hoverStyles: _btn_hover_tool,
-    callback: emulateKey.start,
-    params: { key: 'z' }
-  });
+//   packElement(eset_tools, addButton,
+//   {
+//     text: 'Z Key',
+//     id: 'tool_emKeyZ', cls: '_btn', prnt: 'div_toolListHeader',
+//     rootStyle: rootStyle + _btn + _btn_tooln,
+//     hoverStyles: _btn_hover_tool,
+//     callback: emulateKey.start,
+//     params: { key: 'z' }
+//   });
 
-  packElement(eset_tools, addButton,
-  {
-    text: "Finish Object \u07F7",
-    id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
-    rootStyle: rootStyle + _btn + _btn_tooln,
-    hoverStyles: _btn_hover_tool,
-    callback: mem_t_mov
-  });
+//   packElement(eset_tools, addButton,
+//   {
+//     text: "Finish Object \u07F7",
+//     id: "tool_finishObj", cls: "_btn", prnt: "div_toolListHeader",
+//     rootStyle: rootStyle + _btn + _btn_tooln,
+//     hoverStyles: _btn_hover_tool,
+//     callback: mem_t_mov
+//   });
 
-  menu_q_scale[1] = 74;
-}
+//   menu_q_scale[1] = 74;
+// }
 
 packElement(eset_tools, addButton,
 {
