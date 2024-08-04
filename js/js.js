@@ -374,18 +374,18 @@ const handleTouchEnd = (event) =>
   }
 }
 
+// function requestFullscreen()
+// {
+//   const elem = document.documentElement;
+//   if (elem.requestFullscreen) { elem.requestFullscreen(); }
+// }
+//
 if (isMobile)
 {
   document.addEventListener('touchstart', handleTouchStart);
   document.addEventListener('touchmove', handleTouchMove);
   document.addEventListener('touchend', handleTouchEnd);
 }
-
-// function requestFullscreen()
-// {
-//   const elem = document.documentElement;
-//   if (elem.requestFullscreen) { elem.requestFullscreen(); }
-// }
 
 onmousemove = function(e)
 {
@@ -1088,7 +1088,7 @@ document.addEventListener('pointerlockchange', function ()
 
 document.addEventListener('mousedown', function(e)
 {
-  if (pointerOutsideWindow[0] && e.button == 0) { e.preventDefault(); }
+  // if (pointerOutsideWindow[0] && e.button == 0) { e.preventDefault(); }
 	if (e.button == 0) {key_map.lmb = true};
 	if (e.button == 1) {key_map.mmb = true};
 	if (e.button == 2) {key_map.rmb = true};
