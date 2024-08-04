@@ -35,8 +35,6 @@ var enableViewRef = false;
 var text_log = [];
 var _this; // ez pointer for param
 
-var click_map; // pointer to object clickMonitor array data
-
 var flag_objModif = false, // replace _run_check with diff sys
     flag_loadingObject = 0,
     flag_loadTemp = 0,
@@ -122,7 +120,7 @@ var menu_q_size = [280, 612],
     menu_tab = 0,
     menu_wpn_pos = [155, 10],
     menu_scroll_c = 0, // scroll offset, real constant
-    menu_q_scale = [1, 54.5];
+    menu_q_scale = [1, 59.5];
 
 var indices = [],
     distances = [],
@@ -301,7 +299,6 @@ var player_pos_i = [],
 
 const handleTouchStart = (event) =>
 {
-  if (pointerOutsideWindow[0]) { event.preventDefault(); }
   mTimer = Date.now();
   mScreenMode = 0;
   dragCatch = 1;
@@ -321,7 +318,7 @@ const handleTouchMove = (event) =>
     dragCatch = 0;
   }
 
-    // event.preventDefault();
+    event.preventDefault();
 
     _touch_f[0] = event.touches[0].clientX;
     _touch_f[1] = event.touches[0].clientY;
@@ -379,7 +376,7 @@ const handleTouchEnd = (event) =>
 //   const elem = document.documentElement;
 //   if (elem.requestFullscreen) { elem.requestFullscreen(); }
 // }
-//
+
 if (isMobile)
 {
   document.addEventListener('touchstart', handleTouchStart);
@@ -403,6 +400,7 @@ function runListTerminateAll()
   for (let p = functionRunList.length-1; p>=0; p--)
   { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
 }
+
 
 function updateTextLog()
 {
@@ -1083,12 +1081,8 @@ document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 document.addEventListener('pointerlockchange', function ()
 { if (document.pointerLockElement === null) { mouseLock = 0; } });
 
-
-
-
 document.addEventListener('mousedown', function(e)
 {
-  // if (pointerOutsideWindow[0] && e.button == 0) { e.preventDefault(); }
 	if (e.button == 0) {key_map.lmb = true};
 	if (e.button == 1) {key_map.mmb = true};
 	if (e.button == 2) {key_map.rmb = true};
@@ -1100,9 +1094,6 @@ window.addEventListener('mouseup', function(e)
 	if (e.button == 1) {key_map.mmb = false};
 	if (e.button == 2) {key_map.rmb = false};
 });
-
-
-
 
 window.addEventListener("wheel", function(e)
 {
@@ -1562,17 +1553,7 @@ function m_objs_loadPoints(ar, _dir) // adds objects
 
     // var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-1)/2)-Math.floor(ar_f.length/4)%2)-1) * 6 + 6 );
     var ar_t = new Float32Array(((Math.floor((Math.floor(ar_f.length/4)-4)/2)- (Math.floor(ar_f.length/4)+1) %2)-1) * 6 + 6 ); // this fixed
-
-    m_draw.push([
-      ar_t,
-      ar_t.length/6, // 6 2d points that all require 24 ? 12 ?
-      ar_t.length,
-      (ar_t.length/6+3)*12*5,
-      new Float32Array( (ar_t.length/6+3)*12*5 * 4) // yeah that is a 5
-    ]);
-
-    // [2] is just the length i guess lol what order in ?
-    // [3] is size of [4]
+    m_draw.push([ar_t, ar_t.length/6, ar_t.length, (ar_t.length/6+3)*12*5, new Float32Array( (ar_t.length/6+3)*12*5 * 4)]); // yeah that is a 5
 
     // z-map shit fixed now?
     var ar_z = new Float32Array( ar_t.length/6 );
@@ -1619,10 +1600,7 @@ function m_objs_loadPoints(ar, _dir) // adds objects
 
  	if (typeof updateTree == 'function') { updateTree(tree_allObjects); }
 	updateNormalMaps();
-  // zeroZMap();
-  if (m_objs.length > 16) { updateColorMaps(); }; // && typeof updateColorMaps == 'function'
-
-} // END OF FN
+}
 
 function m_t_objs_loadPoint(ar)
 {
@@ -2302,82 +2280,25 @@ var emulateKey =
   timer: 0,
   active: 0,
   key: '',
-  map: key_map,
   hold_time: 50,
   start: function(_p)
   {
-    this.active = 1;
-    this.timer = Date.now();
-    this.key = _p.key;
+    _this = emulateKey;
+    _this.active = 1;
+    _this.timer = Date.now();
+    _this.key = _p.key;
   },
   run: function ()
   {
-    this.map[this.key] = 1;
-    if (Date.now() - this.timer > this.hold_time)
+    key_map[_this.key] = 1;
+    if (Date.now() - _this.timer > _this.hold_time)
     {
-      this.map[this.key] = 0;
-      this.active = 0;
+      key_map[_this.key] = 0;
+      _this.active = 0;
     }
   }
 }; functionRunList.push(emulateKey);
 
-
-/*
-// i set this up for mouse input but it's only useful for touch. works tho.
-// this should be possible to do in a more simple abstract way using a measure of a broader scope of inputs and doing a check within bounds
-var clickMonitor =
-{
-  active: 1,
-  timer: 0,
-  time_log: [0, 0, 0],
-  dt: 80,
-  dt_s: [2, 5],
-  map: [0, 0, 0], // single, double, drag
-  run: function ()
-  {
-    if (key_map.lmb && !pointerOutsideWindow[0]) // key down
-    {
-      if (this.time_log[0]==0) {this.time_log[0] = Date.now();} // set time 2
-
-      if (this.time_log[0] != 0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[1]*this.dt)
-      { // drag start
-        this.time_log[1] = 0;
-        this.map[1] = 0;
-        this.map[2] = 1;
-        // console.log('drag start');
-      }
-
-    } else { // key release
-
-      if (Date.now() - this.time_log[1] > this.dt_s[1]*this.dt && this.map[2] == 0) {this.map[0] = this.map[1] = this.map[2] = 0;}
-      if (this.time_log[1] == 0) { this.time_log[1] = Date.now(); } // set time 1
-
-      if (this.time_log[0] !=0 && Date.now() - this.time_log[0] < this.dt_s[0]*this.dt)
-      {
-        this.map[0] = 1;
-        this.time_log[0] = 0;
-        // console.log('single click');
-      }
-
-      if (this.time_log[0] !=0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[0]*this.dt && Date.now() - this.time_log[0] < this.dt_s[1]*this.dt)
-      { // long click
-        this.map[0] = 0; this.map[1] = 1;
-        this.time_log[0] = 0;
-        // console.log('long click');
-      }
-
-      if (this.map[2])
-      {
-        this.map[2] = 0;
-        this.time_log[0] = 0;
-        // console.log('drag end');
-      }
-    }
-  }
-}; functionRunList.push(clickMonitor);
-*/
-
-// click_map = clickMonitor.map;
 
 var translateFolder =
 {
@@ -3543,7 +3464,7 @@ function ar2Dmod(a, b, c, s)
   return b;
 }
 
-function updateZMap() // mean tri calc
+function updateZMap()
 {
   let _t_i = m_objs.length;
 	for (var i=0; i<_t_i; i++)
@@ -3553,57 +3474,22 @@ function updateZMap() // mean tri calc
       let _sk = m_draw[i][1];
       for (let k = _sk; k>=0; k--)
       {
-        // z_map[i][0][k] = (m1.data[8 * k + mem_log[i][0] + 3] + m1.data[8 * k + mem_log[i][0] + 7] + m1.data[8 * k + mem_log[i][0] + 11])/3;
-        z_map[i][0][k] = m1.data[8 * k + mem_log[i][0] + 3];
+        z_map[i][0][k] = (m1.data[8 * k + mem_log[i][0] + 2] + m1.data[8 * k + mem_log[i][0] + 6] + m1.data[8 * k + mem_log[i][0] + 10])/3;
         z_map[i][1][k] = k;
       }
-      if (getSetting('detail_box_drawSettings', 1)[5]) { z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]); }
-
+       z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]);
     } else
     {
-      // z_map[i] = 0; // Later check if not zero. Or doesn't matter.
+      z_map[i] = 0; // Later check if not zero. Or doesn't matter.
     }
   }
 }
 
-function zeroZMap()
-{
-  let _s = m_objs.length;
-  for (let i=0; i<_s; i++)
-  {
-    let _s2 = m_draw[i][1];
-    for (let k=0; k<_s2; k++)
-    {
-      z_map[i][0][k] = 0;
-      z_map[i][1][k] = k;
-    }
-  }
-}
+// updateZMap();
 
-function updateColorMaps()
-{
-  // let _bool = getSetting('detail_box_drawSettings', 1)[2];
-  let _bool = 0;
-  for (let h=0; h<m_objs.length; h++)
-  {
-    for (let l=0; l<m_draw[h][3]*4; l++)
-    { 
-      m_draw[h][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[h][3]*l*1.2+0.40;
-    }
-  }
-}
-
-/*
-  // m_draw[m_objs.length-1][Math.floor(l/(12*5))]
-  // m_draw[h][4][l] = (l%4==3) ? 1-0*0.7 : ; 
-  // m_draw[h][4][l] = (l%4==3) ? 1-0*0.7 : 1/m_draw[h][0][l]*l*1.5+0.25; 
-  // m_draw[h][4][l] = (l%4==3) ? 1-0*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[h][0]+mem_log[h][1]-1], -2.5 ) - 0.25; 
-
-  // m_draw[h][4][l] = (l%4==3) ? 1-0*0.7 : 1/m_draw[h][(l+3)/(12*5)]*1.5+0.25; // 
-  // m_draw[h][4][l] = (l%4==3) ? 1-_stn_bool*0.7 : 1/m_draw[h][0][l]*l*1.5+0.25; 
-
-  // z_map[h][1].sort((a, b) => z_map[h][0][a] - z_map[h][0][b]);
-*/
+// crack but really I can split draw calls on modulo 2 and the zeros go to TRIANGLE_STRIP
+// would it be worth it even chunk draw last draw remainder?
+// this may not work in every instance but marked objects may provide a tremendous performance bump
 
 // Now make a set of data of 2d center points to feed this and scale w/ z from shader
 // drawSegment(ar2Dmod_static(_2dis[2], _2dis_buffers[2], [0,0], [0.5,0.5] ), -4);
@@ -3621,14 +3507,11 @@ function drawLines()
 {
   start = size = end = 0;
 
-  let stn_depth = !getSetting('detail_box_drawSettings', 1)[3];
-  let stn_surfaces = getSetting('detail_box_drawSettings', 1)[1];
-
   for (let i = m_objs.length-1; i >= 0; i--)
   {
     d_i = modIndex[i];
 
-    if (stn_surfaces)
+    if (getSetting('detail_box_drawSettings', 1)[1])
     {
       if (d_i > world_obj_count)
       {
@@ -3637,20 +3520,15 @@ function drawLines()
           if (m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1] > 0)
           {
             // vertices = [];
-            if (stn_depth) // was grid 2 depth
+            if (!getSetting('detail_box_drawSettings', 1)[3]) // was grid 2 depth
             {
               for (let k = 0; k < m_draw[d_i][1]; k++)
               {
-                // z_map[d_i][0][k] = (m1.data[8 * k + mem_log[d_i][0] + 2] + m1.data[8 * k + mem_log[d_i][0] + 6] + m1.data[8 * k + mem_log[d_i][0] + 10])/3;
-                // z_map[d_i][1][k] = k;
-                // z_map[d_i][0][k] = m1.data[8 * k + mem_log[d_i][0] + 3];
-
                 if(
                   m1.data[8 * k + mem_log[d_i][0] + 3] > 0 && 
                   m1.data[8 * k + mem_log[d_i][0] + 7] > 0 &&
                   m1.data[8 * k + mem_log[d_i][0] + 11] > 0)
                 {
-
                   m_draw[d_i][0][(k) * 6] = m1.data[8 * k + mem_log[d_i][0]];
                   m_draw[d_i][0][(k) * 6 + 1] = -m1.data[8 * k + mem_log[d_i][0] + 1];
 
@@ -3660,7 +3538,6 @@ function drawLines()
                   m_draw[d_i][0][(k) * 6 + 4] = m1.data[8 * k + mem_log[d_i][0] + 8];
                   m_draw[d_i][0][(k) * 6 + 5] = -m1.data[8 * k + mem_log[d_i][0] + 9];
                 } else {
-
                   m_draw[d_i][0][(k) * 6] = 0;
                   m_draw[d_i][0][(k) * 6 + 1] = 0;
 
@@ -3671,11 +3548,9 @@ function drawLines()
                   m_draw[d_i][0][(k) * 6 + 5] = 0;
                 }
               } // end of k loop
-
-              // z_map[d_i][1].sort((a, b) => z_map[d_i][0][a] - z_map[d_i][0][b]);
-
             } else {
-              for (let k = 0; k < m_draw[d_i][1]; k++) // m_draw[d_i][3]*4 // LINE REF 1567
+
+              for (let k = 0; k < m_draw[d_i][1]; k++)
               {
                 if ( // drawLines()
                   m1.data[8 * z_map[d_i][1][k] + mem_log[d_i][0] + 3] > 0 && 
@@ -3721,10 +3596,6 @@ function drawLines()
 
             if (getSetting('detail_box_drawSettings', 1)[4]) // was grid 3 culling
             {
-              // so to make this culling feature work; which could be done manually instead actually improving performance; i flipped
-              // every second triangle's normal by swapping two points on the triangle. culling only helps correct visual fidelity and
-              // does not provide any change in performance because the data still exists & is computed etc
-
               gl.enable(gl.CULL_FACE);
               gl.cullFace(gl.BACK);
             } else {gl.disable(gl.CULL_FACE);}
@@ -3753,29 +3624,11 @@ function drawLines()
             }
             else
             {
-              /*
-                ar_t.length/6,
-                ar_t.length,
-                (ar_t.length/6+3)*12*5,
-              */
-
-              // for (let l=0; l<m_draw[d_i][3]*4; l++)
-              // { 
-              //   // m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; 
-              //   m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1/m_draw[d_i][0][l]*l*1.5+0.25; 
-              // // { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1], -0.5 ) - 0.25; }
-              // }
-
+              for (let l=0; l<m_draw[d_i][3]*4; l++) { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1/m_draw[d_i][3]*l*1.5+0.25; }
               // here is the color data
 
               // after using the depth here again i can't tell if all tris end up same or
-              // i just use my z map or map by depth per tri better. some of the calculations i can't make sense of. when i intitially wrote the buffer i remember
-              // the calculation (ar_t.length/6+3)*12*5 came out of logic + trial & error so it's still mysterious to me. annoying b/c this is the color data ahhhhhhhhhhhh
-              // so far moving the generated color map out of here and calling it only once w/ depth captured from 2d w as the only rt data it now runs faster
-              // all of the yellow circle indicators are not buffered that's why the fps drops. it should be only 5 or 10 frames/s instead of 50-70.
-              // so far it should be entirely possible to generate a shadow map for an object ahead of time and and combine it with the color data in real time by interpolating the
-              // pregenerated shadow map. i may have to rewrite a lot of this it would be easier that way. the z-map is going to be replaced anyway
-              // stress test map w/ depth enabled went from 25 to 60 fps.
+              // i just use my z map or map by depth per tri better
 
               // for (let l=0; l<m_draw[d_i][3]*4; l++)
               // { m_draw[d_i][4][l] = (l%4==3) ? 1-getSetting('detail_box_drawSettings', 1)[2]*0.7 : 1 - Math.pow( (600)/m1.data[mem_log[d_i][0]+mem_log[d_i][1]-1], -0.5 ) - 0.25; }
@@ -3797,7 +3650,7 @@ function drawLines()
             }
           }
         }
-      }
+      }       
     }
 
     gl.uniform1i(renderModeUniform, 1);
@@ -3908,7 +3761,7 @@ function drawLines()
       drawPoints(_pts, d_i);
     }
 
-
+  
   } // end of first obj loop
 
   // this part is totally useless it should not require being split into a new data format to have temp data for line placement
@@ -4734,7 +4587,6 @@ var getSurface = {
   run: function ()
   {
     if (key_map.lmb) {getSurface.calc();}
-    // if (click_map[0]) {getSurface.calc();}
   }
 }
 
