@@ -387,7 +387,6 @@ if (isMobile)
 //   if (elem.requestFullscreen) { elem.requestFullscreen(); }
 // }
 
-
 onmousemove = function(e)
 {
 	if (mouseLock)
@@ -404,7 +403,6 @@ function runListTerminateAll()
   for (let p = functionRunList.length-1; p>=0; p--)
   { if (functionRunList[p].enable) {functionRunList[p].toggle();} }
 }
-
 
 function updateTextLog()
 {
