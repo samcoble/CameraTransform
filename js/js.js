@@ -172,10 +172,10 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 
 function updateMenuPos() // this stuff so bad jesus
 {
-
   let _tree_folder_h = document.getElementById("tree_allObjects").clientHeight;
 
   menu_q_size[1] = in_win_h/100*menu_q_scale[1];
+  document.getElementById('tree_allObjects').style.maxHeight = menu_q_size[1]-200+'px';
   document.getElementById('menu_q').style.height = menu_q_size[1]+"px";
 
   menu_obj_size = [200, 500, _tree_folder_h+26+200]; // default & modified to include margins	
@@ -185,12 +185,11 @@ function updateMenuPos() // this stuff so bad jesus
 	menu_q_pos = [in_win_w*0.01, in_win_h*0.5 - 0.5*menu_q_size[1]];
 	menu_wpn_pos = [in_win_w/100*3, in_win_h/100*90];
 
-	// Updating new menu script.
 	document.getElementById("menu_q").style.top = menu_q_pos[1]+"px";
 	document.getElementById("menu_q").style.left = menu_q_pos[0]+"px";
 
-	document.getElementById("menu_obj").style.top = menu_obj_pos[1]+"px";
-	// document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px";
+	document.getElementById("menu_obj").style.top = menu_obj_pos[1]+"px"; // preview & tree's top offset
+	// document.getElementById("menu_obj").style.left = menu_obj_pos[0]+"px"; // using css instead
 	menu_obj_size[1] = document.getElementById("menu_obj").offsetHeight;
 
 	in_win_clip = in_win_w+_epsilon;
@@ -1482,7 +1481,8 @@ function splitObj(ar, n) // 0:S:raw, :1:-center, R:2:-enc
   for (let i = 0; i < _s; i++)
   {
     let end = Math.min(i*4 + 4, ar.length);
-    let chunk = ar.subarray(i*4, end);
+    // let chunk = ar.subarray(i*4, end);
+    let chunk = ar.slice(i * 4, end);
     r.push(new Float32Array(chunk));
   }
   return r;
@@ -2536,7 +2536,7 @@ function bond_obj(_i)
 	}
 }
 
-function unlink_obj(_i, _d) // _d bool for data/load
+function unlink_obj(_i, _d) // _d bool for data|load
 {
   if (_i == undefined) {_i = obj_cyc; _d = 0;}
   let _s = mem_log[_i][2] - mem_encode[0],
@@ -2592,14 +2592,82 @@ function unlink_obj(_i, _d) // _d bool for data/load
   }
 }
 
+function obj_linkPoly(_a0, _a1)
+{
+  let _of = [],
+      _o1 = splitObj(_a0, 0),
+      _o2 = splitObj(_a1, 0);
+
+  for (var i=0; i<_o1.length; i++)
+  {
+    if (i==0) {_of.push(_o1[i]);}
+    _of.push(_o2[i]);
+    if (i != _o1.length-1) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);} // -(encoded offset + 1)
+  }
+  m_objs_loadPoints(packObj(_of), 0);
+}
+
+function obj_linkNtoM(_i0, _i1)
+{
+  let _s1 = mem_log[_i0][2]-mem_encode[0], // points in _i0
+    _s2 = mem_log[_i1][2]-mem_encode[0], // points in _i1
+    _n_big_i = 0,
+    _n_sml_i = 0,
+    _n_big = 0,
+    _n_sml = 0,
+    _n_o2 = [],
+    _n_off = 0;
+
+  if (_s1 > _s2)
+  {
+    _n_big = _s1; _n_sml = _s2;
+    _n_big_i = _i0; _n_sml_i = _i1;
+  } else {
+    _n_big = _s2; _n_sml = _s1;
+    _n_big_i = _i1; _n_sml_i = _i0;
+  }
+
+  let _n_r = Math.ceil(_n_big/_n_sml);
+  let _n_dp = _n_sml-_n_big%_n_sml; // delta | points to add
+  // let _n_d = ; // direction | for now assume always add points
+
+  let _n_o1 = []; // now copy the larger array and write it's last point onto the added points
+  for (let i=0; i<_n_big; i++)
+  {
+    _n_o1[i*4] = m_objs[_n_big_i][i*4];
+    _n_o1[i*4+1] = m_objs[_n_big_i][i*4+1];
+    _n_o1[i*4+2] = m_objs[_n_big_i][i*4+2];
+    _n_o1[i*4+3] = m_objs[_n_big_i][i*4+3];
+  }
+
+  for (let i=_n_big; i<_n_big+_n_dp; i++)
+  {
+    _n_o1[i*4] = m_objs[_n_big_i][(_n_big-1)*4];
+    _n_o1[i*4+1] = m_objs[_n_big_i][(_n_big-1)*4+1];
+    _n_o1[i*4+2] = m_objs[_n_big_i][(_n_big-1)*4+2];
+    _n_o1[i*4+3] = m_objs[_n_big_i][(_n_big-1)*4+3];
+  }
+
+  for (let i=0; i<_n_r*_n_sml; i++) // now use ratio _n_r to make the sequence n,n,n,m,m,m,w,w,w...
+  {
+    if (i%_n_r==0 && i!=0) {_n_off++;}
+    _n_o2[i*4] = m_objs[_n_sml_i][_n_off*4];
+    _n_o2[i*4+1] = m_objs[_n_sml_i][_n_off*4+1];
+    _n_o2[i*4+2] = m_objs[_n_sml_i][_n_off*4+2];
+    _n_o2[i*4+3] = m_objs[_n_sml_i][_n_off*4+3];
+  }
+
+  obj_linkPoly(_n_o1, _n_o2);
+}
+
 function link_obj(_i)
 {
   let _t = 1,
-      _i2 = _i;
+    _i2 = _i;
 
   if (getSetting('detail_box_linkSettings', 1)[0][0] == true) {_t = 0;}
   if (getSetting('detail_box_linkSettings', 1)[1][0] == true) {_t = 1;}
-  if (getSetting('detail_box_linkSettings', 1)[2][0] == true) {_t = 2;}
+  // if (getSetting('detail_box_linkSettings', 1)[2][0] == true) {_t = 2;}
 
 	switch(_all_lock)
 	{
@@ -2608,7 +2676,12 @@ function link_obj(_i)
 			_all_lock = 1;
 			break;
 		case 1:
-			if (mem_log[_i][1] != mem_log[_all_lock_i][1] || _i == _all_lock_i) {_all_lock = 0; _all_lock_i = 0; break;} //console.log("can't link");
+			if (_i == _all_lock_i)
+      {
+        _all_lock = 0; _all_lock_i = 0;
+        textLog('Linker prevented self to self');
+        break;
+      }
 			var _of = [];
 			var _o1 = splitObj(m_objs[_i], 2);
 			var _o2 = splitObj(m_objs[_all_lock_i], 2);
@@ -2630,73 +2703,12 @@ function link_obj(_i)
 					break;
 
 				case 1:
-					var _s = (mem_log[_i][2]-mem_encode[0]) - 1; // -(encoded offset + 1)
-					for (var i = 0; i<_s; i++)
-					{
-						if (i==0) {_of.push(_o1[i]);} // Start not included in pat gen seq
-						switch(i%2)
-						{
-							case 0: // even
-								_of.push(_o2[i]);
-								_of.push(_o2[i+1]);
-								if (i==_s-1)
-								{
-									_of.push(_o1[i+1]);
-									for (var j = _s-1; j>=0; j--)
-									{
-										switch(j%2)
-										{
-											case 0: // even
-												_of.push(_o1[j]);
-												if (j!=0) {_of.push(_o2[j]);} // omit last.
-												break;
-											case 1: // odd
-												_of.push(_o2[j]);
-												_of.push(_o1[j]);
-												break;
-										}
-									}
-								}
-								break;
-
-							case 1: // odd
-								_of.push(_o1[i]);
-								_of.push(_o1[i+1]);
-								if (i==_s-1)
-								{
-									_of.push(_o2[i+1]);
-
-									for (var j = _s-1; j>=0; j--)
-									{
-										switch(j%2)
-										{
-											case 0: // even
-												_of.push(_o1[j]);
-												if (j!=0) {_of.push(_o2[j]);} // omit last.
-												break;
-											case 1: // odd
-												_of.push(_o2[j]);
-												_of.push(_o1[j]);
-												break;
-										}
-									}
-								}
-								break;
-						}
-					}
-					m_objs_loadPoints(packObj(_of), 0);
-					break;
-
-				case 2:
-					for (var i = 0; i<mem_log[_i][2]-mem_encode[0]; i++) // -(encoded offset)
-					{
-						if (i==0) {_of.push(_o1[i]);}
-						_of.push(_o2[i]);
-						if (i != mem_log[_i][2]-mem_encode[0]-1) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);} // -(encoded offset + 1)
-					}
-					m_objs_loadPoints(packObj(_of), 0);
+          if (mem_log[_i][1] != mem_log[_all_lock_i][1])
+          { obj_linkNtoM(_i, _all_lock_i);
+          } else { obj_linkPoly(packObj(splitObj(m_objs[_i], 2)), packObj(splitObj(m_objs[_all_lock_i], 2))); };
 					break;
 			}
+
       textLog('Link complete [' + _all_lock_i + '] -> [' + _i2 + ']');
 		  _all_lock_i = _all_lock = 0;
 			break;
@@ -2719,8 +2731,7 @@ function rotateObjectData(_dat, _rad)
 }
 */
 
-// Remove center option? nah keeps cursor in right place.
-// @?@?@?@ Later make this rotate around a plane (grid plane as dir vec)
+// remove center option? nah keeps cursor in right place. make this rotate around a plane (grid plane as dir vec)
 function rotateObject(_op, _r, _obj) // _op determines if rotation uses point, center, or pivot w/ _r radians.
 {
 	if (_obj>world_obj_count)
@@ -3261,8 +3272,8 @@ var _all_lock_colors = [
   [0.6, 0.3, 0.5, 1.0]
 ];
 
-const color_light_purple = [0.65, 0.6, 1.0, 0.8];
-const color_yellow = [0.960, 0.85, 0.46, 0.87];
+const color_light_purple = [0.65, 0.6, 1.0, 0.7];
+const color_yellow = [0.96, 0.85, 0.46, 0.87];
 
 // folder_selected_objs
 // So here I draw lines. Passing true object i'th
@@ -3447,7 +3458,6 @@ _2dis.push(new Float32Array([1.0,0.0,0.981,0.195,0.924,0.383,0.831,0.556,0.707,0
 
 function ar2Dmod_static_single(a, b, c, s)
 {
-  // var nar = new Float32Array(a.length);
   for (let i = a.length-1; i>=0; i--)
   {
     b[i] = a[i]*s*_s_ratio[i%2] - c[i%2];
@@ -3457,7 +3467,6 @@ function ar2Dmod_static_single(a, b, c, s)
 
 function ar2Dmod_static(a, b, c, s)
 {
-  // var nar = new Float32Array(a.length);
   for (let i = a.length-1; i>=0; i--)
   {
     b[i] = a[i]*s[i%2]*_s_ratio[i%2] - c[i%2];
@@ -3467,7 +3476,6 @@ function ar2Dmod_static(a, b, c, s)
 
 function ar2Dmod(a, b, c, s)
 {
-  // var nar = new Float32Array(a.length);
   for (let i = a.length-1; i>=0; i--)
   {
     b[i] = a[i]*_s_ratio[i%2]*s - c[i%2];
@@ -3491,9 +3499,6 @@ function updateZMap() // mean tri calc
       }
       if (getSetting('detail_box_drawSettings', 1)[5]) { z_map[i][1].sort((a, b) => z_map[i][0][a] - z_map[i][0][b]); }
 
-    } else
-    {
-      // z_map[i] = 0; // Later check if not zero. Or doesn't matter.
     }
   }
 }
@@ -3519,7 +3524,7 @@ function updateColorMaps()
   {
     for (let l=0; l<m_draw[i][3]*4; l++)
     { 
-      m_draw[i][4][l] = (l%4==3) ? 1-_bool*0.7 : 1/m_draw[i][3]*l*1.2+0.40;
+      m_draw[i][4][l] = (l%4==3) ? 1-_bool*0.75 : 1/m_draw[i][3]*l*1.2+0.40;
     }
   }
 }
@@ -3669,7 +3674,7 @@ function drawLines()
                   gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 1.0]); 
                   break;
                 case false:
-                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.6]);
+                  gl.uniform4fv(colorUniformLocation, [0.4, 0.4, 0.4, 0.25]);
                   break;
               }
               gl.uniform1i(renderModeUniform, 1);

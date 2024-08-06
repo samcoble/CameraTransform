@@ -970,35 +970,35 @@ var key_bind_info =
   "7(generate circle at cursor & plane)",
   "H(set cursor to object's encoded 3D center)",
   "/(print object to console)",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym",
-  "hey man my name is gym"
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice",
+  "he's so nice he gave me rice"
 ];
 
 var _error_info = 
@@ -1100,7 +1100,6 @@ position: absolute;
 background: linear-gradient(0deg, rgba(18,18,18,1) 0%, rgba(14,14,14,1) 100%);
 */
 
-// var menu_tree_wrap
 var menu_tree_style =
 `
 box-sizing: border-box;
@@ -1113,9 +1112,7 @@ color: #CCC;
 overflow-y: auto;
 overflow-x: hidden;
 scrollbar-width: none;
-max-height: `+(menu_q_size[1]-200)+`px;
 `;
-// max-height: `+menu_q_size[1]-200+`px;
 
 var menu_tree_ulStyle =
 `
@@ -2233,9 +2230,9 @@ makeElement(addCheckbox,
   hoverStyles: cbx_myStyle_hover,
   checkedStyles: cbx_myStyle_checked,
   callback: updateSetting,
-  defaultChecked: false
+  defaultChecked: false,
+  niladic: updateColorMaps
 });
-  // niladic: updateColorMaps,
 
 makeElement(addDiv,
 {
@@ -2302,7 +2299,7 @@ makeElement(addCheckbox,
 makeElement(addDiv,
 {
   id: "detail_box_linkSettings", cls: "", prnt: "menu_detail",
-  settings: [{0:false}, {0:false}, {0:true}], // pass numbers as objects to enable radio
+  settings: [{0:false}, {0:false}], // pass numbers as objects to enable radio
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2320,13 +2317,6 @@ makeElement(addDiv,
   rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
-  /*
-    ╔╗╔═╗ 
-    ╠╣║╔╗╗
-    ║║║║║║
-    ╚╝╚╝╚╝
-  */    
-
 makeElement(addCheckbox,
 {
   id: "cbx_linear", cls: "cbx_linkSettings", prnt: "div_linkLinear",
@@ -2338,25 +2328,9 @@ makeElement(addCheckbox,
 
 makeElement(addDiv,
 {
-  id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
-  text: `zigzag`,
-  rootStyle: rootStyle + div_css_half + _btn_col2
-});
-
-makeElement(addCheckbox,
-{
-  id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
-  rootStyle: rootStyle + cbx_myStyle,
-  hoverStyles: cbx_myStyle_hover,
-  checkedStyles: cbx_myStyle_checked,
-  callback: updateSetting
-});
-
-makeElement(addDiv,
-{
   id: "div_linkPoly", cls: "", prnt: "detail_box_linkSettings",
   text: `poly`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
 });
 
 makeElement(addCheckbox,
@@ -2368,6 +2342,22 @@ makeElement(addCheckbox,
   defaultChecked: true,
   callback: updateSetting
 });
+
+// makeElement(addDiv,
+// {
+//   id: "div_linkZigzag", cls: "", prnt: "detail_box_linkSettings",
+//   text: `zigzag`,
+//   rootStyle: rootStyle + div_css_half + _btn_col2
+// });
+//
+// makeElement(addCheckbox,
+// {
+//   id: "cbx_zigzag", cls: "cbx_linkSettings", prnt: "div_linkZigzag",
+//   rootStyle: rootStyle + cbx_myStyle,
+//   hoverStyles: cbx_myStyle_hover,
+//   checkedStyles: cbx_myStyle_checked,
+//   callback: updateSetting
+// });
 
 /*
 ╔╗         ╔╗           ╔╗
