@@ -1650,7 +1650,7 @@ function mem_t_mov(_b) // puts m_t_objs into m_objs as single array
 
   if (mem_t_sum != 0)
   {
-    switch(_b)
+    switch(_det)
     {
       case 0:
         loadDef();
