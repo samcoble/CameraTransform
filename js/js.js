@@ -1633,19 +1633,31 @@ function m_t_objs_loadPoints(ar)
 function mem_t_mov(_b) // puts m_t_objs into m_objs as single array 
 {
   paint_n = 0;
-  if (mem_t_sum != 0)
+  let _det = (_b!=undefined) ? _b : 0;
+
+  const loadAlt = function ()
   {
-    if (_b != undefined)
-    {
-      if (_b)
-      {
-        let _obj = unlink_obj(m_t_objs, 1)[0];
-        m_objs_loadPoints(_obj, 0);
-        m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
-      }
-    } else {
+    let _obj = unlink_obj(m_t_objs, 1)[0];
+    m_objs_loadPoints(_obj, 0);
+    m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
+  };
+
+  const loadDef = function ()
+  {
       m_objs_loadPoints(new Float32Array(m_t_objs), 0);
       m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
+  };
+
+  if (mem_t_sum != 0)
+  {
+    switch(_b)
+    {
+      case 0:
+        loadDef();
+        break;
+      case 1:
+        loadAlt();
+        break;
     }
   }
 }
@@ -5209,7 +5221,7 @@ function Compute(init_dat)
         }
 			}
 
-			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) {mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]); paint_n = paint_d = 0;} // finish draw !
+			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]*1); paint_n = paint_d = 0; console.log('test');} // finish draw !
 			if (!getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2
