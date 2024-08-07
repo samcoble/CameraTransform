@@ -2474,7 +2474,7 @@ makeElement(addCheckbox,
 makeElement(addDiv,
 {
   id: "detail_box_paintSettings", cls: "", prnt: "menu_detail",
-  settings: [true, 0.5, 8],
+  settings: [true, false, 0.1, 8],
   rootStyle: rootStyle + detail_menu_box
 });
 
@@ -2504,15 +2504,32 @@ makeElement(addCheckbox,
 
 makeElement(addDiv,
 {
+  id: "div_paintSmooth", cls: "", prnt: "detail_box_paintSettings",
+  text: `smoothing`,
+  rootStyle: rootStyle + div_css_half + _btn_col2
+});
+
+makeElement(addCheckbox,
+{
+  id: "cbx_paintSmooth", cls: "cbx_paintSettings", prnt: "div_paintSmooth",
+  rootStyle: rootStyle+cbx_myStyle,
+  hoverStyles: cbx_myStyle_hover,
+  checkedStyles: cbx_myStyle_checked,
+  defaultChecked: false,
+  callback: updateSetting
+});
+
+makeElement(addDiv,
+{
   id: "div_paintSettings_dist", cls: "", prnt: "detail_box_paintSettings",
   text: `dist`,
-  rootStyle: rootStyle + div_css_half + _btn_col2
+  rootStyle: rootStyle + div_css_half + _btn_col1
 });
 
 makeElement(addTextInput,
 {
   id: "textIn_paintSettings_dist", cls: "textIn_paintSettings", prnt: "div_paintSettings_dist",
-  rootStyle: rootStyle + textIn_css + _btn_col2,
+  rootStyle: rootStyle + textIn_css + _btn_col1,
   hoverShadow: textIn_hover, shadow: textIn_leave,
   callback: updateSetting
 });
@@ -2521,13 +2538,13 @@ makeElement(addDiv,
 {
   id: "div_paintSettings_nodes", cls: "", prnt: "detail_box_paintSettings",
   text: `nodes`,
-  rootStyle: rootStyle + div_css_half + _btn_col1 + _detailLastRad
+  rootStyle: rootStyle + div_css_half + _btn_col2 + _detailLastRad
 });
 
 makeElement(addTextInput,
 {
   id: "textIn_paintSettings_nodes", cls: "textIn_paintSettings", prnt: "div_paintSettings_nodes",
-  rootStyle: rootStyle + textIn_css + _btn_col1 + _cbxLastRad,
+  rootStyle: rootStyle + textIn_css + _btn_col2 + _cbxLastRad,
   hoverShadow: textIn_hover, shadow: textIn_leave,
   callback: updateSetting
 });

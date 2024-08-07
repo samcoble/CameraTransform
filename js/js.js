@@ -1630,14 +1630,24 @@ function m_t_objs_loadPoints(ar)
 	mem_t_sum += ar.length;
 }
 
-function mem_t_mov() // puts m_t_objs into m_objs as single array 
+function mem_t_mov(_b) // puts m_t_objs into m_objs as single array 
 {
-	paint_n = 0;
-	if (mem_t_sum != 0)
-	{
-    m_objs_loadPoints(new Float32Array(m_t_objs), 0);
-		m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
-	}
+  paint_n = 0;
+  if (mem_t_sum != 0)
+  {
+    if (_b != undefined)
+    {
+      if (_b)
+      {
+        let _obj = unlink_obj(m_t_objs, 1)[0];
+        m_objs_loadPoints(_obj, 0);
+        m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
+      }
+    } else {
+      m_objs_loadPoints(new Float32Array(m_t_objs), 0);
+      m_t_objs.length = mem_t_log.length = mem_t_sum = 0;
+    }
+  }
 }
 
 function packObj(ar) // shitty old method
@@ -2539,7 +2549,8 @@ function bond_obj(_i)
 function unlink_obj(_i, _d) // _d bool for data|load
 {
   if (_i == undefined) {_i = obj_cyc; _d = 0;}
-  let _s = mem_log[_i][2] - mem_encode[0],
+  let _s = (typeof _i == 'object') ? _i.length/4 : mem_log[_i][2] - mem_encode[0],
+      _dat = (typeof _i == 'object') ? _i : m_objs[_i],
       _r0 = [],
       _r1 = [],
       _r2 = [],
@@ -2553,11 +2564,11 @@ function unlink_obj(_i, _d) // _d bool for data|load
     if ((i-0)%2!=0 || i==_s-2)
     {
       _k = i==_s-2 ? _s-1 : (i==_s-1 ? _s-2 : i);
-      _r0[_n0*4] = m_objs[_i][_k*4];
-      _r0[_n0*4+1] = m_objs[_i][_k*4+1];
-      _r0[_n0*4+2] = m_objs[_i][_k*4+2];
-      _r0[_n0*4+3] = m_objs[_i][_k*4+3];
-      _n0++
+      _r0[_n0*4] = _dat[_k*4];
+      _r0[_n0*4+1] = _dat[_k*4+1];
+      _r0[_n0*4+2] = _dat[_k*4+2];
+      _r0[_n0*4+3] = _dat[_k*4+3];
+      _n0++;
     }
   }
 
@@ -2582,7 +2593,7 @@ function unlink_obj(_i, _d) // _d bool for data|load
   }
 
   if (_d)
-  { return [_r1, _r2];
+  { return [_r0, _r1, _r2];
   } else
   {
     if (key_map.shift) {m_objs_loadPoints(new Float32Array(_r0), 0);}
@@ -2600,9 +2611,9 @@ function obj_linkPoly(_a0, _a1)
 
   for (var i=0; i<_o1.length; i++)
   {
-    if (i==0) {_of.push(_o1[i]);}
+    if (i==0) { _of.push(_o1[i]); }
     _of.push(_o2[i]);
-    if (i != _o1.length-1) {_of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]);} // -(encoded offset + 1)
+    if (i != _o1.length-1) { _of.push(_o2[i+1]); _of.push(_o1[i]);  _of.push(_o1[i+1]); } // -(encoded offset + 1)
   }
   m_objs_loadPoints(packObj(_of), 0);
 }
@@ -5054,7 +5065,8 @@ function Compute(init_dat)
 
 	switch(wpn_select) //#WEAPONSCRIPT
 	{
-		case 0:
+		case 0: // -------------------------------------------------------------------------------------------------------------------
+
       // console.log(m1.data[mem_log[14][0] + 4]);
       // (in_win_wc-mouseData[0], in_win_hc-mouseData[1]);
 
@@ -5125,7 +5137,7 @@ function Compute(init_dat)
 			}
 			break;
 
-		case 1: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+		case 1: // -------------------------------------------------------------------------------------------------------------------
 
       if (translateObject.enable) {translateObject.toggle();} // bad replace w/ larger system later
 			if (obj_cyc>world_obj_count)
@@ -5160,13 +5172,13 @@ function Compute(init_dat)
 			}
 			break;
 
-		case 2: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+		case 2: // -------------------------------------------------------------------------------------------------------------------
 
 			if (key_map.lmb && pointerOutsideWindow()[0] && runEvery(20))
 			{
         if (!getSetting('detail_box_paintSettings', 1)[0])
         {
-          if (paint_n > getSetting('detail_box_paintSettings', 1)[2])
+          if (paint_n > getSetting('detail_box_paintSettings', 1)[3])
           {
             mem_t_mov();
             paint_c = 1;
@@ -5178,10 +5190,11 @@ function Compute(init_dat)
           switch(mouseLock)
           {
             case 0:
-              let _s = m_t_objs.length;
-              paint_d = m_t_objs.length==0 ? getSetting('detail_box_paintSettings', 1)[1]+1 : len3(sub3(_inter, [m_t_objs[_s-4], m_t_objs[_s-3], m_t_objs[_s-2]] ));
+              let _s = m_t_objs.length,
+                  _dist = getSetting('detail_box_paintSettings', 1)[2];
 
-              if (paint_d > getSetting('detail_box_paintSettings', 1)[1])
+              paint_d = m_t_objs.length==0 ? _dist+1 : len3(sub3(_inter, [m_t_objs[_s-4], m_t_objs[_s-3], m_t_objs[_s-2]] ));
+              if (paint_d > _dist)
               {
                 m_t_objs_loadPoint([_inter[0], _inter[1], _inter[2], 1.0]);
                 paint_n++;
@@ -5196,12 +5209,12 @@ function Compute(init_dat)
         }
 			}
 
-			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) {mem_t_mov(); paint_n = paint_d = 0;} // finish draw !
+			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) {mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]); paint_n = paint_d = 0;} // finish draw !
 			if (!getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2
 
-		case 3: /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+		case 3: // -------------------------------------------------------------------------------------------------------------------
 
       if (key_map.lmb && !mouseLock && runEvery(20))
       {
