@@ -25,7 +25,7 @@ ______|_________________________________________________________________________
       |   border/inner border generation -> chamfer
       |   moveable objects given defined restraints (interactive handles or anywhere on obj if using ray)
       |   
-      |   important features for accelerating the workflow are not my priority:
+      |   important features for accelerating the workflow are coming soon:
       |    - multi-select w/ clicking in world/menu
       |    - folder krap dupe/move (needs to be more generalized)
       |   
@@ -75,19 +75,23 @@ ______|_________________________________________________________________________
       |   i was planning to make interactive objects and i realized rotational ratios would be interesting. say i bind two objects to rotate relative
       |   to each other based on their difference in diameter. this would connect an important part of movement interactions pertaining to machinery
       |
+      |   somewhat related but a point map or point cloud would be interesting to apply animations onto
+      |
       |   add insane mode where all sounds are extra
       |   find wood screech sound of table moving for finish when translating lol
       |   make objects fly along an arc and spin when being translated from a to b
       |   
       |   primary:
+      |             - q does not work when in input field lol
+      |             - make purple lines only when hover folder...
+      |             - chaikin's test -> visual fidelity
+      |             - bezier -> basic freedom
+      |             - mitre or slice geometry by plane -> basic freedom
       |             - rotateObjectToDir (two stage rot w/ removing an axis that's it)
       |             - line edit
-      |             - bezier
-      |             - set angle
-      |
-      |             - un-link by taking every second point... not hard. make temp objs. then next final f clears elog and creates the original
-      |             - elog clear has all the ref fns
-      |   
+      |             - control of inner dir tool
+      |             - folder controls move to folder tree -> object or folder selection -> tools apply to obj(s)
+      |             - bounding box indicator around object and reduce yellow color
       |   
       |   [ all reference material ]   
       |   https://youtu.be/mpTl003EXCY?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g
@@ -105,7 +109,37 @@ ______|_________________________________________________________________________
 ______|___________________________________________________________________________________________________________
       |
       |
+      |   bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap 
       |
+      |
+// make mouse dpi
+      |   looks like center obj needs to be based on the bounding box center instead
+      |
+      |
+      // i realize now it's the same alg but the ratio is used to distribute duplicate points
+      // random nightmare situation
+      // 
+      // multiple ways to handle remainder so you can determine either add / remove points to nearest ...
+      // if it's 1 point over n*bundle it will make an entire bundle-1 to compensate or allowing round down implies
+      // the other smaller reference set of points is reduced by 1 point instead. data loss vs data excess.
+      // it might become a trivial setting not sure yet
+      // 
+      // 443 points
+      // 32 points
+      // 13.53125 points per point :: 401 total point difference
+      // 32*13 = 416 points not good enough method
+      // 443%32 = 27 :: 32-443%32 = 5
+      // (32-443%32)+443 = 448
+      // this means i can just use the first 443 points and add 5 to make it fit 32
+      // meaning my ratio is now 448/32 = 14 which can be obtained from floor|ceil ofc
+      //
+      // i realize now maybe only need to sort numbers prior so i now assume for now the larger obj gets the remainder points..
+      //
+      // i will just make it default to either remainder > || < 32/2 -> determines which object gets the remainder
+      // points as a duplicate of it's very last. that should take care of the last bit of the distribution. i'm sure it could be
+      // even smoother some how but considering 99.9% of the time any use case will already provide properly ratioed sequences this is fine
+      // if not you are doing art anyway
+      |   
       |   to split geometry i think the way is to take all lines that arrive at the same point and mark that point as part of the set
       |   that is being translated. then modify the two sets independently. this should convert the poly alg into two partitions
       |   where the second 'face' set is now stretched/morphed onto the splicing plane
@@ -117,6 +151,7 @@ ______|_________________________________________________________________________
       |   a pregenerated set where all data is generated by tracing each line's points from every grid point on a sphere around the object
       |   unlink needs to not work for objects too small
       |
+      |   plane could next flip to plane most co-planar with player view
       |
       |   encode version and player pos
       |   fix menu positioning by adjusting max height and using .clientHeight
@@ -238,6 +273,61 @@ ______|_________________________________________________________________________
       |   also world points are visible through objects ?!?!?!?!? must split draw sequence into a before and after by pushing afters to a temp ar (faster)
       |   raises the question should all types be done this way ?
       |   
+/*
+// click_map = clickMonitor.map;
+// i set this up for mouse input but it's only useful for touch. works tho.
+// this should be possible to do in a more simple abstract way using a measure of a broader scope of inputs and doing a check within bounds
+var clickMonitor =
+{
+  active: 1,
+  timer: 0,
+  time_log: [0, 0, 0],
+  dt: 80,
+  dt_s: [2, 5],
+  map: [0, 0, 0], // single, double, drag
+  run: function ()
+  {
+    if (key_map.lmb && !pointerOutsideWindow[0]) // key down
+    {
+      if (this.time_log[0]==0) {this.time_log[0] = Date.now();} // set time 2
+
+      if (this.time_log[0] != 0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[1]*this.dt)
+      { // drag start
+        this.time_log[1] = 0;
+        this.map[1] = 0;
+        this.map[2] = 1;
+        // console.log('drag start');
+      }
+
+    } else { // key release
+
+      if (Date.now() - this.time_log[1] > this.dt_s[1]*this.dt && this.map[2] == 0) {this.map[0] = this.map[1] = this.map[2] = 0;}
+      if (this.time_log[1] == 0) { this.time_log[1] = Date.now(); } // set time 1
+
+      if (this.time_log[0] !=0 && Date.now() - this.time_log[0] < this.dt_s[0]*this.dt)
+      {
+        this.map[0] = 1;
+        this.time_log[0] = 0;
+        // console.log('single click');
+      }
+
+      if (this.time_log[0] !=0 && !this.map[2] && Date.now() - this.time_log[0] > this.dt_s[0]*this.dt && Date.now() - this.time_log[0] < this.dt_s[1]*this.dt)
+      { // long click
+        this.map[0] = 0; this.map[1] = 1;
+        this.time_log[0] = 0;
+        // console.log('long click');
+      }
+
+      if (this.map[2])
+      {
+        this.map[2] = 0;
+        this.time_log[0] = 0;
+        // console.log('drag end');
+      }
+    }
+  }
+}; functionRunList.push(clickMonitor);
+*/
 ______|___________________________________________________________________________________________________________
       |   
       |   ALL
