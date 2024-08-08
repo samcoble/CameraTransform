@@ -372,18 +372,24 @@ if (isMobile)
 	    // window.onload = requestFullscreen();
 	  }
 	});
-
 }
 
 document.onmousemove = function(e)
 {
   if (mouseLock)
-    {
-      player_look_dir = [ player_look_dir[0]+0.4*(e.movementX/in_win_w * pi * 2) , player_look_dir[1]-0.4*(e.movementY/in_win_w * pi * 2) , 0 ];
-    } else {mouseData[0] = e.clientX; mouseData[1] = e.clientY;}
-
-  if (player_look_dir[0] > pi) [player_look_dir[0] = -pi]; // This is kinda wack need to refactor entire system for this
-  if (player_look_dir[0] < -pi) [player_look_dir[0] = pi];
+  {
+    player_look_dir =
+      [
+        player_look_dir[0]+e.movementX/1000,
+        player_look_dir[1]-e.movementY/1000,
+        0
+      ]; // less work -> menu setting
+  } else {
+    mouseData[0] = e.clientX;
+    mouseData[1] = e.clientY;
+  }
+  if (player_look_dir[0] > pi) { player_look_dir[0] = -pi; }
+  if (player_look_dir[0] < -pi) { player_look_dir[0] = pi; }
 };
 
 
@@ -392,7 +398,6 @@ document.onmousemove = function(e)
 //   const elem = document.documentElement;
 //   if (elem.requestFullscreen) { elem.requestFullscreen(); }
 // }
-
 
 
 function runListTerminateAll()
@@ -5221,7 +5226,7 @@ function Compute(init_dat)
         }
 			}
 
-			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]*1); paint_n = paint_d = 0; console.log('test');} // finish draw !
+			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]*1); paint_n = paint_d = 0;} // finish draw !
 			if (!getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2
