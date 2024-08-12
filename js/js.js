@@ -378,10 +378,17 @@ document.onmousemove = function(e)
 {
   if (mouseLock)
   {
+    let _a = 1000,
+        _af = (
+          key_map.shift &&
+          wpn_select==2 &&
+          (keyVec[0]+keyVec[1])==0
+        ) ? 3*_a : _a;
+
     player_look_dir =
       [
-        player_look_dir[0]+e.movementX/1000,
-        player_look_dir[1]-e.movementY/1000,
+        player_look_dir[0]+e.movementX/_af,
+        player_look_dir[1]-e.movementY/_af,
         0
       ]; // less work -> menu setting
   } else {
@@ -393,11 +400,11 @@ document.onmousemove = function(e)
 };
 
 
-// function requestFullscreen()
-// {
-//   const elem = document.documentElement;
-//   if (elem.requestFullscreen) { elem.requestFullscreen(); }
-// }
+function requestFullscreen()
+{
+  const elem = document.documentElement;
+  if (document.fullscreenElement) { document.exitFullscreen(); } else { elem.requestFullscreen(); }
+}
 
 
 function runListTerminateAll()
@@ -1638,6 +1645,7 @@ function m_t_objs_loadPoints(ar)
 function mem_t_mov(_b) // puts m_t_objs into m_objs as single array 
 {
   paint_n = 0;
+  if (m_t_objs.length <= 4) { m_t_objs.length = mem_t_log.length = mem_t_sum = 0; return; }
   let _det = (_b!=undefined) ? _b : 0;
 
   const loadAlt = function ()
@@ -4849,7 +4857,7 @@ function Compute(init_dat)
 	if (!trns_lock)
 	{
 		if (key_map.shift) //320
-		{if (key_map.x && runEvery(320)) { deleteObjectSelected(); }
+		{if (key_map.x && runEvery(270)) { deleteObjectSelected(); }
 		} else if (key_map.x && !del_obj_lock)
 		{ deleteObjectSelected(); del_obj_lock = 1; }
 
@@ -5226,7 +5234,11 @@ function Compute(init_dat)
         }
 			}
 
-			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]*1); paint_n = paint_d = 0;} // finish draw !
+			if (getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false)
+      {
+        mem_t_mov(getSetting('detail_box_paintSettings', 1)[1]*1); paint_n = paint_d = 0;
+      } // finish draw !
+
 			if (!getSetting('detail_box_paintSettings', 1)[0] && key_map.lmb == false) { paint_c = 0; } // finish draw !
 
 			break; // end of wpn_select==2

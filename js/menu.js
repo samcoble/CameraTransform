@@ -926,6 +926,7 @@ var key_bind_info =
   "Z(undo last point placed)",
   "E(make object from points)",
   "TAB(select obj by aiming at 3D center)",
+  "Shift(slow mouse using paint when menu closed)",
   "...",
   "W(move forward), S(move backwards)",
   "A(move left), D(move right)",
@@ -943,6 +944,7 @@ var key_bind_info =
   "...",
   "Scroll+Shift(grid size) 2^n",
   "MMB(rotate camera from menu)",
+  "H(set cursor to object center)",
   "G(send cursor to ground)",
   "C(edit object -> converts to points)",
   "L(link objects -> select in sequence)",
@@ -968,7 +970,6 @@ var key_bind_info =
   "[MOVER] 5(mirror over selected plane & object center)",
   "6(resize object w/ bounding box corners)",
   "7(generate circle at cursor & plane)",
-  "H(set cursor to object's encoded 3D center)",
   "/(print object to console)",
   "he's so nice he gave me rice",
   "he's so nice he gave me rice",
@@ -1896,9 +1897,18 @@ packElement(eset_tools, addButton,
 {
   text: "Unlink Object \u2366",
   id: "tool_objUnlink", cls: "_btn", prnt: "div_toolListHeader",
-  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
+  rootStyle: rootStyle + _btn + _btn_tooln,
   hoverStyles: _btn_hover_tool,
   callback: unlink_obj
+});
+
+packElement(eset_tools, addButton,
+{
+  text: "Fullscreen \u2B94",
+  id: "tool_tryFullscreen", cls: "_btn", prnt: "div_toolListHeader",
+  rootStyle: rootStyle + _btn + _btn_tooln + _btn_toolf,
+  hoverStyles: _btn_hover_tool,
+  callback: requestFullscreen
 });
 
 packElement(eset_tools, addButton,
