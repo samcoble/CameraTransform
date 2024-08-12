@@ -20,7 +20,16 @@ ______|_________________________________________________________________________
       |   i will finish up basic tools with line/point modification & beziers (all intersections pregenerated)
       |   intersections revealed in more detail when within dist from mouse/aim
       |   i realize now the base dataset is arbitrary if everything is preloaded in buffers via indice maps anyway
-      |   ex: any data in any order -> -> set of triangles
+      |   ex: any data in any order -> -> set of triangles. this entire thing can be written in any language and honestly
+      |   i don't feel like i need to use node if it's this simple. if i wrote it in asm or c or visual basic it would just be
+      |   less useful in the end because so far i haven't had any issues making the mobile version work in tandem.
+      |   
+      |   a lot of this i slammed together. it's more a proof of concept and far from optimal. i can probably refactor this into something a lot
+      |   smaller and more sensical. the entire render pipe could be replaced with standard webgl practices yeilding better performance.
+      |   
+      |   the paint tool is more like the pencil tool right now. to brush is to place geometry that intersects in real time
+      |   i'm not too happy w/ performance. there's a lot to work on regarding the run-time data that fills the buffers. 
+      |   basically pregenerated data structures that reduce the work load at run-time are going to help a lot
       |   
       |   border/inner border generation -> chamfer
       |   moveable objects given defined restraints (interactive handles or anywhere on obj if using ray)
@@ -81,6 +90,11 @@ ______|_________________________________________________________________________
       |   find wood screech sound of table moving for finish when translating lol
       |   make objects fly along an arc and spin when being translated from a to b
       |   
+      |   so far so good w/ a single cubic bezier. i will probably reuse it to make multiple segments connect. the only issue is that I now need to
+      |   do the integral to find all of the values of u that equate to some percentage of the line's length.
+      |   https://www.desmos.com/calculator/bitmjl5dno
+      |   automating integration will work best for the next step but i'll first make the bezier without...
+      |   
       |   primary:
       |             - q does not work when in input field lol
       |             - make purple lines only when hover folder...
@@ -93,6 +107,11 @@ ______|_________________________________________________________________________
       |             - folder controls move to folder tree -> object or folder selection -> tools apply to obj(s)
       |             - bounding box indicator around object and reduce yellow color
       |   
+      |   
+      |   side view's can be a static map generated and reduced to a final line/point reduction implying a ? 4*+ ? nah ? performance bump
+      |   side view data can contain depth information directing the selection into objects underneath repeating layout patterns
+      |   flipping sides of the cube like most software can be animated. 
+      |   
       |   [ all reference material ]   
       |   https://youtu.be/mpTl003EXCY?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g
       |   https://youtu.be/mHVwd8gYLnI?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g
@@ -100,7 +119,30 @@ ______|_________________________________________________________________________
       |   https://youtu.be/ln3vI4JEArc
       |   https://youtu.be/zjMuIxRvygQ
       |   https://turbo.js.org/ 
-      |   https://en.wikipedia.org/wiki/Octree
+      |   https://youtu.be/upLnFI8LzB8
+      |   https://youtu.be/2OSEyo9oS6E
+      |   https://en.wikipedia.org/wiki/Octree [not used]
+      |   
+      |Numerical Integration:
+Use numerical integration techniques to compute the integral in real time. Common methods include:
+
+Trapezoidal Rule
+Simpson’s Rule
+Adaptive Quadrature   
+______|___________________________________________________________________________________________________________
+      |   
+      |   TINY PROBLEMS
+______|___________________________________________________________________________________________________________
+      |   
+      |   
+      |   
+      |   
+      |   
+      |   
+      |   
+      |   
+      |   
+      |   
       |   
       |   
 ______|___________________________________________________________________________________________________________
@@ -111,34 +153,38 @@ ______|_________________________________________________________________________
       |
       |   bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap bezier asap 
       |
+      |   make mouse dpi setting - also make the simple slider boxes for menu
       |
-// make mouse dpi
-      |   looks like center obj needs to be based on the bounding box center instead
+      |   looks like center obj needs to be based on the bounding box center instead. taking the mean point is silly at this point
       |
       |
-      // i realize now it's the same alg but the ratio is used to distribute duplicate points
-      // random nightmare situation
-      // 
-      // multiple ways to handle remainder so you can determine either add / remove points to nearest ...
-      // if it's 1 point over n*bundle it will make an entire bundle-1 to compensate or allowing round down implies
-      // the other smaller reference set of points is reduced by 1 point instead. data loss vs data excess.
-      // it might become a trivial setting not sure yet
-      // 
-      // 443 points
-      // 32 points
-      // 13.53125 points per point :: 401 total point difference
-      // 32*13 = 416 points not good enough method
-      // 443%32 = 27 :: 32-443%32 = 5
-      // (32-443%32)+443 = 448
-      // this means i can just use the first 443 points and add 5 to make it fit 32
-      // meaning my ratio is now 448/32 = 14 which can be obtained from floor|ceil ofc
-      //
-      // i realize now maybe only need to sort numbers prior so i now assume for now the larger obj gets the remainder points..
-      //
-      // i will just make it default to either remainder > || < 32/2 -> determines which object gets the remainder
-      // points as a duplicate of it's very last. that should take care of the last bit of the distribution. i'm sure it could be
-      // even smoother some how but considering 99.9% of the time any use case will already provide properly ratioed sequences this is fine
-      // if not you are doing art anyway
+      |   i realize now it's the same alg but the ratio is used to distribute duplicate points
+      |   random nightmare situation
+      |   
+      |   multiple ways to handle remainder so you can determine either add / remove points to nearest ...
+      |   if it's 1 point over n*bundle it will make an entire bundle-1 to compensate or allowing round down implies
+      |   the other smaller reference set of points is reduced by 1 point instead. data loss vs data excess.
+      |   it might become a trivial setting not sure yet
+      |   
+      |   443 points
+      |   32 points
+      |   13.53125 points per point :: 401 total point difference
+      |   32*13 = 416 points not good enough method
+      |   443%32 = 27 :: 32-443%32 = 5
+      |   (32-443%32)+443 = 448
+      |   this means i can just use the first 443 points and add 5 to make it fit 32
+      |   meaning my ratio is now 448/32 = 14 which can be obtained from floor|ceil ofc
+      |   
+      |   i realize now maybe only need to sort numbers prior so i now assume for now the larger obj gets the remainder points..
+      |   
+      |   i will just make it default to either remainder > || < 32/2 -> determines which object gets the remainder
+      |   points as a duplicate of it's very last. that should take care of the last bit of the distribution. i'm sure it could be
+      |   even smoother some how but considering 99.9% of the time any use case will already provide properly ratioed sequences this is fine
+      |   if not you are doing art anyway
+      |   
+      |   i see now this is not a great way to do the edge connect. i think it would be better to treat lines as their theoretical representation and use interpolation instead.
+      |   difficult problem because some cases my original alg works the best. some cases this should work too. but in other cases interpolation is required when # points delta > signif
+      |   
       |   
       |   to split geometry i think the way is to take all lines that arrive at the same point and mark that point as part of the set
       |   that is being translated. then modify the two sets independently. this should convert the poly alg into two partitions
@@ -174,12 +220,8 @@ ______|_________________________________________________________________________
       |   
       |   i need to make buttons ref to function be able to auto handle objs containing the fn ref'ed info
       |
-      |   to make poly link pattern work for lines of unequal length just divide c/s to get ratio for amount of times
-      |   a point is going to be reused in the link
-      |
       |   rotation around grid plane needs to also use the modified grid
       |
-      |   elog add deletion by select again w/ option to enable/disable it to make persistant reference krap
       |   already have delete by id but need fn to delete all w/ obj id
       |   
       |   after locking to point set grid offset for line/plane to components n/grid_scale -> remainder ?
@@ -199,8 +241,6 @@ ______|_________________________________________________________________________
       |   
       |   needs a help gif guide
       |   move depth and culling to draw settings
-      |   
-      |   finish obj rot fn
       |   
       |   paint needs shift click to draw lines between single clicks, can check for shift when m_t_objs load fn as work around
       |   disable grid auto locking for movement somehow...
@@ -250,15 +290,7 @@ ______|_________________________________________________________________________
       |   javascript only runs so fast u know
       |   
       |
-      |   setup for rotation/align relative tool
       |   write pivot align again or inject the change of basis
-      |
-      |   style & place the log box
-      |   m_t_objs was fundamentally a mistake because any array format will work ofc
-      |   go through code and write line number where center is included in logic here:
-      |
-      |   later need a function to define a system for locking obj dir relative to a new plane so 
-      |   creating more geometry perp to surface still correctly applies the dir vec relative to at least one half the process (no twist)
       |
       |   pivot align does not work with some orientations (colinear ?) might be a zero in the dividend
       |   maybe i have failed to ensure a pipeline is entirely buffered where cross returns a new. it should edit preallocated space instead 
@@ -275,8 +307,6 @@ ______|_________________________________________________________________________
       |   
 /*
 // click_map = clickMonitor.map;
-// i set this up for mouse input but it's only useful for touch. works tho.
-// this should be possible to do in a more simple abstract way using a measure of a broader scope of inputs and doing a check within bounds
 var clickMonitor =
 {
   active: 1,
