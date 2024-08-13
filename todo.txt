@@ -110,9 +110,10 @@ ______|_________________________________________________________________________
       |   
       |   side view's can be a static map generated and reduced to a final line/point reduction implying a ? 4*+ ? nah ? performance bump
       |   side view data can contain depth information directing the selection into objects underneath repeating layout patterns
-      |   flipping sides of the cube like most software can be animated. 
-      |   
+      |   flipping sides of the cube like most software can be animated.
+
       |   [ all reference material ]   
+      |   https://youtu.be/vLQVm5POyOY?si=K7oKaUyLg8_uWxA5
       |   https://youtu.be/mpTl003EXCY?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g
       |   https://youtu.be/mHVwd8gYLnI?list=PL_w_qWAQZtAZhtzPI5pkAtcUVgmzdAP8g
       |   https://youtu.be/jTgdKoQv738
